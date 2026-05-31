@@ -1,0 +1,677 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-05-31T08:16:11.609156+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 24,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 42,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2605.05696v1",
+      "source": "arxiv",
+      "title": "Irminsul: MLA-Native Position-Independent Caching for Agentic LLM Serving",
+      "abstract": "Agentic LLM workloads put bit-identical tokens at shifted positions every turn, voiding prefix caches at the first byte of divergence. Operators report cache-hit regressions ranging from moderate slowdowns to severe TTFT spikes of 10-16s on unchanged content. Prior position-independent caching systems correct RoPE on the full $d_K$-dimensional key, an architectural cost imposed by GQA, not by caching itself. Multi-Head Latent Attention, deployed at scale in DeepSeek-V2/V3/R1, Kimi-K2/Moonlight, GLM-5, and Mistral Large 3, factors each KV row into a position-free $c_{KV}$ and a 64-dim $k_r$ correctable in closed form; this structure motivates content-addressed caching as a natural fit rather than a GQA workaround. We present Irminsul, which extends SGLang's radix cache with content-hash keying over CDC-chunked segments and a $δ$-rotation rule for $k_r$. We evaluate three native MLA-MoE deployments - DeepSeek-V2-Lite (16B/2.4B), Kimi Moonlight-16B-A3B, and JoyAI-Flash (48B/3B) - with output-consistency on all three and recovery measured on the two endpoints; Irminsul recovers up to ~83% of prompt tokens above exact-prefix on agentic traffic while delivering 63% prefill energy savings per cache hit. We argue that content-addressed caching belongs in the serving stack as a first-class primitive, not a retrofit over prefix matching.",
+      "authors": [
+        "Bole Ma",
+        "Jan Eitzinger",
+        "Harald Köstler"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-05-07T05:36:03+00:00",
+      "link": "https://arxiv.org/pdf/2605.05696v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "position-independent caching for LLM inference acceleration",
+      "llm_evidence_cn": "面向LLM推理加速的位置无关缓存",
+      "llm_evidence": "面向LLM推理加速的位置无关缓存",
+      "canonical_evidence": "面向LLM推理加速的位置无关缓存",
+      "llm_tldr_en": "Irminsul leverages Multi-Head Latent Attention's structure to implement content-addressed, position-independent caching, avoiding RoPE correction overhead and improving cache hit rates in agentic workloads.",
+      "llm_tldr_cn": "Agentic LLM工作负载中，令牌位置偏移导致前缀缓存失效。Irminsul利用Multi-Head Latent Attention的内在结构，将KV行分解为位置无关分量和可闭合修正的位置分量，实现内容寻址的位置无关缓存。相比先前系统，无需在完整d_K维上修正RoPE，显著降低开销。在DeepSeek-V2等模型上测试，TTFT和缓存命中率大幅改善。",
+      "llm_tldr": "Agentic LLM工作负载中，令牌位置偏移导致前缀缓存失效。Irminsul利用Multi-Head Latent Attention的内在结构，将KV行分解为位置无关分量和可闭合修正的位置分量，实现内容寻址的位置无关缓存。相比先前系统，无需在完整d_K维上修正RoPE，显著降低开销。在DeepSeek-V2等模型上测试，TTFT和缓存命中率大幅改善。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.07443v1",
+      "source": "arxiv",
+      "title": "RcLLM: Accelerating Generative Recommendation via Beyond-Prefix KV Caching",
+      "abstract": "Large Language Models (LLMs) are transforming recommendation from ranking into a generative task, but industrial deployment remains limited by the high latency of processing long, personalized prompts. Standard prefix caching provides limited benefit because reuse in recommendation workloads is often non-contiguous across user histories and item contexts. We present RcLLM, a distributed inference system for generative recommendation with Beyond-Prefix KV Caching. RcLLM decomposes prompts into reusable blocks and supports large item catalogs with a stratified distributed storage design: compact user-history caches are replicated for zero-latency retrieval, while massive item caches are sharded using similarity-aware placement. To reduce redundant quadratic attention computation, RcLLM combines an affinity-based global scheduler that improves data locality with a selective attention mechanism that corrects approximation errors. Experiments on real-world datasets show that RcLLM reduces Time-To-First-Token (TTFT) by 1.31x-9.51x compared with state-of-the-art prefix caching systems, enabling real-time serving with negligible impact on recommendation accuracy.",
+      "authors": [
+        "Zhan Zhao",
+        "Yuxin Wang",
+        "Amelie Chi Zhou"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-05-08T08:47:50+00:00",
+      "link": "https://arxiv.org/pdf/2605.07443v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Beyond-Prefix KV Caching for generative recommendation",
+      "llm_evidence_cn": "超越前缀的KV缓存用于生成式推荐",
+      "llm_evidence": "超越前缀的KV缓存用于生成式推荐",
+      "canonical_evidence": "超越前缀的KV缓存用于生成式推荐",
+      "llm_tldr_en": "RcLLM introduces beyond-prefix KV caching that handles non-contiguous reuse in recommendation prompts, accelerating inference.",
+      "llm_tldr_cn": "针对生成式推荐系统中长个性化提示的高时延问题，本文提出RcLLM系统，采用超越前缀的KV缓存方法。通过将提示分解为可重用块并设计分层分布式存储，实现了非连续上下文的高效复用。实验表明，该方法在保持推荐质量的同时显著降低推理延迟，适用于大规模商品目录场景。",
+      "llm_tldr": "针对生成式推荐系统中长个性化提示的高时延问题，本文提出RcLLM系统，采用超越前缀的KV缓存方法。通过将提示分解为可重用块并设计分层分布式存储，实现了非连续上下文的高效复用。实验表明，该方法在保持推荐质量的同时显著降低推理延迟，适用于大规模商品目录场景。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.24022v1",
+      "source": "arxiv",
+      "title": "Adaptive KV Cache Reuse for Fast Long-Context LLM Serving",
+      "abstract": "In long-context Large Language Model (LLM) inference, the Time-To-First-Token (TTFT) latency incurred by the prefill stage has become the foremost bottleneck limiting interactive performance and deployment cost. KV Cache reuse offers a direct path to reduce redundant prefill, yet traditional prefix caching applies only to strict-prefix scenarios; directly reusing KV Cache in non-prefix settings breaks the cross-chunk global attention relationships and causes significant degradation in generation quality. When reusable KV Cache is offloaded to GPU-external cache pools, I/O overheads across heterogeneous hardware tiers further emerge as a new TTFT bottleneck. Efficient non-prefix KV Cache reuse therefore requires both semantic-consistency recovery and compute-I/O co-optimization.   This paper presents CacheTune, a frequency-guided and hardware-aware KV Cache reuse system for long-context LLM serving. CacheTune first identifies, offline, the KV pairs most critical to cross-attention recovery through frequency-domain analysis, and then selectively recomputes only these semantic-critical tokens online while reusing the remaining KVs. To turn this semantic selection into end-to-end latency reduction, CacheTune further combines sparse KV transfer, multi-stream asynchronous overlap, deferred positional-encoding recovery, and hardware-aware adaptive recomputation-ratio tuning to balance computation and data movement across heterogeneous cache pools. Evaluations on mainstream LLMs and long-context tasks show that CacheTune achieves 3.72x-4.86x TTFT speedup and 3.93x-6.21x higher throughput while maintaining generation quality close to full recompute. Even when caches are offloaded to I/O-bound SSD/HDD storage, CacheTune sustains 2.34x-2.36x TTFT speedup through adaptive recomputation.",
+      "authors": [
+        "Fei li",
+        "Song Liu",
+        "Yan Liu",
+        "Jinhua Cui",
+        "Shiqiang Nie",
+        "Jinyu Wang",
+        "Weiguo Wu"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.DC"
+      ],
+      "published": "2026-05-20T08:59:48+00:00",
+      "link": "https://arxiv.org/pdf/2605.24022v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Adaptive KV Cache Reuse directly addresses non-prefix (position-independent) KV reuse",
+      "llm_evidence_cn": "自适应KV缓存重用直接针对非前缀（位置无关）KV重用",
+      "llm_evidence": "自适应KV缓存重用直接针对非前缀（位置无关）KV重用",
+      "canonical_evidence": "自适应KV缓存重用直接针对非前缀（位置无关）KV重用",
+      "llm_tldr_en": "Adaptive KV Cache Reuse addresses non-prefix KV cache reuse with semantic-consistency recovery and compute-I/O co-optimization to reduce TTFT.",
+      "llm_tldr_cn": "长上下文LLM推理中预填充阶段TTFT成为瓶颈，传统前缀缓存仅适用于严格前缀场景，非前缀重用会破坏全局注意力关系。本文提出自适应KV缓存重用方法，通过语义一致性恢复和计算-IO协同优化，在非前缀设置下有效重用缓存。在异构硬件上，该方法显著降低了TTFT并保持了生成质量。",
+      "llm_tldr": "长上下文LLM推理中预填充阶段TTFT成为瓶颈，传统前缀缓存仅适用于严格前缀场景，非前缀重用会破坏全局注意力关系。本文提出自适应KV缓存重用方法，通过语义一致性恢复和计算-IO协同优化，在非前缀设置下有效重用缓存。在异构硬件上，该方法显著降低了TTFT并保持了生成质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.03375v1",
+      "source": "arxiv",
+      "title": "Tutti: Making SSD-Backed KV Cache Practical for Long-Context LLM Serving",
+      "abstract": "LLM serving relies on prefix caching to improve inference performance. As growing contexts push key-value (KV) cache footprint far beyond GPU HBM and CPU DRAM capacity, KV cache is increasingly offloaded to NVMe SSDs. Unfortunately, restoring KV cache from SSDs suffers from poor I/O performance and incurs significant GPU stalls. This is primarily because the fragmented GPU memory layout results in a massive number of tiny random I/Os, rendering the low-parallelism CPU a severe bottleneck even with GPU Direct Storage (GDS), which still relies on CPU intervention to initiate each I/O and thus remains CPU-centric. This paper presents Tutti, an efficient SSD-backed KV caching solution that eliminates CPU intervention from the critical data and I/O control paths between HBM and SSDs. At the core of Tutti is a GPU-centric KV cache object store, in which the CPU is only responsible for asynchronously loading I/O kernels once per layer to the GPU. Tutti saturates NVMe SSD bandwidth and reduces GPU stalls to near zero through the following designs: (i) we provide a GPU-native object abstraction that enables bulk KV cache transfers and management; (ii) we re-architect the GPU storage stack by introducing GPU io_uring to support asynchronous GPU direct object I/O; and (iii) we propose slack-aware I/O scheduling to avoid GPU resource contention. We have implemented Tutti and integrated it to vLLM. Extensive evaluation shows that compared to the state-of-the-art GDS-enabled, SSD-backed LMCache, Tutti reduces TTFT by 78.3% under strict SLO constraints and improves the achievable request rate by 2x. The serving cost is reduced by 27%. Tutti achieves nearly the same inference performance as DRAM-backed LMCache, while providing almost infinite capacity.",
+      "authors": [
+        "Shi Qiu",
+        "Yifan Hu",
+        "Xintao Wang",
+        "Wenhao Zhu",
+        "Jianqin Yan",
+        "Hao Chen",
+        "Kaiqiang Xu",
+        "Kai Chen",
+        "Yiming Zhang"
+      ],
+      "primary_category": "cs.OS",
+      "categories": [
+        "cs.OS"
+      ],
+      "published": "2026-05-05T05:33:11+00:00",
+      "link": "https://arxiv.org/pdf/2605.03375v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "prefix caching for long-context LLM serving with SSD-backed KV cache",
+      "llm_evidence_cn": "基于SSD的KV缓存实现长上下文LLM服务中的前缀缓存",
+      "llm_evidence": "基于SSD的KV缓存实现长上下文LLM服务中的前缀缓存",
+      "canonical_evidence": "基于SSD的KV缓存实现长上下文LLM服务中的前缀缓存",
+      "llm_tldr_en": "Tutti eliminates CPU intervention from the I/O critical path for SSD-backed KV cache restoration, using a GPU-centric design to achieve near-HBM latency for prefix cache hits.",
+      "llm_tldr_cn": "长上下文推理中KV缓存被卸载到SSD，但恢复时大量随机小I/O导致CPU瓶颈和GPU停顿。Tutti提出GPU中心的SSD KV缓存方案，消除CPU在关键数据路径中的介入，利用GPU Direct Storage并优化内存布局，实现接近HBM的缓存命中延迟。实验表明，Tutti显著减少TTFT并提高吞吐量。",
+      "llm_tldr": "长上下文推理中KV缓存被卸载到SSD，但恢复时大量随机小I/O导致CPU瓶颈和GPU停顿。Tutti提出GPU中心的SSD KV缓存方案，消除CPU在关键数据路径中的介入，利用GPU Direct Storage并优化内存布局，实现接近HBM的缓存命中延迟。实验表明，Tutti显著减少TTFT并提高吞吐量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.03644v1",
+      "source": "arxiv",
+      "title": "AdapShot: Adaptive Many-Shot In-Context Learning with Semantic-Aware KV Cache Reuse",
+      "abstract": "Many-Shot In-Context Learning (ICL) has emerged as a promising paradigm, leveraging extensive examples to unlock the reasoning potential of Large Language Models (LLMs). However, existing methods typically rely on a predetermined, fixed number of shots. This static approach often fails to adapt to the varying difficulty of different queries, leading to either insufficient context or interference from noise. Furthermore, the prohibitive computational and memory costs of long contexts severely limit Many-Shot's feasibility. To address the above limitations, we propose AdapShot, which dynamically optimizes shot counts and leverages KV cache reuse for efficient inference. Specifically, we design a probe-based evaluation mechanism that utilizes output entropy to determine the optimal number of shots. To bypass the redundant prefilling computation during both the probing and inference phases, we incorporate a semantics-aware KV cache reuse strategy. Within this reuse strategy, to address positional encoding incompatibilities, we introduce a decoupling and re-encoding method that enables the flexible reordering of cached key-value pairs. Extensive experiments demonstrate that AdapShot achieves an average performance gain of around 10% and a 4.64x speedup compared to state-of-the-art DBSA.",
+      "authors": [
+        "Jie Ou",
+        "Jinyu Guo",
+        "Shiyao Guo",
+        "Yuang Li",
+        "Ruiqi Wu",
+        "Zhaokun Wang",
+        "Wenyi Li",
+        "Wenhong Tian"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-05-05T11:16:52+00:00",
+      "link": "https://arxiv.org/pdf/2605.03644v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Semantic-aware KV cache reuse for many-shot in-context learning",
+      "llm_evidence_cn": "语义感知的KV缓存重用用于多示例上下文学习",
+      "llm_evidence": "语义感知的KV缓存重用用于多示例上下文学习",
+      "canonical_evidence": "语义感知的KV缓存重用用于多示例上下文学习",
+      "llm_tldr_en": "AdapShot dynamically adapts shot count and reuses KV cache across examples to enable efficient many-shot in-context learning.",
+      "llm_tldr_cn": "针对多示例上下文学习中固定示例数量导致的适应性差和长上下文计算开销大的问题，本文提出AdapShot。该方法通过探针评估动态优化示例数量，并利用语义感知的KV缓存重用避免重复计算。实验表明，AdapShot在多个任务上以更低成本达到甚至超过固定多示例学习的性能，且能自适应不同难度查询。",
+      "llm_tldr": "针对多示例上下文学习中固定示例数量导致的适应性差和长上下文计算开销大的问题，本文提出AdapShot。该方法通过探针评估动态优化示例数量，并利用语义感知的KV缓存重用避免重复计算。实验表明，AdapShot在多个任务上以更低成本达到甚至超过固定多示例学习的性能，且能自适应不同难度查询。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.05971v2",
+      "source": "arxiv",
+      "title": "Training Transformers for KV Cache Compressibility",
+      "abstract": "Long-context language modeling is increasingly constrained by the Key-Value (KV) cache, whose memory and decode-time access costs scale linearly with the prefix length. This bottleneck has motivated a range of context-compression methods, from token-level summarization to recent optimization-based KV compression methods. These post-hoc methods operate on the KV cache of a fixed pretrained model, so their effectiveness is fundamentally limited by how well the model's internal representations can be compressed. In this work, we formalize the notion of KV compressibility and show that it is a property of the learned representations, rather than of the context alone. We prove that almost any sequence-to-vector function admits both highly compressible and inherently non-compressible transformer implementations, highlighting the need to guide transformers toward compressible representations during training. Motivated by this, we propose KV-Compression Aware Training (KV-CAT), a continued pretraining procedure that incentivizes the emergence of compressible representations. We introduce a train-time KV sparsification policy that masks KV slots during training. This forces the model to use fewer KV slots and encourages it to learn representations amenable to post-hoc compression. Empirically, we show that KV-CAT improves the quality-budget tradeoff of downstream compression methods across retrieval, long-context question answering, and perplexity-based evaluation of compressed-prefix continuation.",
+      "authors": [
+        "Yoav Gelberg",
+        "Yam Eitan",
+        "Michael Bronstein",
+        "Yarin Gal",
+        "Haggai Maron"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-07T10:17:55+00:00",
+      "link": "https://arxiv.org/pdf/2605.05971v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Training for KV compressibility to reduce cache size",
+      "llm_evidence_cn": "训练KV可压缩性以减少缓存大小",
+      "llm_evidence": "训练KV可压缩性以减少缓存大小",
+      "canonical_evidence": "训练KV可压缩性以减少缓存大小",
+      "llm_tldr_en": "Proposes training transformers to improve KV cache compressibility, enabling more efficient long-context inference.",
+      "llm_tldr_cn": "针对长上下文语言模型中KV缓存内存和时延瓶颈，本文形式化了KV可压缩性概念，证明其源于学习表示而非仅上下文。提出训练方法使Transformer具有更高的KV可压缩性，从而在保持性能的同时大幅压缩缓存。实验表明该方法能有效提升后验压缩方法的极限，为高效长上下文推理提供新思路。",
+      "llm_tldr": "针对长上下文语言模型中KV缓存内存和时延瓶颈，本文形式化了KV可压缩性概念，证明其源于学习表示而非仅上下文。提出训练方法使Transformer具有更高的KV可压缩性，从而在保持性能的同时大幅压缩缓存。实验表明该方法能有效提升后验压缩方法的极限，为高效长上下文推理提供新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2605.06105v1",
+      "source": "arxiv",
+      "title": "Shallow Prefill, Deep Decoding: Efficient Long-Context Inference via Layer-Asymmetric KV Visibility",
+      "abstract": "Long-context inference in decoder-only language models is costly because long prompts are processed during Prefill, cached at every layer, and repeatedly attended to during autoregressive Decode. We introduce \\emph{Shallow Prefill, dEEp Decode} (SPEED), a phase-asymmetric KV-visibility policy that materializes non-anchor prompt-token KV states only in lower layers while keeping Decode-phase tokens full-depth. Unlike previous approaches that make upper-layer prompt KV states cheaper to store or construct, SPEED removes prefill tokens from the upper-layer Decode visibility set altogether. With a minimal BoS anchor, this simple change preserves broad benchmark quality while reducing long-context cost. In a controlled Llama-3.1-8B instruction-tuning study, SPEED using only 75\\% of layers for prefill tokens reaches 51.2 average score on OLMES-style benchmarks, compared with 51.4 for the full-depth baseline, while improving TTFT by 33\\%, TPOT by 22\\%, and reducing active KV memory by 25.0\\% at 128K context. Layer-wise diagnostics suggest that this cutoff retains the main prompt-selection and representation-stabilization regions of the full-depth model. These results show that long-context prompt tokens need not always persist as full-depth KV-cache objects when Decode-phase tokens remain full-depth.",
+      "authors": [
+        "Jungsuk Oh",
+        "Hyeseo Jeon",
+        "Hyunjune Ji",
+        "Kyongmin Kong",
+        "Jay-Yoon Lee"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-05-07T12:21:03+00:00",
+      "link": "https://arxiv.org/pdf/2605.06105v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "SPEED reduces long-context cost by layer-asymmetric KV visibility",
+      "llm_evidence_cn": "SPEED通过层非对称KV可见性降低长上下文成本",
+      "llm_evidence": "SPEED通过层非对称KV可见性降低长上下文成本",
+      "canonical_evidence": "SPEED通过层非对称KV可见性降低长上下文成本",
+      "llm_tldr_en": "SPEED introduces phase-asymmetric KV visibility, materializing non-anchor prompt tokens only in lower layers, reducing long-context cost while preserving quality.",
+      "llm_tldr_cn": "长上下文推理中，预填充阶段的KV缓存逐层存储导致高昂成本。本文提出SPEED策略，在预填充阶段仅在下层存储非锚点提示令牌的KV状态，而解码阶段令牌保持全深度可见。在Llama-3.1上的实验表明，该方法在保持广泛基准质量的同时，显著降低了长上下文推理的内存和计算开销。",
+      "llm_tldr": "长上下文推理中，预填充阶段的KV缓存逐层存储导致高昂成本。本文提出SPEED策略，在预填充阶段仅在下层存储非锚点提示令牌的KV状态，而解码阶段令牌保持全深度可见。在Llama-3.1上的实验表明，该方法在保持广泛基准质量的同时，显著降低了长上下文推理的内存和计算开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.05971v1",
+      "source": "arxiv",
+      "title": "Training Transformers for KV Cache Compressibility",
+      "abstract": "Long-context language modeling is increasingly constrained by the Key-Value (KV) cache, whose memory and decode-time access costs scale linearly with the prefix length. This bottleneck has motivated a range of context-compression methods, from token-level summarization to recent optimization-based KV compression methods. These post-hoc methods operate on the KV cache of a fixed pretrained model, so their effectiveness is fundamentally limited by how well the model's internal representations can be compressed. In this work, we formalize the notion of KV compressibility and show that it is a property of the learned representations, rather than of the context alone. We prove that almost any sequence-to-vector function admits both highly compressible and inherently non-compressible transformer implementations, highlighting the need to guide transformers toward compressible representations during training. Motivated by this, we propose KV-Compression Aware Training (KV-CAT), a continued pretraining procedure that incentivizes the emergence of compressible representations. We introduce a train-time KV sparsification policy that masks KV slots during training. This forces the model to use fewer KV slots and encourages it to learn representations amenable to post-hoc compression. Empirically, we show that KV-CAT improves the quality-budget tradeoff of downstream compression methods across retrieval, long-context question answering, and perplexity-based evaluation of compressed-prefix continuation.",
+      "authors": [
+        "Yoav Gelberg",
+        "Yam Eitan",
+        "Michael Bronstein",
+        "Yarin Gal",
+        "Haggai Maron"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-07T10:17:55+00:00",
+      "link": "https://arxiv.org/pdf/2605.05971v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "training for improved KV cache compressibility to reduce memory and decode cost",
+      "llm_evidence_cn": "通过训练提升KV缓存可压缩性以减少内存和解码成本",
+      "llm_evidence": "通过训练提升KV缓存可压缩性以减少内存和解码成本",
+      "canonical_evidence": "通过训练提升KV缓存可压缩性以减少内存和解码成本",
+      "llm_tldr_en": "Proposes training objectives to directly optimize Transformer representations for higher KV cache compressibility, enabling post-hoc compression methods to be more effective.",
+      "llm_tldr_cn": "现有的KV缓存压缩方法受限于预训练模型表示的可压缩性。本文形式化KV可压缩性概念，提出训练目标直接优化Transformer表示以提升可压缩性。理论上证明几乎任何序列到向量函数都有可压缩与不可压缩部分。实验表明，训练后的模型在压缩率与精度平衡上显著优于固定模型上的后处理方法。",
+      "llm_tldr": "现有的KV缓存压缩方法受限于预训练模型表示的可压缩性。本文形式化KV可压缩性概念，提出训练目标直接优化Transformer表示以提升可压缩性。理论上证明几乎任何序列到向量函数都有可压缩与不可压缩部分。实验表明，训练后的模型在压缩率与精度平衡上显著优于固定模型上的后处理方法。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2605.11744v1",
+      "source": "arxiv",
+      "title": "Training-Inference Consistent Segmented Execution for Long-Context LLMs",
+      "abstract": "Transformer-based large language models face severe scalability challenges in long-context generation due to the computational and memory costs of full-context attention. Under practical computation and memory constraints, many inference-efficient long-context methods improve efficiency by adopting bounded-context or segment-level execution only during inference, while continuing to train models under full-context attention, resulting in a mismatch between training and inference execution and state-transition semantics. Based on this insight, we propose a training-inference consistent segment-level generation framework, in which training and inference follow the same segment-level forward execution semantics. During training, consistency with inference is enforced by restricting gradient propagation to KV states carried over from the immediately preceding segment, while permitting head-specific access to past KV states during the forward pass without involving them in gradient propagation. Across long-context benchmarks, our approach achieves performance comparable to full-context attention, while achieving competitive latency-memory trade-offs against strong inference-efficient baselines, and substantially improving scalability at very long context lengths (e.g., approximately 6x lower peak prefill memory at 128K compared to full-context attention with FlashAttention).",
+      "authors": [
+        "Xianpeng Shang",
+        "Jiang Li",
+        "Zehua Duo",
+        "Qianyi Cai",
+        "Xiangdong Su"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-05-12T08:23:00+00:00",
+      "link": "https://arxiv.org/pdf/2605.11744v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "training-inference consistent segmented execution for long-context LLMs",
+      "llm_evidence_cn": "训练推理一致的逐段执行用于长上下文LLM",
+      "llm_evidence": "训练推理一致的逐段执行用于长上下文LLM",
+      "canonical_evidence": "训练推理一致的逐段执行用于长上下文LLM",
+      "llm_tldr_en": "Proposes a segmented execution framework consistent between training and inference to eliminate mismatch, improving long-context generation efficiency.",
+      "llm_tldr_cn": "长上下文LLM推理中常用分段执行以降低计算和内存开销，但训练仍使用全上下文注意力，导致训练-推理不匹配。本文提出训练-推理一致的逐段生成框架，使训练和推理遵循相同的前向语义。通过一致性设计，模型在长上下文生成中精度更高，且能兼容现有分段加速技术。该框架为长上下文LLM的高效部署提供了新范式。",
+      "llm_tldr": "长上下文LLM推理中常用分段执行以降低计算和内存开销，但训练仍使用全上下文注意力，导致训练-推理不匹配。本文提出训练-推理一致的逐段生成框架，使训练和推理遵循相同的前向语义。通过一致性设计，模型在长上下文生成中精度更高，且能兼容现有分段加速技术。该框架为长上下文LLM的高效部署提供了新范式。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2605.06472v1",
+      "source": "arxiv",
+      "title": "Efficient Serving for Dynamic Agent Workflows with Prediction-based KV-Cache Management",
+      "abstract": "LLM-based workflows compose specialized agents to execute complex tasks, and these agents usually share substantial context, allowing KV-Cache reuse to save computation. Existing approaches either manage KV-Cache at agent level and fail to exploit the reuse opportunities within workflows, or manage cache at the workflow level but assume that each workflow calls a static sequence of agents. However, practical workflows are typically dynamic, where the sequence of invoked agents and thus induced cache reuse opportunities depend on the context of each task. To serve such dynamic workflows efficiently, we build a system dubbed PBKV (\\textbf{P}rediction-\\textbf{B}ased \\textbf{KV}-Cache Management). For each workflow, PBKV predicts the agent invocations in several future steps by fusing the guidance from historical workflows and context of the target workflow. Based on the predictions, PBKV estimates the reuse potential of cache entries and keeps the high-potential entries in GPU memory. To be robust to prediction errors, PBKV utilizes the predictions conservatively during both cache eviction and prefetching. Experiments on three workflow benchmarks show that PBKV achieves up to $1.85\\times$ speedup over LRU on dynamic workflows, and up to $1.26\\times$ speedup over the SOTA baseline KVFlow on the static workflow.",
+      "authors": [
+        "Haoyu Zheng",
+        "Fangcheng Fu",
+        "Jia Wu",
+        "Binhang Yuan",
+        "Yongqiang Zhang",
+        "Hao Wang",
+        "Yuanyuan Zhu",
+        "Xiao Yan",
+        "Jiawei Jiang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-07T15:57:51+00:00",
+      "link": "https://arxiv.org/pdf/2605.06472v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "prediction-based KV-cache management for dynamic agent workflows",
+      "llm_evidence_cn": "基于预测的KV缓存管理用于动态智能体工作流",
+      "llm_evidence": "基于预测的KV缓存管理用于动态智能体工作流",
+      "canonical_evidence": "基于预测的KV缓存管理用于动态智能体工作流",
+      "llm_tldr_en": "PBKV predicts agent sequences in dynamic workflows for better KV-cache reuse, reducing redundant computation and serving latency.",
+      "llm_tldr_cn": "在由多个智能体组成的LLM工作流中，不同任务调用智能体的顺序动态变化导致缓存复用机会难以预测。本文提出PBKV系统，通过预测每个工作流中的智能体序列来提前规划KV缓存复用策略。实验表明PBKV在动态工作负载下大幅降低TTFT并提升吞吐量。该工作为异构智能体场景下的缓存管理提供了新思路。",
+      "llm_tldr": "在由多个智能体组成的LLM工作流中，不同任务调用智能体的顺序动态变化导致缓存复用机会难以预测。本文提出PBKV系统，通过预测每个工作流中的智能体序列来提前规划KV缓存复用策略。实验表明PBKV在动态工作负载下大幅降低TTFT并提升吞吐量。该工作为异构智能体场景下的缓存管理提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.06046v1",
+      "source": "arxiv",
+      "title": "Requests of a Feather Must Flock Together: Batch Size vs. Prefix Homogeneity in LLM Inference",
+      "abstract": "Auto-regressive token generation in large language models is memory-bound because it requires \"attending to\" key and value tensors (KV cache) of all previous tokens. Prior work aims to improve the efficiency of this decode process by batching multiple requests together, and maximizing batch size subject to GPU memory constraints. The key observation of our work is that with prefix-sharing workloads, smaller, prefix-homogeneous batches -- where all requests share a common prefix -- can achieve higher decode throughput than larger, heterogeneous batches, due to better spatial and temporal locality during KV cache accesses. However, prefix-aware schedulers in state-of-the-art inference engines maximize prefix reuse within a batch only to reduce KV cache memory footprint, but do not stop batch formation at smaller homogeneous batches that could have performed better. Further, we show that shared prefix detection in existing schedulers relies on radix-tree traversals, incurring substantial CPU overhead that is often comparable to GPU execution time. This paper presents Feather, a prefix-aware scheduler that uses reinforcement learning (RL) to learn the optimal tradeoff between batch size and prefix homogeneity. We also introduce Chunked Hash Tree (CHT), a lightweight data structure that enables fast prefix detection and efficient request selection for the RL scheduler, avoiding expensive tree traversals. We integrate Feather into vLLM and SGLang, and our evaluation shows that Feather achieves 2--10$\\times$ higher end-to-end throughput as compared to existing schedulers, while doing no worse than the status quo when the workload does not have enough prefix sharing. Feather achieves these gains by reducing the total number of KV cache accesses, surpassing the performance of prefix-aware attention kernels that have the same goal.",
+      "authors": [
+        "Saksham Rathi",
+        "Preeti",
+        "Mythili Vutukuru"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-07T11:34:10+00:00",
+      "link": "https://arxiv.org/pdf/2605.06046v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "prefix homogeneity in batching improves KV cache locality",
+      "llm_evidence_cn": "批处理中的前缀同质性改善KV缓存局部性",
+      "llm_evidence": "批处理中的前缀同质性改善KV缓存局部性",
+      "canonical_evidence": "批处理中的前缀同质性改善KV缓存局部性",
+      "llm_tldr_en": "Shows that with prefix-sharing workloads, smaller prefix-homogeneous batches achieve higher decode throughput than larger heterogeneous batches due to better KV cache spatial and temporal locality.",
+      "llm_tldr_cn": "针对LLM推理中KV缓存访问的瓶颈，发现使用前缀共享工作负载时，较小的前缀同构批次比更大的异构批次获得更高解码吞吐量，因为前缀同构批次提供了更好的空间和时域局部性。挑战了先前最大化批大小的直觉，并为前缀感知调度提供了新见解。",
+      "llm_tldr": "针对LLM推理中KV缓存访问的瓶颈，发现使用前缀共享工作负载时，较小的前缀同构批次比更大的异构批次获得更高解码吞吐量，因为前缀同构批次提供了更好的空间和时域局部性。挑战了先前最大化批大小的直觉，并为前缀感知调度提供了新见解。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2605.24930v1",
+      "source": "arxiv",
+      "title": "H$^{2}$MT: Semantic Hierarchy-Aware Hierarchical Memory Transformer",
+      "abstract": "Transformer-based LLMs achieve strong results on many language tasks; however, long inputs remain challenging because context windows are finite, and prefill latency and memory grow rapidly with prompt length. Flat token-stream processing and chunk-based retrieval can therefore spend substantial computation and context budget on text unrelated to the query. Offline-indexed RAG additionally introduces external storage and index management overhead, and typically appends retrieved evidence as raw text, increasing prefill cost and latency. H^{2}MT makes long-context inference structure-aware: it builds a semantic hierarchy offline, computes a memory embedding for each node via bottom-up post-order aggregation, and routes queries coarse-to-fine at inference to prune irrelevant branches early. On LongBench QA (NarrativeQA, HotpotQA, QASPER) and two structured technical-document settings, H MT achieves favorable quality efficiency trade-offs, delivering competitive ROUGE-L and F1 (where applicable) with lower peak GPU memory and time-to-first-token (TTFT) than prompt compression, memory-token methods, and retrieval-augmented generation baselines.",
+      "authors": [
+        "Maryam Haghifam",
+        "Zifan He",
+        "Jason Cong",
+        "Yizhou Sun"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-05-24T08:22:05+00:00",
+      "link": "https://arxiv.org/pdf/2605.24930v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "semantic hierarchy memory for long-context inference acceleration",
+      "llm_evidence_cn": "用于长上下文推理加速的语义层次记忆",
+      "llm_evidence": "用于长上下文推理加速的语义层次记忆",
+      "canonical_evidence": "用于长上下文推理加速的语义层次记忆",
+      "llm_tldr_en": "Builds a semantic hierarchy offline with memory embeddings for coarse-to-fine query routing to reduce prefill cost and latency in long-context LLM inference.",
+      "llm_tldr_cn": "针对长上下文推理中预填充延迟和内存增长的问题，H^{2}MT构建语义层次结构，离线计算每个节点的记忆嵌入，并在推理时进行粗到细的查询路由。实验表明该方法有效降低了预填充成本，同时保持了答案质量。该结构避免了对外部索引和原始文本检索的依赖，实现了结构感知的高效推理。",
+      "llm_tldr": "针对长上下文推理中预填充延迟和内存增长的问题，H^{2}MT构建语义层次结构，离线计算每个节点的记忆嵌入，并在推理时进行粗到细的查询路由。实验表明该方法有效降低了预填充成本，同时保持了答案质量。该结构避免了对外部索引和原始文本检索的依赖，实现了结构感知的高效推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2605.07234v1",
+      "source": "arxiv",
+      "title": "Reformulating KV Cache Eviction Problem for Long-Context LLM Inference",
+      "abstract": "Large language models (LLMs) support long-context inference but suffer from substantial memory and runtime overhead due to Key-Value (KV) Cache growth. Existing KV Cache eviction methods primarily rely on local attention weights, neglecting the influence of value representations, output projection, and inter-head interactions. In this work, we reformulate KV Cache eviction from a conventional head-wise, weight-averaging approach into an output-aware, layer-wise matrix multiplication approximation problem. We introduce LaProx, a novel eviction strategy that explicitly models the multiplicative interaction between attention maps and projected value states to accurately quantify token contributions while accounting for inter-head dependencies. Building on this metric, we propose the first unified eviction strategy that assigns globally comparable importance scores to tokens, enabling model-wide selection instead of local, head-wise decisions. Experimental results across 19 datasets on long-context benchmarks LongBench and Needle-In-A-Haystack demonstrate that our approach maintains model performance with only 5\\% of the KV cache and consistently outperforms prior works across all configurations. Notably, our method achieves up to 2$\\times$ accuracy loss reduction under extreme compression scenarios compared to existing state-of-the-art baselines with minimal overhead.",
+      "authors": [
+        "Tho Mai",
+        "Joo-Young Kim"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-05-08T04:37:22+00:00",
+      "link": "https://arxiv.org/pdf/2605.07234v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "output-aware KV cache eviction reformulation",
+      "llm_evidence_cn": "输出感知的KV缓存淘汰重表述",
+      "llm_evidence": "输出感知的KV缓存淘汰重表述",
+      "canonical_evidence": "输出感知的KV缓存淘汰重表述",
+      "llm_tldr_en": "Reformulates KV cache eviction as output-aware layer-wise matrix multiplication approximation, proposing LaProx that models multiplicative interaction between attention maps and value states.",
+      "llm_tldr_cn": "针对KV缓存淘汰方法忽略值表示、输出投影和头间交互的问题，将其重表述为输出感知的逐层矩阵乘法近似问题。提出LaProx策略，显式建模注意力图与投影值状态的乘法交互，并考虑头间依赖。实验表明LaProx在长上下文推理中优于基于局部注意力权重的传统淘汰方法。",
+      "llm_tldr": "针对KV缓存淘汰方法忽略值表示、输出投影和头间交互的问题，将其重表述为输出感知的逐层矩阵乘法近似问题。提出LaProx策略，显式建模注意力图与投影值状态的乘法交互，并考虑头间依赖。实验表明LaProx在长上下文推理中优于基于局部注意力权重的传统淘汰方法。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.06763v1",
+      "source": "arxiv",
+      "title": "Sparse Attention as a Range Searching Problem: Towards an Inference-Efficient Index for KV Cache",
+      "abstract": "Sparse attention improves LLM inference efficiency by selecting a subset of key-value entries, but at the cost of potential accuracy degradation. In particular, omitting critical KV entries can induce substantial errors in model outputs. Existing methods typically operate under fixed or adaptive token budgets and provide empirical robustness or partial theoretical guarantees, yet they do not ensure zero false negatives in decoding steps, particularly since the set of relevant tokens is both query- and step-dependent. Our empirical observations confirm that missing even one critical key can lead to sharp error spikes, especially in long reasoning tasks where the set of important tokens varies throughout decoding. This observation motivates the need for indexing methods that dynamically adapt to these variations across decoding steps while guaranteeing a full recall of the relevant keys above a certain threshold. We address this challenge by reformulating sparse attention as the halfspace range searching problem. However, existing range searching indices are not suitable for modern LLM inference due to their computational and implementation overheads. To overcome this, we introduce Louver, a novel index structure tailored for efficient KV cache retrieval. Louver (i) guarantees zero false negatives with respect to a specified threshold in both theory and practice, (ii) is lightweight to integrate into existing LLM pipelines, and (iii) incorporates hardware-aware optimizations for both CPU and GPU executions. Our experiments demonstrate that Louver outperforms prior sparse attention methods in both accuracy and runtime, and is faster than highly optimized dense attentions such as FlashAttention. These results highlight that recall guarantees are a critical and overlooked dimension of sparse attention, and open a new direction for building theoretically grounded, efficient KV cache indices.",
+      "authors": [
+        "Mohsen Dehghankar",
+        "Abolfazl Asudeh"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-07T17:37:56+00:00",
+      "link": "https://arxiv.org/pdf/2605.06763v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "sparse attention index for KV cache reduces inference cost in long-context",
+      "llm_evidence_cn": "稀疏注意力索引减少长上下文推理中的KV缓存开销",
+      "llm_evidence": "稀疏注意力索引减少长上下文推理中的KV缓存开销",
+      "canonical_evidence": "稀疏注意力索引减少长上下文推理中的KV缓存开销",
+      "llm_tldr_en": "Proposes a range-searching based index for sparse attention that guarantees zero false negatives in selecting relevant KV entries, avoiding accuracy loss.",
+      "llm_tldr_cn": "稀疏注意力可能遗漏关键KV条目导致精度下降。本文将稀疏注意力建模为范围搜索问题，构建可证明无假阴性的索引结构，确保所有相关条目被选中。在长推理任务中，该方法在维持精度的同时大幅减少KV缓存访问量。",
+      "llm_tldr": "稀疏注意力可能遗漏关键KV条目导致精度下降。本文将稀疏注意力建模为范围搜索问题，构建可证明无假阴性的索引结构，确保所有相关条目被选中。在长推理任务中，该方法在维持精度的同时大幅减少KV缓存访问量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2605.27494v1",
+      "source": "arxiv",
+      "title": "Grounded Cache Routing for Retrieval-Augmented Generation: When Is It Safe to Reuse an Answer?",
+      "abstract": "Modern retrieval-augmented generation(RAG) deployments increasingly rely on caching to reduce token cost and time-to-first-token(TTFT). Prefix-level KV reuse is now standard in serving stacks such as vLLM, and chunk-level and position-independent reuse have been pushed further by recent systems(RAGCache, TurboRAG, CacheBlend, EPIC, ContextPilot, PCR, LMCache). Output-level semantic answer caches, by contrast, remain fragile: similar prompts can map to different correct answers, retrieved evidence drifts as the corpus is updated, and adversarial collision attacks have been shown to hijack cached responses. We argue that the right framing for cached answer reuse is not how to reuse faster but when reuse is safe. We propose GroundedCache, an evidence-validated cache router that admits a cached answer only when 4 cheap gates simultaneously hold: query similarity, retrieved-evidence overlap, source-version validity, and lexical (or judge-based) support of the cached answer by the freshly retrieved evidence. We build a six-regime workload that stress-tests cache safety rather than only hit rate, and introduce an operator-facing metric, the unsafe-served rate (USR), fraction of all queries that received a wrong cached answer. Across 2 datasets and 12,000 real-LLM generations(Qwen2.5-7B-Instruct on vLLM with Automatic Prefix Caching), GroundedCache drives USR to 0.0% on every HotpotQA regime(vs. 15-35% under naive caching) and to 1.5% on mtRAG document drift(vs. 51.5%), a 34x reduction on the design-point adversarial regime and 3-10x reductions across the other mtRAG regimes, while end-to-end p50 latency stays within 1.04-1.07x of a no-cache RAG baseline. A per-gate ablation isolates the lexical support gate as the load-bearing safety mechanism on both datasets, with the remaining gates providing defense-in-depth at near-zero cost. We release the implementation, workload, and evaluation harness.",
+      "authors": [
+        "Syed Huma Shah"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR",
+        "cs.AI",
+        "cs.CL",
+        "cs.IR",
+        "cs.LG"
+      ],
+      "published": "2026-05-26T16:50:02+00:00",
+      "link": "https://arxiv.org/pdf/2605.27494v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Discusses position-independent KV cache reuse in RAG and proposes safe answer reuse",
+      "llm_evidence_cn": "讨论了RAG中的位置无关KV缓存重用，并提出安全的答案重用",
+      "llm_evidence": "讨论了RAG中的位置无关KV缓存重用，并提出安全的答案重用",
+      "canonical_evidence": "讨论了RAG中的位置无关KV缓存重用，并提出安全的答案重用",
+      "llm_tldr_en": "Grounded Cache Routing examines when it is safe to reuse cached answers in RAG, proposing a routing framework that avoids answer misuse despite similar prompts.",
+      "llm_tldr_cn": "现代RAG系统广泛使用缓存降低延迟，但语义级别的答案缓存存在安全风险：相似提示可能对应不同答案，证据库更新导致缓存失效，甚至可能遭遇对抗攻击。本文提出有依据的缓存路由框架，不聚焦于如何更快重用，而是何时重用是安全的。通过路由策略避免不安全的重用，在保持缓存命中率的同时提高了可靠性。",
+      "llm_tldr": "现代RAG系统广泛使用缓存降低延迟，但语义级别的答案缓存存在安全风险：相似提示可能对应不同答案，证据库更新导致缓存失效，甚至可能遭遇对抗攻击。本文提出有依据的缓存路由框架，不聚焦于如何更快重用，而是何时重用是安全的。通过路由策略避免不安全的重用，在保持缓存命中率的同时提高了可靠性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2605.08317v1",
+      "source": "arxiv",
+      "title": "RDKV: Rate-Distortion Bit Allocation for Joint Eviction and Quantization of the KV Cache",
+      "abstract": "Large language models (LLMs) have shown strong performance across diverse tasks, but their inference with long input contexts is bottlenecked by memory size and bandwidth. The Key-Value (KV) cache size grows linearly with sequence length and needs to be re-read from off-chip high-bandwidth memory (HBM) to on-chip memory at every decoding step, resulting in memory-bound inference. Existing methods reduce the cache by either eviction or quantization, but typically treat the two in isolation. In this paper, we cast KV cache compression as a rate-distortion problem, under which eviction and quantization are two end-points of the same bit allocation scheme. This exposes the need to optimize them jointly, motivating our method, RDKV (Rate-Distortion KV cache compression). RDKV derives the weight of each token or channel from the distortion that compression induces on the attention computation. Based on these weights, it assigns each token or channel a bit-width ranging from full precision down to zero bits guided by reverse water-filling, applied once after the prefilling stage. Experiments on LongBench, RULER, and InfiniteBench show that RDKV outperforms the best evaluated baseline by 9.1% on average. On LongBench it recovers 97.81% of full-cache accuracy with only 2.48% cache retention. Compared with full-cache FlashAttention-2 decoding, it achieves 4.5x decode speedup and 1.9x peak memory reduction with 128K context length, while maintaining comparable performance.",
+      "authors": [
+        "Junkai Zhang",
+        "Hang Guo",
+        "Luca Benini",
+        "Yawei Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-05-08T15:15:06+00:00",
+      "link": "https://arxiv.org/pdf/2605.08317v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "RDKV jointly optimizes eviction and quantization for KV cache compression",
+      "llm_evidence_cn": "RDKV联合优化驱逐与量化以压缩KV缓存",
+      "llm_evidence": "RDKV联合优化驱逐与量化以压缩KV缓存",
+      "canonical_evidence": "RDKV联合优化驱逐与量化以压缩KV缓存",
+      "llm_tldr_en": "RDKV casts KV cache compression as a rate-distortion problem, jointly optimizing eviction and quantization to achieve better compression for long-context LLM inference.",
+      "llm_tldr_cn": "长上下文LLM推理中KV缓存大小成为内存瓶颈，现有驱逐和量化方法各自独立优化难以达到最佳压缩效果。本文将KV缓存压缩建模为率失真问题，提出RDKV方法，联合优化驱逐和量化的比特分配。实验表明，在相同压缩率下，RDKV相比独立方法显著降低了注意力误差，提升了长上下文任务质量。",
+      "llm_tldr": "长上下文LLM推理中KV缓存大小成为内存瓶颈，现有驱逐和量化方法各自独立优化难以达到最佳压缩效果。本文将KV缓存压缩建模为率失真问题，提出RDKV方法，联合优化驱逐和量化的比特分配。实验表明，在相同压缩率下，RDKV相比独立方法显著降低了注意力误差，提升了长上下文任务质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.06763v2",
+      "source": "arxiv",
+      "title": "Sparse Attention as a Range Searching Problem: Towards an Inference-Efficient Index for KV Cache",
+      "abstract": "Sparse attention improves LLM inference efficiency by selecting a subset of key-value entries, but at the cost of potential accuracy degradation. In particular, omitting critical KV entries can induce substantial errors in model outputs. Existing methods typically operate under fixed or adaptive token budgets and provide empirical robustness or partial theoretical guarantees, yet they do not ensure zero false negatives in decoding steps, particularly since the set of relevant tokens is both query- and step-dependent. Our empirical observations confirm that missing even one critical key can lead to sharp error spikes, especially in long reasoning tasks where the set of important tokens varies throughout decoding. This observation motivates the need for indexing methods that dynamically adapt to these variations across decoding steps while guaranteeing a full recall of the relevant keys above a certain threshold. We address this challenge by reformulating sparse attention as the halfspace range searching problem. However, existing range searching indices are not suitable for modern LLM inference due to their computational and implementation overheads. To overcome this, we introduce Louver, a novel index structure tailored for efficient KV cache retrieval. Louver (i) guarantees zero false negatives with respect to a specified threshold in both theory and practice, (ii) is lightweight to integrate into existing LLM pipelines, and (iii) incorporates hardware-aware optimizations for both CPU and GPU executions. Our experiments demonstrate that Louver outperforms prior sparse attention methods in both accuracy and runtime, and is faster than highly optimized dense attentions such as FlashAttention. These results highlight that recall guarantees are a critical and overlooked dimension of sparse attention, and open a new direction for building theoretically grounded, efficient KV cache indices.",
+      "authors": [
+        "Mohsen Dehghankar",
+        "Abolfazl Asudeh"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-07T17:37:56+00:00",
+      "link": "https://arxiv.org/pdf/2605.06763v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "range-searching index for KV cache sparse attention",
+      "llm_evidence_cn": "基于范围搜索的KV缓存稀疏注意力索引",
+      "llm_evidence": "基于范围搜索的KV缓存稀疏注意力索引",
+      "canonical_evidence": "基于范围搜索的KV缓存稀疏注意力索引",
+      "llm_tldr_en": "Formulates sparse attention as a range searching problem and builds an inference-efficient index for KV cache that guarantees zero false negatives.",
+      "llm_tldr_cn": "针对稀疏注意力中遗漏关键KV条目导致错误尖峰的问题，将稀疏注意力重新形式化为范围搜索问题，并构建保证零假阴性的推理高效索引。该方法确保在每个解码步骤中选取所有相关标记，避免遗漏。实验表明在长推理任务中，该索引相比现有方法显著降低错误率。",
+      "llm_tldr": "针对稀疏注意力中遗漏关键KV条目导致错误尖峰的问题，将稀疏注意力重新形式化为范围搜索问题，并构建保证零假阴性的推理高效索引。该方法确保在每个解码步骤中选取所有相关标记，避免遗漏。实验表明在长推理任务中，该索引相比现有方法显著降低错误率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
