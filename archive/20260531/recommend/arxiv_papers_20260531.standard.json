@@ -1,0 +1,815 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-05-31T19:51:37.297759+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 13,
+    "deep_cap": 6,
+    "deep_selected": 9,
+    "quick_candidates": 12,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2605.24259v1",
+      "source": "arxiv",
+      "title": "Resident KV Claims: A Conformance Contract for Future Reuse under Active KV Pressure",
+      "abstract": "KV-cache reuse mechanisms increasingly expose priority, duration, offload, routing hints, scheduler modes, and event streams. These mechanisms help preserve reusable prefixes, but they do not by themselves define a portable contract for accepted future-reuse state when resident KV and active live KV cannot both fit. We introduce resident KV claims, a conformance contract that binds future-reuse intent to a materialization predicate, lifecycle state, active/resident feasibility outcome, and claim-level telemetry. In controlled vLLM allocator probes, a 60-block resident claim and a 70-block active prefill exceed an 80-block usable KV pool. Write no-admit prevents the active request from becoming future reusable state, but it still allows active allocation to evict residents from the shared pool. A minimal vLLM prototype shows that hard protected resident claims convert this failure mode into scheduler-visible active refusal with direct blocking-claim attribution. The result is not a production speedup or a new cache-replacement algorithm. It is a runtime contract that turns unreported resident loss into reconstructable active/resident arbitration. A companion MicroRuntime and vLLM litmus suite distinguish ordinary eviction, soft priority, write no-admit, accepted hard claims, materialization failure, demotion, expiry, active refusal, and trace-level outcome reconstruction.",
+      "authors": [
+        "Lukas Stepanek"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-05-22T22:25:31+00:00",
+      "link": "https://arxiv.org/pdf/2605.24259v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "contract for future KV cache reuse under memory pressure",
+      "llm_evidence_cn": "定义内存压力下的未来KV缓存复用契约",
+      "llm_evidence": "定义内存压力下的未来KV缓存复用契约",
+      "canonical_evidence": "定义内存压力下的未来KV缓存复用契约",
+      "llm_tldr_en": "Introduces resident KV claims as a conformance contract for future reuse, addressing KV cache reuse management under active memory pressure.",
+      "llm_tldr_cn": "该论文提出“常驻KV声明”概念，作为未来KV缓存复用的形式化契约。在活跃KV与常驻KV竞争内存时，该契约定义了可接受的复用状态，包括物化谓词、生命周期、可行性结果等。通过vLLM分配器探针实验验证了该契约的有效性，直接贡献于KV缓存复用的管理机制。",
+      "llm_tldr": "该论文提出“常驻KV声明”概念，作为未来KV缓存复用的形式化契约。在活跃KV与常驻KV竞争内存时，该契约定义了可接受的复用状态，包括物化谓词、生命周期、可行性结果等。通过vLLM分配器探针实验验证了该契约的有效性，直接贡献于KV缓存复用的管理机制。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.24786v1",
+      "source": "arxiv",
+      "title": "CONF-KV: Confidence-Aware KV Cache Eviction with Mixed-Precision Storage for Long-Horizon LLM",
+      "abstract": "Long-horizon LLM inference turns the key--value (KV) cache into the dominant GPU memory consumer and makes per-token attention increasingly expensive. Many common eviction policies use static recency windows or historical attention, leaving unused a signal computed on every decoding step: the model's current uncertainty. We introduce CONF-KV, a KV-cache manager that converts the next-token distribution into a scalar confidence score and uses it to choose the per-step cache budget, retaining more context when the model is uncertain and pruning aggressively when it is confident. Within each budget, tokens are ranked by a composite of accumulated attention mass and recency, while a protected recent window preserves local coherence. We combine the policy with blockwise online-softmax attention, mixed FP16/INT8 storage, and a pyramidal per-layer budget variant. Across four model families and generated lengths up to 4K, CONF-KV stays near the footprint of a fixed 512-token sliding window while remaining within 1.5--2.1 perplexity points of full KV. On Needle-in-a-Haystack up to 32K tokens, CONF-KV reaches 91.4% retrieval accuracy versus 53.8% for sliding windows and 80.6% for H2O; on 75 VisualWebArena tasks it retains 95.3% of full-KV success at 2.8 times lower peak memory.",
+      "authors": [
+        "Yubo Li",
+        "Yidi Miao"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-05-24T00:15:34+00:00",
+      "link": "https://arxiv.org/pdf/2605.24786v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "confidence-aware KV cache eviction for long-horizon LLM",
+      "llm_evidence_cn": "面向长视野LLM的置信度感知KV缓存驱逐",
+      "llm_evidence": "面向长视野LLM的置信度感知KV缓存驱逐",
+      "canonical_evidence": "面向长视野LLM的置信度感知KV缓存驱逐",
+      "llm_tldr_en": "CONF-KV uses next-token confidence to dynamically manage KV cache budgets, prioritizing retention when uncertain and pruning when confident, improving long-horizon LLM inference.",
+      "llm_tldr_cn": "长视野LLM推理中，KV缓存成为主要内存消耗点。常见的驱逐策略使用固定的近期窗口或历史注意力，忽略了模型在每个解码步骤的不确定性。CONF-KV将下一个令牌分布转换为置信度分数，根据置信度动态选择每步缓存预算：模型不确定时保留更多上下文，自信时积极裁剪。实验表明，该方法在减少内存使用的同时保持了生成质量，为长序列推理提供了高效缓存管理方案。",
+      "llm_tldr": "长视野LLM推理中，KV缓存成为主要内存消耗点。常见的驱逐策略使用固定的近期窗口或历史注意力，忽略了模型在每个解码步骤的不确定性。CONF-KV将下一个令牌分布转换为置信度分数，根据置信度动态选择每步缓存预算：模型不确定时保留更多上下文，自信时积极裁剪。实验表明，该方法在减少内存使用的同时保持了生成质量，为长序列推理提供了高效缓存管理方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.24914v1",
+      "source": "arxiv",
+      "title": "MVR-cache: Optimizing Semantic Caching via Multi-Vector Retrieval and Learned Prompt Segmentation",
+      "abstract": "To reduce LLM costs and latency, semantic caching systems must accurately identify when a new prompt matches a cached one. Current methods often rely on simplistic similarity measures, which limit their effectiveness. We introduce MVR-cache, a novel semantic caching approach that significantly improves retrieval accuracy by integrating Multi-Vector Retrieval (MVR). MVR-cache is built upon a learnable segmentation model that intelligently splits prompts, enabling fine-grained similarity comparisons via MaxSim. We derive the model's training objective from a rigorous theoretical analysis. This can ensure that optimizing this objective directly maximizes cache hits under strict correctness constraints. To solve the resulting non-differentiable combinatorial optimization problem, we leverage a reinforcement learning-based training strategy with the theoretically grounded objectives as the reward. Experimental results on established benchmarks across diverse tasks confirm that in comparison to the state-of-the-art, MVR-cache consistently increases the cache hit rates by up to 37% while maintaining the same correctness guarantees. MVR-cache is available at https://github.com/PKU-SDS-lab/MVR-Cache",
+      "authors": [
+        "Ali Noshad",
+        "Zishan Zheng",
+        "Yinjun Wu"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.DB",
+        "cs.LG"
+      ],
+      "published": "2026-05-24T07:33:46+00:00",
+      "link": "https://arxiv.org/pdf/2605.24914v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "semantic caching for LLM latency reduction using multi-vector retrieval and prompt segmentation",
+      "llm_evidence_cn": "使用多向量检索和提示分割优化语义缓存以降低LLM延迟",
+      "llm_evidence": "使用多向量检索和提示分割优化语义缓存以降低LLM延迟",
+      "canonical_evidence": "使用多向量检索和提示分割优化语义缓存以降低LLM延迟",
+      "llm_tldr_en": "MVR-cache improves semantic caching accuracy for LLMs by learning to segment prompts and using multi-vector retrieval with MaxSim, directly maximizing cache hits under correctness constraints.",
+      "llm_tldr_cn": "为了降低LLM的成本和延迟，语义缓存系统需要准确识别新提示是否与缓存匹配。现有方法依赖简单的相似度度量，效果有限。MVR-cache引入可学习的提示分割模型，将提示分割后通过多向量检索进行细粒度相似度比较（MaxSim），并从理论推导出优化目标以最大化缓存命中率。实验表明，MVR-cache在保持严格正确性的前提下显著提高了缓存命中率，有效减少了推理延迟。",
+      "llm_tldr": "为了降低LLM的成本和延迟，语义缓存系统需要准确识别新提示是否与缓存匹配。现有方法依赖简单的相似度度量，效果有限。MVR-cache引入可学习的提示分割模型，将提示分割后通过多向量检索进行细粒度相似度比较（MaxSim），并从理论推导出优化目标以最大化缓存命中率。实验表明，MVR-cache在保持严格正确性的前提下显著提高了缓存命中率，有效减少了推理延迟。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.25475v1",
+      "source": "arxiv",
+      "title": "IndexMem: Learned KV-Cache Eviction with Latent Memory for Long-Context LLM Inference",
+      "abstract": "Large Language Models (LLMs) are increasingly expected to operate over long contexts, yet standard softmax attention incurs a KV cache that grows linearly with sequence length, quickly becoming the bottleneck for long context inference. A practical remedy is to evict less important KV entries; however, existing eviction policies are largely heuristic and struggle to capture the rich, input-dependent distribution of token importance. In this work, we introduce a learnable indexer that predicts KV importance, enabling more accurate retention of critical tokens. Meanwhile, naively evicting tokens permanently discards their information, leading to irreversible forgetting and degraded retrieval over long ranges. To address this, we propose a lightweight latent memory module that compresses evicted tokens into a compact, online-updated state and provides residual readouts to compensate for the attention contributions lost through KV eviction. Collectively, our method enables accurate long-context inference under a bounded KV budget, delivering consistent improvements on RULER (4K/16K) across Qwen, Mistral, and Llama models (up to 25 points under aggressive eviction), markedly more stable Needle-in-a-Haystack retrieval, and superior LongBench scores and compression curves compared to existing eviction policies.",
+      "authors": [
+        "Xintong Yang",
+        "Hao Gu",
+        "Binxing Xu",
+        "Lujun Li",
+        "Bei Liu",
+        "Jiacheng Liu",
+        "Qiyuan Zhu",
+        "Sirui Han",
+        "Yike Guo"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-05-25T06:29:43+00:00",
+      "link": "https://arxiv.org/pdf/2605.25475v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "learned KV-cache eviction with latent memory for long-context LLM inference",
+      "llm_evidence_cn": "学习型KV缓存驱逐与潜在记忆用于长上下文LLM推理",
+      "llm_evidence": "学习型KV缓存驱逐与潜在记忆用于长上下文LLM推理",
+      "canonical_evidence": "学习型KV缓存驱逐与潜在记忆用于长上下文LLM推理",
+      "llm_tldr_en": "IndexMem uses a learnable indexer to predict KV importance for eviction and introduces latent memory to recover evicted information, improving long-context inference.",
+      "llm_tldr_cn": "本文提出IndexMem，使用可学习的索引器预测KV条目重要性以指导驱逐，并引入潜在记忆恢复被驱逐的信息，避免永久遗忘。实验表明该方法优于启发式驱逐策略。",
+      "llm_tldr": "本文提出IndexMem，使用可学习的索引器预测KV条目重要性以指导驱逐，并引入潜在记忆恢复被驱逐的信息，避免永久遗忘。实验表明该方法优于启发式驱逐策略。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.26289v1",
+      "source": "arxiv",
+      "title": "Stateful Inference for Low-Latency Multi-Agent Tool Calling",
+      "abstract": "Multi-agent tool calling is becoming the dominant interaction pattern for LLM-based systems, yet existing inference frameworks treat each tool call as an independent request, re-processing the entire conversation from scratch even though 85-95% of the prompt is unchanged from the previous turn.   We present a stateful inference architecture that converts the $O(n_t)$ per-turn cost of conventional serving into an $O(Δ_t)$ delta-only cost: a persistent KV cache lives across turns and advances by ingesting only the new tokens, while a radix prefix cache extends this across interleaved multi-agent traffic and a prompt-lookup speculative decoder accelerates structured output. Against vLLM and SGLang on novel, fully-generated workloads, the reference implementation is $2.1\\times$ faster per turn on a 6-turn agentic workflow and $4.2\\times$ on the median turn of a 35-turn one, halving end-to-end wall time. The advantage comes from stateful reuse and speculation, not caching.",
+      "authors": [
+        "Victor Norgren"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-25T19:27:49+00:00",
+      "link": "https://arxiv.org/pdf/2605.26289v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "stateful inference with persistent KV cache and radix prefix cache enables KV cache reuse across turns",
+      "llm_evidence_cn": "有状态推理架构通过持久化KV缓存和基数前缀缓存实现跨轮KV缓存复用",
+      "llm_evidence": "有状态推理架构通过持久化KV缓存和基数前缀缓存实现跨轮KV缓存复用",
+      "canonical_evidence": "有状态推理架构通过持久化KV缓存和基数前缀缓存实现跨轮KV缓存复用",
+      "llm_tldr_en": "Proposes a stateful inference architecture with persistent KV cache across turns, radix prefix cache, and prompt-lookup speculative decoding, achieving delta-only cost for multi-agent tool calling.",
+      "llm_tldr_cn": "多智能体工具调用场景中，传统框架每轮重新处理整个对话，浪费大量计算。本文提出有状态推理架构：持久化KV缓存跨轮存在并仅增量更新，基数前缀缓存在交错的多智能体流量间共享，提示查找推测解码加速结构化输出。相比vLLM和SGLang，参考实现在生成式工作负载下大幅降低延迟。",
+      "llm_tldr": "多智能体工具调用场景中，传统框架每轮重新处理整个对话，浪费大量计算。本文提出有状态推理架构：持久化KV缓存跨轮存在并仅增量更新，基数前缀缓存在交错的多智能体流量间共享，提示查找推测解码加速结构化输出。相比vLLM和SGLang，参考实现在生成式工作负载下大幅降低延迟。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.26678v1",
+      "source": "arxiv",
+      "title": "NestedKV: Nested Memory Routing for Long-Context KV Cache Compression",
+      "abstract": "Long-context language models are limited by the memory footprint of the key-value (KV) cache. Existing training-free KV compression methods usually rank tokens by one importance signal -- attention, recency, layer-wise allocation, or key distinctiveness -- which becomes brittle when useful context is globally distinctive, locally episodic, or immediately relevant. We introduce NestedKV, a key-only KV cache compression method inspired by the Continuum Memory System in Nested Learning. NestedKV maintains global, block-level, and sliding-window key anchors, scores tokens by multi-time-scale cosine anomaly, and combines the resulting rankings with a training-free outer learner using head-adaptive mixing and surprise-gated token routing. The score is paired with adaptive per-head budgets and requires no training or LLM modification. Across RULER (4k--32k), LooGLE, LongBench, LongBench-E, InfiniteBench, and MMLU-Pro on Qwen3 and Llama-3.2 models, NestedKV is strongest when the retained cache is small. On Qwen3-4B, it improves over KeyDiff by up to 19.10 points on RULER and 19.29 on LongBench at $r=0.75$; at $r=0.95$, it retains 37.32 on LongBench versus 17.55 for KeyDiff.",
+      "authors": [
+        "Hong Chen",
+        "Xiang Liu",
+        "Yubo Gao",
+        "Yuxuan Fan",
+        "Bo Wang",
+        "Yuanlin Chu",
+        "Yuanguo Lin",
+        "Xuming Hu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-05-26T08:14:39+00:00",
+      "link": "https://arxiv.org/pdf/2605.26678v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "long-context KV cache compression with nested scoring",
+      "llm_evidence_cn": "长上下文KV缓存压缩的嵌套评分方法",
+      "llm_evidence": "长上下文KV缓存压缩的嵌套评分方法",
+      "canonical_evidence": "长上下文KV缓存压缩的嵌套评分方法",
+      "llm_tldr_en": "NestedKV introduces a training-free KV cache compression method using nested memory routing with multi-time-scale anomaly scoring, improving long-context LLM inference efficiency.",
+      "llm_tldr_cn": "长上下文语言模型受限于KV缓存的内存占用。现有训练无关的压缩方法通常使用单一重要性信号，在处理全局独特、局部片段或即时相关的上下文时表现脆弱。为此，NestedKV提出了基于嵌套内存路由的压缩方法，维护全局、块级和滑动窗口关键锚点，通过多时间尺度余弦异常评分，并利用头自适应混合和惊喜门控路由进行无训练压缩。实验表明，NestedKV在多个长上下文基准上实现了更好的压缩比与推理质量平衡，显著加速了长上下文推理。",
+      "llm_tldr": "长上下文语言模型受限于KV缓存的内存占用。现有训练无关的压缩方法通常使用单一重要性信号，在处理全局独特、局部片段或即时相关的上下文时表现脆弱。为此，NestedKV提出了基于嵌套内存路由的压缩方法，维护全局、块级和滑动窗口关键锚点，通过多时间尺度余弦异常评分，并利用头自适应混合和惊喜门控路由进行无训练压缩。实验表明，NestedKV在多个长上下文基准上实现了更好的压缩比与推理质量平衡，显著加速了长上下文推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.27740v1",
+      "source": "arxiv",
+      "title": "UNIQUE: Universal Top-k Sparse Attention for Training-free Inference and Sparsity-aware Training",
+      "abstract": "Long-context inference in large language models (LLMs) is bottlenecked by the linear growth of the self-attention key-value (KV) cache. Top-k sparse attention alleviates this by loading only a small fraction of the KV cache, but accurately and cheaply estimating cache importance, for both training-free use and sparsity-aware training, remains challenging. This paper proposes UNIQUE, a universal top-k sparse attention framework that addresses both requirements and stays consistently effective across LLM modalities. UNIQUE operates at the granularity of KV pages and estimates per-page importance with a simple yet accurate score combining the mean of the page's keys as a representative vector with their standard deviation as an offset term. To further close the train-inference gap, this paper introduces a soft-mask sparsity-aware training scheme that uses the top-k score boundary as a per-query threshold and a sigmoid soft mask around it, requiring neither auxiliary losses nor architectural changes. Experiments on text and speech LLMs show that UNIQUE preserves task performance on long-context benchmarks such as LongBench Pro and on long-form speech recognition, while delivering up to 11.4x attention-kernel speedup over FlashInfer dense attention and at least 5.3x end-to-end decoding speedup over a vLLM-based dense model.",
+      "authors": [
+        "Keqi Deng",
+        "Shaoshi Ling",
+        "Ruchao Fan",
+        "Jinyu Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-05-26T22:32:43+00:00",
+      "link": "https://arxiv.org/pdf/2605.27740v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "universal top-k sparse attention for KV cache reduction",
+      "llm_evidence_cn": "通用top-k稀疏注意力用于KV缓存缩减",
+      "llm_evidence": "通用top-k稀疏注意力用于KV缓存缩减",
+      "canonical_evidence": "通用top-k稀疏注意力用于KV缓存缩减",
+      "llm_tldr_en": "UNIQUE proposes a page-level importance score combining key mean and standard deviation for top-k sparse attention, enabling training-free inference and sparsity-aware training.",
+      "llm_tldr_cn": "本文提出UNIQUE框架，通过结合键均值和标准差构建页面级重要性评分，实现通用top-k稀疏注意力，支持训练时稀疏感知和推理时无需训练。在多种LLM上验证了效果。",
+      "llm_tldr": "本文提出UNIQUE框架，通过结合键均值和标准差构建页面级重要性评分，实现通用top-k稀疏注意力，支持训练时稀疏感知和推理时无需训练。在多种LLM上验证了效果。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.29639v1",
+      "source": "arxiv",
+      "title": "RTP-LLM: High-Performance Alibaba LLM Inference Engine",
+      "abstract": "Large Language Models (LLMs) have revolutionized AI applications, but deploying them at scale presents significant challenges. We present RTP-LLM, a high-performance inference engine for industrial-scale LLM deployment, successfully deployed across Alibaba Group serving over 100 million users. RTP-LLM addresses fundamental bottlenecks through integrated design. It optimizes model loading via file-order-driven I/O and parallel I/O-communication overlapping. The Prefill-Decode Disaggregation architecture decouples compute-intensive prefill from memory-bound decode phases, combined with hierarchical multi-tiered KV cache management enabling efficient cache reuse. In addition, RTP-LLM incorporates modular speculative decoding supporting multiple algorithms, adaptive KV cache quantization, and decoupled multimodal processing, with support for multi-level parallelism.   Comprehensive evaluations across diverse model architectures (8B-235B parameters) have been conducted, where both controlled benchmarks and real production workloads are used. The results demonstrate RTP-LLM's superior performance against vLLM and SGLang: 4.7x-6.3x model loading speedup, 35-37% TTFT P95 latency reduction with 215% cache reuse improvement in production traffic scheduling, 1.12x-2.48x and 1.86x-2.52x throughput improvements in speculative decoding and multimodal inference, respectively, and 35-40% batch latency reduction with 1.9x-3.0x TTFT improvement in quantized inference. RTP-LLM's production-proven architecture and open-source availability make it a comprehensive solution for industrial LLM deployment.",
+      "authors": [
+        "Boyu Tan",
+        "Jiarui Guo",
+        "Zongwei Lv",
+        "Hanbo Sun",
+        "Tong Yang",
+        "Kan Liu",
+        "Xinfei Shi",
+        "Zetao Hu",
+        "Yaxin Yu",
+        "Chi Zhang",
+        "Jianning Zhang",
+        "Xi Yang",
+        "Wei Zhang",
+        "Bo Cai",
+        "Silu Zhou",
+        "Xiyu Wang",
+        "Na He",
+        "Yinghao Yu",
+        "Wending Bao",
+        "Guiyang Huang",
+        "Yuxing Yuan",
+        "Juncheng Yin",
+        "Nan Wang",
+        "Lin Yang",
+        "Zechao Zhang",
+        "Lu Chen",
+        "Guoding Li",
+        "Tao Lan",
+        "Lin Qu"
+      ],
+      "primary_category": "cs.OS",
+      "categories": [
+        "cs.OS"
+      ],
+      "published": "2026-05-28T09:07:06+00:00",
+      "link": "https://arxiv.org/pdf/2605.29639v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "hierarchical multi-tiered KV cache management enabling efficient cache reuse",
+      "llm_evidence_cn": "分层多级KV缓存管理实现高效缓存复用",
+      "llm_evidence": "分层多级KV缓存管理实现高效缓存复用",
+      "canonical_evidence": "分层多级KV缓存管理实现高效缓存复用",
+      "llm_tldr_en": "RTP-LLM is a high-performance inference engine with prefill-decode disaggregation and hierarchical multi-tiered KV cache management enabling efficient cache reuse.",
+      "llm_tldr_cn": "RTP-LLM是阿里巴巴部署的高性能LLM推理引擎，采用预填充-解码分离架构和分层多级KV缓存管理，实现高效的缓存复用。该引擎针对工业规模部署优化，服务于超1亿用户，直接解决了KV缓存复用的实际问题。",
+      "llm_tldr": "RTP-LLM是阿里巴巴部署的高性能LLM推理引擎，采用预填充-解码分离架构和分层多级KV缓存管理，实现高效的缓存复用。该引擎针对工业规模部署优化，服务于超1亿用户，直接解决了KV缓存复用的实际问题。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.29873v1",
+      "source": "arxiv",
+      "title": "Moment-KV: Momentum-Based Decode-Time KV Cache Compression for Long Generation",
+      "abstract": "Key-Value (KV) cache remains a major bottleneck for deploying Large Language Models (LLMs) in long-generation tasks. Prior work often applies uniform compression across both prefill and decoding caches, but compressing the prefill cache degrades performance by corrupting critical context. While preserving the prefill cache is essential, decoding-phase compression remains underexplored, with existing methods relying on rigid recency windows or instantaneous attention. Our analysis of attention dynamics reveals strong temporal patterns: critical tokens receive sustained attention over long horizons, while local reasoning involves short-lived bursts. Static heuristics fail to capture this behavior, leading to premature eviction of important tokens or retention of stale ones. We propose Moment-KV, a decoding-time KV cache compression method based on momentum-driven temporal attention aggregation. Our method models token importance as a continuously evolving state, where attention is aggregated with decay, capturing both long-term influence and recent relevance. Experiments show that Moment-KV significantly improves generation fidelity in long-generation tasks (2.3-3.2 %) while maintaining decoding latency.",
+      "authors": [
+        "Soumyadeep Jana",
+        "Sagar Nishad",
+        "Sanasam Ranbir Singh"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-05-28T12:56:51+00:00",
+      "link": "https://arxiv.org/pdf/2605.29873v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "momentum-based decode-time KV cache compression for long generation",
+      "llm_evidence_cn": "基于动量的解码时KV缓存压缩用于长生成任务",
+      "llm_evidence": "基于动量的解码时KV缓存压缩用于长生成任务",
+      "canonical_evidence": "基于动量的解码时KV缓存压缩用于长生成任务",
+      "llm_tldr_en": "Proposes Moment-KV, a momentum-based method that compresses the KV cache during decoding by leveraging sustained attention patterns, preserving prefill cache and evicting tokens based on temporal dynamics.",
+      "llm_tldr_cn": "长生成任务中KV缓存是主要瓶颈，现有方法对预填充和编码缓存统一压缩损害性能。本文通过分析注意力动态，发现关键令牌受持续关注而局部推理有短时爆发。提出Moment-KV，基于动量在解码阶段选择性地压缩缓存，保留预填充缓存。实验表明该方法在长生成任务中有效减少缓存占用并保持质量。",
+      "llm_tldr": "长生成任务中KV缓存是主要瓶颈，现有方法对预填充和编码缓存统一压缩损害性能。本文通过分析注意力动态，发现关键令牌受持续关注而局部推理有短时爆发。提出Moment-KV，基于动量在解码阶段选择性地压缩缓存，保留预填充缓存。实验表明该方法在长生成任务中有效减少缓存占用并保持质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2605.24330v1",
+      "source": "arxiv",
+      "title": "Interdomain Attention: Beyond Token-Level Key-Value Memory",
+      "abstract": "Transformers and deep state space models (SSMs) sit at opposite ends of a basic design choice: attention routes each query through a growing key-value (KV) cache by content-based matching at quadratic cost, while deep SSMs compress context into a fixed-size recurrent state that is not directly addressed by query-key matching. We propose Interdomain Attention, which integrates an SSM into an attention module through kernel methods: an attention kernel is approximated by a finite feature map, the resulting key features and values are projected onto a shared set of basis functions maintained by a single SSM recurrence, and each query attends to the compressed coefficients through its own feature map, recovering query-conditioned attention over a fixed-size state. The scalable layer is a learned relaxation of this derivation, and we validate its components through ablations. In a 125M to 1.3B autoregressive language-modeling study on FineWeb-Edu at matched recurrent-state budget, Interdomain Attention improves on an SSM token mixer at every scale, surpasses a same-recipe softmax baseline at 1.3B on validation perplexity and on the eight-task commonsense suite, and inherits the length-flat behavior of its fixed-state core out to 3.5x the training context. Ablations indicate that the query-conditioned projection is the main source of the gain.",
+      "authors": [
+        "Naoki Kiyohara",
+        "Harrison Bo Hua Zhu",
+        "Riccardo El Hassanin",
+        "Zhuo Sun",
+        "Wenlong Chen",
+        "Samir Bhatt",
+        "Yingzhen Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-23T01:18:00+00:00",
+      "link": "https://arxiv.org/pdf/2605.24330v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "proposes Interdomain Attention with SSM-integrated fixed-size KV memory, enabling query-conditioned attention over compressed coefficients, directly addresses KV cache reuse and efficiency",
+      "llm_evidence_cn": "提出跨域注意力，将SSM集成到注意力中，实现固定大小状态上的查询条件注意力，直接涉及KV缓存复用与效率",
+      "llm_evidence": "提出跨域注意力，将SSM集成到注意力中，实现固定大小状态上的查询条件注意力，直接涉及KV缓存复用与效率",
+      "canonical_evidence": "提出跨域注意力，将SSM集成到注意力中，实现固定大小状态上的查询条件注意力，直接涉及KV缓存复用与效率",
+      "llm_tldr_en": "Integrates SSM into attention via kernel methods to create a fixed-size state that can be queried efficiently, reducing KV cache growth and enabling reuse across positions.",
+      "llm_tldr_cn": "Transformer的KV缓存随序列增长，而深度SSM使用固定大小状态但无法直接查询。本文提出跨域注意力，通过核方法将SSM嵌入注意力模块：用有限特征图近似注意力核，将键特征和值投影到SSM维护的共享基函数上，每个查询通过自己的特征图关注压缩后的系数。该方法在固定大小状态上恢复查询条件注意力，显著降低KV缓存存储和计算开销，为KV缓存复用提供了新范式。",
+      "llm_tldr": "Transformer的KV缓存随序列增长，而深度SSM使用固定大小状态但无法直接查询。本文提出跨域注意力，通过核方法将SSM嵌入注意力模块：用有限特征图近似注意力核，将键特征和值投影到SSM维护的共享基函数上，每个查询通过自己的特征图关注压缩后的系数。该方法在固定大小状态上恢复查询条件注意力，显著降低KV缓存存储和计算开销，为KV缓存复用提供了新范式。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.24579v1",
+      "source": "arxiv",
+      "title": "WhenLoss: Diagnosing Write and Retrieval Bottlenecks in Long-Context Memory Systems",
+      "abstract": "Long-context memory systems often fail under fixed budgets, but end-to-end evaluation does not reveal whether evidence was discarded during compression or preserved but never retrieved. We introduce a four-condition diagnostic protocol that evaluates a fixed reader under truncated full context (TFC), oracle evidence (OE), complete stored memory (CSM), and retrieved memory (RM). Under this fixed-budget LongMemEval setup, write-side gaps exceed retrieval-side gaps for most tested baselines, with four of six baselines robustly write-dominant under our default diagnosis margin. Motivated by this diagnosis, we propose Expected Predictive Compression (EPC), which moves the key decision--what information to retain--to write time by using an LLM to anticipate likely future questions and preserve the minimal supporting evidence under the token budget, while leaving retrieval unchanged at question time. Across all 500 LongMemEval questions with three readers (GPT-5.2, Claude Sonnet 4, Gemini 2.5 Pro), EPC achieves the highest CSM scores among all systems (0.49 vs. 0.44 for Summary (LLM), the strongest baseline), reducing Delta_write to 0.04 while leaving Delta_retr comparable to other LLM-based systems. These results suggest that, on this benchmark and evaluation setup, improving what the write stage preserves is a key avenue for performance gains in the tested systems.",
+      "authors": [
+        "Jiangnan Yu",
+        "Kisson Songqi Lin",
+        "Jilong Wu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-05-23T13:43:14+00:00",
+      "link": "https://arxiv.org/pdf/2605.24579v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "diagnoses write/retrieval bottlenecks in long-context memory, proposes EPC for compression at write time, relevant to context caching",
+      "llm_evidence_cn": "诊断长上下文记忆系统中的写入与检索瓶颈，提出写时压缩的EPC方法，与上下文缓存相关",
+      "llm_evidence": "诊断长上下文记忆系统中的写入与检索瓶颈，提出写时压缩的EPC方法，与上下文缓存相关",
+      "canonical_evidence": "诊断长上下文记忆系统中的写入与检索瓶颈，提出写时压缩的EPC方法，与上下文缓存相关",
+      "llm_tldr_en": "Identifies write-side gaps as dominant in long-context memory systems; proposes Expected Predictive Compression (EPC) to decide what to retain at write time, improving cache utilization under fixed budgets.",
+      "llm_tldr_cn": "长上下文记忆系统在固定预算下常失败，但端到端评估无法区分信息是在压缩时丢弃还是未被检索。本文提出四条件诊断协议，发现大多数基线中写入侧差距大于检索侧差距。基于此，提出期望预测压缩（EPC），将关键决策——保留什么信息——移至写入时刻，使用LLM预测未来查询的可能性，从而更高效地使用缓存。该方法为上下文缓存策略提供了新视角。",
+      "llm_tldr": "长上下文记忆系统在固定预算下常失败，但端到端评估无法区分信息是在压缩时丢弃还是未被检索。本文提出四条件诊断协议，发现大多数基线中写入侧差距大于检索侧差距。基于此，提出期望预测压缩（EPC），将关键决策——保留什么信息——移至写入时刻，使用LLM预测未来查询的可能性，从而更高效地使用缓存。该方法为上下文缓存策略提供了新视角。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2605.27081v1",
+      "source": "arxiv",
+      "title": "ReMoE: Boosting Expert Reuse through Router Fine-Tuning in Memory-Constrained MoE LLM Inference",
+      "abstract": "Fine-grained Mixture-of-Experts (MoE) models sparsely activate only a subset of experts per token, reducing activated computation while maintaining high model capacity. However, in memory-constrained inference scenarios, only a small set of experts can be cached. Experts not in the cache must be fetched from slow external storage (e.g., UFS), leading to frequent evictions and substantial I/O overhead.   We propose ReMoE, a router fine-tuning framework designed to boost token-wise expert reuse. ReMoE biases the router toward recently selected experts, producing temporally stable routing that better matches cache locality constraints. By increasing short-horizon expert reuse, ReMoE reduces expert fetches from storage without adding inference-time computation.   Experiments on DeepSeek and Qwen models show that ReMoE improves expert reuse by 26% while maintaining downstream task performance. Real-system evaluations further confirm these benefits, improving output throughput by 8.4% under vLLM GPU-CPU expert offloading and reducing TPOT by 43.6-49.8% under llama.cpp on Jetson Orin NX, corresponding to a 1.77-1.99$\\times$ decode speedup across diverse workloads. Checkpoints and usage instructions are available at https://github.com/BUAA-OSCAR/ReMoE.",
+      "authors": [
+        "Xiongwei Zhu",
+        "Xiaojian Liao",
+        "Tianyang Jiang",
+        "Yusen Zhang",
+        "Liang Wang",
+        "Limin Xiao"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.DC"
+      ],
+      "published": "2026-05-26T14:32:56+00:00",
+      "link": "https://arxiv.org/pdf/2605.27081v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "improves expert reuse in MoE through router fine-tuning, reducing fetching from storage, akin to KV cache reuse strategies",
+      "llm_evidence_cn": "通过路由微调提高MoE中的专家复用，减少从外部存储加载，类似KV缓存复用策略",
+      "llm_evidence": "通过路由微调提高MoE中的专家复用，减少从外部存储加载，类似KV缓存复用策略",
+      "canonical_evidence": "通过路由微调提高MoE中的专家复用，减少从外部存储加载，类似KV缓存复用策略",
+      "llm_tldr_en": "Fine-tunes the router in MoE models to bias toward recently selected experts, increasing temporal stability and reducing expert cache misses, analogous to KV cache eviction policies.",
+      "llm_tldr_cn": "MoE模型中专家缓存频繁缺失导致大量I/O开销。本文提出ReMoE，通过路由微调引导路由器偏向近期选中的专家，产生时间稳定的路由，以匹配缓存局部性约束。短期专家复用增加，减少从外部存储加载专家的次数。该方法无需额外存储，适用于内存受限的推理场景，其思路可迁移至KV缓存复用中的缓存策略设计。",
+      "llm_tldr": "MoE模型中专家缓存频繁缺失导致大量I/O开销。本文提出ReMoE，通过路由微调引导路由器偏向近期选中的专家，产生时间稳定的路由，以匹配缓存局部性约束。短期专家复用增加，减少从外部存储加载专家的次数。该方法无需额外存储，适用于内存受限的推理场景，其思路可迁移至KV缓存复用中的缓存策略设计。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2605.24785v2",
+      "source": "arxiv",
+      "title": "PANDO: Efficient Multimodal AI Agents via Online Skill Distillation",
+      "abstract": "Recent advances in multimodal web agents often rely on increased inference-time computation, including rollout search, verifier passes, offline skill discovery, and specialist model stacks. This raises a central question: can a web agent become more efficient as it accumulates experience, rather than more expensive? We first analyze trajectories from VisualWebArena and identify three recurring sources of inefficiency: repeat-action loops, hidden discovery costs, and low prompt-cache reuse. We then introduce PANDO, a single-rollout online skill-distillation framework that maintains a structured Skill Library and combines progress reflection, confidence-based skill demotion, hierarchical routing, visual compression, and cache-aware prompting. On the full set of 910 VisualWebArena tasks, PANDO achieves a 58.3% success rate, outperforming SGV (54.0%) and our WALT reproduction (45.2%), while using 58% fewer tokens than SGV and 61% fewer tokens than WALT, without any pre-evaluation discovery budget. A 300-task ablation further shows that rules and routines provide most of the success gains, while routing, compression, and cache-aware prompting convert the larger skill library into lower marginal token cost. Finally, we introduce three trajectory-level efficiency metrics -- Action Repetition Rate, Step Overhead Ratio, and Prompt Cache Utilization -- to make efficiency visible beyond terminal success.",
+      "authors": [
+        "Yubo Li",
+        "Yidi Miao",
+        "Yuntian Shen",
+        "Yuxin Liu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-05-24T00:07:25+00:00",
+      "link": "https://arxiv.org/pdf/2605.24785v2",
+      "tags": [
+        "keyword:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "identifies low prompt-cache reuse as inefficiency and proposes cache-aware prompting",
+      "llm_evidence_cn": "识别出提示缓存利用率低的问题，并提出缓存感知提示",
+      "llm_evidence": "识别出提示缓存利用率低的问题，并提出缓存感知提示",
+      "canonical_evidence": "识别出提示缓存利用率低的问题，并提出缓存感知提示",
+      "llm_tldr_en": "Proposes PANDO, an online skill-distillation framework that addresses repeat-action loops, hidden discovery costs, and low prompt-cache reuse through cache-aware prompting and skill library.",
+      "llm_tldr_cn": "多模态网页智能体通常随着经验积累而计算成本增加。本文分析VisualWebArena轨迹，发现重复动作循环、隐藏发现成本和低提示缓存复用三个低效来源。提出PANDO框架，维护结构化技能库，结合进度反思、置信度技能降级、层次路由、视觉压缩和缓存感知提示，实现单次rollout在线技能蒸馏。",
+      "llm_tldr": "多模态网页智能体通常随着经验积累而计算成本增加。本文分析VisualWebArena轨迹，发现重复动作循环、隐藏发现成本和低提示缓存复用三个低效来源。提出PANDO框架，维护结构化技能库，结合进度反思、置信度技能降级、层次路由、视觉压缩和缓存感知提示，实现单次rollout在线技能蒸馏。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.25085v1",
+      "source": "arxiv",
+      "title": "Polynomial Context-Truncation Sensitivity in Autoregressive Language Models: Sequential Wyner-Ziv Bounds for KV Cache Compression",
+      "abstract": "We study the rate-distortion limits of online KV cache compression in autoregressive language models, formulating it as sequential Wyner-Ziv source coding on the filtration induced by the model, with the next-step query as decoder side information. Empirically, across four models spanning two families and $0.5$-$3$B parameters, we find that the next-token distribution's sensitivity to context truncation decays \\emph{polynomially} rather than \\emph{geometrically}: a power law improves on an exponential fit by an order of magnitude in extrapolation, the fitted exponent is recovered independently from a sink-plus-recent KL measurement, and the decay is verified to be free of positional-encoding artifacts by a position-preserving ablation. Under a corresponding \\emph{polynomial truncation-sensitivity} assumption, our main result characterizes the per-token memory requirement of \\emph{suffix-only} cache policies: a sliding-window scheme attains distortion $\\varepsilon$ with window $w = O(\\varepsilon^{-1/α})$, and -- under an additional two-sided Bayes-risk condition -- a converse shows $w = Ω(\\varepsilon^{-1/α})$ is necessary within this policy class, so the scaling is $Θ(\\varepsilon^{-1/α})$ for suffix-only policies. Whether recurrent or propagating cache summaries can beat this scaling is left open. An explicit block-Markov scheme achieves the upper bound; its rate-of-convergence exponent matches the converse under additional forward-decay and regularity hypotheses (not implied by truncation sensitivity alone), and differs by a factor of two otherwise. Empirically, the polynomial law predicts the degradation curves of concrete cache policies: recency-based eviction (sliding, sink-plus-recent) suppresses distortion by roughly two orders of magnitude over random retention at equal budget, with a power-law decay in the budget.",
+      "authors": [
+        "Munsik Kim"
+      ],
+      "primary_category": "cs.IT",
+      "categories": [
+        "cs.IT",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-05-24T13:54:13+00:00",
+      "link": "https://arxiv.org/pdf/2605.25085v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "studies rate-distortion limits of online KV cache compression",
+      "llm_evidence_cn": "研究在线KV缓存压缩的率失真极限",
+      "llm_evidence": "研究在线KV缓存压缩的率失真极限",
+      "canonical_evidence": "研究在线KV缓存压缩的率失真极限",
+      "llm_tldr_en": "This paper derives sequential Wyner-Ziv bounds for KV cache compression in LLMs, finding polynomial context-truncation sensitivity, which informs optimal cache eviction strategies.",
+      "llm_tldr_cn": "本文研究自回归语言模型中在线KV缓存压缩的率失真极限，将其建模为序列Wyner-Ziv编码。实验发现，下一个token分布对上下文截断的敏感度呈多项式衰减而非指数衰减，该发现为设计高效缓存压缩策略提供了理论指导。",
+      "llm_tldr": "本文研究自回归语言模型中在线KV缓存压缩的率失真极限，将其建模为序列Wyner-Ziv编码。实验发现，下一个token分布对上下文截断的敏感度呈多项式衰减而非指数衰减，该发现为设计高效缓存压缩策略提供了理论指导。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2605.28889v1",
+      "source": "arxiv",
+      "title": "Context Distillation as Latent Memory Management",
+      "abstract": "Context distillation compresses contextual information into model parameters, yet existing methods often ignore how multiple distilled latent memories should be stored, retrieved, and safely activated in non-oracle settings. We formulate context distillation as a latent memory management problem. We distill each context into an independent LoRA adapter, forming a modular memory bank that enables explicit memory selection. Given a query, our framework retrieves candidate memories, routes the query to the most suitable adapter, and uses a Self-Gating mechanism to decide whether latent memory should be activated. To improve efficiency, we further introduce cache sharing to reduce management overhead during inference. Experiments show that our method substantially outperforms baselines with retrieval, while Self-Gating improves robustness by deactivate unnecessary latent memories.",
+      "authors": [
+        "Ziyang Zheng",
+        "Zeju Li",
+        "Xiangyu Wen",
+        "Jianyuan Zhong",
+        "Junhua Huang",
+        "Lei Chen",
+        "Mingxuan Yuan",
+        "Qiang Xu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-05-27T07:29:40+00:00",
+      "link": "https://arxiv.org/pdf/2605.28889v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "cache sharing to reduce inference overhead",
+      "llm_evidence_cn": "引入缓存共享减少推理开销",
+      "llm_evidence": "引入缓存共享减少推理开销",
+      "canonical_evidence": "引入缓存共享减少推理开销",
+      "llm_tldr_en": "Context distillation is framed as latent memory management; a modular LoRA adapter bank with cache sharing reduces overhead, but not directly about KV cache reuse.",
+      "llm_tldr_cn": "该论文将上下文蒸馏视为潜在记忆管理问题，通过将每个上下文蒸馏为独立的LoRA适配器形成模块化记忆库，并引入缓存共享以减少管理开销。虽然涉及缓存共享，但主要聚焦于记忆检索而非KV缓存复用，与用户需求中的提示缓存或上下文缓存方向有间接关联。",
+      "llm_tldr": "该论文将上下文蒸馏视为潜在记忆管理问题，通过将每个上下文蒸馏为独立的LoRA适配器形成模块化记忆库，并引入缓存共享以减少管理开销。虽然涉及缓存共享，但主要聚焦于记忆检索而非KV缓存复用，与用户需求中的提示缓存或上下文缓存方向有间接关联。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2605.26099v2",
+      "source": "arxiv",
+      "title": "Do Language Models Need Sleep? Offline Recurrence for Improved Online Inference",
+      "abstract": "Transformer-based large language models are increasingly used for long-horizon tasks; however, their attention mechanism scales poorly with context length. To handle this, we study a sleep-like consolidation mechanism in which a model periodically converts recent context into persistent fast weights before clearing its key-value cache. During sleep, the model performs $N$ offline recurrent passes over the accumulated context and updates the fast weights in its state-space model (SSM) blocks through a learned local rule. During inference, this shifts extra computation to sleep while preserving the latency of wake-time prediction. We test our method on controlled synthetic tasks, including cellular automata and multi-hop graph retrieval, as well as a realistic math reasoning task, on which a regular transformer as well as SSM-attention hybrid models fail. We then show that increasing sleep duration $N$ for our models improves performance, with the largest gains on examples that require deeper reasoning.",
+      "authors": [
+        "Sangyun Lee",
+        "Sean McLeish",
+        "Tom Goldstein",
+        "Giulia Fanti"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-05-25T17:55:39+00:00",
+      "link": "https://arxiv.org/pdf/2605.26099v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "offline recurrence consolidates context and clears KV cache",
+      "llm_evidence_cn": "离线递归合并上下文并清空KV缓存",
+      "llm_evidence": "离线递归合并上下文并清空KV缓存",
+      "canonical_evidence": "离线递归合并上下文并清空KV缓存",
+      "llm_tldr_en": "This paper introduces a sleep-like consolidation that converts recent context into fast weights and clears KV cache, shifting computation to offline phases.",
+      "llm_tldr_cn": "本文研究类睡眠机制：模型定期将近期上下文转换为持久快速权重，并清空KV缓存。离线阶段进行递归更新，减少在线推理延迟。在合成任务上验证了有效性。",
+      "llm_tldr": "本文研究类睡眠机制：模型定期将近期上下文转换为持久快速权重，并清空KV缓存。离线阶段进行递归更新，减少在线推理延迟。在合成任务上验证了有效性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.26797v1",
+      "source": "arxiv",
+      "title": "Latent Recurrent Transformer: Architecture Exploration, Training Strategies, and Scaling Behavior",
+      "abstract": "We study Latent Recurrent Transformer (LRT), a lightweight augmentation of autoregressive transformers that reuses a high-level source-layer hidden state from the previous token as recurrent memory for the next token. Because this source state is already computed during ordinary decoding, LRT adds a cross-layer recurrent latent pathway across positions without inserting pause tokens or extra depth loops, and the standard attention mechanism and KV-cache interface are preserved. To pretrain this recurrence at scale without sequentially unrolling the transformer, we introduce interleaved parallel training: a single full-sequence initialization forward pass builds a shared buffer; then disjoint position subsets are refined in parallel and written back, so that all tokens receive recurrent-memory-aware supervision at roughly 2 times baseline compute. Across nanochat style backbones and a wide range of tokens-per-parameter budgets, LRT improves both language-modeling loss and in-context learning under matched effective compute while adding as little as 0.3% parameters.",
+      "authors": [
+        "Zeyi Huang",
+        "Xuehai He",
+        "LiLiang Ren",
+        "Yiping Wang",
+        "Baolin Peng",
+        "Hao Cheng",
+        "Shuohang Wang",
+        "Pengcheng He",
+        "Jianfeng Gao",
+        "Yong Jae Lee",
+        "Yelong Shen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-05-26T10:10:26+00:00",
+      "link": "https://arxiv.org/pdf/2605.26797v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "reuses previous token hidden state as recurrent memory, preserves KV cache interface",
+      "llm_evidence_cn": "重用前一个token的隐藏状态作为循环记忆，保留KV缓存接口",
+      "llm_evidence": "重用前一个token的隐藏状态作为循环记忆，保留KV缓存接口",
+      "canonical_evidence": "重用前一个token的隐藏状态作为循环记忆，保留KV缓存接口",
+      "llm_tldr_en": "Latent Recurrent Transformer augments autoregressive transformers with cross-layer recurrent latent pathway that reuses previous token hidden state, keeping standard KV cache.",
+      "llm_tldr_cn": "本文提出潜递归Transformer，通过跨层循环潜通路重用上一个token的隐藏状态，无需额外暂停token或深度循环，保留标准KV缓存接口。实验展示了架构的有效性和可扩展性。",
+      "llm_tldr": "本文提出潜递归Transformer，通过跨层循环潜通路重用上一个token的隐藏状态，无需额外暂停token或深度循环，保留标准KV缓存接口。实验展示了架构的有效性和可扩展性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2605.29075v1",
+      "source": "arxiv",
+      "title": "Knowledge Offloading: Decomposing LLMs into Sparse Backbones and Memory Modules",
+      "abstract": "LLMs encode both general capabilities and domain-specific knowledge in a single set of parameters. We ask whether this capacity can be reorganized: keeping broadly useful computation in a shared backbone, while moving specialized knowledge into external memory modules. We propose \\emph{knowledge offloading} (KOFF), a framework for decomposing a pretrained LLM into a sparse shared backbone and domain-specific memories. Starting from a frozen base model, we jointly learn a structured pruning mask and lightweight recovery modules, implemented as LoRA adapters and learned key-value caches. Across Llama and Qwen models from 3B to 8B, we find that non-trivial capacity can be moved out of the shared backbone without a large loss in model ability. At around 12\\% global sparsity, KOFF preserves much of the unpruned model's performance, while pruning the same frozen model without memories degrades sharply. Ablations show that LoRA and learned KV memories are complementary, and specialization analyses suggest that the learned decomposition is meaningful: language-specific neurons are preferentially removed while language-general neurons largely remain in the backbone. These results suggest that knowledge can be reallocated between a shared core and swappable external memories.",
+      "authors": [
+        "Karim Galliamov",
+        "Rochelle Choenni",
+        "Ivan Titov"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-27T20:29:31+00:00",
+      "link": "https://arxiv.org/pdf/2605.29075v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "decomposes LLM into shared backbone and external memory including learned KV caches",
+      "llm_evidence_cn": "将LLM分解为共享骨干和包含学习型KV缓存的外部记忆",
+      "llm_evidence": "将LLM分解为共享骨干和包含学习型KV缓存的外部记忆",
+      "canonical_evidence": "将LLM分解为共享骨干和包含学习型KV缓存的外部记忆",
+      "llm_tldr_en": "KOFF decomposes a pretrained LLM into a sparse shared backbone and domain-specific memories using LoRA and learned KV caches, enabling modular specialization.",
+      "llm_tldr_cn": "本文提出知识卸载框架KOFF，将预训练LLM分解为稀疏共享骨干和领域特定记忆模块（LoRA适配器+学习型KV缓存）。在Llama和Qwen模型上验证了专用记忆可卸载非平凡容量而不显著损失能力。",
+      "llm_tldr": "本文提出知识卸载框架KOFF，将预训练LLM分解为稀疏共享骨干和领域特定记忆模块（LoRA适配器+学习型KV缓存）。在Llama和Qwen模型上验证了专用记忆可卸载非平凡容量而不显著损失能力。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2605.28640v1",
+      "source": "arxiv",
+      "title": "Augmenting Attention with Exponentially Decaying Memory Improves Query-Aware KV Sparsity",
+      "abstract": "Efficient inference is critical for long-context language models, where attention computation and KV-cache access dominate the cost. Recent work RAT+, introduces a recurrence-augmented attention backbone that enables flexible dilated attention at inference time. In this paper, we investigate whether this exponentially decaying memory can also improve existing query-aware sparse inference methods. Using representative methods including Quest, MoBA, and SnapKV, we show that RAT+ consistently improves accuracy over standard attention across sparse budgets on eight needle-in-a-haystack tasks. We validate these gains both on the released checkpoints from the RAT+ paper and on OLMo2-7B, which we continue pretraining with the added memory module for 10B tokens. Finally, we propose two hypotheses explaining why this memory module benefits query-aware sparse inference and design targeted experiments to support them.",
+      "authors": [
+        "Xiuying Wei",
+        "Caglar Gulcehre"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-27T15:46:19+00:00",
+      "link": "https://arxiv.org/pdf/2605.28640v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "investigates exponentially decaying memory (RAT+) to improve query-aware KV sparsity, directly advances KV cache reuse for long-context LLMs",
+      "llm_evidence_cn": "研究指数衰减记忆（RAT+）改善查询感知KV稀疏性，直接推进长上下文LLM的KV缓存复用",
+      "llm_evidence": "研究指数衰减记忆（RAT+）改善查询感知KV稀疏性，直接推进长上下文LLM的KV缓存复用",
+      "canonical_evidence": "研究指数衰减记忆（RAT+）改善查询感知KV稀疏性，直接推进长上下文LLM的KV缓存复用",
+      "llm_tldr_en": "Shows that adding RAT+ (recurrence-augmented attention) to existing sparse KV methods (Quest, MoBA, SnapKV) consistently improves accuracy on needle-in-a-haystack tasks, enabling better KV cache reuse.",
+      "llm_tldr_cn": "长上下文模型推理中KV缓存访问占主导。本文在现有查询感知稀疏方法（Quest、MoBA、SnapKV）中加入循环增强注意力RAT+，利用指数衰减记忆补充标准注意力。实验证明，在八项针锋相对任务上，RAT+在所有稀疏预算下持续提高准确率。该工作表明，附加的衰减记忆能有效改善KV稀疏策略，为KV缓存复用的优化提供了新方向。",
+      "llm_tldr": "长上下文模型推理中KV缓存访问占主导。本文在现有查询感知稀疏方法（Quest、MoBA、SnapKV）中加入循环增强注意力RAT+，利用指数衰减记忆补充标准注意力。实验证明，在八项针锋相对任务上，RAT+在所有稀疏预算下持续提高准确率。该工作表明，附加的衰减记忆能有效改善KV稀疏策略，为KV缓存复用的优化提供了新方向。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.27646v1",
+      "source": "arxiv",
+      "title": "Hurwitz Quaternion Multiplicative Quantization for KV Cache Compression",
+      "abstract": "We propose \\textbf{Hurwitz Quaternion Multiplicative Quantization (HQMQ)}, a \\textbf{calibration-free} method for KV cache compression of large language models. HQMQ treats each 4-element chunk of K or V as a quaternion and quantizes its unit direction to the \\emph{product} $q_p \\cdot q_s$, where $q_p$ ranges over the 24-element Hurwitz group $2T$ (the 24 vertices of the 24-cell on $S^3$, pairwise angle $60^\\circ$) and $q_s$ ranges over a per-(layer, head) secondary codebook of $S$ \\emph{random} unit quaternions. The multiplicative composition yields $24S$ effective codewords at $S$ stored parameters; random initialization suffices because left-multiplication is an $S^3$ isometry, so seeded codebooks vary in end-task ppl by $<1.5\\%$. A per-batch median-multiplier outlier extraction step ($C{=}3$, no calibration) handles modern outlier-heavy architectures. We evaluate on five modern open models: Mistral-7B (dense MHA), Llama-3-8B and Qwen2.5-7B and Qwen3-8B (dense GQA), and gpt-oss-20b (sparse MoE). On Mistral-7B and Qwen3-8B, HQMQ matches fp16 within $0.02$--$0.03$ ppl points at $\\sim$5 bits. On Qwen2.5-7B and Qwen3-8B, where naive int4 collapses to $10^4{+}$ ppl, HQMQ + Med3$\\times$ recovers fp16 quality within $0.02$--$0.10$ ppl points at $\\sim$5 bits. HQMQ Pareto-dominates naive int by $3$--$1900\\times$ at matched bits across all five models, and downstream zero-shot accuracy matches fp16 at $3.79$ bits on Mistral. Against the strongest calibrated KV-quantization baseline, HQMQ at $3.79$ bits matches KIVI-4 ($\\sim 4.5$ bits) within ${\\sim}1$ pt on CoQA, $0.6$ pts on TruthfulQA, and $2.3$ pts on GSM8K, at $16\\%$ fewer bits and without a calibration pass. At the storage level, HQMQ delivers up to $5.05\\times$ KV compression, shrinking a Llama-3-70B 128k-context cache from 43 GB to 8.5 GB.",
+      "authors": [
+        "Kabir Swain",
+        "Sijie Han",
+        "Daniel Karl I. Weidele",
+        "Mauro Martino",
+        "David Cox",
+        "Antonio Torralba"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-05-26T20:09:17+00:00",
+      "link": "https://arxiv.org/pdf/2605.27646v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache compression enabling more efficient reuse",
+      "llm_evidence_cn": "KV缓存压缩以实现更高效的复用",
+      "llm_evidence": "KV缓存压缩以实现更高效的复用",
+      "canonical_evidence": "KV缓存压缩以实现更高效的复用",
+      "llm_tldr_en": "Proposes Hurwitz Quaternion Multiplicative Quantization for KV cache compression, a calibration-free method that reduces memory footprint, aiding KV cache reuse.",
+      "llm_tldr_cn": "该论文提出Hurwitz四元数乘积量化（HQMQ），一种免校准的KV缓存压缩方法。通过将每4元素块视为四元数并用乘积量化压缩，在保持模型困惑度几乎不变的情况下显著减少KV缓存内存占用。压缩后的KV缓存更易于存储和复用，间接支持KV缓存复用的加速目标。",
+      "llm_tldr": "该论文提出Hurwitz四元数乘积量化（HQMQ），一种免校准的KV缓存压缩方法。通过将每4元素块视为四元数并用乘积量化压缩，在保持模型困惑度几乎不变的情况下显著减少KV缓存内存占用。压缩后的KV缓存更易于存储和复用，间接支持KV缓存复用的加速目标。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

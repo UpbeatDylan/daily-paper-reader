@@ -1,0 +1,373 @@
+Title: Resident KV Claims: A Conformance Contract for Future Reuse under Active KV Pressure
+
+URL Source: https://arxiv.org/pdf/2605.24259v1
+
+Published Time: Tue, 26 May 2026 00:25:36 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# Resident KV Claims: A Conformance Contract for Future Reuse under Active KV Pressure 
+
+## Lukas Stepanek 
+
+## luki.step@proton.me 
+
+## May 2026 
+
+## Abstract 
+
+KV-cache reuse mechanisms increasingly expose priority, duration, offload, routing hints, scheduler modes, and event streams. These mechanisms help preserve reusable prefixes, but they do not by themselves define a portable contract for accepted future-reuse state when resident KV and active live KV cannot both fit. We introduce resident KV claims , a conformance contract that binds future-reuse intent to a materialization predicate, lifecycle state, active/resident feasibility outcome, and claim-level telemetry. In controlled vLLM allocator probes, a 60-block resident claim and a 70-block active prefill exceed an 80-block usable KV pool. Write no-admit prevents the active request from becoming future reusable state, but it still allows active allocation to evict residents from the shared pool. A minimal vLLM prototype shows that hard protected resident claims convert this failure mode into scheduler-visible active refusal with direct blocking-claim attribution. The result is not a production speedup or a new cache-replacement algorithm. It is a runtime contract that turns unreported resident loss into reconstructable active/resident arbitration. A companion MicroRuntime and vLLM litmus suite distinguish ordinary eviction, soft priority, write no-admit, accepted hard claims, materialization failure, demotion, expiry, active refusal, and trace-level outcome reconstruction. 
+
+## 1. Introduction 
+
+KV-cache reuse has become a central serving optimization for decoder-only language models. Prefix caching avoids recomputing attention keys and values for repeated prompt prefixes. Paged KV allocators reduce fragmentation. Radix trees and priority-aware eviction policies improve the chance that valuable prefixes survive until reuse. Recent production runtimes and orchestration layers also expose stronger controls, including token-range retention priority, duration hints, offload, no-evict scheduler modes, routing metadata, and reuse telemetry [1,4,5,9]. These mechanisms make future reuse actionable, but they leave open the contract question this paper studies: 
+
+What should a runtime do when future-reuse state that should remain resident and active live KV needed by the current request cannot both fit? 
+
+This paper’s thesis is that existing KV-retention mechanisms expose policies, while resident KV claims define the missing conformance contract for what a runtime must report or do when accepted future-reuse state conflicts with active live KV. Figure 1 summarizes the contribution. Resident KV claims make active/resident infeasibility observable rather than implicitly reducing accepted future-reuse state to ordinary cache eviction. The common vocabulary of “KV cache” obscures three different resources: 1. Resident reusable KV: KV already computed, not currently active, and valuable only if enough leading prefix state survives until a future request. 1   
+
+> arXiv:2605.24259v1 [cs.DC] 22 May 2026 C. Contract outcome
+> B. Feasibility boundary
+> A. Vocabulary collapse
+> KV cache
+> Resident reusable KV
+> Active live KV
+> Future reusable admission 60 resident blocks
+> 60 + 70 > 80 70 active blocks
+> 80 usable blocks
+> Accepted resident claim Active/resident conflict Explicit action?
+> Refuse or defer active
+> Demote, expire, or offload claim
+> Emit claim-harm telemetry
+> Route or bound active KV
+
+Figure 1: Resident Claim Thesis 2. Active live KV: KV required to execute an in-flight request. Under full attention, active prefill chunks accumulate unless earlier chunks are freed, offloaded, or recomputed. 3. Future reusable admission: The decision to insert newly produced active KV into a reusable prefix cache after or during service. The distinction matters because a write no-admit policy acts on the third resource. This paper uses write no-admit for a per-request admission-control behavior: the active request may be served, but the KV it produces is not admitted as future reusable cache state. This can prevent a bulky request from becoming reusable in the future. It does not automatically make the active request consume zero KV while it is being served. If active allocation draws from the same physical pool as resident reusable KV, no-admit can be too late to protect residents. Resident claims are not another eviction priority. A priority ranks victims when eviction is allowed. Aresident claim defines when eviction is no longer ordinary cache replacement: after acceptance, predicate-breaking loss must be preceded by demotion, expiry, offload, refusal, or harm telemetry. This distinction matters precisely when active live KV and protected resident KV cannot both fit. This paper makes three contributions: 1. It defines a resident-claim conformance contract with accepted, refused, demoted, expired, harmed, and materialized states; an active/resident feasibility check; explicit conflict actions; and claim-level telemetry. 2. It provides a runnable litmus suite showing that retained block count is not the right value unit, that write no-admit controls future reusable admission rather than active live allocation, and that post-demotion or post-expiry block loss is not claim harm. 3. It implements a minimal vLLM contract hook with resident-claim metadata, hard protected-resident victim exclusion, predicate-level lifecycle telemetry, and scheduler-visible active refusal with direct blocking-claim attribution, then bounds that result against runtime and workflow-serving prior art. The claim boundary is deliberate. This paper does not show a production serving speedup, p95 or p99 latency improvement, a universal allocator, a learned prediction model, or cross-runtime empirical superiority. TTFT measurements are used only to show that prefix reuse has serving-visible value, not that the arbiter improves end-to-end serving performance. This is a mechanisms paper: it identifies a real runtime boundary, falsifies simpler explanations, implements the minimal contract behavior, and bounds the missing abstraction. 
+
+## 2. Background And Prior-Art Boundary 
+
+2.1 Prefix Caching and Paged KV 
+
+In decoder-only LLM serving, each generated token depends on attention over earlier tokens. Serving systems therefore store per-layer key and value tensors in KV caches. Prefix caching reuses KV for repeated prompt prefixes, avoiding prefill recomputation when a future request shares a prefix with an earlier one [2]. 2PagedAttention and related block allocators divide KV memory into blocks and manage them with page-like indirection [1]. This enables more flexible allocation than one contiguous tensor per request. It also creates a natural block-level cache replacement problem: which free, reusable blocks should be evicted when capacity is needed? 
+
+2.2 Retention Primitives Are Real Prior Art 
+
+The key prior-art fact is that modern runtimes already expose KV-retention fragments. TensorRT-LLM is the closest runtime comparator. Its public material describes priority-based KV eviction, token-range retention priority, optional duration, KV cache events, prioritized LRU, primary and secondary memory behavior, and offload support [4,5]. Its runtime flags also include scheduler modes such as guaranteed no-evict and max-utilization modes [6]. SGLang exposes a radix-cache design, lock references, protected and evictable accounting, eviction policy choices, and HiCache offload/storage paths [7,8]. Dynamo’s SGLang agentic-workload guide also documents priority scheduling, priority-based radix eviction, hierarchical-cache interaction, and experimental session control for KV isolation [10]. vLLM exposes prefix caching, block-pool management, request scheduling, and an emerging public discussion around context-aware KV retention APIs [3]. The vLLM 0.19.1 prototype uses that runtime as the live counterexample, not as evidence that vLLM lacks future retention primitives. The vLLM retention RFC is especially close to this work because it treats a retention API as the product, proposes token-range priority and duration, and separates request scheduling priority from block eviction priority. The distinction here is that resident claims define accepted-claim conformance: materialization predicates, active/resident infeasibility outcomes, and claim-harm/refusal telemetry. Dynamo, Continuum, KVFlow, Pie, Marconi, and vLLM’s Mooncake integration sharpen the same boundary from adjacent directions. Dynamo describes agent hints, scheduling and routing metadata, backend-specific priority scheduling and priority-based eviction, speculative prefill, session control, and KV-event-driven orchestration [9,10]. Continuum treats retained KV during tool-call gaps as a scheduling and GPU-memory tradeoff [11]. Continuum is therefore the closest agentic retention policy comparator, but it does not subsume the contract studied here: a retention policy can decide what to keep, while a resident claim defines what an accepted promise means under active-live infeasibility. KVFlow uses workflow structure to guide future reuse and prefetch [12]. Pie exposes programmable serving handlers that can implement application-specific KV strategies [13]. Marconi frames admission and eviction around reuse likelihood and compute-saving value per footprint [14]. The Mooncake integration pushes vLLM toward distributed KV storage for agentic workloads [15]. The baseline is not a runtime with no retention machinery. Existing systems plainly expose priority, TTL, offload, no-evict, routing, programmability, and prefix-cache mechanisms. The distinction is semantic: apriority, duration, lock reference, offload tier, or routing hint becomes a ResidentClaim implementation only if it preserves the accepted-claim lifecycle, materialization predicate, active/resident conflict outcome, and claim-level telemetry required by the contract. Table 1: Prior-art boundary for resident KV claims. System or mechanism What it provides Why it is not the full ResidentClaim contract TensorRT-LLM priority / duration Token-range priority/duration, priority-aware eviction, KV events Soft-retention substrate; does not define accepted-claim lifecycle, predicate harm, active refusal, or blocking-claim attribution. 3System or mechanism What it provides Why it is not the full ResidentClaim contract TensorRT-LLM guaranteed no-evict No-evict protection for an active running request Active-request scoped; not future-resident reusable KV under later pressure, and not claim materialization/refusal/harm semantics. SGLang / HiCache Radix cache, lock refs, protected/evictable accounting, tiers, prefetch/write-back Storage and prefix-cache substrate; public semantics do not define accepted claims, predicate restoration failure, or claim-scoped conflicts. Dynamo / orchestration layers Agent hints, routing metadata, KV-aware scheduling/orchestration Can route around conflicts, but metadata is not backend-local proof of accepted, materialized, preserved, demoted, harmed, or blocking claims. vLLM retention RFC / retention APIs API pressure toward priority-style retention controls Shows the problem is live; this paper studies future-reuse admission versus active live allocation and explicit accepted-claim conflicts. This vLLM prototype Metadata, materialization, hard exclusion, demotion/expiry, active refusal telemetry Patch-level reference for the contract subset; not an upstream API, production policy, or performance claim. This boundary is why the contribution is a conformance contract rather than a new eviction heuristic. Existing mechanisms are plausible lowering targets. This paper defines the obligations they would need to satisfy. 
+
+2.3 Why “Cache Eviction” Is Too Small 
+
+Classical cache replacement asks which cached object to evict when another cached object should be admitted. Predictive KV residency includes that question, but it also includes a different one: should an active request be served now if doing so consumes memory that was promised to resident future-reuse state? If the runtime has 80 usable KV blocks, 60 protected resident blocks, and a new active full-attention prefill needing 70 live blocks, then no replacement ranking can make all desired state fit: 
+
+protected resident KV = 60 blocks active live KV = 70 blocks usable KV pool = 80 blocks 60 + 70 = 130 > 80 
+
+Something must give. A runtime can evict or relax residents, defer or preempt active work, offload state, bound active live KV, split or recompute, route to another worker, reject reusable admission, or add capacity. But it cannot preserve all resident KV and serve the active request in the same 80-block pool without some such action. 43. Contract 
+
+3.1 Definitions Resident reusable KV is previously computed KV that is not needed by an active request but may be reused by a future request. It has value only through a future materialization surface, such as a leading-prefix hit. 
+
+Active live KV is KV required to execute an in-flight request. In full attention, active live KV grows across chunks because later chunks attend to earlier chunks. Chunked scheduling reduces a compute burst; it does not by itself cap live KV. 
+
+Future reusable admission is the decision to retain newly produced active KV as future reusable state. 
+
+Useful resident value is policy-defined. In the evidence below, a prefix receives value only when its leading contiguous survival crosses a threshold. This is intentionally narrower than “some cached tokens survived.” Below-threshold retained tokens may save some compute in another policy, but they fail the intended resident claim. 
+
+Resident claim is an application-visible future-reuse object submitted to the runtime. In this paper, a claim names the fields required for conformance: a stable claim id, owner scope, cache-equivalence identity, prefix object, materialization predicate, footprint estimate, protection mode, and optional duration. Value, confidence, budgets, deadlines, and overbooking policy are optional policy inputs, not required parts of the conformance contract. 
+
+Accepted resident claim means the runtime has taken responsibility for preserving the claim’s material-ization predicate unless it emits an explicit refusal, demotion, offload, expiry, or harm event. This is stronger than “high-priority cache entry” and weaker than an unconditional guarantee that ignores physical capacity. A runtime is allowed to reject a resident claim. The conformance obligation becomes binding only after the runtime accepts the claim. 
+
+Claim harm means an accepted claim lost enough state to fail its materialization predicate before the runtime emitted an acceptable demotion, expiry, or refusal. Ordinary cache eviction is not claim harm unless the runtime had accepted such a claim. 
+
+Active/resident arbiter is the runtime component or contract that decides what happens when active live KV and resident reusable KV conflict. The minimal conformance schema is deliberately split so that inputs, decisions, lifecycle state, and telemetry cannot blur together: Table 2: Minimal resident-claim conformance schema. Surface Required fields Outside the conformance contract 
+
+ResidentClaimInput claim_id , owner_scope ,
+
+cache_identity , object_id ,
+
+materialization_predicate ,
+
+footprint_blocks ,
+
+protection_mode , optional 
+
+duration_steps value , confidence , budget ,
+
+deadline , and policy scores 
+
+CacheIdentity cache-key domain, model id, tokenizer or token-hash domain, namespace or salt, block size, optional adapter/prompt-embedding identity and KV format workload-specific prediction metadata 5Surface Required fields Outside the conformance contract 
+
+ResidentClaimDecision accepted, rejected, or conditionally accepted; decision step; reason claim outcome events 
+
+ResidentClaimState submitted, accepted, materialized, demoted, expired, refused, harmed admission-policy inputs 
+
+ClaimEvent event type, claim id, step, optional request id, predicate/capacity fields raw block events without claim context 
+
+protection_mode is normative, not a generic “hardness” label: Table 3: Resident-claim protection modes. Mode Meaning 
+
+soft_priority May influence eviction order; not a hard claim. 
+
+hard_protected May not be broken before explicit active refusal/defer, demotion, expiry, offload, or harm event. 
+
+demotable May be downgraded before loss, but the demotion event must precede predicate-breaking eviction. 
+
+offloadable May leave GPU memory only if the materialization predicate remains restorable. 
+
+expiring Runtime responsibility ends at expiry. 
+
+best_effort Telemetry only; no preservation obligation. 
+
+3.2 Claim Harm Semantics 
+
+Claim harm is a lifecycle violation, not a synonym for cache eviction. The same block loss can be harmless, expected, or contract-breaking depending on whether the runtime had accepted a claim and whether it released the claim first. Table 4: Claim-harm semantics by event sequence. Event sequence Interpretation Required telemetry Ordinary cached block evicted without accepted claim Normal cache replacement Block removal may be reported, but not claim_harmed .Accepted claim is demoted, then blocks are lost Policy explicitly relaxed responsibility before loss 
+
+claim_demoted before post-release block loss. Accepted claim expires, then blocks are lost Responsibility ended by duration or expiry rule 
+
+claim_expired before post-release block loss. Accepted claim loses its materialization predicate without prior release True claim harm claim_harmed with predicate and capacity context. Accepted hard claim blocks active admission Resident claim preserved; active side takes the action 
+
+active_refused or 
+
+active_deferred with 
+
+blocking_claim_ids .This distinction is the observability core of the contract. Raw KV events that say a block was stored, updated, or removed are useful, but they do not by themselves tell an external observer whether the runtime violated an accepted future-reuse responsibility. 63.3 Claim Lifecycle 
+
+The proposed unit is a claim over a materializable future computation state, not an individual cache block. A minimal lifecycle is: infeasible or low value        
+
+> runtime assumes responsibility
+> useful prefix predicate holds at reuse
+> policy relaxes protection mode state moves to slower tier duration or deadline ends predicate fails without prior demotion
+> active + resident > usable
+> defer/route/bound active
+> relax resident claim
+> move resident or active KV
+> serve active by evicting claim refuse active admission or service
+> Submitted
+> Refused
+> Accepted
+> Materialized Demoted Offloaded Expired Harmed
+> ActiveConflict
+> ActiveRefused
+
+Figure 2: Resident claim lifecycle 
+
+3.4 Feasibility Boundary 
+
+The boundary is: 
+
+protected_resident_kv + active_live_kv <= usable_kv 
+
+If the inequality holds, the runtime may serve active work and preserve residents in the same pool, subject to ordinary eviction and scheduling details. If the inequality does not hold, a future-reuse hint cannot be treated as an unconditional command. The runtime must choose an explicit action and should report that action at the claim level. 
+
+3.5 Mechanism Table 
+
+The table organizes the main contract actions for the 60/70/80 scenario. It is derived from the MicroRuntime arbiter scenario with 60 resident blocks, 70 active-live blocks, and 80 usable blocks. Costs are schematic mechanism costs, not production latency measurements. Rows marked “not implemented in prototype” are included to show valid conflict-resolution actions under the contract; the evaluated prototype implements only the rows marked implemented, observed, modeled, or sweep baseline. Table 5: Contract outcomes for active/resident conflict mecha-nisms. Mechanism Contract outcome Prototype or evidence role Native eviction Active is served and reusable, but resident value is lost. Observed baseline; future-reuse hints become ordinary cached state. Write no-admit only Active is served but not reusable; resident value is still lost. Implemented negative control showing that write admission and active-live allocation are separate. Resident victim exclusion Resident survives; active is refused or deferred when headroom is insufficient. Implemented hard-protection row. 7Mechanism Contract outcome Prototype or evidence role Active deferral Resident survives; active service is delayed and not reusable until admitted. Implemented scheduler-path refuse/defer signal. Resident reserve Resident survives; active work that cannot fit is refused. Modeled reserve action, not a separate vLLM API. Offload resident Resident survives and active may be served, subject to restore cost. Valid contract action, not implemented in prototype. Offload active Resident survives while active service pays bandwidth or latency. Valid contract action, not implemented in prototype. Bound active-live KV Resident and active may coexist if old chunks are freed, offloaded, or recomputed. Valid contract action; ordinary chunk scheduling alone is insufficient. Recompute or split Memory pressure is traded for extra compute and scheduling complexity. Valid contract action, not implemented in prototype. Route elsewhere Active is served on a worker with headroom; resident survives locally. Valid orchestration action requiring routing visibility and spare capacity. Relax resident claim Active is served by demoting, expiring, or partially evicting resident state. Implemented through demotion and expiry lifecycle tests. Larger capacity Resident and active coexist once the inequality is satisfied. Sweep baseline; capacity is not itself an allocation contract. Oracle upper bound Best explicit action is chosen under known costs. Analysis row only, not an implementable policy without cost and confidence inputs. The table makes the thesis concrete: the proposed mechanism is not “better LRU.” It is the obligation to surface the conflict and choose among these actions instead of collapsing accepted resident claims into ordinary cache victims without claim-level accounting. 
+
+## 4. Methods 
+
+4.1 Live vLLM Evidence 
+
+The vLLM evidence comes from controlled traces over three surfaces: direct carrier traces for useful-prefix materialization, allocator-level pressure probes for the 60 resident / 70 active / 80 usable boundary, and 
+
+vllm.LLM.generate pressure traces for scheduler-path propagation. The strongest rows use a direct ledger rather than relying only on native cache telemetry. The ledger checks that cached tokens equal the first missing block times the 16-token block size, survived positions form leading ranges, evicted blocks are not counted as survived, block IDs map one-to-one to prefix positions, and salted/no-reuse controls show zero useful leading-prefix survival. 
+
+4.2 MicroRuntime Evidence 
+
+The companion MicroRuntime is an executable contract model, not a claim about production inference-engine behavior. It separates resident reusable KV, active live KV, and future reusable admission so that the claim schema, harm semantics, active-live accumulation, materialization predicates, and arbiter action table can be tested independently of vLLM-specific implementation details. The companion MicroRuntime provides executable tests for the contract semantics; Appendix A lists the relevant commands and artifacts. 8yes     
+
+> no
+> Resident reusable KV claim
+> Feasibility check
+> Active request live KV demand Usable KV capacity
+> resident + active <= usable?
+> Serve active and preserve resident
+> Active/resident arbiter
+> Evict or relax resident Defer or preempt active Offload resident or active Bound active live KV Route elsewhere or add capacity
+> Emit refusal or harm telemetry
+> Future reusable admission decision
+
+Figure 3: Active resident KV arbitration 
+
+4.3 vLLM Prototype Evidence 
+
+The vLLM prototype is a patch-level contract hook against vLLM base commit b1388b1 , not an upstream API. The published patch is intentionally narrow and prototype-grade. It adds env-gated JSONL teleme-try, resident claim metadata, write no-admit for selected request ids, protected-resident victim exclusion, claim relaxation/expiry/harm events, scheduler-visible active refusal, and an engine-core path for terminal scheduler outputs. The reproducibility package consists of two commit-pinned public repositories: the MicroRuntime executable model and the vLLM arbiter artifact, including the runtime patch, generated traces, conformance results, and evidence scripts. Detailed artifact paths are listed in Appendix A. 
+
+4.4 Evidence Summary 
+
+The evidence is organized around a small number of deliberately narrow points: • ResidentClaim conformance suite. The vLLM arbiter conformance results.json reports seven passing trace/materialization checks, plus one executable capability-classification check that marks soft priority as an unsound lowering for hard protected claims. This gives the paper a conformance artifact rather than only prose definitions. • Retained fragments below useful threshold. The MicroRuntime materialization harness and controlled vLLM carrier trace show that naive fair share retained 480 / 320 / 304 cached tokens but produced thresholded value 0; complete-prefix and value-density rows retained 640 / 640 / 0 
+
+and produced value 18 . Useful resident KV depends on materialization shape, not raw retained-block count. • Active/resident feasibility boundary. The native BlockPool, hard-claim, and conformance trace for accepted hard-claim infeasibility show that 60 resident blocks plus 70 active blocks exceed an 80-block usable pool. Ordinary allocation evicts residents; hard protection makes active allocation fail. The runtime therefore needs an explicit action when protected resident KV and active live KV cannot both fit. • Write no-admit boundary. The no-admit trace and MicroRuntime active-prefill tests show that 9bulky repeat reuse fell from 1120 cached tokens to 0 in the active-prefill model, while the vLLM no-admit trace still served active allocation through resident victims. Future reusable admission is separate from active live KV allocation. • Chunking boundary. The MicroRuntime active_live.py harness and arbiter tests show that chun-ked schedule 20 / 20 / 20 / 10 accumulates to 70 live active blocks under full attention. Chunked prefill does not bound live KV unless old chunks are freed, offloaded, or recomputed. • Minimal vLLM arbiter prototype. The capacity-sweep artifact shows that below 130 usable blocks, native and write no-admit serve active while losing resident materialization; hard resident exclusion preserves residents and refuses active with blocking_claim_ids . At and above 130 blocks, hard resident exclusion serves active while preserving residents. This changes allocator behavior in the predicted direction and attributes refusal to accepted resident claims. • Live scheduler pressure path. The live-scheduler-pressure summary shows a protected resident claim accepted with 40 resident blocks materialized; an active request requiring 46 blocks is deferred and then refused with blocking claim claim:live-resident , combined resident-plus-active footprint of 86 blocks, a 19-block capacity shortfall, and protected-resident capacity refusal. This explicit active-side action exists in a real vllm.LLM.generate path, not only a direct BlockPool probe. • Prefix reuse TTFT motivation. The live-scheduler traces show repeated prompts seeing cached-token hits and lower TTFT after the first request. Preserved prefix reuse is serving-visible, but this is not evidence of an end-to-end arbiter performance gain. • Prior-art boundary. Public vLLM, SGLang, TensorRT-LLM, Dynamo, Continuum, KVFlow, Pie, Marconi, and Mooncake materials expose substantial KV-retention primitives. The contribution is the active/resident claim contract that specifies accepted-claim lifecycle, materialization, conflict outcomes, and claim-level telemetry. 
+
+## 5. Question-Driven Results 
+
+The evaluation is organized around four questions. Each question corresponds to one failure mode that a resident-claim contract must distinguish from ordinary cache behavior: 1. Can retained block count diverge from useful materialization? 2. Does write no-admit protect resident KV under active pressure? 3. Does the active/resident feasibility boundary force explicit arbitration? 4. Can an observer reconstruct the accepted claim, conflict, and outcome from telemetry? 
+
+5.1 Q1: Is Useful Resident Value Equivalent To Retained Block Count? 
+
+No. The controlled carrier trace, which isolates materialization shape from active-pressure effects, shows that raw retained-block count can disagree with useful resident value. Table 6: Retained tokens versus thresholded materialization value. Policy A cached tokens B cached tokens C cached tokens First missing blocks Thresholded value Native 0 0 0 0 / 0 / 0 0Naive fair share 480 320 304 30 / 20 / 19 
+
+0Complete-prefix fair share 640 640 0 40 / 40 / 0
+
+18 Value density 640 640 0 40 / 40 / 0
+
+18 10 Policy A cached tokens B cached tokens C cached tokens First missing blocks Thresholded value Salted/no-reuse 0 0 0 0 / 0 / 0 0The important row is naive fair share. It retained 1,104 cached tokens across A, B, and C, but failed the policy-defined useful threshold for all spans. Complete-prefix fair share and value density retained fewer total blocks than an infeasible “save everything” baseline, but preserved the leading prefixes that carried value. This result supports a narrow claim: useful predictive residency is not equivalent to retaining arbitrary blocks. It does not support a universal claim that below-threshold cached tokens save literally zero compute under every possible policy. 
+
+5.2 Q2: Does Write No-Admit Protect Resident KV? 
+
+No. The active-prefill no-admit run separates future reusable admission from active live allocation. Table 7: Effect of write no-admit on active reuse and resident sur-vival. Policy Bulky active served? Immediate bulky repeat reusable? Resident 
+
+small_hot 
+
+Resident 
+
+small_warm 
+
+Resident thresholded value Cache-all active prefill Yes 1120 tokens 0 0 0Served-but-not-reusable prefill Yes 0 tokens 0 0 0Density-gated/write no-admit Yes 0 tokens 0 0 0Salted/no-reuse Yes 0 tokens 0 0 0No-admit succeeds at what it actually controls: the bulky request is not reusable on immediate repeat. But no-admit fails as resident protection: both compact resident prefixes still die. The mechanism is that active allocation happens before, or independently from, reusable admission. A shared physical pool still has to hold active KV while the request is served. This explains why a MicroRuntime no-cache prefill row should not be read as an ordinary vLLM write-admission hook. In the model, no-cache prefill is valid only under a stronger mechanism: separate active scratch space, disposable active KV, offload, recomputation, or another action that actually removes active live pressure from the resident pool. Ordinary chunking is the same kind of trap. It schedules compute in smaller pieces, but under full attention it does not bound the live KV footprint unless older chunks are freed, offloaded, or recomputed. 11 Table 8: Active-live KV accumulation under chunked prefill. Chunk Newly scheduled blocks Active live blocks after chunk 1 20 20 2 20 40 3 20 60 4 10 70 With 60 protected resident blocks and 80 usable blocks, the maximum active live footprint still violates the boundary. 
+
+5.3 Q3: Does Infeasibility Force Explicit Arbitration? 
+
+The footprint-density live failure exposed the active/resident boundary directly. The intended resident compact spans required 60 blocks. A bulky active prefill required 70 blocks. The usable pool was 80 blocks. Therefore, preserving both resident prefixes while serving the bulky active request required 130 blocks of state in an 80-block pool. In the active-prefill trace, all policies produced zero resident thresholded value in that setup. A value-density policy protected small prefixes in its logical action log, but the subsequent 70-block active prefill allocated through the protected cached blocks before explicit filler pressure was even needed. The direct BlockPool probe confirms the mechanism: Table 9: BlockPool probe for the 60/70/80 feasibility boundary. Probe Result Resident blocks cached 60 Active blocks requested 70 Usable pool 80 Active allocation from ordinary pool 70 allocated Resident blocks evicted 50 Resident blocks remaining cached 10 Protected via BlockPool.touch Active allocation fails instead of evicting residents The probe shows both sides of the boundary. Without hard protection, resident blocks are free-queue victims. With hard protection, the active request cannot allocate 70 blocks from only 20 remaining free blocks. Protection changes the failure mode; it does not make the impossible fit. The vLLM prototype implements the smallest contract subset needed to change the failure mode: • resident claim metadata attached to materialized prefix-cache blocks; • write no-admit for selected active requests; • hard protected-resident exclusion from ordinary free-block victims; • claim lifecycle events for accepted, materialized, demoted, expired, and harmed claims; • scheduler-visible active refusal when protected residents consume the required headroom. The allocator-level capacity sweep uses the canonical 60 resident / 70 active case. The capacity-sweep heatmap shows the full sweep rather than representative rows. This sweep is the central prototype result. It does not show that the arbiter improves production throughput or latency. It shows that the contract is operational: below the feasibility boundary, hard resident exclusion changes the outcome from unreported resident loss to explicit active-side action; at the boundary, active service and resident preservation coexist. 12 80 90 100 110 120 130 150                     
+
+> Usable KV blocks
+> Native
+> Write no-admit
+> Hard resident exclusion
+> served
+> lost served
+> lost served
+> lost served
+> lost served
+> lost served
+> kept served
+> kept
+> served
+> lost served
+> lost served
+> lost served
+> lost served
+> lost served
+> kept served
+> kept
+> refused
+> kept refused
+> kept refused
+> kept refused
+> kept refused
+> kept served
+> kept served
+> kept
+> 130 = 60 resident + 70 active
+> Capacity sweep outcome for a 60-block resident claim and 70-block active request
+> Active served, resident preserved Active served, resident lost Active refused, resident preserved
+
+Figure 4: Capacity sweep for a 60-block resident claim and 70-block active request. Native and write-no-admit policies serve active work below the 130-block feasibility boundary by losing resident reusable KV. Hard resident exclusion preserves the accepted resident claim and converts infeasible active/resident coexistence into scheduler-visible refusal. At and above 130 usable blocks, active and resident KV can coexist. Source artifact: kv-residency-vllm-arbiter/artifacts/capacity_sweep/capacity_sweep_results.json ; re-produced with make capacity-sweep .
+
+5.4 Q4: Can An Observer Reconstruct The Outcome? 
+
+Yes, for the prototype traces. The artifact includes a conformance suite in addition to the prototype patch. The suite generates fresh direct vLLM traces for the canonical allocator cases and combines them with executable materialization tests from the MicroRuntime. The cited artifact reports seven executable trace/materialization checks plus one executable capability-classification check. The first seven checks exercise MicroRuntime or direct vLLM traces; the final check is not a runtime probe, but a soundness classification over backend capabilities. The checks are: • L1: No accepted claim, no claim harm. Ordinary cached-prefix eviction may remove resident blocks, but cannot be labeled claim harm without claim acceptance. The native 60/70/80 trace has 50 resident victims, zero accepted claims, and zero claim-harm events. • L2: Write no-admit separation. Future reusable admission denial is separate from active-live allocation. The trace serves active work, denies future reuse, and still leaves 50 resident victims. • L3: Hard-claim infeasibility. Accepted hard claims under infeasible pressure require explicit active-side action or release/harm telemetry. The trace includes claim acceptance, materialization, and active refusal attributed to claim:resident , with 130 resident-plus-active blocks, 80 usable blocks, and a 50-block capacity shortfall. • L4/L5: Demotion or expiry before loss. Later block loss after demotion or expiry is not claim harm. The demotion and expiry traces each record the lifecycle transition, zero claim-harm events, and 50 block-loss-after-release events. • L6: Materialization failure. Surviving blocks can still fail the useful-prefix predicate. The syn-thetic predicate row has 59 surviving blocks, zero leading blocks, a 60-block requirement, and failed materialization. • L7: Trace reconstruction. An external observer can reconstruct acceptance, materialization, active conflict, blocking claims, and final outcome. The L3 trace contains accepted and materialized lifecycle events plus attributed active refusal. • C1: Backend capability classification. Soft priority must not be treated as a sound hard-claim lowering. The capability check marks hard-protected claims lowered to soft priority as unsound and assigns soft priority to an approximate conformance class. 13 The suite provides direct causal attribution for the active refusal event. The canonical refusal event names the blocking resident claim and records the capacity proof: 
+
+{"event": "active_request_refused", "request_id": "active", "blocking_claim_ids": ["claim:resident"], "protected_resident_blocks": 60, "active_live_blocks_required": 70, "resident_plus_active_blocks": 130, "usable_blocks": 80, "capacity_shortfall_blocks": 50, "feasibility": "infeasible_preserve_resident_and_active" }
+
+The scheduler-path pressure run exercises vllm.LLM.generate , not only direct BlockPool calls. It uses a smaller SmolLM2 setup with constrained KV memory, a protected resident claim, and a distinct active request. The active request is deferred by the scheduler gate and then returned as a controlled terminal output: Table 10: Live scheduler-path pressure observations. Field Observation Runtime path vllm.LLM.generate 
+
+Model SmolLM2-135M-Instruct 
+
+Protected resident materialized events 40 Active deferred events 1Active refused events 1Active stop reason protected_resident_capacity_refused 
+
+Resident claim accepted events 1Blocking claim ids ["claim:live-resident"] 
+
+Capacity proof 40 + 46 = 86 > 68 , shortfall 19 blocks This is an analogous live scheduler-path pressure case, not the exact 60/70/80 allocator case. Its role is to show that the explicit active-side action can propagate through vLLM’s serving path. Prefix-cache scheduler runs with SmolLM2 and Qwen2.5-Coder-7B-Instruct show that repeated prompts receive cached-token hits and lower TTFT after the first request. For example, the Qwen run reports 464 
+
+cached tokens on repeated prompts and TTFT dropping from about 0.345s on the first request to about 
+
+0.042s and 0.035s on repeats. These TTFT rows motivate why resident prefix survival can matter, but they are not evidence that the arbiter improves end-to-end serving performance. 
+
+5.5 Boundary: Runtime Primitives Are Fragments Of The Contract 
+
+The prior-art boundary table in Section 2.2 anchors the final claim. Existing runtimes do have relevant primitives, and several are plausible lowering targets for this contract. The open question is whether those primitives expose the full contract as one coherent claim surface: accepted-claim lifecycle, materialization predicate, active/resident conflict outcome, and claim-level harm/refusal telemetry. This is why the paper is viable under the mechanisms framing. The claim is not that modern runtimes lack retention primitives. The claim is that retention primitives need an active/resident ownership contract to be semantically complete. With that boundary fixed, existing primitives can be evaluated by whether they satisfy the contract natively, approximately, or only with adapter support. 14 6. Anomalies Resolved 
+
+The active/resident framing explains several observations that a pure “better cache eviction” framing does not explain cleanly. 
+
+No-admit stops future reuse but residents still die. This is not a contradiction. No-admit controls future reusable admission. Resident death happens during active live allocation from the same physical pool. 
+
+Naive fair share retained many blocks but produced zero useful value. This is not because fair share retained no KV. It retained the wrong shape of KV: fragments below the leading-prefix thresholds that carried policy-defined value. 
+
+Hard resident protection can make active allocation fail. That is the expected result when resident + active > usable . Protection converts unreported resident loss into an explicit active-side refusal, deferral, or need for another action. 
+
+Chunking did not solve the full-attention case. Chunking a prefill schedule is not equivalent to bounding live KV. Under full attention, previous chunks remain live unless the runtime introduces offload, recomputation, or another memory-reduction mechanism. 
+
+Strong prior art defines the lowering targets. TensorRT-LLM, SGLang/HiCache, Dynamo, Contin-uum, KVFlow, Pie, Marconi, and Mooncake-style storage are exactly the kind of mechanisms a real system needs. The contract defines the obligations those mechanisms would need to satisfy around accepted resident claims, useful materialization predicates, feasibility checks, action choice, and claim-level telemetry. 
+
+## 7. Prototype And Proposed Runtime Surface 
+
+A runtime-level active/resident contract should expose at least the following concepts. Table 11: Proposed runtime surface for active/resident KV claims. Field or hook Purpose Cache-equivalence identity Defines when the claimed prefix object is actually reusable: model, tokenizer/hash domain, namespace, block size, adapter, and KV format. Resident protected footprint How many blocks or bytes are being claimed for future reuse. Useful-prefix materialization rule What shape of survival carries value, for example a leading prefix threshold. Active live footprint estimate How much KV the active request must hold while being served. Usable KV capacity and headroom The physical boundary for resident plus active KV. Protection mode Whether the claim is soft priority, hard protected, demotable, offloadable, expiring, or best effort. Future reusable admission decision Whether newly produced active KV should be admitted for later reuse. Claim-level telemetry Whether a claim was accepted, refused, demoted, evicted, offloaded, or harmed, with value loss. Optional policy inputs Value, confidence, budgets, deadlines, and route/offload costs can guide admission controllers, but they are not required fields in the conformance schema. The vLLM prototype implements a minimal subset of this surface: hard resident victim exclusion, write no-admit as a separate admission control, claim lifecycle events, and scheduler-visible active refusal. It does not implement a stable public API, offload, routing, recompute, learned prediction, or an optimized policy. 15 That small surface already distinguishes three cases common vocabulary tends to blur: 1. Active request served and resident claim preserved. 2. Active request served by harming, relaxing, or offloading resident claim. 3. Active request refused or delayed because resident claim is protected. 
+
+## 8. Falsifiable Predictions 
+
+The mechanism makes falsifiable predictions, each tested by the cited artifacts. Table 12: Falsifiable predictions and observed outcomes. Prediction Outcome Naive fair share can retain blocks while failing thresholded leading-prefix value. Confirmed in the controlled carrier trace: 480 / 320 / 304 cached tokens but value 0.Complete-prefix or value-density policies can outperform raw block-sharing under thresholded value. Confirmed: 640 / 640 / 0 and value 18 .Write no-admit prevents bulky future reuse. Confirmed: bulky repeat fell from 1120 cached tokens to 0.Write no-admit alone does not protect residents from active allocation pressure. Confirmed: resident small_hot and small_warm 
+
+both returned 0.If protected resident and active live KV exceed usable capacity, another action is required. Confirmed by live failure, direct BlockPool probe, and MicroRuntime arbiter. Ordinary chunk scheduling does not bound live KV under full attention. Confirmed by MicroRuntime active-live accumulation analysis. Hard protected-resident exclusion should convert sub-boundary pressure into active-side refusal. Confirmed in the allocator-level capacity sweep below 130 usable blocks. The explicit active-side action should be observable in a real scheduler path. Confirmed in a SmolLM2 vllm.LLM.generate 
+
+pressure run with 
+
+protected_resident_capacity_refused .
+
+## 9. Claim Boundaries And Limitations 
+
+The evidence supports the following claims. Table 13: Claims supported by the current evidence. Supported claim Basis Future-reuse hints cannot be treated as unconditional commands. The active/resident capacity inequality can be physically infeasible. Retained KV blocks are not the right value unit. Controlled carrier trace shows retained fragments with zero thresholded value. Useful prefix reuse depends on materialization shape. Ledger-checked leading-prefix survival distinguishes naive and complete policies. Active live KV can evict resident reusable KV before write admission matters. Public no-admit trace, native BlockPool trace, and vLLM prototype patch. No-admit alone is insufficient for resident protection. Bulky repeat reuse is eliminated while residents still die. Chunking compute is not the same as bounding active live KV. MicroRuntime full-attention accumulation. A minimal active/resident contract can be implemented inside vLLM. Prototype capacity sweep and live scheduler pressure run. 16 Supported claim Basis Prefix reuse has serving-visible TTFT effects. Repeated-prefix scheduler runs show cached-token hits and lower TTFT after the first request. Existing runtimes and orchestration systems expose fragments, not a unified active/resident claim contract. vLLM, SGLang, TensorRT-LLM, Dynamo, Continuum, KVFlow, Pie, Marconi, and Mooncake comparison. The evidence does not support the following claims. Table 14: Claims not supported by the current evidence. Unsupported claim Why it is out of scope Production LLM serving speedup No production traffic benchmark or latency study is presented. p95 or p99 latency improvement The measurements are mechanism counterexamples, not latency evaluations. Universal allocator superiority The proposed contract names actions; it does not prove one global policy. Runtime superiority over TensorRT-LLM, SGLang, or vLLM The paper compares abstractions and mechanisms, not optimized systems. Upstream-ready API The prototype is env-var driven and patch-level; it is not a stabilized API design. Learned prediction validation Reuse value and confidence are inputs, not learned predictors evaluated here. Empirical cross-runtime generality vLLM is the live runtime; SGLang and TensorRT-LLM are source/design comparators. Multi-tenant fairness Fairness across tenants is orthogonal and not solved here. 
+
+## 10. Discussion 
+
+This paper should be read as a systems-mechanisms paper rather than a production-performance evaluation. A performance study would need workload distributions, latency and throughput measurements, memory-overhead accounting, policy tuning, cross-model replication, and comparisons against optimized runtime knobs. The contribution here is narrower: it identifies an abstraction boundary that current terminology blurs, demonstrates that the boundary appears in a real runtime, shows why simpler primitives fail, and implements a minimal contract subset that changes the conflict outcome. The practical value of the contract is diagnostic as much as prescriptive. Once resident reusable KV, active live KV, and future reusable admission are separate concepts, several engineering decisions become explicit: • A write no-admit hook should not be sold as resident protection. • A resident priority hint should specify whether it is soft ranking, hard victim exclusion, or a claim that can refuse active work. • A chunked prefill scheduler should report whether it bounds live KV or only schedules compute in smaller bursts. • Offload should say whether it demotes residents, active state, or future reusable admissions. • Telemetry should attribute harm to resident claims, not just emit block store and remove events. The TensorRT-LLM and Dynamo comparisons illustrate this boundary. A strong runtime or orchestration layer can contain most of the ingredients and still motivate the contract, because the paper’s unit is not a single primitive. The unit is the semantic path from prediction to accepted claim, protected materialization, active conflict resolution, and telemetry. 17 The TTFT evidence should be read narrowly. It shows that prefix reuse is visible at the serving interface, so preserving resident prefixes can matter. It does not show that the arbiter improves overall inference performance, because the arbiter can intentionally defer or refuse active work. 
+
+## 11. Conclusion 
+
+Predictive KV residency is a claim on future useful materialization, not merely a suggestion to rank cached blocks. When active live KV and resident reusable KV do not fit in the same usable pool, a runtime must arbitrate ownership. Retention priority, write no-admit, chunked prefill, cache replacement, routing, storage, and offload are all useful pieces, but each is incomplete when treated as the whole mechanism. Controlled vLLM traces demonstrate the counterexample in the controlled prototype setting. The Mi-croRuntime isolates the contract semantics. The vLLM prototype shows the minimal contract behavior in allocator-level and scheduler-path settings. The runtime and prior-art audits bound the novelty claim. Together, these artifacts support the central claim: existing retention primitives should be understood as fragments of a resident-claim contract for active/resident KV arbitration. 
+
+## References 
+
+[1] Woosuk Kwon et al., “Efficient Memory Management for Large Language Model Serving with PagedAt-tention,” arXiv, https://arxiv.org/abs/2309.06180. [2] vLLM prefix caching documentation, https://docs.vllm.ai/en/v0.17.0/design/prefix_caching/. [3] vLLM issue “[RFC]: Context-Aware KV-Cache Retention API (Prioritized Evictions),” https://github.c om/vllm-project/vllm/issues/37003. [4] NVIDIA Developer Blog, “Introducing New KV Cache Reuse Optimizations in NVIDIA TensorRT-LLM,” https://developer.nvidia.com/blog/introducing-new-kv-cache-reuse-optimizations-in-nvidia-tensorrt-llm/. [5] TensorRT-LLM KV cache documentation, https://nvidia.github.io/TensorRT-LLM/features/kvcache.h tml. [6] TensorRT-LLM useful runtime flags documentation, https://nvidia.github.io/TensorRT-LLM/performa nce/performance-tuning-guide/useful-runtime-flags.html. [7] SGLang HiCache design documentation, https://docs.sglang.io/docs/advanced_features/hicache_desi gn. [8] SGLang server arguments documentation, https://docs.sglang.io/docs/advanced_features/server_arg uments. [9] NVIDIA Dynamo agentic workflow documentation, https://docs.nvidia.com/dynamo/dev/user-guides/a gents. [10] NVIDIA Dynamo SGLang agentic workload documentation, https://docs.nvidia.com/dynamo/dev/bac kends/sg-lang/agentic-workloads. [11] H. Li et al., “Continuum: Efficient and Robust Multi-Turn LLM Agent Scheduling with KV Cache Time-to-Live,” arXiv, https://arxiv.org/abs/2511.02230. [12] Z. Pan et al., “KVFlow: Efficient Prefix Caching for Accelerating LLM-Based Multi-Agent Workflows,” arXiv, https://arxiv.org/abs/2507.07400. [13] In Gim et al., “Pie: A Programmable Serving System for Emerging LLM Applications,” SOSP 2025 / arXiv, https://arxiv.org/abs/2510.24051. [14] Rui Pan et al., “Marconi: Prefix Caching for the Era of Hybrid LLMs,” Proceedings of Machine Learning and Systems 7 (MLSys 2025), https://proceedings.mlsys.org/paper_files/paper/2025/hash/7c180af017258d 239bac6248d1eb26ac-Abstract-Conference.html. 18 [15] vLLM project blog, “vLLM x Mooncake: KV Cache-Centric Disaggregated Architecture for LLM Serv-ing,” https://vllm.ai/blog/2026-05-06-mooncake-store. 
+
+## Appendix A: Reproducibility Inventory 
+
+This inventory records the public, commit-pinned artifacts used by the manuscript. Claims in the paper are tied to the public repositories, generated artifact files, and commands listed below; no result depends on private run capsules. The live runtime evidence uses controlled vLLM 0.19.1 runs with the prototype patch below, plus a companion MicroRuntime model. The most deterministic checks are the MicroRuntime pytest suite, direct BlockPool probes, capacity sweep, and conformance reconstruction. TTFT traces are serving-visible motivation only and can vary with hardware, model loading, and scheduler configuration. Primary public repositories: • MicroRuntime model: gustavgauge/kv-residency-microruntime@0dca404 .• vLLM arbiter artifact: gustavgauge/kv-residency-vllm-arbiter@816541d .Artifact-to-result map: • Q1 materialization predicate. Artifacts: materialization fidelity test and materialization report. Commands: run the materialization fidelity pytest and the materialization report script. • Q2 write no-admit boundary. Artifacts: no-admit summary, L2 conformance summary, and active-prefill admission test. Commands: make no-admit-probe , make conformance , and the active-prefill pytest. • Q3 60/70/80 native boundary. Artifacts: native BlockPool summary and hard-claim sum-mary. Commands: make native-blockpool-probe native-summary and make hard-claim-probe classify-hard-claim .• Q3 capacity sweep. Artifacts: capacity-sweep results and capacity-sweep heatmap. Commands: 
+
+make capacity-sweep ; render the figure with tools/render_capacity_sweep_heatmap.py .• Q4 conformance and reconstruction. Artifacts: conformance results and L3 infeasibility trace. Command: make conformance .• Claim demotion and expiry. Artifacts: demotion summary and expiry summary. Commands: 
+
+make claim-lifecycle and make conformance .• Live scheduler pressure path. Artifact: pressure summary. Command: make live-scheduler-pressure. • TTFT motivation only. Artifacts: live-scheduler summary and Qwen summary. Command: make live-scheduler .• Prior-art capability boundary. Artifact: prior-art boundary note. Command: make prior-art .Primary model and tests: • src/kvrt/contract.py 
+
+• src/kvrt/active_live.py 
+
+• src/kvrt/arbiter.py 
+
+• docs/hard-seeds/decision.md 
+
+• tests/test_resident_claim_contract.py 
+
+• tests/test_materialization_harness.py 
+
+• tests/test_active_resident_arbiter.py 
+
+• tests/test_active_prefill_admission.py 
+
+Primary vLLM prototype artifacts: • patches/vllm_resident_claim_prototype.patch 
+
+19 • src/kv_vllm_arbiter/conformance.py 
+
+• tests/test_conformance.py 
+
+• scripts/run_conformance_suite.py 
+
+• artifacts/conformance/results.json 
+
+• artifacts/conformance/summary.md 
+
+• artifacts/conformance/L3_hard_claim_infeasibility.jsonl 
+
+• artifacts/conformance/L3_hard_claim_infeasibility_summary.json 
+
+• artifacts/capacity_sweep/capacity_sweep_results.json 
+
+• artifacts/live_scheduler_pressure/summary.json 
+
+• artifacts/claim_lifecycle/demote_summary.json 
+
+• artifacts/claim_lifecycle/expire_summary.json 
+
+20
