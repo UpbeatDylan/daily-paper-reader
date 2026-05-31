@@ -25,3 +25,68 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: PIC
+      description: 每日检索与PIC/position-independent KV cache优化相关的最新论文
+      enabled: true
+      paper_sources:
+        - arxiv
+        - biorxiv
+      keywords:
+        - keyword: position independent caching
+          keyword_cn: 位置无关缓存
+          query: position independent caching for LLM inference acceleration
+        - keyword: KV cache reuse
+          keyword_cn: KV缓存复用
+          query: KV cache reuse in large language model inference
+        - keyword: prefix caching
+          keyword_cn: 前缀缓存
+          query: prefix caching techniques for LLM inference
+        - keyword: prompt caching
+          keyword_cn: 提示缓存
+          query: prompt caching for reducing inference latency
+        - keyword: context caching
+          keyword_cn: 上下文缓存
+          query: context caching for long context LLM inference
+        - keyword: long context inference
+          keyword_cn: 长上下文推理
+          query: long context inference acceleration methods
+      intent_queries:
+        - query: How does position independent caching improve long context inference?
+          query_cn: 位置无关缓存如何改善长上下文推理？
+          enabled: true
+          source: manual
+          note: ''
+        - query: What are the latest methods for KV cache reuse in LLM inference?
+          query_cn: 大模型推理中KV缓存复用的最新方法有哪些？
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-05-31T08:09:49.166Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
+  biorxiv:
+    papers_table: biorxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_biorxiv_papers_exact
+    vector_rpc_exact: match_biorxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_biorxiv_papers_bm25
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
