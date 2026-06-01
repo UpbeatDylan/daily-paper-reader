@@ -1,0 +1,69 @@
+{
+  "label": "2026-06-01",
+  "date": "2026-06-01",
+  "generated_at": "2026-06-01T22:31:26",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202606/01/2605.31105v1-grkv-global-regression-for-training-free-kv-cache-compression-in-long-context-llms",
+      "section": "deep",
+      "title_en": "GRKV: Global Regression for Training-Free KV Cache Compression in Long-Context LLMs",
+      "authors": "Junjie Peng, You Wu, Haoyi Wu, Jialong Han, Xiaohua Xie, Kewei Tu, Jianhuang Lai",
+      "date": "2026-05-29",
+      "pdf": "https://arxiv.org/pdf/2605.31105v1",
+      "score": "8.0",
+      "evidence": "长上下文大语言模型的KV缓存压缩",
+      "tldr": "长上下文大语言模型（LLM）依赖KV缓存实现长文本推理，但缓存内存开销巨大，急需压缩。现有基于span保留的合并方法，因合并集中于少量边界token，导致信息损失严重。本文提出GRKV，一种无训练方法，通过全局岭回归直接最小化压缩缓存与全缓存的注意力输出差异，并正则化防止过平滑。在LongBench和RULER基准上，GRKV是唯一提升整体性能的合并方法，且计算开销极低。GRKV平衡了合并分布，显著减少信息损失，为长上下文LLM高效推理提供了轻量级训练免费方案。",
+      "tags": "query:pic",
+      "abstract_en": "Large language models (LLMs) with extended context lengths rely on the key-value (KV) cache to support attention over prior tokens. However, maintaining the KV cache incurs substantial memory overhead, motivating KV-cache compression methods that enforce a fixed budget through eviction and merging. Modern eviction methods increasingly adopt span-based retention because preserving contiguous spans is empirically effective and better preserves semantic coherence. Yet, when combined with post-eviction merging, span-based retention concentrates merges onto a small set of span-boundary carrier tokens, producing a highly imbalanced merge pattern that exacerbates over-merging and increases information loss. To address this imbalance, we propose GRKV (Global Regression for KV Cache), a training-free KV-cache merging method that directly minimizes the discrepancy between compressed-cache and full-cache attention outputs. GRKV uses ridge-regression-based merge steps to distribute information from evicted tokens across retained tokens, while regularizing the updates to prevent over-smoothing. Across the LongBench and RULER long-context benchmarks, GRKV is the only merging method that improves overall performance with minimal overhead.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/01/2605.28095v1-sidp-memory-efficient-data-parallelism-for-offline-llm-inference",
+      "section": "quick",
+      "title_en": "SiDP: Memory-Efficient Data Parallelism for Offline LLM Inference",
+      "authors": "Alan Zhao, Cyril Y. He",
+      "date": "2026-05-27",
+      "pdf": "https://arxiv.org/pdf/2605.28095v1",
+      "score": "7.0",
+      "evidence": "内存高效数据并行释放GPU内存用于KV缓存，支持长上下文推理的大批量处理",
+      "tldr": "离线LLM推理中，数据并行因复制模型权重导致GPU显存紧张，限制KV缓存容量和批大小。SiDP将权重组织为分布式池，通过Weight-as-a-Service流式缓存和Compute-as-a-Service激活迁移两种按需访问模式，在多种GPU和模型上实现KV容量提升1.8倍，端到端吞吐提升1.5倍，为离线推理提供了内存高效的数据并行新范式。",
+      "tags": "query:pic",
+      "abstract_en": "The rapid adoption of large language models (LLMs) has shifted a substantial portion of inference workloads into throughput-oriented offline regimes, where fully utilizing GPU compute requires large batch sizes. However, existing deployments face a structural tension. Data parallelism (DP) scales throughput well but replicates model weights, leaving limited GPU memory for key-value (KV) cache and constraining batch size. Model parallelism reduces per-device weights, but requires fine-grained synchronization that erodes DP's independence and scheduling flexibility. We present SiDP, a memory-efficient data-parallel paradigm for offline LLM inference that treats weights as a bandwidth-backed shared resource inside a DP group. Instead of storing the full model on every GPU, SiDP organizes weights as a distributed pool: each layer is owned by a single GPU, and other replicas access its weights on demand via two complementary execution modes: a Weight-as-a-Service (WaS) mode that streams remote weights over NVLink into a small cache in the large-batch regime, and a Compute-as-a-Service (CaS) mode that ships activations to owners in the small-batch tail. Evaluated on NVIDIA H20, H200, and B200 GPUs with Qwen3-32B, Qwen2.5-72B, and Llama-3.1-70B, SiDP increases usable KV capacity by up to 1.8x under the same configurations, and converts this into up to 1.5x higher end-to-end throughput over baselines (vLLM) for offline workloads.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/01/2605.30574v1-probing-the-prompt-kv-cache-where-it-becomes-dispensable",
+      "section": "quick",
+      "title_en": "Probing the Prompt KV Cache: Where It Becomes Dispensable",
+      "authors": "Vinayshekhar Bannihatti Kumar, Manoj Ghuhan Arivazhagan, Disha Makhija, Rashmi Gangadharaiah",
+      "date": "2026-05-28",
+      "pdf": "https://arxiv.org/pdf/2605.30574v1",
+      "score": "7.0",
+      "evidence": "探测提示KV缓存冗余性，为KV缓存复用提供见解",
+      "tldr": "当前KV缓存压缩方案常丢弃部分prompt缓存而不损失精度，但冗余的本质不清晰。本文通过逐层截断和解码步数干预，系统探究prompt KV缓存的可替换性。发现上层缓存冗余源于聊天模板的格式支架，而非实际内容。将上层缓存替换为中性填充物的支架KV缓存，精度几乎无损；而直接清零则精度崩坏。这一发现澄清了冗余类型，适用于Qwen3、Gemma 3、Llama 3等模型。",
+      "tags": "query:pic",
+      "abstract_en": "Prior KV cache compression schemes empirically demonstrate that the prompt cache is partially redundant during decoding, dropping or summarising entries with little accuracy loss. We ask when and what kind of redundancy: at which layers, after how many decoding steps, and in what form can the prompt span KV cache be replaced without breaking the task. A controlled splice intervention swept over layer cutoff and decoding steps shows this redundancy is about form (chat template scaffolding) rather than content. Replacing the upper layer prompt span KV cache with KV cache from a chat template scaffold whose user content is a neutral filler recovers near clean accuracy, while zeroing the same slots collapses accuracy. The dissociation replicates across the Qwen3, Gemma 3, and Llama 3 families on multiple datasets.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/01/2605.31598v1-linear-scaling-video-vlms-for-long-video-understanding",
+      "section": "quick",
+      "title_en": "Linear Scaling Video VLMs for Long Video Understanding",
+      "authors": "Cristobal Eyzaguirre, Jiajun Wu, Juan Carlos Niebles",
+      "date": "2026-05-29",
+      "pdf": "https://arxiv.org/pdf/2605.31598v1",
+      "score": "7.0",
+      "evidence": "StateKV：固定容量循环状态和逐帧缓存实现长视频理解中的线性时间预填充",
+      "tldr": "长视频VLM的时空自注意力计算量随帧数平方增长，现有简化方法精度下降。本文提出StateKV，通过固定容量基于重要性的循环状态传递跨帧信息，解码时配合全帧缓存，将视频预填充复杂度降至线性。在多个基准和模型上，StateKV精度接近全自注意力，优于滑动窗口等方法，且无需微调。该方法在固定计算预算下可运行更大模型，为可扩展长视频理解提供实用方案。",
+      "tags": "query:pic",
+      "abstract_en": "Video vision-language models (VLMs) are increasingly used in long-horizon and streaming settings, yet most video encoders still rely on spatiotemporal self-attention, causing compute and latency to grow quadratically with the number of frames. Existing efficiency methods improve scalability but often lose accuracy relative to full self-attention, for example through aggressive frame/token dropping or coarse attention approximations. We introduce StateKV, an inference-time method that adapts pretrained long-video VLMs to linear-time video prefill by carrying cross-frame context in a fixed-capacity, importance-based recurrent state, paired with a second full per-frame cache used for decoding. Across three long-video benchmarks and seven models spanning three families and multiple scales, StateKV remains close to full self-attention and consistently outperforms dominant sliding-window / recency-based streaming approximations, without fine-tuning or architectural changes. StateKV also reduces video-prefill cost measured FLOPs, enabling stronger accuracy at a fixed compute budget by running larger models. These results suggest a practical step toward scalable long-video understanding.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
