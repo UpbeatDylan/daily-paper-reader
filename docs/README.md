@@ -6,32 +6,47 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-01
-- 运行时间：2026-06-01 22:31:21 UTC
+- 最新运行日期：2026-06-02
+- 运行时间：2026-06-02 22:30:20 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：1
-- 速读区：3
+- 本次总论文数：9
+- 精读区：3
+- 速读区：6
 
 ### 今日简报（AI）
-今日精读1篇、速读3篇长上下文LLM与视频理解相关论文。重点推荐《GRKV: Global Regression for Training-Free KV Cache Compression in Long-Context LLMs》与《SiDP: Memory-Efficient Data Parallelism for Offline LLM Inference》，前者实现无训练高效缓存压缩，后者优化离线推理内存。建议关注KV缓存压缩技术在大模型长文本场景的实际落地效果。
-- 详情：[/202606/01/README](/202606/01/README)
+今日聚焦KV Cache优化，精读两篇高分论文，分别提出代理推理指令与长上下文驱逐策略。最值得关注Leyline的KV Cache指令和MomentKV的方向性缓存驱逐，均获9.0高分。建议优先精读这两篇，以掌握长上下文推理中缓存管理的关键技术。
+- 详情：[/202606/02/README](/202606/02/README)
 
 ### 精读区论文标签
-1. [GRKV: Global Regression for Training-Free KV Cache Compression in Long-Context LLMs](/202606/01/2605.31105v1-grkv-global-regression-for-training-free-kv-cache-compression-in-long-context-llms)  
+1. [Leyline: KV Cache Directives for Agentic Inference](/202606/02/2606.01065v1-leyline-kv-cache-directives-for-agentic-inference)  
+   标签：评分：9.0/10、query:pic
+   evidence：面向智能体LLM推理的位置无关缓存
+2. [MomentKV: Closing the Directional Gap in KV Cache Eviction for Long-Context Inference](/202606/02/2606.01563v1-momentkv-closing-the-directional-gap-in-kv-cache-eviction-for-long-context-inference)  
+   标签：评分：9.0/10、query:pic
+   evidence：面向长上下文LLM推理的KV缓存驱逐，解决方向不匹配问题
+3. [Idleness is Relative: Exploiting Tool-Call Idle Windows for Offloading in Agentic Systems with MORI](/202606/02/2606.00866v1-idleness-is-relative-exploiting-tool-call-idle-windows-for-offloading-in-agentic-systems-with-mori)  
    标签：评分：8.0/10、query:pic
-   evidence：长上下文大语言模型的KV缓存压缩
+   evidence：利用工具调用空闲窗口卸载并复用KV缓存
 
 ### 速读区论文标签
-1. [SiDP: Memory-Efficient Data Parallelism for Offline LLM Inference](/202606/01/2605.28095v1-sidp-memory-efficient-data-parallelism-for-offline-llm-inference)  
+1. [WaveFilter: Enhancing the Long-Context Capability of Diffusion LLMs via Wavelet-Guided KV Cache Filtering](/202606/02/2606.00724v1-wavefilter-enhancing-the-long-context-capability-of-diffusion-llms-via-wavelet-guided-kv-cache-filtering)  
    标签：评分：7.0/10、query:pic
-   evidence：内存高效数据并行释放GPU内存用于KV缓存，支持长上下文推理的大批量处理
-2. [Probing the Prompt KV Cache: Where It Becomes Dispensable](/202606/01/2605.30574v1-probing-the-prompt-kv-cache-where-it-becomes-dispensable)  
+   evidence：小波引导的KV缓存过滤以提升扩散LLM长上下文能力
+2. [Hybrid Verified Decoding: Learning to Allocate Verification in Speculative Decoding](/202606/02/2606.01019v1-hybrid-verified-decoding-learning-to-allocate-verification-in-speculative-decoding)  
    标签：评分：7.0/10、query:pic
-   evidence：探测提示KV缓存冗余性，为KV缓存复用提供见解
-3. [Linear Scaling Video VLMs for Long Video Understanding](/202606/01/2605.31598v1-linear-scaling-video-vlms-for-long-video-understanding)  
+   evidence：推测解码中的KV缓存重用
+3. [LongAttnComp: Cross-Family Context Compression for Long-Context Reasoning](/202606/02/2606.01336v1-longattncomp-cross-family-context-compression-for-long-context-reasoning)  
    标签：评分：7.0/10、query:pic
-   evidence：StateKV：固定容量循环状态和逐帧缓存实现长视频理解中的线性时间预填充
+   evidence：上下文压缩以提升长上下文推理效率
+4. [Move the Query, Not the Cache: Characterizing Cross-Instance Latent Attention Redistribution Across GPU Fabrics](/202606/02/2606.01502v1-move-the-query-not-the-cache-characterizing-cross-instance-latent-attention-redistribution-across-gpu-fabrics)  
+   标签：评分：7.0/10、query:pic
+   evidence：跨实例KV缓存重分布与潜在注意力
+5. [Lodestar: An Online-Learning LLM Inference Router](/202606/02/2606.00946v1-lodestar-an-online-learning-llm-inference-router)  
+   标签：评分：6.0/10、query:pic
+   evidence：请求路由中考虑KV缓存重用
+6. [Soft-NBCE: Entropy-Weighted Chunk Fusion for Long-Context](/202606/02/2606.01101v1-soft-nbce-entropy-weighted-chunk-fusion-for-long-context)  
+   标签：评分：6.0/10、query:pic
+   evidence：提出软熵加权块融合用于长上下文推理加速
 
 
 <div class="dpr-home-promo-card">
