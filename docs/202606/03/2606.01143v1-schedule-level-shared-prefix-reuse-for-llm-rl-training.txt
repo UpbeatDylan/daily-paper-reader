@@ -1,0 +1,927 @@
+Title: Schedule-Level Shared-Prefix Reuse for LLM RL Training
+
+URL Source: https://arxiv.org/pdf/2606.01143v1
+
+Published Time: Tue, 02 Jun 2026 01:23:04 GMT
+
+Number of Pages: 27
+
+Markdown Content:
+# Schedule-Level Shared-Prefix Reuse for LLM RL Training 
+
+Pengbo Li 1,2 Feiyuan Zhang 1,2 Guangming Sheng 2
+
+Guangxin He 1,2 Di Chai 3 Ziniu Li 2
+
+Taiqiang Wu 4 Wenyu Mao 2 Binhang Yuan 1,* Kai Chen 1,* 
+
+> 1
+
+The Hong Kong University of Science and Technology 
+
+> 2
+
+Tencent 
+
+> 3
+
+Shanghai University of Finance and Economics 
+
+> 4
+
+The University of Hong Kong 
+
+> *
+
+Corresponding authors 
+
+Abstract 
+
+GRPO- and PPO-style LLM post-training commonly sample multiple trajectories from the same prompt and then train on the resulting group. In long-context RL workloads, this shared prompt-side prefix can contain retrieved passages, visual tokens, tool schemas, system instructions, or task context, while the full rollout group is still too large to pack into one training microbatch. Standard dense trainers therefore recompute the same prefix forward and backward for every trajectory. We present a schedule-level reuse mechanism that decouples prefix and suffix computation. The schedule runs prefix forward once, executes suffixes as ordinary microbatches while reading prefix K/V and accumulating prefix-side gK/gV , and then runs prefix backward once on the accumulated gradient cache. This reordered schedule is equivalent to baseline training over real arithmetic and aligns numerically within finite-precision tolerance. Because only K/V and 
+
+gK/gV are hot during suffix computation, the approach offloads dormant prefix activations, integrates with TP/EP/CP/PP and DP-style placement at the execution level, and preserves aux-loss-based MoE router semantics through logical prefix-token accounting. On dense Llama3-8B, Qwen3-8B, and MoE Qwen3-MoE-30B-A3B configurations, the schedule matches optimizer updates across TP/CP/PP/EP combinations, aligns on a 100-step real RL trace replay, reaches up to 4.395 × speedup ( 2.930 × under a conservative compile-on comparison) as prefix ratio and rollout group size grow, and reduces Phase-B peak HBM by up to 59 .1% , extending the Llama3-8B capacity frontier from 17,920 to 29,696 total tokens. 
+
+Keywords: large-scale training, reinforcement learning, prefix reuse, distributed systems 
+
+# 1 Introduction 
+
+Reinforcement learning (RL) has become a central stage in post-training large language models (LLMs), from mathematical reasoning and instruction following to long-context retrieval, multimodal reasoning, and agentic interaction [ 1, 3 , 4, 13 , 19 ]. A common trainer-side shape is a prompt group: one prompt produces multiple trajectories, and the policy update consumes sequences of the form 
+
+[P ∥S(1) ], [P ∥S(2) ], . . . , [P ∥S(N )],
+
+where the prefix P is identical across the group and each suffix S(i) is a different rollout. Standard dense trainers process these sequences as ordinary training samples or microbatches, so the shared 1
+
+> arXiv:2606.01143v1 [cs.DC] 31 May 2026
+
+Table 1: Motivating workload statistics from frozen rollouts and trace analysis. Prefix-heavy RL workloads are common in fixed-context RAG, multimodal RLVR, and visual QA. Prefix ratio is prefix tokens divided by total trajectory tokens; ranges aggregate the listed examples.                    
+
+> Workload regime Examples Ratio p50 Ratio p95
+> Prefix-heavy target workloads
+> Fixed-context RAG MuSiQue; 2WikiMultiHopQA 80.4--87.6% 88.7--93.0% Video and multimodal RLVR Video-MME; Video-R1 CLEVRER 85.9--98.0% 90.5--99.3% Chart / diagram QA ChartQA; AI2D 75.8--83.3% 92.6--93.3%
+> Low-prefix controls
+> Math/code reasoning Open-R1 math traces 2.3% 7.5% SWE agents SWE/OpenHands successful traces 12.8% 35.0%
+
+prefix is evaluated repeatedly: prefix forward and prefix backward are both replayed once per trajectory. This repeated-prefix computation is a real bottleneck in the workloads we target. Prefixes in long-context RL can contain retrieved passages, image or video tokens, chart or diagram content, tool schemas, system instructions, and the user query. Table 1 shows that fixed-context RAG and multimodal RLVR-style tasks often have very high prefix ratios, while math/code and SWE-style traces serve as low-prefix controls. The proposed schedule targets this high-prefix, long-sequence region. Training-side prefix sharing has therefore attracted substantial recent attention. Prefix Grouper [ 11 ], DPO Prefix Sharing [ 20 ], and DualKV [ 6] optimize reuse within a packed graph, a prompt-group microbatch, or a custom shared-prompt attention kernel. AREAL-DTA [ 22 ] and Tree Training v5 [ 21 ] exploit tree-structured trajectories through traversal, serialization, or differentiable partition boundaries. These systems show that prefix reuse during training is important, and concurrent work such as DualKV explicitly identifies the shared K/V and gradient-KV interface. The key distinction is the execution boundary. Prior designs primarily bind reuse to a local boundary: one packed graph, one microbatch, one kernel invocation, or one tree partition. The proposed schedule instead treats prefix reuse as a training-step schedule problem. We call this view schedule-level prefix reuse . Prefix reuse should not disappear merely because a rollout group is split across ordinary dense-training microbatches, because suffixes are organized as batch-plus-padding rather than sequence packing, or because the trainer runs under tensor, context, pipeline, data, or expert parallelism. This view creates three challenges. First, prefix forward and backward must be shared across suffix microbatches without requiring all suffixes to fit in one graph. Second, the prefix-suffix reuse interface must be managed as a system resource: K/V and 
+
+gK/gV are active during suffix computation, while the remaining prefix saved tensors are dormant until prefix backward. Third, prefix reuse changes the distributed training schedule and activation payload, so it must be analyzed under the parallelism strategies used by modern LLM trainers. The proposed schedule realizes schedule-level prefix reuse by decoupling prefix and suffix computation around the prefix-suffix reuse boundary. Phase A runs the shared prefix forward once, records per-layer prefix K/V , and keeps the prefix autograd graph alive. Phase B executes suffix microbatches normally: each suffix reads the cached prefix K/V , runs forward and backward, and accumulates its prefix-side coupling gradients into gK/gV buffers. Phase C injects the accumulated gradient cache and runs the shared prefix backward once. The key principle is prefix-gradient superposition: for a fixed prefix forward trace, prefix backward is a vector-Jacobian product and is 2linear in the incoming gradients at the K/V interface. Thus, accumulating gK/gV first and running prefix backward once is equivalent, over real arithmetic, to running prefix backward separately for every suffix and summing the resulting gradients. We make three contributions: 
+
+• Schedule-level prefix reuse. We introduce a three-phase schedule that decouples prefix and suffix computation and executes shared-prefix forward and backward once per rollout group, independent of suffix count, microbatch split, or whether suffixes are organized by padding or packing. 
+
+• A system-level reuse cache. We use K/V as the forward cache and gK/gV as the backward cache, not only as an attention interface but also as a lifecycle boundary for memory management. This lets the proposed schedule offload dormant prefix activations during suffix computation and reinvest HBM into longer suffixes, larger suffix waves, or fuller suffix activation retention. 
+
+• A parallel-aware dense-training implementation. We analyze the proposed schedule under TP, EP, CP, PP, and DP/FSDP-style execution. TP and EP execution are orthogonal to the parameter-free SDPA K/V boundary; CP/DP payload issues are reduced to compact KV/gKV reuse; PP bubbles are minimized by stage-local phase scheduling; and aux-loss-based MoE load balancing is preserved through logical token accounting. Our evaluation validates these claims on dense and MoE models. The proposed schedule matches the full-sequence optimizer update across TP/CP/PP/EP configurations with maximum parameter differences near 2×10 −6, preserves a 100-step real RL actor-update trace over an 8.19B-parameter checkpoint within BF16 finite-precision tolerance, and scales with reuse opportunity: on Llama3-8B, measured speedup grows from 1.162 × in a suffix-dominant 2k/10k, N = 16 case to 4.395 ×
+
+in a prefix-heavy 10k/2k, N = 128 case, with 2.930 × retained under a conservative compile-on comparison. Prefix offload reduces Phase-B HBM by up to 59 .1% and expands the measured sequence-capacity frontier from 17,920 to 29,696 total tokens. 
+
+# 2 Background and Motivation 
+
+2.1 GRPO Training Anatomy 
+
+In GRPO-style training, a prompt produces a group of N rollouts. A trainer computes log probabilities and losses over the generated suffix tokens and then applies one optimizer step to the policy. The relevant shape for this paper is flat prefix sharing: 
+
+[P ∥S(1) ], [P ∥S(2) ], . . . , [P ∥S(N )].
+
+The prefix P is byte- and token-identical within the group. Each suffix S(i) is different and carries its own loss L(i). Baseline dense training executes N full forward/backward passes over [P ∥S(i)], so all prefix-side transformer work is repeated N times. Two details make training-side prefix reuse different from inference caching. First, the loss may be suffix-only, but gradients still flow to prefix-side parameters through attention. Suffix queries attend to prefix keys and values, and the resulting loss produces nonzero gradients for prefix K/V projections and earlier prefix computation. The shared prefix is therefore not read-only during training. Second, the trainer may organize suffixes with ordinary batch-plus-padding or with sequence packing. A prefix-reuse system should preserve the baseline masking and position IDs in either layout. 32.2 Why Local Packing Is Insufficient 
+
+If the entire group fits in one packed graph, prefix reuse is straightforward: one can place a single copy of P next to multiple suffixes and use an attention mask to prevent suffixes from attending to each other. Autograd then naturally aggregates prefix-side gradients because the prefix appears once in the graph. Long-context RL often violates this local boundary. The packed length 
+
+|P | +
+
+> N∑
+> i=1
+
+|S(i)|
+
+can exceed activation memory, kernel sequence limits, or the microbatch count required by pipeline parallelism and gradient accumulation. Once a rollout group is split into ordinary microbatches, single-graph or single-microbatch reuse no longer applies: each microbatch again carries its own prefix copy. The proposed schedule does not replace packing; rather, it makes prefix reuse transparent to the suffix organization, so suffixes may be processed as padded batches, packed segments, or separate microbatches while sharing the same prefix schedule. 
+
+2.3 Prefix-Heavy RL Workloads 
+
+Table 1 motivates the target regime. We define the prefix ratio as |P |/(|P | + |S|). Fixed-context RAG tasks such as MuSiQue and 2WikiMultiHopQA have median prefix ratios of 87.6% and 80.4%, respectively. Video and multimodal RLVR-style tasks such as Video-MME and Video-R1 CLEVRER have median prefix ratios of 98.0% and 85.9%. Chart and diagram QA workloads are similarly prefix-heavy. In contrast, math/code traces and full SWE agent traces in our control set have low median prefix ratios or suffix-dominant histories. Thus the proposed schedule is not a universal accelerator for all RL workloads; it targets the high-prefix, long-sequence, group-rollout region where local packing is often constrained and repeated prefix computation dominates. 
+
+2.4 Related and Concurrent Prefix-Reuse Designs 
+
+Table 2 summarizes the design space. The common question is where the reuse boundary sits. Packing-based systems such as Prefix Grouper [ 11 ] and DPO Prefix Sharing [ 20 ] operate within a packed graph or prompt-pair microbatch. DualKV [ 6 ], a concurrent system, moves the shared-prompt idea into a custom FlashAttention kernel: within one prompt-group microbatch, response queries read one shared prompt K/V , and backward accumulates shared gK/gV using fp32 atomics. This is highly complementary to the proposed schedule, but the reuse boundary remains a single prompt-group microbatch. Tree-structured systems use a different boundary. AREAL-DTA [ 22 ] traverses rollout trees dynamically and keeps the current path’s KV and activation state on a stack. Tree Training v5 [ 21 ], another concurrent update, serializes tree trajectories with DFS order and introduces differentiable partition gateways that relay state and gradients across tree partitions. These designs are powerful for tree-shaped agent trajectories. The proposed schedule instead targets shared-prompt GRPO-style policy updates under ordinary dense microbatch schedules: it does not require serializing a tree, and it keeps suffixes as regular microbatches while folding their gK/gV contributions before one prefix backward. Inference serving systems such as vLLM and SGLang also make prefix reuse central through paged or radix KV-cache management [ 8 , 23 ]. Their cache is forward-only: reused K/V accelerates decoding but does not carry training gradients. The proposed schedule imports the KV-cache viewpoint 4Figure 1: Rollout data naturally forms tree-shaped shared-prefix structure. Multiple trajectories can share the root prompt, and some trajectories continue to share intermediate histories before branching. Table 2: Training-side prefix-reuse designs. The proposed schedule combines schedule-level reuse, prefix offload, and parallel-aware integration.                                     
+
+> System Boundary Prefix BWD KV/gKV Offload Parallelism Prefix Grouper packed graph graph-local none no limited DPO Prefix Sharing prompt-pair not central none no limited AREAL-DTA DFS traversal path-local stack no framework-specific Tree Training v5 tree partition gateway gateway no Megatron/MoE evi-dence DualKV microbatch kernel kernel-local kernel no FSDP/SP/MoE evi-dence
+> This work training schedule Phase-C once schedule yes TP/EP/CP/PP + DP
+
+into training and adds the backward counterpart, namely the gK/gV gradients accumulated across suffix microbatches. Figure 1 illustrates the tree-shaped sharing pattern that motivates traversal and tree-training systems. The proposed schedule focuses on the flat shared-prompt case that appears at the root of this structure and is common in GRPO-style rollout groups. 
+
+2.5 Challenges for Schedule-Level Prefix Reuse 
+
+Challenge 1: local reuse boundaries are too narrow. Packed graphs, prompt-group mi-crobatches, custom kernel invocations, and tree partitions are all useful boundaries, but ordinary dense trainers often split a rollout group for memory, sequence-length, gradient-accumulation, or pipeline-scheduling reasons. Prefix reuse must therefore become schedule-level: prefix forward and backward should each execute once even when suffix work is divided into multiple microbatches or organized with different batching layouts. 
+
+Challenge 2: the reuse interface needs lifecycle management. DualKV shows that 5shared K/V and shared gK/gV are the key training interface for a prompt-group microbatch. At schedule level, this interface also defines a memory lifecycle. During suffix computation, prefix K/V 
+
+and gK/gV are hot, while the remaining prefix saved tensors are dormant until prefix backward. A system should exploit this dormant interval, offload inactive prefix activations, and reinvest the released HBM into Phase-B resources: longer suffixes, larger suffix waves, or saved suffix activations that would otherwise be recomputed. 
+
+Challenge 3: prefix reuse perturbs training parallelism. TP and EP partition parame-terized work, while prefix reuse acts at the parameter-free SDPA K/V boundary. CP partitions the sequence dimension and can create packed-reuse imbalance; outside SDPA, its token-wise operators have effective-DP semantics. DP/FSDP-style execution raises the question of whether reusable prefix payloads are full activation stacks or compact KV/gKV tensors. PP separates computation into stages and can introduce bubbles if Phase A/B/C are treated as global barriers. A practical prefix-reuse system must account for these interactions rather than remain a single-kernel optimization. 
+
+# 3 Design 
+
+3.1 The Prefix-Suffix Reuse Boundary 
+
+The proposed schedule is built around the prefix-suffix reuse boundary: during suffix computation, the shared prefix interacts with suffix microbatches through prefix K1, V 1 and through the accumu-lated coupling gradients gK 1, gV 1 returned to the prefix graph. We use dZ for generic reverse-mode adjoints in the derivation, while gK/gV specifically denotes the suffix-produced prefix-KV gradients stored in the gradient-KV cache. Consider one transformer block and omit layer indices for clarity. For trajectory i, split the layer input into a shared prefix and a suffix: 
+
+X(i) = [ X1; X(i)2 ].
+
+The prefix projections are Q1 = X1WQ, K1 = X1WK , and V1 = X1WV ; the suffix projections are 
+
+Q(i)2 , K (i)2 , V (i)2 . Under causal masking, prefix tokens do not attend to suffix tokens, while suffix tokens attend to the prefix and to their own causal suffix history: 
+
+H(i)2 = Attn (Q(i)2 , [K1; K(i)2 ], [V1; V (i)2 ]).
+
+Insight 1: suffix computation reads prefix KV. With respect to the prefix, both suffix forward and suffix backward read only K1, V 1. The suffix forward pass needs these tensors to form attention over the shared prefix. The suffix backward pass also needs them because attention backward differentiates through the same key/value interface. The remaining prefix saved tensors, denoted A1, are needed later by prefix backward but are not read during suffix computation. At the schedule level, Figure 2 shows the same boundary: Phase-B suffix microbatches read prefix K/V , accumulate gK/gV outside the live prefix graph, and Phase C injects the summed gradient-KV cache before running the shared prefix backward once. 
+
+Insight 2: suffix gradients pass through prefix KV. Let P (i)21 be the suffix-to-prefix attention probability and S(i)21 = Q(i)2 K⊤ 
+
+> 1
+
+/√dh be the corresponding score block. If d ˆH(i)2 is the upstream adjoint at the suffix attention output, the suffix contributes to prefix values through 
+
+gV (i)1 =
+
+> (
+
+P (i)21 
+
+> )⊤
+
+d ˆH(i)2 ,
+
+6and to prefix keys through 
+
+gK (i)1 = 1
+
+√dh
+
+> (
+
+dS (i)21 
+
+> )⊤
+
+Q(i)2 .
+
+There is no suffix-to-prefix path through Q1, because prefix queries participate only in prefix rows and causal masking prevents prefix tokens from attending to suffix tokens. Thus the cross-boundary outputs of suffix backward are exactly the prefix-KV gradients gK (i)1 , gV (i)1 .
+
+Insight 3: prefix backward is linear in incoming adjoints. Let L = ∑Ni=1 α(i)L(i) be the additive loss over N suffixes sharing the same prefix. For a fixed prefix forward trace, let Bp denote the entire prefix backward operator. Define the weighted incoming-adjoint tuple 
+
+U (i) = (α(i)dY (i)1 , α (i)gK (i)1 , α (i)gV (i)1
+
+> )
+
+.
+
+Proposition 1 (prefix-gradient superposition). Fix the prefix tokens, model parameters, attention masks, position IDs, and prefix forward trace. Running prefix backward once on the accumulated incoming adjoints gives the same prefix gradient as running prefix backward separately for each suffix and summing the results: 
+
+> N∑
+> i=1
+
+Bp
+
+> (
+
+U (i))
+
+= Bp 
+
+> (N∑
+> i=1
+
+U (i)
+
+> )
+
+.
+
+The reason is that Bp is a vector-Jacobian product with a fixed forward trace and is therefore linear in its incoming gradients. Appendix A gives the detailed derivation. The proposed schedule therefore performs cheap additions over gK 1, gV 1 first and invokes the multiply-heavy prefix backward once, replacing N expensive prefix backward passes with one prefix backward plus N lightweight gradient-KV accumulations. These three facts map directly onto the proposed schedule. Phase A produces the shared prefix KV and retains the dormant prefix graph. Phase B runs suffix microbatches while reading K1, V 1
+
+and accumulating gK 1, gV 1. Phase C injects the accumulated gradients and executes the shared prefix backward once. 
+
+3.2 Three-Phase Schedule 
+
+Figure 2 shows the proposed schedule. 
+
+Phase A: prefix forward. The schedule runs a normal model forward pass on the shared prefix. Each transformer layer captures live K1, V 1 tensors and retains the prefix autograd graph for Phase C. The saved tensors needed only for prefix backward may be packed into CPU memory by the offload subsystem. 
+
+Phase B: suffix microbatches. For each suffix microbatch, the proposed schedule runs suffix forward using the cached prefix K1, V 1. The suffix attention mask allows every suffix query to see the prefix and its own causal suffix history, but not other suffix trajectories. Suffix backward computes ordinary suffix-side gradients and accumulates prefix-side coupling gradients into cached 
+
+gK 1, gV 1 buffers. Suffix activations are released after each microbatch. 
+
+Phase C: prefix backward. After all suffix microbatches finish, the proposed schedule injects the accumulated gradient cache into the live prefix graph and runs one prefix backward. Prefix-side gradients and suffix-side gradients are accumulated into the same logical optimizer step. 
+
+Cost model. The relevant question is how much repeated work disappears, not just how many tokens are in the prefix. Let Cfull be one baseline full-sequence forward/backward, Cp one shared prefix forward/backward, Cs one cached-prefix suffix microbatch, and Cover orchestration, communication, and offload overhead. The compressed model is Tbase (N ) = N C full , Treuse (N ) = 
+
+7Shared Prefix 
+
+> Prefix QKV
+> Projection
+> Attention
+> MLP
+> Computational
+> Graph
+
+CPU DRAM 
+
+GPU HBM 
+
+Timeline 
+
+> Suffix Suffix
+> Suffix QKV
+> Projection
+> Attention
+> MLP
+> Suffix Suffix
+> Suffix QKV
+> Projection
+> Attention
+> MLP
+
+## …
+
+> Prefix QKV
+> Projection
+> Attention
+> MLP
+> Computational
+> Graph
+
+𝐿  Micro Batch 
+
+Phase A  Phase B  Phase C 
+
+Prefix Dormant Activations 
+
+𝐾 1, 𝑉 1
+
+෍
+
+> 𝑖 =1
+> 1
+
+𝑔 𝐾 1 , ෍
+
+> 𝑖 =1
+> 1
+
+𝑔 𝑉 1
+
+𝐾 1, 𝑉 1…
+
+෍
+
+> 𝑖 =1
+> 𝐿
+
+𝑔 𝐾 1 , ෍
+
+> 𝑖 =1
+> 𝐿
+
+𝑔 𝑉 1  
+
+> cat
+> accum
+> cat
+> Prefix Gradients
+> in 𝑊 𝑔
+> Computational
+> Graph
+> Computational
+> Graph
+> Offload Prefetch
+
+𝒜 1 = {𝑋 1, 𝑄 1, 𝑃 11 , 𝐻 1, 𝑍 1, 𝐴 1}
+
+1 Micro Batch  1 Micro Batch 
+
+## … 
+
+> accum
+> Save
+> Inject
+> {Suffix 1,1}𝑚 =1
+> 𝑀 {Suffix 𝐿 ,1}𝑚 =1
+> 𝑀
+
+Figure 2: Overall three-phase schedule. Phase A runs the shared prefix forward once and captures prefix K/V ; Phase B executes suffix microbatches using the cached prefix K/V while accumulating 
+
+gK/gV ; Phase C injects the accumulated gradient cache and runs one shared prefix backward. Dormant prefix activations can be offloaded during Phase B. 
+
+Cp + N C s + Cover , and S(N ) = 1 /(ρ/N + η + ϵ). The normalized prefix term ρ = Cp/C full is amortized by N . The suffix term η = Cs/C full is irreducible, so the overhead-free asymptotic upper bound is 1/η . The overhead term ϵ = Cover /(N C full ) captures system costs, so the proposed schedule helps when reusable prefix work is large enough and the rollout group is large enough to amortize prefix and orchestration costs. 
+
+3.3 Prefix State Lifecycle for HBM Reuse 
+
+Phase separation creates a long lifetime for prefix saved tensors: Phase A produces them, but Phase C consumes them only after N suffix microbatches. The schedule uses the reuse cache to distinguish hot and dormant prefix state during Phase B: hot set: K1, V 1, gK 1, gV 1,
+
+dormant set: A1 saved tensors for prefix backward .
+
+The hot set stays on GPU. The dormant set can be moved to CPU pinned memory and restored only for Phase C. This differs from generic checkpointing and offload policies: checkpointing recomputes activations [ 2 ], while ZeRO-Offload-style systems move optimizer, gradient, parameter, or activation 8Figure 3: HBM reuse in Phase B. By offloading dormant prefix activations, the schedule keeps only the hot K/V and gK/gV cache resident and reinvests the released HBM into longer suffixes, more suffixes per wave, or more retained suffix activations. state across memory tiers [ 15 , 16 ]. The schedule instead exploits a semantic lifecycle boundary created by phase separation: Phase B needs the hot KV/gKV cache, not the full prefix activation stack. Thus offloading A1 turns dormant prefix state into Phase-B HBM headroom. Figure 3 shows the high-level consequence: the released HBM can be reinvested into longer suffixes, more suffixes per wave, or more retained suffix activations. Section 4.2 describes the concrete allocation policy, and Section 4.3 describes how the offload path hides the transfer cost it introduces. 
+
+3.4 Parallelism Integration 
+
+Parallelism is the foundation of practical LLM training, and modern dense-training stacks routinely combine TP, CP, PP, DP/FSDP, and EP-style execution [ 14 , 15 , 18 ]. Because the proposed schedule changes the forward/backward schedule, it must be analyzed as part of this parallel training stack rather than as an isolated single-GPU transformation. We therefore study how the proposed schedule interacts with these dimensions and design the schedule to eliminate or minimize adverse interactions. The result is a 5-D-parallel-compatible prefix-reuse scheme at the execution level: TP and EP do not change the SDPA K/V boundary where reuse occurs; CP and PP are affected by phase separation but can be handled with nearly lossless phase-aware scheduling; and DP/FSDP benefit substantially because the reuse cache reduces the reusable payload from full activation stacks to compact prefix K/V . Section 3.5 separately discusses when MoE routing and expert load-balancing semantics remain equivalent. 
+
+Tensor and expert parallelism. TP partitions the model’s projection and FFN weights, and correspondingly shards hidden or head dimensions. Prefix reuse, however, operates at the SDPA operator: suffix attention reuses already materialized prefix K/V tensors, and SDPA itself has no trainable weights. Thus TP only determines the local shard shape of the cached K/V ; each TP rank concatenates its own prefix and suffix K/V along the sequence dimension and otherwise follows the same schedule. As an execution strategy, EP is orthogonal for the same reason. EP partitions FFN experts 9Figure 4: TP/EP compatibility. The schedule reuses prefix K/V at the parameter-free SDPA boundary; TP shards projections and EP routes FFN expert work. and routes tokens to expert shards, but it does not change the attention K/V interface that carries prefix reuse. Prefix tokens still execute their FFN/expert computation during Phase A and Phase C under the existing EP routing, while suffix microbatches reuse prefix attention state in Phase B without any EP-specific cache protocol. This statement is about expert parallel execution; MoE load-balancing objectives and capacity-coupled routing are training semantics and are handled separately in Section 3.5. Figure 4 shows the execution-level separation. 
+
+Context parallelism and prefix-KV communication. CP partitions the sequence dimension for the attention/SDPA operator. Even without prefix reuse, causal masking creates workload imbalance across sequence shards because later query blocks attend to longer histories. Existing long-context CP systems such as DeepSpeed-Ulysses and RingAttention use all-to-all, ring, or blockwise schedules to balance this ordinary causal-attention workload [ 7, 12 ]. Coupled prefix-reuse schedules introduce a harder case. The issue is not only that prefix and suffix tokens have different attention costs; after reuse, prefix tokens skip the suffix-side transformer flow entirely and only provide their prefix K/V , whereas each suffix token still executes projections, attention, normalization, residual paths, and FFNs. A balancing policy that keeps prefix and suffix tokens bound inside one traversal or packed graph, and reasons mainly about attention-layer work, cannot directly balance these different computation modes. Tree-oriented cross-microbatch reuse designs such as AREAL-DTA and Tree Training v5 bind prefix state and suffix work inside a tree traversal or partitioned tree graph [ 21 , 22 ]; under CP, such designs would need a prefix-aware balancing policy beyond standard Ulysses or RingAttention balancing, an interaction they do not analyze in depth. The proposed schedule avoids this coupled-balancing problem by separating prefix and suffix computation before CP balancing is applied. In non-attention operators, Phase A and Phase C contain only prefix tokens and Phase B contains only suffix tokens, so token-wise work is balanced within a single computation mode. In attention, causal imbalance still exists, but it is now the ordinary CP problem applied separately to prefix phases and suffix phases. Phase B treats cached prefix K/V as temporary read-only state needed by suffix attention, not as active query tokens that define the suffix workload. Therefore Ulysses-style and RingAttention-style balancing policies can be used independently on the prefix and suffix phases without changing either the CP algorithm or the reuse schedule. Figure 5 illustrates this phase-separated view. CP also creates a compact communication requirement for the prefix KV itself. Because CP 10 Figure 5: CP compatibility. Phase separation lets existing CP balancing policies operate on prefix and suffix phases separately, while prefix K/V is treated as layer-local state for suffix attention. shards the sequence dimension, each CP rank owns only a shard of the prefix K/V , while suffix attention on every CP rank logically needs the complete prefix K/V to attend over the full shared prefix. Phase B therefore all-gathers the CP-sharded prefix K/V to form the suffix-visible prefix view, and backward returns the corresponding accumulated gK/gV to the owning shards. The key design choice is that this exchange occurs at the compact KV/gKV boundary rather than through a full prefix activation stack; Section 4.4 describes the layer-local prefetch implementation. 
+
+Data parallelism. Across explicit DP ranks, the preferred policy is to avoid cross-rank prefix reuse in the common case. RL training naturally groups N trajectories by prompt; placing all trajectories from the same prompt on one DP rank maximizes reuse and avoids extra communication. The placement cost model should account for the reuse schedule: the shared prefix forward and backward are executed once for the prompt group, so DP load balancing should not charge the prefix cost once per trajectory. Cross-DP prefix reuse is still available as a fallback. If keeping an entire prompt group on one DP rank creates severe load imbalance, the group can be split across DP ranks. In that case, the proposed schedule only needs to replicate or exchange compact prefix K/V for the ranks that process suffixes from the same prompt; it does not need to move a full prefix activation stack. This incurs one extra copy of prefix K/V and the corresponding prefix-side gK/gV reduction, which is small compared with activation-stack replication and acceptable for rare load-balancing cases. 
+
+Pipeline parallelism. A naive global three-phase implementation would introduce barriers: all stages would drain prefix forward before any suffix work starts, and all suffix work would drain before prefix backward. Our implementation avoids this by reordering phases locally within each PP stage. Section 4.5 describes this stage-local scheduling path. 
+
+3.5 Prefix Reuse under MoE Load Balancing 
+
+MoE models add a semantic issue beyond expert parallel execution. In the dense baseline, the shared prompt appears as N logical prefix copies, and those copies participate in router statistics and auxiliary load-balancing losses. If prefix reuse physically computes the prefix once but counts it once, the router objective changes. For deterministic token-local routing with auxiliary load-balancing losses [ 5 , 9 , 17 , 25 ], the proposed schedule preserves the baseline semantics by weighting each shared 11 prefix token by its logical multiplicity. Section 4.6 gives the implementation rule, and Appendix B gives the equations. Batch-coupled routing is different. Capacity constraints, token dropping, expert-choice routing, or balanced assignment can make identical prefix copies choose different experts because other tokens consume expert capacity [ 5 , 9 , 10 , 24 ]. A single-path prefix-reuse schedule cannot both compute the prefix once and exactly reproduce those branch-specific states. We therefore treat aux-loss-based token-local MoE as compatible with logical accounting, and leave batch-coupled MoE routing as a limitation. 
+
+# 4 Implementation 
+
+We implement the proposed schedule on top of TorchTitan [ 14 ]. The core functionality is factored into an independent wrapper module, so it can be applied non-invasively to any model supported by the TorchTitan stack. A user only needs to wrap an already initialized model through a single entry point to enable prefix KV capture, gradient-KV accumulation, delayed prefix backward, selective activation offload, and logical-token accounting for auxiliary MoE load-balancing losses. As discussed above, the module is designed to compose with mainstream LLM parallelism strategies, providing an out-of-the-box integration path for TP, CP, PP, DP/FSDP, and EP settings. 
+
+4.1 KV Capture and Gradient Cache 
+
+During Phase A, each schedule-aware attention wrapper observes the live prefix K1, V 1 tensors produced by the ordinary prefix forward graph, but it does not expose that live graph directly to Phase B. Instead, it creates detached cached leaves for suffix attention and registers coupling hooks on the live K1, V 1. Each Phase-B suffix wave builds a short-lived suffix graph, calls backward without retaining the live prefix graph, and accumulates the resulting coupling gradients in the cached leaves as gK 1, gV 1. Phase C then backpropagates through the retained prefix output once; the register_hook callbacks add the accumulated cached-leaf gradients to the live prefix K/V 
+
+tensors before the prefix graph is traversed. This hook-based bridge is the implementation mechanism behind the algebra in Section 3.1. The cached leaves are not parameters and are not updated by the optimizer; they are gradient accumulators that connect independent suffix graphs to one retained prefix graph. After the prompt group finishes, the proposed schedule clears the prefix output, cached leaves, hooks, and offload state, so the retained graph lifetime is one prompt group rather than one graph per suffix. The same mechanism also explains the current compiler boundary. Phase B has a relatively fixed tensor-compute path and is the main torch.compile target. Phase A capture and Phase C delayed backward intentionally use autograd hooks, saved-tensor hooks, and runtime schedule state, so they remain outside the default compiled region. Even in Phase B, the proposed schedule is not identical to a compiled full-sequence baseline: suffix attention must materialize or concatenate cached prefix K/V with suffix K/V , which adds memory traffic and can reduce the benefit of compilation relative to the baseline compiled path. 
+
+4.2 Phase-B HBM Allocation Policy 
+
+Phase B attention uses suffix queries with keys and values formed by concatenating cached prefix 
+
+K/V and current suffix K/V . The attention mask must satisfy three conditions: each suffix query sees all prefix tokens, suffix queries see only causal suffix positions, and suffixes from different trajectories do not attend to each other. Position IDs must match the baseline sequence [P ∥S(i)]; in 12 particular, RoPE positions for suffix tokens continue after the prefix length rather than restarting from zero. The schedule treats the HBM released by prefix offload as a Phase-B allocation budget. The first allocation target is suffix length: if the training run is capacity-bound, the budget is spent on longer suffix tokens and their attention workspaces. The second target is suffix wave size. Suffixes can be organized along the batch dimension, with multiple suffixes forming one padded microbatch, or several suffixes can be concatenated into a suffix-only packed sequence. The packed layout treats cached prefix K/V as a shared read-only block visible to every packed suffix, while the suffix-to-suffix part remains block-diagonal causal. In both layouts, suffix backward accumulates into the same gK/gV buffers and Phase C runs prefix backward once. The third target is fuller residency for expensive transient state. The default selective activation checkpointing policy recomputes cheap element-wise operations and saves only a memory-budgeted subset of expensive matrix-multiplication and attention-related tensors. After prefix offload, Phase B can relax this policy: element-wise outputs may still be dropped, but expensive suffix activations are retained more aggressively when the budget allows. In distributed configurations, the same principle applies to NCCL, FSDP, CP, PP, and MoE communication workspaces. Keeping these transient buffers resident or less fragmented spends HBM to reduce recomputation, allocator churn, and communication-side overhead, which is the communication analogue of retaining expensive suffix activations. 
+
+4.3 Asynchronous Prefix Activation Offload 
+
+Phase separation gives prefix saved tensors a long dormant interval: they are produced in Phase A, unused throughout suffix computation in Phase B, and consumed only in Phase C. The schedule uses saved-tensor hooks to pack this dormant set to CPU pinned memory while keeping the hot 
+
+K/V and gK/gV cache on GPU. The pinned memory pool is initialized as a per-rank staging arena rather than a cache of model state. In practice, its budget is estimated from the measured Phase-A saved-tensor footprint with headroom, e.g., a pool around 1.5× the observed prefix saved-tensor size. If the pool is undersized, the implementation can fall back to per-tensor pinned allocation; this preserves correctness but is slower because it reintroduces allocation overhead. Offload introduces host-device transfer time that the no-offload schedule does not pay. Asynchronous implementation validates memory savings but can put this transfer time on the critical path and stall on host allocations. The current path therefore uses a pinned memory pool, asynchronous GPU-to-CPU pack, asynchronous CPU-to-GPU prefetch, and layer-pipelined overlap. Prefix activations are packed after their producing layer finishes, and prefetched before the matching prefix-backward layer consumes them. When these transfers overlap with suffix computation or neighboring layer work, a large fraction of the transfer latency, and in favorable cases nearly all of it, can be hidden. Activation prefetch is speculative and is therefore guarded by an HBM budget check. Before issuing a CPU-to-GPU prefetch for a dormant prefix-activation chunk, the runtime estimates the required payload with slack, checks both allocator headroom and driver-visible free memory, and reserves a safety margin against the memory currently available on the rank. If suffix-side releases have not created enough headroom, the prefetch is delayed until a later point closer to use; demand-load during unpack remains the correctness fallback. This avoids a failure mode in which Phase B saves HBM by offloading prefix activations, but an overly aggressive Phase-C prefetch pulls back more activation state than the suffix wave has freed and triggers OOM. 13 4.4 CP Prefix-KV Prefetch 
+
+Under CP, Phase A produces prefix K/V shards on the ranks that own the corresponding prefix sequence blocks. Before suffix attention consumes a layer, the proposed schedule materializes the full prefix-KV view needed by that layer by all-gathering the prefix K/V shards across the CP group. Suffix attention then treats this gathered prefix block as read-only state and concatenates it with the local suffix K/V . During backward, the suffix-produced gK/gV for the gathered view is reduced back to the owning prefix shards before Phase C injects the accumulated gradients into the prefix graph. This path exchanges only K/V and gK/gV , not the dormant prefix activation stack. The exchange is layer-local, so it can be scheduled like parameter prefetch. While layer ℓ computes suffix work, the runtime can issue the all-gather for layer ℓ + 1 ’s prefix K/V on a communication stream and release the gathered view after that layer’s suffix backward has contributed its gK/gV .In TorchTitan, enabling CP already makes non-attention weights follow an FSDP-like execution path, so prefix-KV prefetch can share or be co-scheduled with the existing weight-prefetch stream. This overlaps the CP-induced KV transfer with useful layer computation instead of placing it entirely on the suffix critical path. 
+
+4.5 PP Stage-Local Phase Reordering 
+
+Each PP stage owns local schedule-aware attention wrappers, cached prefix state, and phase state. A naive implementation would impose global Phase A--B--C barriers across all stages: every stage would drain prefix forward before any suffix work starts, and every suffix microbatch would drain before prefix backward begins. This creates unnecessary pipeline drain and refill bubbles around Phase B. The schedule instead treats Phase A and Phase C as stage-local work that must satisfy ordinary pipeline send/recv dependencies, but need not synchronize all stages at a global phase boundary. The implementation runs prefix forward manually over the PP stages, stores the local prefix forward cache in a sidecar, executes suffix microbatches with the existing inner 1F1B schedule, and then runs prefix backward in reverse stage order. Stage-local switching lets an earlier stage enter Phase B warmup once its local prefix send dependencies are satisfied, while a later stage may still be finishing Phase A. Around the backward boundary, the tail of the inner 1F1B schedule similarly absorbs part of the skew before a stage enters its local prefix backward. Thus Phase B remains ordinary pipeline work, and Phase A/C are scheduled as local prefix work around it rather than as global barriers. The prefix cache lifetime spans prefix forward, suffix microbatches, and prefix backward, so send/recv buffers are still handled by the existing pipeline schedule but must not overwrite prefix graph state needed by Phase C. The schedule also maintains separate shape metadata for prefix and suffix phases because prefix length and suffix length can differ. During Phase B, gradient synchronization is delayed where needed so suffix gradients and delayed prefix gradients contribute to one logical optimizer step. Phase C restores final synchronization after prefix backward contributes its gradients and the stage-local cache is cleared. 
+
+4.6 Auxiliary-Loss Accounting for MoE Routers 
+
+For aux-loss-based MoE load balancing, the proposed schedule evaluates the router auxiliary term over the same logical token multiset as the baseline. Suffix tokens have multiplicity one; a prefix token shared by N trajectories has multiplicity N , or the number of logical copies in the baseline reduction scope. During Phase A, each MoE layer records prefix router probabilities, selected experts, and multiplicity-weighted sufficient statistics while running the prefix expert computation 14 Figure 6: PP compatibility. Stage-local switching schedules prefix work as pipeline work, avoiding a global Phase A--B--C barrier in tested PP schedules. once. During Phase B, suffix microbatches add their unit-multiplicity statistics and combine them with the matching prefix statistics. The resulting auxiliary loss uses the same normalization and coefficient as the baseline, so router gradients receive the same logical weight as if all prefix copies had been materialized. Prefix-side auxiliary gradients are accumulated with the delayed prefix loss and backpropagated in Phase C together with the gK/gV coupling gradients. If a baseline uses a global auxiliary-loss scope spanning multiple suffix microbatches, the same accounting applies, but the router-aux backward must be delayed or implemented with a custom accumulator so suffix graphs are not released before the global coefficients are known. Appendix B gives the explicit Top-k equations. 
+
+# 5 Evaluation 
+
+We organize the evaluation around four claims. First, the proposed schedule preserves the baseline optimizer update across the parallel training modes that affect tensor layout or schedule order. Second, the same schedule aligns on a real RL trace replay generated by verl+Megatron, showing that the TorchTitan path can serve as the actor-update substrate for RL frameworks such as verl. Third, speedup follows the prefix-reuse opportunity predicted by the cost model: it grows with both prefix ratio and rollout group size. Fourth, the reuse cache turns dormant prefix activations into usable HBM headroom, and asynchronous transfers mitigate the extra host-device traffic introduced by offloading. 
+
+5.1 Experimental Setup 
+
+The experiments run on H20 GPU clusters with up to two nodes and 16 GPUs. We use Llama3-8B for dense-model alignment, speed, and memory studies; Qwen3-8B for the real RL trace replay; and Qwen3-MoE-30B-A3B for MoE/EP validation under the deterministic token-local routing scope discussed in Section 3.5. Baseline training performs a full forward/backward pass for every trajectory under the same loss, optimizer, masks, position ids, precision, and parallel configuration. The proposed schedule uses one prefix forward, suffix Phase-B microbatches that read cached prefix K/V and accumulate gK/gV , and one delayed prefix backward. Correctness tables report after-update parameter differences; timing tables report rank-max GPU time averaged over repeated runs; memory tables report rank-max CUDA allocated HBM. 15 Table 3: Completed Claim 1 weight-alignment results. The metric is the maximum absolute parameter difference after one AdamW update against the TorchTitan full-sequence baseline.                                   
+
+> Model Case Parallelism / placement Prefix+Suffix / NMax diff Result Llama3-8B no-PP split roles PP=1, TP=4, CP=2, EP=1; 4096+4096, N= 8 1.996756 ×10 −6PASS Qwen3-MoE-30B-A3B no-PP separate runs PP=1, TP=4, CP=2, EP=4; 2048+2048, N= 8 1.993496 ×10 −6PASS Llama3-8B PP full-stack PP=2, TP=4, CP=2, EP=1; 4096+4096, N= 8 1.983717 ×10 −6PASS Qwen3-MoE-30B-A3B PP full-stack PP=2, TP=4, CP=2, EP=4; 4096+4096, N= 8 1.974404 ×10 −6PASS
+
+For the 12k-token timing experiments, the run is compute-bound. Feeding trajectories one by one in Phase B is therefore a reasonable schedule choice: increasing the suffix microbatch size mainly raises activation pressure and does not materially improve throughput in this regime. 
+
+5.2 Claim 1: The Schedule Aligns Across Parallel Training Modes 
+
+The proposed schedule changes the execution schedule but not the objective. Therefore, for the same initialization, replay batch, loss, optimizer hyperparameters, and random seed, the trained parameter shards after one AdamW update should match the TorchTitan full-sequence baseline even when tensor layout, sequence partitioning, pipeline order, or EP execution changes. Table 3 reports four alignment runs. The metric is the maximum absolute difference between matching trained parameter shards. We choose the correctness threshold from the precision of the executed update path, not from the observed error. For each matched element xi and yi, the pass criterion is the standard mixed absolute-relative test 
+
+|xi − yi| ≤ τabs + τrel max( |xi|, |yi|).
+
+In the BF16 mixed-precision cases, BF16 storage has a spacing of 2−7 ≈ 7.8×10 −3 around unit-scale values. Although gradients are accumulated in FP32, the end-to-end update still includes BF16 matrix multiplications, attention kernels, casts, and non-associative distributed reductions, so the tolerance should reflect the BF16 mixed-precision envelope rather than pure FP32 roundoff. We therefore use τabs = 10 −3 and τrel = 10 −2 for BF16 cases. The measured differences below are outcomes of the experiment, not thresholds chosen after observing the run. All four runs pass by a large margin: the maximum trained-parameter difference stays near 
+
+2×10 −6, about 500 × below the configured absolute tolerance. The no-PP rows are the simplest path: the proposed schedule runs one prefix phase, a suffix loop, and one delayed prefix backward over the same tensor/context shards as the baseline. The PP rows add stage-local phase reordering and still match the baseline to the same tolerance, showing that the proposed schedule is compatible with pipeline execution rather than only with a single-stage schedule. We do not run a separate DP/FSDP-only experiment: in production RL training, trajectories from the same prompt group are naturally co-located on the same DP rank, and CP already induces the relevant effective-DP semantics for token-wise operators. 
+
+5.3 Claim 2: The Schedule Aligns on a Real RL Trace Replay 
+
+Controlled one-step alignment tests are necessary but not sufficient: the schedule must also remain stable on real RL actor-update inputs. A fully closed-loop RL run is a poor numerical-equivalence test because small rollout-sampling differences can change later training batches and make the source of divergence ambiguous. We therefore use a trace-replay experiment. verl+Megatron first runs 100 actor update steps and exports the frozen trainer inputs and checkpoints; TorchTitan with the proposed schedule then starts from the same initial checkpoint and replays those frozen 16 1 20 40 60 80 100 
+
+## actor update step 
+
+10 −7 
+
+10 −6 
+
+10 −5 
+
+10 −4 
+
+> checkpoint abs diff
+
+max: 1.22e-4 
+
+mean: 4.24e-6 Figure 7: Checkpoint-level alignment over 100 consecutive real RL actor updates. The shared log-scale axis makes the gap between worst-element and average error visible: max absolute difference reaches 1.2207 ×10 −4 after step 40, while mean absolute difference reaches 4.2442 ×10 −6 at step 100. batches in order with the same actor loss and optimizer state progression. This isolates trainer-side numerical drift while keeping the batches realistic: the trace comes from real MuSiQue fixed-context RAG rollouts rather than a synthetic objective. Figure 7 shows that the proposed schedule does not introduce observable trainer-side drift over the replayed RL trajectory. The comparison covers the full 8.19B-parameter actor checkpoint at every replay step. At step 100, the maximum absolute difference is 1.2207 ×10 −4, the mean absolute difference is 4.2442 ×10 −6, and RMSE is 1.2433 ×10 −5. The maximum curve is stair-stepped because the exported checkpoints are compared in BF16: small underlying changes are invisible until a value crosses the next BF16 quantization boundary, so the worst-element error moves in coarse increments rather than smoothly. The mean error remains about 29 × smaller than the worst element and grows slowly over the 100 replayed updates. This supports the Claim 2 result: on realistic frozen RL batches, the proposed schedule preserves the actor-update trajectory within expected finite-precision tolerance. 
+
+5.4 Claim 3: Speedup Follows Prefix Reuse Opportunity 
+
+The theoretical model predicts that the proposed schedule becomes more effective as reusable prefix computation dominates the baseline step. We test this by sweeping the prefix ratio r = |P |/(|P |+|S|)
+
+and the number of suffix trajectories N , while holding the total sequence length fixed at 12,288 tokens. This isolates the reuse opportunity: the dense baseline performs the same full-sequence training work for every prefix/suffix split, while the proposed schedule changes how much of that work can be folded into one shared prefix forward and one shared prefix backward. The sweep uses Llama3-8B with T P = 2 , CP = 4 . We report speedup as the baseline rank-max GPU forward/backward time divided by the proposed-schedule rank-max GPU time. Table 4 reports two measured views in each cell: the proposed schedule without compile against the no-compile 17 Table 4: Llama3-8B speedup over prefix ratio r and trajectory count N , total length 12,288. Each cell is eager proposed schedule / B-compiled proposed schedule. 
+
+Split N = 2 N = 4 N = 8 N = 16 N = 32 N = 128 
+
+2k/10k 1.102 /0.867 1.128 /0.948 1.154 /0.995 1.162 /1.021 1.168 /1.038 1.170 /1.043 
+
+6k/6k 1.443 /0.861 1.615 /1.115 1.744 /1.313 1.801 /1.437 1.831 /1.515 1.861 /1.565 
+
+8k/4k 1.572 /0.744 1.954 /1.097 2.266 /1.434 2.442 /1.692 2.520 /1.866 2.612 /2.004 
+
+10k/2k 1.718 /0.652 2.463 /1.079 3.241 /1.608 3.800 /2.125 4.115 /2.533 4.395 /2.930 
+
+Table 5: Proposed-schedule phase timing at N = 32 , before and after Phase-B compile. Each cell reports no-compile → B-compile rank-max GPU seconds.                                                     
+
+> Split Phase A Phase B Phase C Total 2k/10k 0.274 →0.289 165 .137 →55 .935 0.415 →0.422 165 .831 →56 .646
+> 6k/6k 0.718 →0.718 103 .787 →36 .843 1.237 →1.237 105 .747 →38 .801
+> 8k/4k 1.235 →1.234 73 .694 →28 .366 1.903 →1.902 76 .836 →31 .505
+> 10k/2k 1.726 →1.725 42 .614 →18 .774 2.715 →2.716 47 .056 →23 .215
+
+baseline, and the proposed schedule with Phase-B TransformerBlock compile against the compiled baseline. Table 4 supports both dimensions of the claim. Reading the first number in each cell, the proposed schedule speedup increases with N for every fixed prefix ratio, because the shared prefix forward/backward is amortized over more suffix trajectories; it also increases with prefix ratio for every fixed N , because a larger fraction of the baseline full-sequence work is reusable. The low-prefix 2k/10k case is intentionally close to a suffix-dominant workload and reaches only 1.162 × at N = 16 
+
+and 1.170 × at N = 128 . In contrast, the 10k/2k case reaches 3.800 × at N = 16 , 4.115 × at the production-relevant N = 32 , and 4.395 × at N = 128 .The second number in each cell gives a more conservative compile-on comparison. Compiling the dense baseline reduces the absolute baseline time substantially, so the relative speedup is lower than in the eager comparison, and small low-reuse groups can be slower. However, the high-reuse region still gives positive speedup despite our prototype compiling only Phase B: for the 10k/2k split, the proposed schedule reaches 2.125 ×, 2.533 ×, and 2.930 × at N = 16 , 32 , 128 , respectively. Table 5 explains where the compile benefit comes from. At N = 32 , compile changes almost none of the one-time prefix work: Phase A and Phase C stay within measurement noise across all four splits. The reduction comes from repeated suffix work in Phase B, which drops from 165 .137 to 55 .935 
+
+seconds in the 2k/10k case and from 42 .614 to 18 .774 seconds in the 10k/2k case. This matches the implementation boundary in which Phase B is the main compiled path and Phase A/C remain eager by default. 
+
+5.5 Claim 4: Reuse Cache Converts Dormant Prefix State into HBM Headroom 
+
+The reuse cache also defines a memory lifecycle. During Phase B, prefix K/V and accumulated 
+
+gK/gV are hot, while the remaining prefix activation stack is dormant until Phase C. Offloading this dormant set reduces Phase-B peak HBM and allows the trainer to reinvest the released capacity into suffix resources. We evaluate this with Llama3-8B under the same T P = 2 , CP = 4 setting used by the speed sweep. Table 6 shows the expected Phase-B memory trend. Against the full-sequence baseline peak of 64.745 GiB, the proposed schedule reduces Phase-B allocated HBM to 51.573, 39.029, 32.756, and 18 Table 6: Phase-B HBM reduction with prefix offload, N = 16 , total length 12,288. Baseline peak is 64.745 GiB.           
+
+> Split Phase-B peak Reduction 2k/10k 51.573 GiB 13.172 GiB / 20.3% 6k/6k 39.029 GiB 25.717 GiB / 39.7% 8k/4k 32.756 GiB 31.989 GiB / 49.4% 10k/2k 26.484 GiB 38.262 GiB / 59.1%
+
+Table 7: Capacity frontier with explicit prefix/suffix lengths, N = 2 .                
+
+> Case Prefix Suffix Total Vs. base Baseline full seq. none none 17,920 1.000 ×
+> Proposed fixed suffix 18,944 2,048 20,992 1.171 ×
+> Proposed frontier 8,192 14,336 22,528 1.257 ×
+> Proposed frontier 12,288 12,800 25,088 1.400 ×
+> Proposed frontier 16,384 11,776 28,160 1.571 ×
+> Proposed frontier 18,944 10,752 29,696 1.657 ×
+
+26.484 GiB as the reusable prefix grows. This corresponds to a 20 .3% to 59 .1% Phase-B reduction. We report the Phase-B peak separately because this is the interval where suffix work runs and where released prefix-activation memory can be reinvested. Table 7 shows that the released HBM becomes usable sequence capacity. The full-sequence baseline has no prefix/suffix split and reaches 17,920 total tokens. With the proposed schedule prefix offload, the same hardware reaches 20,992 total tokens in a fixed-suffix case and up to 18,944 prefix tokens plus 10,752 suffix tokens, or 29,696 total tokens, when the suffix frontier is expanded. The measured maximum total length is therefore up to 1.657 × the full-sequence baseline. The key point is not that offload is free. Rather, the proposed schedule creates a long dormant interval for prefix saved tensors and then uses offload to make that interval an allocation resource. The memory experiment spends part of the resource on fuller suffix activation retention, and the capacity experiment spends it on longer total sequence lengths. 
+
+Summary. Together, these experiments show that the proposed schedule preserves optimizer updates across dense and token-local MoE/EP configurations, aligns on a real RL trace replay, scales predictably with prefix reuse opportunity, and converts dormant prefix activations into usable Phase-B HBM through reuse-cache management. 
+
+# 6 Discussion and Limitations 
+
+Workload and numerical boundaries. The proposed schedule is most useful when multiple trajectories share an identical, expensive prefix and the rollout group cannot be packed into one graph; it is less useful for short prefixes, N = 1 , suffix-dominant histories, or nonidentical prompts. The schedule also changes accumulation order, so the target is numerical agreement within datatype and reduction tolerance rather than bitwise identity. 
+
+System boundaries. Stage-local PP switching avoids the naive global Phase A--B--C barrier in tested schedules, but pipeline efficiency still depends on group size, pipeline depth, prefix/suffix balance, and interleaving. Extra HBM is a resource, not automatic speedup: longer suffixes improve capacity, larger suffix waves reduce scheduling overhead, and suffix activation retention helps only when recomputation is on the critical path. Our TorchTitan prototype also has asymmetric compiler coverage because phase-dependent execution, saved-tensor hooks, and explicit K/V -gK/gV handoff make Phase B easier to compile than Phase A/C. This is an implementation limitation rather than 19 a design requirement; under this conservative setting, small low-reuse groups can lose performance, while the high-reuse 10 /12 case still reaches 2.125 × speedup at N = 16 and 2.930 × at N = 128 .
+
+Backend, MoE, and scope boundaries. We do not use Megatron wall-clock numbers as the primary comparison because that would conflate the proposed schedule with backend-specific fusion, runtime scheduling, and compiler maturity; the design acts at the SDPA K/V and gK/gV interfaces and a fully optimized Megatron implementation is future work. For MoE, the proposed schedule preserves deterministic token-local aux-loss semantics through logical prefix-token accounting, but does not claim exact equivalence for batch-coupled routing with capacity, dropping, expert-choice, or balanced assignment. The current system handles flat shared-prefix GRPO-style groups; hierarchical prefix trees and broader production MoE sweeps are natural extensions. 
+
+# 7 Conclusion 
+
+The proposed schedule turns repeated-prefix RL training into a schedule-level cache problem. By exposing the prefix-suffix reuse interface, it computes shared prefix forward and backward once across suffix microbatches, keeps only active prefix state on GPU during suffix computation, and composes with dense training parallelism and EP as an execution strategy. TP and EP remain orthogonal to the SDPA-based reuse interface, while CP/DP-style execution can reuse compact prefix K/V instead of full activation stacks. For MoE training semantics, the proposed schedule preserves aux-loss-based expert load balancing through logical prefix-token accounting, but batch-coupled routing remains outside the exact single-path reuse guarantee. The evaluation validates optimizer-update alignment across TP/CP/PP/EP settings, aligns on a real RL actor-update trace, measures the speedup trend over prefix reuse opportunity, and shows that offload converts dormant prefix activations into measured Phase-B HBM headroom for longer suffixes and longer total sequences. 
+
+# References 
+
+[1] Allen Institute for AI. Tulu 3: Pushing frontiers in open language model post-training, 2024. URL https://arxiv.org/abs/2411.15124 .[2] Tianqi Chen, Bing Xu, Chiyuan Zhang, and Carlos Guestrin. Training deep nets with sublinear memory cost, 2016. URL https://arxiv.org/abs/1604.06174 .[3] DeepSeek-AI. DeepSeekMath: Pushing the limits of mathematical reasoning in open language models, 2024. URL https://arxiv.org/abs/2402.03300 .[4] DeepSeek-AI. DeepSeek-R1: Incentivizing reasoning capability in LLMs via reinforcement learning, 2025. URL https://arxiv.org/abs/2501.12948 .[5] William Fedus, Barret Zoph, and Noam Shazeer. Switch transformers: Scaling to trillion parameter models with simple and efficient sparsity. Journal of Machine Learning Research ,23(120):1--39, 2022. URL https://www.jmlr.org/papers/v23/21-0998.html .[6] Gai et al. DualKV: Shared-prompt FlashAttention for efficient RL training with large rollouts and long contexts, 2026. URL https://arxiv.org/abs/2605.15422 .[7] Sam Ade Jacobs, Masahiro Tanaka, Chengming Zhang, Minjia Zhang, Shuaiwen Leon Song, Samyam Rajbhandari, and Yuxiong He. DeepSpeed Ulysses: System optimizations for enabling 20 training of extreme long sequence transformer models, 2023. URL https://arxiv.org/abs/ 2309.14509 .[8] Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph E. Gonzalez, Hao Zhang, and Ion Stoica. Efficient memory management for large language model serving with PagedAttention. In Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles , pages 611--626, 2023. doi: 10.1145/3600006. 3613165. [9] Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, Dehao Chen, Orhan Firat, Yanping Huang, Maxim Krikun, Noam Shazeer, and Zhifeng Chen. GShard: Scaling giant models with conditional computation and automatic sharding, 2020. URL https://arxiv.org/abs/2006. 16668 .[10] Mike Lewis, Shruti Bhosale, Tim Dettmers, Naman Goyal, and Luke Zettlemoyer. BASE layers: Simplifying training of large, sparse models. In Proceedings of the 38th International Conference on Machine Learning , volume 139 of Proceedings of Machine Learning Research , pages 6265--6274. PMLR, 2021. URL https://proceedings.mlr.press/v139/lewis21a.html .[11] Liu et al. Prefix grouper: Efficient GRPO training through shared-prefix forward, 2025. URL 
+
+https://arxiv.org/abs/2506.05433 .[12] Hao Liu, Matei Zaharia, and Pieter Abbeel. Ring Attention with blockwise transformers for near-infinite context. In International Conference on Learning Representations , 2024. URL 
+
+https://openreview.net/forum?id=WsRHpHH4s0 .[13] OpenRLHF Contributors. OpenRLHF: An easy-to-use, scalable and high-performance RLHF framework, 2024. URL https://github.com/OpenRLHF/OpenRLHF .[14] PyTorch Contributors. TorchTitan: A native PyTorch library for large model training, 2024. URL https://github.com/pytorch/torchtitan .[15] Samyam Rajbhandari, Jeff Rasley, Olatunji Ruwase, and Yuxiong He. ZeRO: Memory optimizations toward training trillion parameter models. In Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis , 2020. [16] Jie Ren, Samyam Rajbhandari, Reza Yazdani Aminabadi, Olatunji Ruwase, Shaden Smith, Minjia Zhang, and Yuxiong He. ZeRO-Offload: Democratizing billion-scale model training. In 
+
+2021 USENIX Annual Technical Conference , pages 551--564, 2021. [17] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc V. Le, Geoffrey E. Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. In International Conference on Learning Representations , 2017. URL 
+
+https://arxiv.org/abs/1701.06538 .[18] Mohammad Shoeybi, Mostofa Patwary, Raul Puri, Patrick LeGresley, Jared Casper, and Bryan Catanzaro. Megatron-LM: Training multi-billion parameter language models using model parallelism, 2019. URL https://arxiv.org/abs/1909.08053 .[19] verl Contributors. verl: Volcano engine reinforcement learning for large language models, 2024. URL https://github.com/volcengine/verl .21 [20] Wang and Hegde. Accelerating direct preference optimization with prefix sharing, 2024. URL 
+
+https://arxiv.org/abs/2410.20305 .[21] Wang et al. Tree training: Accelerating agentic LLMs training via shared prefix reuse, 2026. URL https://arxiv.org/abs/2511.00413 . Version 5. [22] Zhang et al. AREAL-DTA: Dynamic tree attention for efficient reinforcement learning of large language models, 2026. URL https://arxiv.org/abs/2602.00482 .[23] Lianmin Zheng et al. SGLang: Efficient execution of structured language model programs, 2023. URL https://arxiv.org/abs/2312.07104 .[24] Yanqi Zhou, Tao Lei, Hanxiao Liu, Nan Du, Yanping Huang, Vincent Y. Zhao, Andrew M. Dai, Zhifeng Chen, Quoc V. Le, and James Laudon. Mixture-of-experts with expert choice routing. In Advances in Neural Information Processing Systems , 2022. URL https://arxiv. org/abs/2202.09368 .[25] Barret Zoph, Irwan Bello, Sameer Kumar, Nan Du, Yanping Huang, Jeff Dean, Noam Shazeer, and William Fedus. ST-MoE: Designing stable and transferable sparse expert models, 2022. URL https://arxiv.org/abs/2202.08906 .
+
+# A Backward-Centric Derivation of Prefix-Gradient Superposition 
+
+This appendix expands the prefix-suffix reuse boundary and Proposition 1 from Section 3.1. We use a consistent symbol system: subscript 1 denotes shared prefix tensors, subscript 2 denotes suffix tensors, and superscript (i) denotes the i-th trajectory or suffix microbatch. The central backward insight is that suffix microbatch i does not need any intermediate result produced by prefix backward. It only writes two coupling gradients into the shared prefix attention state, gK (i)1
+
+and gV (i)1 . After these tensors are accumulated over i, the prefix backward can run once on the shared prefix trace. 
+
+A.1 Assumptions and Notation 
+
+For the local derivation in Sections A.1--A.3, consider one trajectory and split the layer input along the sequence dimension: 
+
+X = [ X1; X2],
+
+where X1 is the prefix and X2 is the suffix. The projection tensors are 
+
+Q1 = X1WQ, K1 = X1WK , V1 = X1WV ,Q2 = X2WQ, K2 = X2WK , V2 = X2WV .
+
+We use dZ to denote a generic reverse-mode adjoint, i.e., dZ = ∂L/∂Z . We reserve gK 1, gV 1 for the suffix-produced prefix-KV gradients that form the gradient-KV cache. Under the causal mask, prefix queries do not attend to suffix keys. The attention probabilities have the block form 
+
+P =
+
+> [
+
+P11 0
+
+P21 P22 
+
+> ]
+
+.
+
+22 The prefix block P11 depends only on X1. The suffix blocks P21 and P22 are produced by one row-wise softmax over the concatenated suffix-visible scores [S21 , S 22 ]. The attention outputs before the output projection and later token-wise operations are 
+
+ˆH1 = P11 V1,
+
+ˆH2 = P21 V1 + P22 V2.
+
+Residual connections, normalization, and FFN layers are token-wise after attention has produced 
+
+ˆH1, ˆH2. They do not introduce new prefix-suffix edges; all cross-token coupling is already represented by P21 V1 and S21 = Q2K⊤ 
+
+> 1
+
+/√dh.When this local derivation is applied to a rollout group, superscript (i) denotes the i-th trajectory or suffix microbatch, and the total loss is additive: 
+
+L =
+
+> N∑
+> i=1
+
+α(i)L(i),
+
+where α(i) includes rollout-level or token-level weighting. 
+
+A.2 Backward Insight 1: Suffix Backward Can Run Before Prefix Backward 
+
+Reverse the dependencies above. Suffix backward starts from dY 2 and moves through suffix FFN, suffix residual paths, and suffix attention rows. These computations need the suffix forward cache and the cached prefix K1, V 1, but they do not need any quantity produced by prefix backward. Given the suffix upstream gradient d ˆH2, the value-path gradients are 
+
+gV 1 = P ⊤
+
+> 21
+
+d ˆH2, dV 2 = P ⊤
+
+> 22
+
+d ˆH2.
+
+The probability gradients are 
+
+dP 21 = d ˆH2V ⊤ 
+
+> 1
+
+, dP 22 = d ˆH2V ⊤ 
+
+> 2
+
+.
+
+The score gradients for suffix rows are computed by one joint softmax backward over the concatenated row: 
+
+[dS 21 , dS 22 ] = SoftmaxBackward ([P21 , P 22 ], [dP 21 , dP 22 ]).
+
+After this, the suffix-query and suffix-key gradients are local to the suffix: 
+
+dQ 2 = 1
+
+√dh
+
+(dS 21 K1 + dS 22 K2) ,dK 2 = 1
+
+√dh
+
+dS ⊤
+
+> 22
+
+Q2.
+
+No prefix-backward intermediate appears in these expressions. The dependency direction in backward is one-way: suffix backward produces coupling gradients for the prefix, and prefix backward consumes the accumulated coupling gradients later. 23 A.3 Backward Insight 2: The Only Suffix-to-Prefix Channels Are gK/gV 
+
+The first suffix-to-prefix channel is the value path: 
+
+gV 1 = P ⊤
+
+> 21
+
+d ˆH2.
+
+The second channel is the key path: 
+
+gK 1 = 1
+
+√dh
+
+dS ⊤
+
+> 21
+
+Q2.
+
+There is no third channel through Q1. Prefix queries only participate in prefix rows: 
+
+dQ 1 = 1
+
+√dh
+
+dS 11 K1.
+
+Because causal masking sets the prefix-to-suffix block to zero, dS 11 is computed only from the prefix row softmax: 
+
+dS 11 = SoftmaxBackward( P11 , dP 11 ), dP 11 = d ˆH1V ⊤ 
+
+> 1
+
+.
+
+Thus suffix losses do not send gradients to Q1; they only add gK 1 and gV 1 to the prefix state. The complete prefix attention adjoints for this local trajectory are 
+
+dV 1 = P ⊤
+
+> 11
+
+d ˆH1 + gV 1,dK 1 = 1
+
+√dh
+
+dS ⊤
+
+> 11
+
+Q1 + gK 1.
+
+This is the backward side of the reuse cache: suffix forward reads K1, V 1, and suffix backward writes 
+
+gK 1, gV 1.
+
+A.4 Backward Insight 3: Prefix Backward Is Linear in the Accumulated Cou-pling Gradients 
+
+Now reintroduce the trajectory superscript. For the shared prefix, all forward-cache values are identical across the rollout group: 
+
+X1, Q 1, K 1, V 1, S 11 , P 11 , ˆH1
+
+and the token-wise FFN/cache values after attention. The accumulated adjoints that will be injected into the prefix graph are 
+
+GY = ∑
+
+> i
+
+α(i)dY (i)1 ,GK = ∑
+
+> i
+
+α(i)gK (i)1 ,GV = ∑
+
+> i
+
+α(i)gV (i)1 .
+
+Once this trace is fixed, every prefix backward operator is linear in its incoming adjoints. For example, 
+
+dV 1 = P ⊤
+
+> 11
+
+d ˆH1 + GV
+
+is linear in d ˆH1 and GV , and 
+
+dK 1 = 1
+
+√dh
+
+dS ⊤
+
+> 11
+
+Q1 + GK
+
+24 is linear in dS 11 and GK . The prefix softmax backward is also linear in its upstream probability adjoint for fixed P11 :
+
+dS 11 = P11 ⊙
+
+(
+
+dP 11 − rowsum( dP 11 ⊙ P11 )1⊤)
+
+.
+
+The same property holds for residual connections, linear projections, activation backward, normal-ization backward with fixed saved statistics, and FFN backward. Let Bp be the entire prefix backward for this fixed trace. Define the weighted incoming-gradient tuple for trajectory i as 
+
+U (i) = (α(i)dY (i)1 , α (i)gK (i)1 , α (i)gV (i)1
+
+).
+
+Linearity gives the folded backward identity 
+
+> N
+
+∑
+
+> i=1
+
+Bp
+
+(
+
+U (i))
+
+= Bp
+
+( N∑
+
+> i=1
+
+U (i)
+
+)
+
+= Bp(GY , G K , G V ) .
+
+This is the algebraic identity used by the proposed schedule: accumulate gK (i)1 , gV (i)1 across suffix microbatches, then invoke the expensive prefix backward once. 
+
+A.5 Equivalent Reordered Backward Schedule 
+
+For each suffix microbatch i, the proposed schedule runs the suffix backward first. This computes ordinary suffix-local gradients and emits 
+
+gV (i)1 = P (i)⊤ 
+
+> 21
+
+d ˆH(i)2 , gK (i)1 = 1
+
+√dh
+
+dS (i)⊤ 
+
+> 21
+
+Q(i)2 .
+
+The runtime forms the accumulated gradient cache 
+
+GV = ∑
+
+> i
+
+α(i)gV (i)1 , GK = ∑
+
+> i
+
+α(i)gK (i)1 .
+
+If the objective contains prefix-token losses, their direct prefix adjoints are accumulated as 
+
+GY = ∑
+
+> i
+
+α(i)dY (i)1 .
+
+For the common suffix-only actor loss, GY = 0 . This does not mean the prefix receives no gradient: 
+
+GK and GV are generally nonzero because suffix attention reads prefix keys and values. Phase C then runs one prefix backward with GY , G K , G V . In the attention part of this backward, the injected cache appears exactly as 
+
+dV 1 = P ⊤
+
+> 11
+
+d ˆH1 + GV , dK 1 = 1
+
+√dh
+
+dS ⊤
+
+> 11
+
+Q1 + GK .
+
+The prefix QKV projection backward then produces 
+
+dX attn 1 = dQ 1W ⊤ 
+
+> Q
+
++ dK 1W ⊤ 
+
+> K
+
++ dV 1W ⊤ 
+
+> V
+
+,
+
+plus the residual and FFN contributions driven by GY . This is the same result as running N
+
+baseline prefix backwards and summing their gradients, because every term is either suffix-local for some i and already computed in Phase B, or prefix-local and linear in the accumulated inputs consumed in Phase C. 25 A.6 Parameter-Gradient Accounting 
+
+The reordered schedule also preserves parameter gradients. For the attention projections, the total gradients have the same prefix-plus-suffix decomposition as the dense baseline: 
+
+dW Q = X⊤ 
+
+> 1
+
+dQ 1 + ∑
+
+> i
+
+α(i)X(i)⊤ 
+
+> 2
+
+dQ (i)2 ,dW K = X⊤ 
+
+> 1
+
+dK 1 + ∑
+
+> i
+
+α(i)X(i)⊤ 
+
+> 2
+
+dK (i)2 ,dW V = X⊤ 
+
+> 1
+
+dV 1 + ∑
+
+> i
+
+α(i)X(i)⊤ 
+
+> 2
+
+dV (i)2 .
+
+The suffix terms are accumulated during Phase B. The prefix terms are produced once during Phase C, using dK 1 and dV 1 that already include all suffix coupling gradients. FFN and output-projection weights follow the same accounting: token-wise suffix terms are accumulated per suffix microbatch 
+
+i, and the shared prefix term is computed once from the accumulated prefix adjoint. 
+
+A.7 Extension Across Layers 
+
+The same reasoning applies independently at every transformer layer. During Phase B, suffix layer ℓ
+
+of microbatch i reads cached Kℓ, 1, V ℓ, 1 and accumulates gK (i)
+
+> ℓ, 1
+
+, gV (i) 
+
+> ℓ, 1
+
+. During Phase C, the retained prefix graph consumes 
+
+GK,ℓ = ∑
+
+> i
+
+α(i)gK (i)
+
+> ℓ, 1
+
+, GV,ℓ = ∑
+
+> i
+
+α(i)gV (i)
+
+> ℓ, 1
+
+and produces the prefix hidden-state adjoint for layer ℓ − 1. Because each layer’s prefix backward is linear in its incoming adjoints for a fixed trace, folding is valid layer by layer through the whole stack. 
+
+A.8 Consequences 
+
+The derivation gives three practical consequences. First, the backward cache is compact: each suffix microbatch i contributes only gK/gV per layer, not a full prefix activation stack. Second, prompt-only prefixes still receive learning signal in suffix-only RL losses through the accumulated 
+
+GK /G V , even when the direct prefix-token adjoint GY is zero. Third, the expensive work removed by the proposed schedule is exactly repeated prefix backward: N prefix backwards are replaced by one prefix backward plus N lightweight element-wise accumulations of gK/gV .The equivalence is exact over real arithmetic. In floating point, the proposed schedule may use a different accumulation order from the dense baseline, and distributed reductions may use a different tree. Thus the expected implementation target is numerical agreement within datatype and kernel tolerance, not bitwise identity. 
+
+# B Auxiliary-Loss Accounting for MoE Routers 
+
+This appendix gives the concrete logical-token accounting used for aux-loss-based MoE routers. Let 
+
+B be the exact reduction scope used by the baseline router loss, such as a trainer microbatch or a global token group. The proposed schedule represents the same logical tokens by a smaller physical set ˜B with multiplicity mu. A suffix token has mu = 1 . A prefix token shared by N trajectories has 26 mu = N , or the number of logical trajectories from that prompt that belong to the current baseline reduction scope. For a Top-k router, let pu,e be token u’s router probability for expert e, and let ru,j be its j-th selected expert. The logical expert count and probability mass are 
+
+Ce = ∑ 
+
+> u∈˜B
+
+muk∑
+
+> j=1
+
+1[ru,j = e], Re = ∑ 
+
+> u∈˜B
+
+mupu,e .
+
+With M = ∑  
+
+> u∈˜B
+
+mu, the common Switch-style auxiliary loss becomes 
+
+fe = Ce
+
+kM , Pe = Re
+
+M , Laux = λE 
+
+> E∑
+> e=1
+
+fePe.
+
+These are exactly the statistics produced by materializing all logical prefix copies, because deter-ministic token-local routing gives each copy the same router probability and selected experts. As in the baseline, the hard count Ce is treated as non-differentiable, while Re remains connected to the router probabilities; multiplying by mu gives the same router-gradient weight as mu explicit copies. 27

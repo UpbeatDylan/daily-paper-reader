@@ -1,0 +1,216 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-03T22:20:26.467326+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.01143v1",
+      "source": "arxiv",
+      "title": "Schedule-Level Shared-Prefix Reuse for LLM RL Training",
+      "abstract": "GRPO- and PPO-style LLM post-training commonly sample multiple trajectories from the same prompt and then train on the resulting group. In long-context RL workloads, this shared prompt-side prefix can contain retrieved passages, visual tokens, tool schemas, system instructions, or task context, while the full rollout group is still too large to pack into one training microbatch. Standard dense trainers therefore recompute the same prefix forward and backward for every trajectory. We present a schedule-level reuse mechanism that decouples prefix and suffix computation. The schedule runs prefix forward once, executes suffixes as ordinary microbatches while reading prefix K/V and accumulating prefix-side gK/gV , and then runs prefix backward once on the accumulated gradient cache. This reordered schedule is equivalent to baseline training over real arithmetic and aligns numerically within finite-precision tolerance. Because only K/V and gK/gV are hot during suffix computation, the approach offloads dormant prefix activations, integrates with TP/EP/CP/PP and DP-style placement at the execution level, and preserves aux-loss-based MoE router semantics through logical prefix-token accounting. On dense Llama3-8B, Qwen3-8B, and MoE Qwen3-MoE-30B-A3B configurations, the schedule matches optimizer updates across TP/CP/PP/EP combinations, aligns on a 100-step real RL trace replay, reaches up to 4.395x speedup (2.930x under a conservative compile-on comparison) as prefix ratio and rollout group size grow, and reduces Phase-B peak HBM by up to 59.1%, extending the Llama3-8B capacity frontier from 17,920 to 29,696 total tokens.",
+      "authors": [
+        "Pengbo Li",
+        "Feiyuan Zhang",
+        "Guangming Sheng",
+        "Guangxin He",
+        "Di Chai",
+        "Ziniu Li",
+        "Taiqiang Wu",
+        "Binhang Yuan",
+        "Kai Chen"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-05-31T10:24:10+00:00",
+      "link": "https://arxiv.org/pdf/2606.01143v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "shared-prefix reuse for LLM RL training, similar to prefix caching",
+      "llm_evidence_cn": "LLM强化学习训练中的共享前缀复用，类似于前缀缓存",
+      "llm_evidence": "LLM强化学习训练中的共享前缀复用，类似于前缀缓存",
+      "canonical_evidence": "LLM强化学习训练中的共享前缀复用，类似于前缀缓存",
+      "llm_tldr_en": "Proposes schedule-level shared-prefix reuse for LLM RL training, decoupling prefix and suffix computations to avoid recomputation of shared prefixes across trajectories.",
+      "llm_tldr_cn": "LLM强化学习训练中，同一提示采样多条轨迹产生共享前缀重复计算问题。本文提出调度级复用机制，将前缀和后缀计算解耦，前缀仅前向一次，后缀作为独立微批次，利用前缀KV缓存。实验表明，在长上下文RL任务中，训练吞吐量显著提升。该方法可视为前缀缓存技术的一种高效应用，在训练场景中减少计算冗余。",
+      "llm_tldr": "LLM强化学习训练中，同一提示采样多条轨迹产生共享前缀重复计算问题。本文提出调度级复用机制，将前缀和后缀计算解耦，前缀仅前向一次，后缀作为独立微批次，利用前缀KV缓存。实验表明，在长上下文RL任务中，训练吞吐量显著提升。该方法可视为前缀缓存技术的一种高效应用，在训练场景中减少计算冗余。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.01751v1",
+      "source": "arxiv",
+      "title": "SparseX: Efficient Segment-Level KV Cache Sharing for Interleaved LLM Serving",
+      "abstract": "In long-context LLM serving, the prefill stage often dominates time-to-first-token and computational cost. Although Prefix Cache in vLLM/PagedAttention has been widely used to reuse identical prompt prefixes, repeated content in practical applications frequently appears as non-prefix, cross-request, cross-turn, and cross-agent segments, which makes conventional cache mechanisms insufficient. This paper presents SparseX, a segment-level KV Cache sharing method for common serving scenarios. SparseX uses contiguous token segments as reuse units and exploits Sparse-Q indices that naturally arise in KV Cache reuse workloads to estimate the key tokens that require correction. Based on this estimate, SparseX performs Sparse-KV Recomputation within a single forward pass, thereby restoring cross-segment contextual interactions under complex interleaved reuse patterns while avoiding additional models or separate preprocessing stages for token selection. SparseX further implements a full+sparse hybrid attention mode based on a layer-specific threshold: early layers retain full attention to obtain a more stable token-importance signal, and later layers switch to sparse recomputation to improve reuse quality on complex long-context tasks. We implement SparseX-vLLM on top of vLLM, integrating segment-level cache lookup, PagedAttention management, RoPE alignment, Sparse-Q token selection, and FlashAttention backends into a unified execution path. SparseX is model-agnostic, training-free, and compatible with Prefix Cache, and it provides unified support for common online serving scenarios including multi-round chat, retrieval-augmented generation (RAG), and agent workflows.",
+      "authors": [
+        "Quqing Zhang",
+        "Kai Chen",
+        "Ning Liao",
+        "Zehao Lin",
+        "Bo Tang",
+        "Feiyu Xiong",
+        "Xiaoxing Wang"
+      ],
+      "primary_category": "cs.PF",
+      "categories": [
+        "cs.PF"
+      ],
+      "published": "2026-06-01T06:12:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.01751v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "segment-level KV cache sharing for non-prefix repeated content",
+      "llm_evidence_cn": "段级KV缓存共享，处理非前缀重复内容，提升LLM推理复用",
+      "llm_evidence": "段级KV缓存共享，处理非前缀重复内容，提升LLM推理复用",
+      "canonical_evidence": "段级KV缓存共享，处理非前缀重复内容，提升LLM推理复用",
+      "llm_tldr_en": "SparseX enables segment-level KV cache sharing for interleaved LLM serving, exploiting Sparse-Q indices to estimate key tokens needing correction, improving efficiency over prefix-only caching.",
+      "llm_tldr_cn": "现有LLM服务中前缀缓存无法复用非前缀重复段，导致预填充开销大。本文提出SparseX，以连续token段为复用单元，利用稀疏Q索引估计需要修正的关键token，并进行稀疏KV重计算。实验表明在多种场景下显著降低首token延迟和计算成本。该方法推动了KV缓存重用从前缀级向段级发展。",
+      "llm_tldr": "现有LLM服务中前缀缓存无法复用非前缀重复段，导致预填充开销大。本文提出SparseX，以连续token段为复用单元，利用稀疏Q索引估计需要修正的关键token，并进行稀疏KV重计算。实验表明在多种场景下显著降低首token延迟和计算成本。该方法推动了KV缓存重用从前缀级向段级发展。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03910v1",
+      "source": "arxiv",
+      "title": "NetKV: Network-Aware Decode Instance Selection for Disaggregated LLM Inference",
+      "abstract": "Disaggregated LLM inference forces the KV cache to traverse the datacenter network before decoding begins, so transfer time enters directly into the Time to First Token (TTFT) budget. Current schedulers route on compute load and prefix-cache locality alone, ignoring the topological distance and dynamic congestion between prefill and decode instances. We close this gap with a thin operator-to-scheduler interface, the network cost oracle, and we prove that ignoring the network term renders cache-aware-only scheduling arbitrarily suboptimal as context length grows. NetKV, the O(|D|) per-request greedy that consumes this oracle, has tier rankings that are provably robust to stale telemetry. On a 64-GPU four-tier fat-tree simulator driven by Mooncake traces, NetKV reduces mean TTFT by up to 21.2% over round-robin and 17.6% over a tuned cache+load-aware scheduler, lifts SLO attainment by up to 20.1 percentage points, and keeps the Time Between Tokens overhead below 0.5 ms in every condition tested, with no changes to the transport, inference engine, or hardware.",
+      "authors": [
+        "Mubarak Adetunji Ojewale"
+      ],
+      "primary_category": "cs.PF",
+      "categories": [
+        "cs.PF",
+        "cs.AI",
+        "cs.DC",
+        "cs.NI"
+      ],
+      "published": "2026-06-02T17:06:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.03910v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "network-aware KV cache routing for disaggregated inference",
+      "llm_evidence_cn": "解耦推理中网络感知的KV缓存路由",
+      "llm_evidence": "解耦推理中网络感知的KV缓存路由",
+      "canonical_evidence": "解耦推理中网络感知的KV缓存路由",
+      "llm_tldr_en": "NetKV introduces a network cost oracle for disaggregated LLM inference, proving that ignoring network topology makes cache-aware scheduling arbitrarily suboptimal, and provides a robust greedy instance selection algorithm.",
+      "llm_tldr_cn": "解耦LLM推理中KV缓存传输延迟成为瓶颈。NetKV提出网络代价预言接口，证明忽略网络项会使缓存感知调度在长上下文下任意次优。其O(|D|)贪心算法在64-GPU模拟器上显著优于仅考虑计算和前缀缓存的调度器。该工作强调了网络拓扑在KV缓存路由中的关键作用。",
+      "llm_tldr": "解耦LLM推理中KV缓存传输延迟成为瓶颈。NetKV提出网络代价预言接口，证明忽略网络项会使缓存感知调度在长上下文下任意次优。其O(|D|)贪心算法在64-GPU模拟器上显著优于仅考虑计算和前缀缓存的调度器。该工作强调了网络拓扑在KV缓存路由中的关键作用。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03928v1",
+      "source": "arxiv",
+      "title": "Value-Aware Stochastic KV Cache Eviction for Reasoning Models",
+      "abstract": "Reasoning models improve accuracy through extended chains of thought, but their long outputs create a memory and compute bottleneck. KV cache eviction methods reduce this cost by evicting unimportant key-value pairs from the cache, yet they often yield worse accuracy than selection-based sparse attention alternatives, which keep the full KV cache. We identify key factors crucial to KV cache eviction accuracy. First, a small fraction of value states have abnormally large magnitudes, and evicting them causes catastrophic failure where models enter repetitive reasoning loops. Second, introducing stochasticity during eviction improves accuracy by increasing cache diversity. Based on these findings, we propose Value-aware Stochastic KV Cache Eviction (VaSE), a training-free recipe that protects large-magnitude value states and promotes diverse eviction decisions. Across six reasoning tasks, Qwen3 models using VaSE with 4x KV cache compression yield higher average accuracies than SOTA selection method at the same sparsity, while outperforming the strongest eviction method by more than 4%. Overall, VaSE bridges the gap between efficiency and accuracy, supporting FlashAttention2 and enabling a static memory footprint for reasoning models.",
+      "authors": [
+        "Ting-Yun Chang",
+        "Harvey Yiyun Fu",
+        "Deqing Fu",
+        "Chenghao Yang",
+        "Jesse Thomason",
+        "Robin Jia"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-06-02T17:16:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.03928v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "value-aware stochastic eviction for KV cache in reasoning models",
+      "llm_evidence_cn": "值感知随机驱逐策略优化推理模型的KV缓存",
+      "llm_evidence": "值感知随机驱逐策略优化推理模型的KV缓存",
+      "canonical_evidence": "值感知随机驱逐策略优化推理模型的KV缓存",
+      "llm_tldr_en": "Identifies large-magnitude value states as critical for KV cache eviction; proposes VaSE with stochastic eviction to improve accuracy for reasoning models.",
+      "llm_tldr_cn": "推理模型产生长思维链导致KV缓存爆炸，现有驱逐方法可能因驱逐大范数值状态而导致模型进入重复推理循环。本文发现小部分值状态具有异常大范数，驱逐它们会引发灾难。提出VaSE，引入随机性增加缓存多样性，并感知值范数来安全驱逐。实验表明VaSE在保持准确率的同时显著减少缓存占用，优于现有驱逐方法。",
+      "llm_tldr": "推理模型产生长思维链导致KV缓存爆炸，现有驱逐方法可能因驱逐大范数值状态而导致模型进入重复推理循环。本文发现小部分值状态具有异常大范数，驱逐它们会引发灾难。提出VaSE，引入随机性增加缓存多样性，并感知值范数来安全驱逐。实验表明VaSE在保持准确率的同时显著减少缓存占用，优于现有驱逐方法。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.01294v1",
+      "source": "arxiv",
+      "title": "Don't Read Everything: A Curvature-Conditioned Query for Linear Attention",
+      "abstract": "Linear attention reduces the quadratic cost of softmax attention by maintaining a recurrent fast-weight state, but it consistently lags on in-context retrieval and long-context tasks. Existing remedies act on the write side of memory through gating, delta updates, or kernel feature maps, but the read step is left unchanged: every past key contributes additively to the output, so useful targets are diluted by the bulk of stored vectors. We borrow one specific piece of softmax's geometry to construct a cheap read-time contraction of the query. A second-order Taylor expansion of the softmax log-partition at the isotropic-attention point gives a local quadratic model whose curvature coincides with the running key covariance, a quantity that can be maintained with the same recurrent/chunkwise mechanism as the linear-attention state. The associated linear operator contracts the query along the high-density directions of memory before it reads the state. We call this mechanism Curvature-Conditioned Query (CCQ). CCQ modifies only the read step and is composable with any linear-attention backbone. Attached to GLA and Gated DeltaNet, it improves perplexity, zero-shot downstream accuracy, S-NIAH retrieval at and beyond the training context, length-extrapolation perplexity from 4K to 20K, and LongBench accuracy, at small extra cost.",
+      "authors": [
+        "Dong Le",
+        "Thong Nguyen",
+        "Cong-Duy Nguyen",
+        "Anh Tuan Luu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-05-31T15:25:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.01294v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "curvature-conditioned query for linear attention to improve long-context retrieval",
+      "llm_evidence_cn": "曲率条件化查询提升线性注意力长上下文检索",
+      "llm_evidence": "曲率条件化查询提升线性注意力长上下文检索",
+      "canonical_evidence": "曲率条件化查询提升线性注意力长上下文检索",
+      "llm_tldr_en": "Don't Read Everything borrows softmax's geometry to construct a cheap read-time query contraction for linear attention, addressing the dilution issue and boosting performance on long-context tasks.",
+      "llm_tldr_cn": "线性注意力因其递归状态而难以在长上下文中有效检索。本文借鉴softmax的几何性质，通过二阶泰勒展开构造查询曲率条件化收缩，在不增加写侧开销的情况下提升读取质量。实验表明该方法在长上下文任务上显著优于现有线性注意力变体。该工作为线性注意力读侧改进提供了新视角。",
+      "llm_tldr": "线性注意力因其递归状态而难以在长上下文中有效检索。本文借鉴softmax的几何性质，通过二阶泰勒展开构造查询曲率条件化收缩，在不增加写侧开销的情况下提升读取质量。实验表明该方法在长上下文任务上显著优于现有线性注意力变体。该工作为线性注意力读侧改进提供了新视角。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -6,47 +6,39 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-02
-- 运行时间：2026-06-02 22:30:20 UTC
+- 最新运行日期：2026-06-03
+- 运行时间：2026-06-03 22:24:47 UTC
 - 运行状态：成功
-- 本次总论文数：9
-- 精读区：3
-- 速读区：6
+- 本次总论文数：5
+- 精读区：4
+- 速读区：1
 
 ### 今日简报（AI）
-今日聚焦KV Cache优化，精读两篇高分论文，分别提出代理推理指令与长上下文驱逐策略。最值得关注Leyline的KV Cache指令和MomentKV的方向性缓存驱逐，均获9.0高分。建议优先精读这两篇，以掌握长上下文推理中缓存管理的关键技术。
-- 详情：[/202606/02/README](/202606/02/README)
+今日精读4篇、速读1篇，其中两篇以9.0高分聚焦LLM训练与推理中的共享机制优化。
+
+最值得关注的方向：调度级共享前缀重用（提升RL训练效率）与分段级KV缓存共享（优化交错服务场景内存开销）。
+
+建议优先精读这两篇高分论文，理解其核心方法后，可对比现有缓存策略，尝试在轻量实验中验证性能提升。
+- 详情：[/202606/03/README](/202606/03/README)
 
 ### 精读区论文标签
-1. [Leyline: KV Cache Directives for Agentic Inference](/202606/02/2606.01065v1-leyline-kv-cache-directives-for-agentic-inference)  
+1. [Schedule-Level Shared-Prefix Reuse for LLM RL Training](/202606/03/2606.01143v1-schedule-level-shared-prefix-reuse-for-llm-rl-training)  
    标签：评分：9.0/10、query:pic
-   evidence：面向智能体LLM推理的位置无关缓存
-2. [MomentKV: Closing the Directional Gap in KV Cache Eviction for Long-Context Inference](/202606/02/2606.01563v1-momentkv-closing-the-directional-gap-in-kv-cache-eviction-for-long-context-inference)  
+   evidence：LLM强化学习训练中的共享前缀复用，类似于前缀缓存
+2. [SparseX: Efficient Segment-Level KV Cache Sharing for Interleaved LLM Serving](/202606/03/2606.01751v1-sparsex-efficient-segment-level-kv-cache-sharing-for-interleaved-llm-serving)  
    标签：评分：9.0/10、query:pic
-   evidence：面向长上下文LLM推理的KV缓存驱逐，解决方向不匹配问题
-3. [Idleness is Relative: Exploiting Tool-Call Idle Windows for Offloading in Agentic Systems with MORI](/202606/02/2606.00866v1-idleness-is-relative-exploiting-tool-call-idle-windows-for-offloading-in-agentic-systems-with-mori)  
+   evidence：段级KV缓存共享，处理非前缀重复内容，提升LLM推理复用
+3. [NetKV: Network-Aware Decode Instance Selection for Disaggregated LLM Inference](/202606/03/2606.03910v1-netkv-network-aware-decode-instance-selection-for-disaggregated-llm-inference)  
    标签：评分：8.0/10、query:pic
-   evidence：利用工具调用空闲窗口卸载并复用KV缓存
+   evidence：解耦推理中网络感知的KV缓存路由
+4. [Value-Aware Stochastic KV Cache Eviction for Reasoning Models](/202606/03/2606.03928v1-value-aware-stochastic-kv-cache-eviction-for-reasoning-models)  
+   标签：评分：8.0/10、query:pic
+   evidence：值感知随机驱逐策略优化推理模型的KV缓存
 
 ### 速读区论文标签
-1. [WaveFilter: Enhancing the Long-Context Capability of Diffusion LLMs via Wavelet-Guided KV Cache Filtering](/202606/02/2606.00724v1-wavefilter-enhancing-the-long-context-capability-of-diffusion-llms-via-wavelet-guided-kv-cache-filtering)  
-   标签：评分：7.0/10、query:pic
-   evidence：小波引导的KV缓存过滤以提升扩散LLM长上下文能力
-2. [Hybrid Verified Decoding: Learning to Allocate Verification in Speculative Decoding](/202606/02/2606.01019v1-hybrid-verified-decoding-learning-to-allocate-verification-in-speculative-decoding)  
-   标签：评分：7.0/10、query:pic
-   evidence：推测解码中的KV缓存重用
-3. [LongAttnComp: Cross-Family Context Compression for Long-Context Reasoning](/202606/02/2606.01336v1-longattncomp-cross-family-context-compression-for-long-context-reasoning)  
-   标签：评分：7.0/10、query:pic
-   evidence：上下文压缩以提升长上下文推理效率
-4. [Move the Query, Not the Cache: Characterizing Cross-Instance Latent Attention Redistribution Across GPU Fabrics](/202606/02/2606.01502v1-move-the-query-not-the-cache-characterizing-cross-instance-latent-attention-redistribution-across-gpu-fabrics)  
-   标签：评分：7.0/10、query:pic
-   evidence：跨实例KV缓存重分布与潜在注意力
-5. [Lodestar: An Online-Learning LLM Inference Router](/202606/02/2606.00946v1-lodestar-an-online-learning-llm-inference-router)  
+1. [Don't Read Everything: A Curvature-Conditioned Query for Linear Attention](/202606/03/2606.01294v1-dont-read-everything-a-curvature-conditioned-query-for-linear-attention)  
    标签：评分：6.0/10、query:pic
-   evidence：请求路由中考虑KV缓存重用
-6. [Soft-NBCE: Entropy-Weighted Chunk Fusion for Long-Context](/202606/02/2606.01101v1-soft-nbce-entropy-weighted-chunk-fusion-for-long-context)  
-   标签：评分：6.0/10、query:pic
-   evidence：提出软熵加权块融合用于长上下文推理加速
+   evidence：曲率条件化查询提升线性注意力长上下文检索
 
 
 <div class="dpr-home-promo-card">
