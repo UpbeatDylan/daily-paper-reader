@@ -1,0 +1,294 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-04T21:45:33.041076+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.02964v1",
+      "source": "arxiv",
+      "title": "Multi-Segment Attention: Enabling Efficient KV-Cache Management for Faster Large Language Model Serving",
+      "abstract": "Large Language Model (LLM) inference relies on key-value (KV) caches to avoid redundant attention computation. While approximate KV cache retention techniques reduce memory usage by sacrificing model accuracy, lossless approaches instead evict KV cache blocks from GPU memory and reconstruct them on demand to preserve exact outputs. Existing lossless KV cache management systems primarily base eviction decisions on access frequency or positional heuristics, without considering how different KV cache blocks affect the execution efficiency of GPU attention kernels.   In this paper, we propose AsymCache, a computation-latency-aware KV cache management system for LLM inference that explicitly aligns cache residency decisions with GPU attention kernel performance, including three key components: Multi-Segment Attention (MSA) for efficient non-contiguous KV context processing, a cache eviction policy that jointly optimizes hit rate and position-aware recomputation cost, and an adaptive chunking scheduler for high hardware utilization. Experiments show that AsymCache reduces TTFT by up to 1.90-2.03x and time-per-output-token (TPOT) by 1.62-1.71x over latest baselines, confirming the effectiveness of the method in common workloads and validating its design goal of balancing computational efficiency with cache hit rate. Moreover, the low-level design of AsymCache allows seamless integration into agent serving systems such as Continuum, where it further reduces average job latency by up to 18.1%.",
+      "authors": [
+        "Chunan Shi",
+        "Yilei Chen",
+        "Yilin Chen",
+        "Xupeng Miao",
+        "Bin Cui"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-01T23:51:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.02964v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "lossless KV cache management for LLM inference",
+      "llm_evidence_cn": "用于LLM推理的无损KV缓存管理系统",
+      "llm_evidence": "用于LLM推理的无损KV缓存管理系统",
+      "canonical_evidence": "用于LLM推理的无损KV缓存管理系统",
+      "llm_tldr_en": "Proposes AsymCache, a computation-latency-aware KV cache management system that evicts and reconstructs cache blocks on demand based on GPU kernel efficiency.",
+      "llm_tldr_cn": "面向LLM推理中KV缓存管理效率低下的问题，本文提出AsymCache系统。不同于传统基于频率或位置的驱逐策略，AsymCache感知GPU注意力核的执行效率，优先保留对计算延迟影响大的缓存块，并采用按需重建的无损方案。实验表明，AsymCache在保证精确输出的同时显著降低了推理延迟，是KV缓存优化的实用方案。",
+      "llm_tldr": "面向LLM推理中KV缓存管理效率低下的问题，本文提出AsymCache系统。不同于传统基于频率或位置的驱逐策略，AsymCache感知GPU注意力核的执行效率，优先保留对计算延迟影响大的缓存块，并采用按需重建的无损方案。实验表明，AsymCache在保证精确输出的同时显著降低了推理延迟，是KV缓存优化的实用方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04302v1",
+      "source": "arxiv",
+      "title": "LazyAttention: Efficient Retrieval-Augmented Generation with Deferred Positional Encoding",
+      "abstract": "Key-value (KV) caching accelerates inference of large language models (LLMs) by reusing past computations for generated tokens. Its importance becomes even greater in long-context applications such as retrieval-augmented generation (RAG) and in-context learning (ICL). However, conventional KV caching embeds positional information directly into the cache, limiting its reusability. Existing solutions either restrict reuse to prefixes or require expensive memory materialization for positional re-encoding. We introduce LazyAttention, a novel attention mechanism that kernelizes deferred positional encoding to enable zero-copy, position-agnostic KV reuse. By adjusting positional encoding within attention kernels on-the-fly, LazyAttention resolves the materialization bottleneck, allowing a single physical KV copy to serve multiple logical requests at arbitrary positions. Leveraging attention kernels tailored for prefilling and decoding, our system achieves significant efficiency improvements: under skewed document distributions, it reduces time-to-first-token (TTFT) by 1.37$\\times$ and increases inference throughput by 1.40$\\times$ compared to the state-of-the-art Block-Attention, while maintaining comparable output quality.",
+      "authors": [
+        "Haocheng Xia",
+        "Mihir Pamnani",
+        "Hanxi Fang",
+        "Supawit Chockchowwat",
+        "Yongjoo Park"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-03T00:12:22+00:00",
+      "link": "https://arxiv.org/pdf/2606.04302v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "position-agnostic KV reuse via deferred positional encoding",
+      "llm_evidence_cn": "通过延迟位置编码实现位置无关的KV重用",
+      "llm_evidence": "通过延迟位置编码实现位置无关的KV重用",
+      "canonical_evidence": "通过延迟位置编码实现位置无关的KV重用",
+      "llm_tldr_en": "LazyAttention introduces deferred positional encoding to enable zero-copy position-agnostic KV cache reuse, significantly improving long-context inference efficiency.",
+      "llm_tldr_cn": "传统KV缓存将位置信息嵌入缓存，限制了可重用性。LazyAttention提出了一种延迟位置编码的注意力机制，在注意力核中动态调整位置编码，实现了位置无关的KV缓存零拷贝复用。实验表明该方法在不增加显存的情况下显著加速了RAG和ICL场景的长上下文推理。",
+      "llm_tldr": "传统KV缓存将位置信息嵌入缓存，限制了可重用性。LazyAttention提出了一种延迟位置编码的注意力机制，在注意力核中动态调整位置编码，实现了位置无关的KV缓存零拷贝复用。实验表明该方法在不增加显存的情况下显著加速了RAG和ICL场景的长上下文推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04557v1",
+      "source": "arxiv",
+      "title": "Cartridges at Scale: Training Modular KV Caches over Large Document Collections",
+      "abstract": "Large Language Models can reason over long contexts, yet prefilling millions of tokens is wasteful as much of the content remains static across queries. Cartridges address this by distilling document collections into reusable key-value (KV) caches that eliminate prefilling while preserving accuracy. A critical limitation of this approach is that cartridges are monolithic and non-compositional: encoding an entire collection into a single KV block does not scale, and naively mixing cartridges trained in isolation collapses performance to near chance. We introduce Cartridges at Scale (CAS), a training framework for scalable multi-cartridge learning with dynamic distractor mixing and a memory-efficient budget manager that rotates hundreds of per-document cartridges between GPU and persistent storage. Our approach scales to collections exceeding a million tokens, improving over a monolithic cartridge by 10-31 points at comparable token budgets. Oracle cartridge accuracy falls within 2-6 points of full in-context learning even at high compression. When paired with retrieval for cartridge selection, CAS matches or exceeds conventional RAG accuracy while consuming 3-4x fewer prompt tokens.",
+      "authors": [
+        "Momchil Hardalov",
+        "Gonzalo Iglesias",
+        "Adrià de Gispert"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.IR",
+        "cs.LG"
+      ],
+      "published": "2026-06-03T07:42:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.04557v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "training reusable KV caches (cartridges) over document collections to avoid prefilling",
+      "llm_evidence_cn": "在文档集合上训练可复用的KV缓存（Cartridges）以避免预填充",
+      "llm_evidence": "在文档集合上训练可复用的KV缓存（Cartridges）以避免预填充",
+      "canonical_evidence": "在文档集合上训练可复用的KV缓存（Cartridges）以避免预填充",
+      "llm_tldr_en": "Cartridges at Scale introduces a training framework for scalable multi-cartridge learning with dynamic distractor mixing and memory budget management, enabling reusable KV caches for long-context inference.",
+      "llm_tldr_cn": "大型语言模型处理长上下文时，预填充大量固定内容是浪费的。Cartridges将文档集合蒸馏为可复用的KV缓存以避免预填充。但现有方法生成的缓存是单一且不可组合的。本文提出CAS框架，通过动态干扰混合和内存预算管理器，支持数百个文档级Cartridges的联合训练与高效管理。实验表明CAS在多文档场景下保持高准确率，大幅减少推理计算量。",
+      "llm_tldr": "大型语言模型处理长上下文时，预填充大量固定内容是浪费的。Cartridges将文档集合蒸馏为可复用的KV缓存以避免预填充。但现有方法生成的缓存是单一且不可组合的。本文提出CAS框架，通过动态干扰混合和内存预算管理器，支持数百个文档级Cartridges的联合训练与高效管理。实验表明CAS在多文档场景下保持高准确率，大幅减少推理计算量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03458v1",
+      "source": "arxiv",
+      "title": "KVarN: Variance-Normalized KV-Cache Quantization Mitigates Error Accumulation in Reasoning Tasks",
+      "abstract": "Test-time scaling is a powerful approach to obtain better reasoning in large language models, but it becomes memory-bottlenecked during long-horizon decoding, as the KV-cache grows. KV-cache quantization can help improve this, but current methods are evaluated under prefill-like settings and errors behave differently under autoregressive decoding. We show that in the latter regime, quantization errors accumulate across timesteps, driven primarily by incorrect token scales. We introduce KVarN, a calibration-free KV-cache quantizer that applies a Hadamard rotation followed by a dual-scaling variance normalization across both axes of the K and V matrices. We find that this combination fixes outlying token-scale errors and substantially reduces error accumulation over existing baselines. KVarN establishes a new state-of-theart for KV-cache quantization on generative benchmarks, including MATH500, AIME24 and HumanEval, at 2-bit precision. A vLLM implementation of the KVarN method is available at https://github.com/huawei-csl/KVarN",
+      "authors": [
+        "Lorenz K. Muller",
+        "Philippe Bich",
+        "Chiara Boretti",
+        "Hyun-Min Chang",
+        "Jiawei Zhuang",
+        "Lukas Cavigelli"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-02T10:34:56+00:00",
+      "link": "https://arxiv.org/pdf/2606.03458v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "variance-normalized KV-cache quantization to reduce error accumulation",
+      "llm_evidence_cn": "方差归一化KV缓存量化以减少误差累积",
+      "llm_evidence": "方差归一化KV缓存量化以减少误差累积",
+      "canonical_evidence": "方差归一化KV缓存量化以减少误差累积",
+      "llm_tldr_en": "KVarN introduces calibration-free KV-cache quantization using variance normalization to mitigate error accumulation in autoregressive decoding.",
+      "llm_tldr_cn": "KV缓存量化在自回归解码中误差会累积。KVarN提出无校准的量化方法，使用哈达玛旋转和双轴方差归一化，有效修复异常尺度误差。实验表明在长程推理任务中显著降低了量化误差，保持了模型性能。",
+      "llm_tldr": "KV缓存量化在自回归解码中误差会累积。KVarN提出无校准的量化方法，使用哈达玛旋转和双轴方差归一化，有效修复异常尺度误差。实验表明在长程推理任务中显著降低了量化误差，保持了模型性能。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04511v1",
+      "source": "arxiv",
+      "title": "SparDA: Sparse Decoupled Attention for Efficient Long-Context LLM Inference",
+      "abstract": "Sparse attention reduces compute and memory bandwidth for long-context LLM inference. However, two key challenges remain: (1) KV cache capacity still grows with sequence length, and offloading to CPU memory introduces a PCIe transfer bottleneck; (2) the sparse selection step itself retains $O(T^2)$ complexity and can dominate attention cost at long contexts. We propose SparDA, a decoupled sparse attention architecture that introduces a fourth per-layer projection, the Forecast, alongside Query, Key, and Value. The Forecast predicts the KV blocks needed by the next layer, enabling lookahead selection that overlaps CPU-to-GPU prefetch with current-layer execution. Because Forecast is decoupled from the attention query, our GQA implementation uses one Forecast head per GQA group, reducing selection overhead versus the original multi-head selector. SparDA adds $<$0.5% parameters and trains only the Forecast projections by matching the original selector's attention distribution. On two sparse-pretrained 8B models, SparDA matches or slightly improves accuracy and delivers up to 1.25$\\times$ prefill speedup and 1.7$\\times$ decode speedup over the sparse-attention offload baseline. By enabling larger feasible batch sizes on a single GPU, SparDA further reaches up to 5.3$\\times$ higher decode throughput than the non-offload sparse baseline. Our source code is available at https://github.com/NVlabs/SparDA.",
+      "authors": [
+        "Yaosheng Fu",
+        "Guangxuan Xiao",
+        "Xin Dong",
+        "Song Han",
+        "Oreste Villa"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-03T06:42:05+00:00",
+      "link": "https://arxiv.org/pdf/2606.04511v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "sparse decoupled attention with KV block prediction for long-context inference",
+      "llm_evidence_cn": "稀疏解耦注意力结合KV块预测用于长上下文推理",
+      "llm_evidence": "稀疏解耦注意力结合KV块预测用于长上下文推理",
+      "canonical_evidence": "稀疏解耦注意力结合KV块预测用于长上下文推理",
+      "llm_tldr_en": "SparDA introduces a Forecast projection to predict KV blocks needed, enabling lookahead selection that overlaps CPU-GPU prefetch with computation, reducing both compute and memory bottlenecks.",
+      "llm_tldr_cn": "长上下文LLM推理中稀疏注意力虽节省计算，但KV缓存容量增长和选择步骤的平方复杂度仍是瓶颈。本文提出SparDA，增加额外的预测投影（Forecast）来提前预测下一层需要的KV块，实现CPU到GPU预取与当前层计算的重叠。实验表明该方法有效缓解了PCIe传输瓶颈和选择开销，显著加速长上下文推理。",
+      "llm_tldr": "长上下文LLM推理中稀疏注意力虽节省计算，但KV缓存容量增长和选择步骤的平方复杂度仍是瓶颈。本文提出SparDA，增加额外的预测投影（Forecast）来提前预测下一层需要的KV块，实现CPU到GPU预取与当前层计算的重叠。实验表明该方法有效缓解了PCIe传输瓶颈和选择开销，显著加速长上下文推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.01143v3",
+      "source": "arxiv",
+      "title": "Schedule-Level Shared-Prefix Reuse for LLM RL Training",
+      "abstract": "GRPO-based LLM post-training commonly samples multiple trajectories from the same prompt and then trains on the resulting group. In long-context GRPO workloads, this shared prompt-side prefix can contain retrieved passages, visual tokens, tool schemas, system instructions, or task context, while the full rollout group is still too large to pack into one training microbatch. Standard dense trainers therefore recompute the same prefix forward and backward for every trajectory. We present a schedule-level reuse mechanism that decouples prefix and suffix computation. The schedule runs prefix forward once, executes suffixes as ordinary microbatches while reading prefix K/V and accumulating prefix-side gK/gV , and then runs prefix backward once on the accumulated gradient cache. This reordered schedule is equivalent to baseline training over real arithmetic and aligns numerically within finite-precision tolerance. Because only K/V and gK/gV are hot during suffix computation, the approach offloads dormant prefix activations, integrates with TP/EP/CP/PP and DP-style placement at the execution level, and preserves aux-loss-based MoE router semantics through logical prefix-token accounting. On dense Llama3-8B, Qwen3-8B, and MoE Qwen3-MoE-30B-A3B configurations, the schedule matches optimizer updates across TP/CP/PP/EP combinations, aligns on a 100-step real GRPO actor-update trace replay, reaches up to 4.395x speedup (2.930x under a conservative compile-on comparison) as prefix ratio and GRPO group size grow, and reduces Phase-B peak HBM by up to 59.1%, extending the Llama3-8B capacity frontier from 17,920 to 29,696 total tokens.",
+      "authors": [
+        "Pengbo Li",
+        "Feiyuan Zhang",
+        "Guangming Sheng",
+        "Guangxin He",
+        "Di Chai",
+        "Ziniu Li",
+        "Taiqiang Wu",
+        "Wenyu Mao",
+        "Binhang Yuan",
+        "Kai Chen"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-05-31T10:24:10+00:00",
+      "link": "https://arxiv.org/pdf/2606.01143v3",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "shared-prefix KV reuse at schedule level for LLM training",
+      "llm_evidence_cn": "在LLM训练中通过调度级共享前缀KV重用来避免重复计算",
+      "llm_evidence": "在LLM训练中通过调度级共享前缀KV重用来避免重复计算",
+      "canonical_evidence": "在LLM训练中通过调度级共享前缀KV重用来避免重复计算",
+      "llm_tldr_en": "Proposes schedule-level prefix reuse for GRPO training, computing prefix forward once and reusing KV across multiple trajectory suffixes, reducing redundant computation.",
+      "llm_tldr_cn": "针对GRPO训练中多个轨迹共享前缀导致冗余计算的问题，本文提出调度级前缀复用机制。通过将前缀计算与后缀计算解耦，前缀只前向一次，后缀读取共享前缀的KV缓存并累积梯度，最后前缀反向传播一次。该机制显著减少了长上下文训练的计算开销，其前缀缓存复用思想也可推广到推理场景。",
+      "llm_tldr": "针对GRPO训练中多个轨迹共享前缀导致冗余计算的问题，本文提出调度级前缀复用机制。通过将前缀计算与后缀计算解耦，前缀只前向一次，后缀读取共享前缀的KV缓存并累积梯度，最后前缀反向传播一次。该机制显著减少了长上下文训练的计算开销，其前缀缓存复用思想也可推广到推理场景。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.01927v1",
+      "source": "arxiv",
+      "title": "Scaling LLM Inference Beyond Amdahl`s Limits via Eliminating Non-Scalable Overheads",
+      "abstract": "Deployers of online LLM services usually seek to maximize cluster-wide performance given a fixed number of GPUs. Tensor parallelism (TP) is necessary to fit modern models but scales sub-linearly as the TP degree t grows, due to cross-GPU communication and non-scalable runtime work, as predicted by Amdahl's Law. Conversely, increasing t improves memory efficiency and alleviates KV-cache contention and swapping. We identify and validate an empirical optimal TP degree t_e that balances these effects. We present Albireo, a parallel inference system that raises the attainable t_e by shrinking the non-scalable portion via overlap of scheduling and I/O with compute and sequence-parallel sampling, without changing model architectures. Across models and benchmarks, Albireo achieves up to 1.9x higher throughput, 48% lower latency, 28% higher GPU utilization, and 54% lower energy than vLLM; in production it yields up to 2x higher throughput.",
+      "authors": [
+        "Alan Zhao",
+        "Cyril Y. He",
+        "Wei Xu"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-06-01T08:58:23+00:00",
+      "link": "https://arxiv.org/pdf/2606.01927v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "addresses KV-cache contention and swapping in large-scale LLM inference",
+      "llm_evidence_cn": "解决大规模LLM推理中的KV缓存争用和交换问题",
+      "llm_evidence": "解决大规模LLM推理中的KV缓存争用和交换问题",
+      "canonical_evidence": "解决大规模LLM推理中的KV缓存争用和交换问题",
+      "llm_tldr_en": "Albireo identifies optimal tensor parallelism degree by balancing scaling overheads and KV-cache memory efficiency, overlapping scheduling and I/O with compute to improve inference throughput.",
+      "llm_tldr_cn": "在线LLM服务中，张量并行度增加虽提升内存效率但引入非可扩展开销。本文通过实验识别出经验最优并行度，并提出Albireo系统，通过将调度和I/O与计算重叠，缩小非可扩展部分比例，从而提升系统吞吐量。该方法在不改变模型架构的前提下缓解了KV缓存压力，对大规模部署有参考意义。",
+      "llm_tldr": "在线LLM服务中，张量并行度增加虽提升内存效率但引入非可扩展开销。本文通过实验识别出经验最优并行度，并提出Albireo系统，通过将调度和I/O与计算重叠，缩小非可扩展部分比例，从而提升系统吞吐量。该方法在不改变模型架构的前提下缓解了KV缓存压力，对大规模部署有参考意义。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

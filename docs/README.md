@@ -6,39 +6,45 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-03
-- 运行时间：2026-06-03 22:24:47 UTC
+- 最新运行日期：2026-06-04
+- 运行时间：2026-06-04 21:51:21 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：4
-- 速读区：1
+- 本次总论文数：7
+- 精读区：5
+- 速读区：2
 
 ### 今日简报（AI）
-今日精读4篇、速读1篇，其中两篇以9.0高分聚焦LLM训练与推理中的共享机制优化。
+今日精读5篇论文，速读2篇，重点聚焦KV-Cache优化与推理加速。
 
-最值得关注的方向：调度级共享前缀重用（提升RL训练效率）与分段级KV缓存共享（优化交错服务场景内存开销）。
+最值得关注的是两篇9.0分论文：《Multi-Segment Attention》提出高效KV-Cache管理方案，《LazyAttention》通过延迟位置编码提升检索增强生成效率。
 
-建议优先精读这两篇高分论文，理解其核心方法后，可对比现有缓存策略，尝试在轻量实验中验证性能提升。
-- 详情：[/202606/03/README](/202606/03/README)
+建议优先阅读上述两篇精读论文，掌握KV-Cache优化和RAG效率提升的核心方法，可显著改善大模型服务性能。
+- 详情：[/202606/04/README](/202606/04/README)
 
 ### 精读区论文标签
-1. [Schedule-Level Shared-Prefix Reuse for LLM RL Training](/202606/03/2606.01143v1-schedule-level-shared-prefix-reuse-for-llm-rl-training)  
+1. [Multi-Segment Attention: Enabling Efficient KV-Cache Management for Faster Large Language Model Serving](/202606/04/2606.02964v1-multi-segment-attention-enabling-efficient-kv-cache-management-for-faster-large-language-model-serving)  
    标签：评分：9.0/10、query:pic
-   evidence：LLM强化学习训练中的共享前缀复用，类似于前缀缓存
-2. [SparseX: Efficient Segment-Level KV Cache Sharing for Interleaved LLM Serving](/202606/03/2606.01751v1-sparsex-efficient-segment-level-kv-cache-sharing-for-interleaved-llm-serving)  
+   evidence：用于LLM推理的无损KV缓存管理系统
+2. [LazyAttention: Efficient Retrieval-Augmented Generation with Deferred Positional Encoding](/202606/04/2606.04302v1-lazyattention-efficient-retrieval-augmented-generation-with-deferred-positional-encoding)  
    标签：评分：9.0/10、query:pic
-   evidence：段级KV缓存共享，处理非前缀重复内容，提升LLM推理复用
-3. [NetKV: Network-Aware Decode Instance Selection for Disaggregated LLM Inference](/202606/03/2606.03910v1-netkv-network-aware-decode-instance-selection-for-disaggregated-llm-inference)  
+   evidence：通过延迟位置编码实现位置无关的KV重用
+3. [Cartridges at Scale: Training Modular KV Caches over Large Document Collections](/202606/04/2606.04557v1-cartridges-at-scale-training-modular-kv-caches-over-large-document-collections)  
+   标签：评分：9.0/10、query:pic
+   evidence：在文档集合上训练可复用的KV缓存（Cartridges）以避免预填充
+4. [KVarN: Variance-Normalized KV-Cache Quantization Mitigates Error Accumulation in Reasoning Tasks](/202606/04/2606.03458v1-kvarn-variance-normalized-kv-cache-quantization-mitigates-error-accumulation-in-reasoning-tasks)  
    标签：评分：8.0/10、query:pic
-   evidence：解耦推理中网络感知的KV缓存路由
-4. [Value-Aware Stochastic KV Cache Eviction for Reasoning Models](/202606/03/2606.03928v1-value-aware-stochastic-kv-cache-eviction-for-reasoning-models)  
+   evidence：方差归一化KV缓存量化以减少误差累积
+5. [SparDA: Sparse Decoupled Attention for Efficient Long-Context LLM Inference](/202606/04/2606.04511v1-sparda-sparse-decoupled-attention-for-efficient-long-context-llm-inference)  
    标签：评分：8.0/10、query:pic
-   evidence：值感知随机驱逐策略优化推理模型的KV缓存
+   evidence：稀疏解耦注意力结合KV块预测用于长上下文推理
 
 ### 速读区论文标签
-1. [Don't Read Everything: A Curvature-Conditioned Query for Linear Attention](/202606/03/2606.01294v1-dont-read-everything-a-curvature-conditioned-query-for-linear-attention)  
+1. [Schedule-Level Shared-Prefix Reuse for LLM RL Training](/202606/04/2606.01143v3-schedule-level-shared-prefix-reuse-for-llm-rl-training)  
+   标签：评分：7.0/10、query:pic
+   evidence：在LLM训练中通过调度级共享前缀KV重用来避免重复计算
+2. [Scaling LLM Inference Beyond Amdahl`s Limits via Eliminating Non-Scalable Overheads](/202606/04/2606.01927v1-scaling-llm-inference-beyond-amdahls-limits-via-eliminating-non-scalable-overheads)  
    标签：评分：6.0/10、query:pic
-   evidence：曲率条件化查询提升线性注意力长上下文检索
+   evidence：解决大规模LLM推理中的KV缓存争用和交换问题
 
 
 <div class="dpr-home-promo-card">
