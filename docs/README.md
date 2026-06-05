@@ -6,45 +6,44 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-04
-- 运行时间：2026-06-04 21:51:21 UTC
+- 最新运行日期：2026-06-05
+- 运行时间：2026-06-05 20:39:18 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：5
-- 速读区：2
+- 本次总论文数：8
+- 精读区：4
+- 速读区：4
 
 ### 今日简报（AI）
-今日精读5篇论文，速读2篇，重点聚焦KV-Cache优化与推理加速。
-
-最值得关注的是两篇9.0分论文：《Multi-Segment Attention》提出高效KV-Cache管理方案，《LazyAttention》通过延迟位置编码提升检索增强生成效率。
-
-建议优先阅读上述两篇精读论文，掌握KV-Cache优化和RAG效率提升的核心方法，可显著改善大模型服务性能。
-- 详情：[/202606/04/README](/202606/04/README)
+今日精读缓存隔离审计与RAG查询感知融合，速读稀疏KV投机解码、LoRA内存优化及长时记忆管理。最值得看的方向：CacheProbe审计缓存隔离安全性，QCFuse通过压缩视图提升RAG服务效率。建议优先精读这两篇，分别对应安全和效率优化场景。
+- 详情：[/202606/05/README](/202606/05/README)
 
 ### 精读区论文标签
-1. [Multi-Segment Attention: Enabling Efficient KV-Cache Management for Faster Large Language Model Serving](/202606/04/2606.02964v1-multi-segment-attention-enabling-efficient-kv-cache-management-for-faster-large-language-model-serving)  
+1. [CacheProbe: Auditing Prompt Cache Isolation in Gateway APIs](/202606/05/2605.30613v1-cacheprobe-auditing-prompt-cache-isolation-in-gateway-apis)  
    标签：评分：9.0/10、query:pic
-   evidence：用于LLM推理的无损KV缓存管理系统
-2. [LazyAttention: Efficient Retrieval-Augmented Generation with Deferred Positional Encoding](/202606/04/2606.04302v1-lazyattention-efficient-retrieval-augmented-generation-with-deferred-positional-encoding)  
+   evidence：审计网关API中的提示缓存隔离，直接与提示缓存相关
+2. [QCFuse: Query-Aware Cache Fusion via Compressed View for Efficient RAG Serving](/202606/05/2606.05875v1-qcfuse-query-aware-cache-fusion-via-compressed-view-for-efficient-rag-serving)  
    标签：评分：9.0/10、query:pic
-   evidence：通过延迟位置编码实现位置无关的KV重用
-3. [Cartridges at Scale: Training Modular KV Caches over Large Document Collections](/202606/04/2606.04557v1-cartridges-at-scale-training-modular-kv-caches-over-large-document-collections)  
+   evidence：查询感知缓存融合重用预计算KV缓存
+3. [RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention](/202606/05/2606.06256v1-redknot-efficient-long-context-llm-serving-with-head-aware-kv-reuse-and-segpagedattention)  
    标签：评分：9.0/10、query:pic
-   evidence：在文档集合上训练可复用的KV缓存（Cartridges）以避免预填充
-4. [KVarN: Variance-Normalized KV-Cache Quantization Mitigates Error Accumulation in Reasoning Tasks](/202606/04/2606.03458v1-kvarn-variance-normalized-kv-cache-quantization-mitigates-error-accumulation-in-reasoning-tasks)  
+   evidence：解决位置无关KV缓存、头感知重用和SegPagedAttention以实现高效长上下文服务
+4. [You Only Index Once: Cross-Layer Sparse Attention with Shared Routing](/202606/05/2606.06467v1-you-only-index-once-cross-layer-sparse-attention-with-shared-routing)  
    标签：评分：8.0/10、query:pic
-   evidence：方差归一化KV缓存量化以减少误差累积
-5. [SparDA: Sparse Decoupled Attention for Efficient Long-Context LLM Inference](/202606/04/2606.04511v1-sparda-sparse-decoupled-attention-for-efficient-long-context-llm-inference)  
-   标签：评分：8.0/10、query:pic
-   evidence：稀疏解耦注意力结合KV块预测用于长上下文推理
+   evidence：跨层稀疏注意力与共享KV缓存路由用于高效长上下文推理
 
 ### 速读区论文标签
-1. [Schedule-Level Shared-Prefix Reuse for LLM RL Training](/202606/04/2606.01143v3-schedule-level-shared-prefix-reuse-for-llm-rl-training)  
+1. [BudgetDraft: Acceptance-Aware Multi-View Training for Sparse-KV Speculative Decoding](/202606/05/2606.00144v1-budgetdraft-acceptance-aware-multi-view-training-for-sparse-kv-speculative-decoding)  
    标签：评分：7.0/10、query:pic
-   evidence：在LLM训练中通过调度级共享前缀KV重用来避免重复计算
-2. [Scaling LLM Inference Beyond Amdahl`s Limits via Eliminating Non-Scalable Overheads](/202606/04/2606.01927v1-scaling-llm-inference-beyond-amdahls-limits-via-eliminating-non-scalable-overheads)  
+   evidence：稀疏KV推测解码加速中长上下文推理
+2. [Rethinking LoRA Memory Through the Lens of KV Cache Compression](/202606/05/2606.05698v1-rethinking-lora-memory-through-the-lens-of-kv-cache-compression)  
+   标签：评分：7.0/10、query:pic
+   evidence：研究KV缓存压缩与LoRA的交互
+3. [EMBER: Efficient Memory via Budgeted Evidence Retention for Long-Horizon Agents](/202606/05/2606.05894v1-ember-efficient-memory-via-budgeted-evidence-retention-for-long-horizon-agents)  
+   标签：评分：7.0/10、query:pic
+   evidence：针对长上下文智能体的预算化证据保留，类似于提示缓存
+4. [Depth-Attention: Cross-Layer Value Mixing for Language Models](/202606/05/2606.05014v1-depth-attention-cross-layer-value-mixing-for-language-models)  
    标签：评分：6.0/10、query:pic
-   evidence：解决大规模LLM推理中的KV缓存争用和交换问题
+   evidence：在KV缓存约束内进行跨层注意力
 
 
 <div class="dpr-home-promo-card">

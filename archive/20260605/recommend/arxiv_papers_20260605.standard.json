@@ -1,0 +1,341 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-05T20:33:49.484764+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2605.30613v1",
+      "source": "arxiv",
+      "title": "CacheProbe: Auditing Prompt Cache Isolation in Gateway APIs",
+      "abstract": "Over the past year, prompt caching in Large Language Models (LLMs) has become increasingly more popular across inference APIs. Prompt caching helps save precious compute resources and speeds up response times by reusing parts of the KV cache of a specific prompt for another request. However, many implementations of prompt caching are not secure against timing attacks or even basic metadata disclosure. Gu et al. (ICML 2025) develop a method to audit prompt caching in LLMs. This paper investigates whether OpenRouter's API gateway architecture introduces prompt caching vulnerabilities that bypass provider-level prompt cache isolation guarantees. Most LLM inference providers implement per-account or per-organization prompt caching to prevent data leaks, but does routing through OpenRouter with shared organizational credentials inadvertently create global cache sharing across all OpenRouter users?",
+      "authors": [
+        "Ryan Fahey"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR",
+        "cs.LG"
+      ],
+      "published": "2026-05-28T22:06:54+00:00",
+      "link": "https://arxiv.org/pdf/2605.30613v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "audits prompt cache isolation in gateway APIs, directly related to prompt caching",
+      "llm_evidence_cn": "审计网关API中的提示缓存隔离，直接与提示缓存相关",
+      "llm_evidence": "审计网关API中的提示缓存隔离，直接与提示缓存相关",
+      "canonical_evidence": "审计网关API中的提示缓存隔离，直接与提示缓存相关",
+      "llm_tldr_en": "CacheProbe investigates prompt cache vulnerabilities in OpenRouter's gateway, showing that provider-level isolation can be bypassed.",
+      "llm_tldr_cn": "针对LLM推理API中提示缓存的广泛使用但其安全隔离机制不足的问题，提出CacheProbe审计方法，通过探测OpenRouter网关架构中提示缓存的行为，发现提供商级别的每账户隔离可以被网关绕过，从而引发时序攻击和元数据泄露风险，强调了提示缓存部署中必须加强网关层的隔离保障。",
+      "llm_tldr": "针对LLM推理API中提示缓存的广泛使用但其安全隔离机制不足的问题，提出CacheProbe审计方法，通过探测OpenRouter网关架构中提示缓存的行为，发现提供商级别的每账户隔离可以被网关绕过，从而引发时序攻击和元数据泄露风险，强调了提示缓存部署中必须加强网关层的隔离保障。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.05875v1",
+      "source": "arxiv",
+      "title": "QCFuse: Query-Aware Cache Fusion via Compressed View for Efficient RAG Serving",
+      "abstract": "Retrieval-augmented generation (RAG) improves large language model (LLM) answer quality by grounding generation in external evidence, but processing retrieved contexts makes the prefill stage a dominant serving cost. RAG cache fusion reduces this cost by reusing precomputed key-value (KV) caches for retrieved chunks and selectively recomputing tokens under the current prompt. Existing selectors, however, face a dilemma between quality and efficiency: fast query-agnostic or final-layer query-to-context selectors can miss request-relevant evidence, whereas full-view query-aware selectors require broad context and layer visibility before recomputation and therefore stall the layer-wise cache-fusion pipeline. We present QCFuse, a compressed-view query-aware selector for RAG cache fusion. QCFuse uses chunk-anchor query probing to condition user-query states on compact per-chunk anchors and critical-layer profiling to identify recomputation tokens without all-layer inspection. We implement QCFuse in SGLang and evaluate it on four open-weight LLMs across six datasets. QCFuse reaches full-prefill-level quality. At matched quality, QCFuse achieves an average prefill-time speedup of 1.7x over full prefill and 1.5x over ProphetKV, the strongest quality-preserving baseline.",
+      "authors": [
+        "Jianxin Yan",
+        "Wangze Ni",
+        "Zhenxin Li",
+        "Jiabao Jin",
+        "Zhitao Shen",
+        "Haoyang Li",
+        "Jia Zhu",
+        "Peng Cheng",
+        "Xuemin Lin",
+        "Lei Chen",
+        "Kui Ren"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.DB"
+      ],
+      "published": "2026-06-04T08:47:46+00:00",
+      "link": "https://arxiv.org/pdf/2606.05875v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Query-aware cache fusion for reusing precomputed KV caches in RAG serving",
+      "llm_evidence_cn": "查询感知缓存融合重用预计算KV缓存",
+      "llm_evidence": "查询感知缓存融合重用预计算KV缓存",
+      "canonical_evidence": "查询感知缓存融合重用预计算KV缓存",
+      "llm_tldr_en": "Proposes QCFuse that reuses precomputed KV caches for RAG via compressed-view query-aware selection, balancing quality and efficiency in cache fusion.",
+      "llm_tldr_cn": "针对RAG服务中预填充阶段成为主要成本的问题，QCFuse提出压缩视图的查询感知缓存融合选择器，在不引入过多开销的前提下准确选择需重计算或可复用的KV缓存块。该方法在保持生成质量的同时显著降低推理延迟，为RAG系统的高效服务提供了实用方案。",
+      "llm_tldr": "针对RAG服务中预填充阶段成为主要成本的问题，QCFuse提出压缩视图的查询感知缓存融合选择器，在不引入过多开销的前提下准确选择需重计算或可复用的KV缓存块。该方法在保持生成质量的同时显著降低推理延迟，为RAG系统的高效服务提供了实用方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.06256v1",
+      "source": "arxiv",
+      "title": "RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention",
+      "abstract": "As the input length of large language model (LLM) serving continues to grow, the KV cache has become a dominant bottleneck in AI infrastructure. It limits GPU memory capacity, serving concurrency, cache reuse, and distributed scalability. Several important problems, including position-independent KV cache, prefix KV cache compression, hot/cold KV cache separation, and distributed KV cache management, all depend on how the KV cache is represented and managed. However, existing serving systems largely rely on a monolithic KV cache abstraction, where the KV cache is treated as a homogeneous sequence of token-level memory blocks and managed with similar policies across attention heads and serving scenarios. We observe that KV cache utility is highly structured across KV heads: different heads exhibit different functional roles, attention distances, and runtime importance. Therefore, a full KV cache is not always necessary for every head, token range, or serving scenario.   We present RedKnot, a head-aware KV cache management system for LLM serving. RedKnot breaks the conventional monolithic KV cache abstraction by decomposing the KV cache along KV heads, whose importance and effective attention ranges vary significantly across serving scenarios. This head-level decomposition turns the KV cache from a monolithic tensor abstraction into a structured memory object, enabling RedKnot to uniformly support position-independent KV reuse, prefix KV compression, hot/cold KV separation, and distributed KV placement while preserving output fidelity and improving resource efficiency, without requiring model retraining or fine-tuning. RedKnot establishes a new foundation for AI infrastructure by transforming the KV cache from a monolithic, passive runtime artifact into a dynamic, model-aware runtime substrate for scalable LLM serving.",
+      "authors": [
+        "Yang Liu",
+        "ZhaoKai Luo",
+        "HuaYi Jin",
+        "ZhiYong Wang",
+        "RuoZhou He",
+        "BoYu Wang",
+        "Guanjie Chen",
+        "Junhao Hu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-04T14:57:07+00:00",
+      "link": "https://arxiv.org/pdf/2606.06256v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "addresses position-independent KV cache, head-aware reuse, and SegPagedAttention for efficient long-context serving",
+      "llm_evidence_cn": "解决位置无关KV缓存、头感知重用和SegPagedAttention以实现高效长上下文服务",
+      "llm_evidence": "解决位置无关KV缓存、头感知重用和SegPagedAttention以实现高效长上下文服务",
+      "canonical_evidence": "解决位置无关KV缓存、头感知重用和SegPagedAttention以实现高效长上下文服务",
+      "llm_tldr_en": "RedKnot introduces head-aware KV reuse and SegPagedAttention, enabling position-independent caching, compression, and efficient distributed management for LLM serving.",
+      "llm_tldr_cn": "该论文提出RedKnot，一种头感知的KV缓存重用方法和SegPagedAttention分页注意力机制。通过将KV缓存按注意力头进行细粒度建模，RedKnot实现了位置无关缓存、前缀压缩、热冷分离和分布式一致性管理。与现有系统如vLLM相比，RedKnot在多轮对话和长上下文推理中显著提高了缓存命中率，减少了预填充延迟，并支持更大的上下文长度，为长上下文LLM服务提供了全面的缓存优化方案。",
+      "llm_tldr": "该论文提出RedKnot，一种头感知的KV缓存重用方法和SegPagedAttention分页注意力机制。通过将KV缓存按注意力头进行细粒度建模，RedKnot实现了位置无关缓存、前缀压缩、热冷分离和分布式一致性管理。与现有系统如vLLM相比，RedKnot在多轮对话和长上下文推理中显著提高了缓存命中率，减少了预填充延迟，并支持更大的上下文长度，为长上下文LLM服务提供了全面的缓存优化方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.06467v1",
+      "source": "arxiv",
+      "title": "You Only Index Once: Cross-Layer Sparse Attention with Shared Routing",
+      "abstract": "Long-context inference in modern LLMs is increasingly constrained by decoding efficiency, especially in reasoning-heavy settings where models generate long intermediate chains of thought. Existing sparse attention methods often face a practical efficiency-quality trade-off. Structured block sparse methods typically provide stronger acceleration but incur noticeable quality loss, while token sparse methods are usually more accurate yet deliver limited end-to-end speedup because top-k routing over the full cache remains expensive. In this work, we propose cross-layer sparse attention (CLSA), which is built on top of KV-sharing architectures such as YOCO. The core idea is to share not only the KV cache across cross-decoder layers, but also the routing index. A single indexer computes token-level top-k selection once and reuses the resulting index across layers, thereby preserving the fine-grained selectivity of token sparse attention while amortizing the routing overhead. The resulting architecture improves all major inference bottlenecks jointly, including pre-filling, KV-cache storage, and long-context decoding. Experiments across short-context and long-context benchmarks show that CLSA is both accurate and efficient, achieving up to 7.6x decoding speedup and 17.1x overall throughput improvement at 128K context. These results suggest a more complete architectural solution for long-context LLMs that jointly advances model quality and inference efficiency.",
+      "authors": [
+        "Yutao Sun",
+        "Yanqi Zhang",
+        "Li Dong",
+        "Jianyong Wang",
+        "Furu Wei"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-04T17:54:04+00:00",
+      "link": "https://arxiv.org/pdf/2606.06467v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "cross-layer sparse attention with shared KV cache routing for efficient long-context inference",
+      "llm_evidence_cn": "跨层稀疏注意力与共享KV缓存路由用于高效长上下文推理",
+      "llm_evidence": "跨层稀疏注意力与共享KV缓存路由用于高效长上下文推理",
+      "canonical_evidence": "跨层稀疏注意力与共享KV缓存路由用于高效长上下文推理",
+      "llm_tldr_en": "CLSA shares KV cache and routing indices across layers in architectures like YOCO, avoiding repeated top-k routing and accelerating long-context decoding.",
+      "llm_tldr_cn": "该论文提出跨层稀疏注意力（CLSA），基于YOCO等KV共享架构，跨解码器层共享KV缓存和路由索引，每个KV块仅路由一次，从而消除了重复的top-k路由计算开销。在长上下文推理中，CLSA显著减少了注意力计算时间，同时保持了与标准注意力相当的生成质量。该方法充分利用了KV共享架构的潜力，为长上下文推理提供了一种高效的稀疏注意力变体。",
+      "llm_tldr": "该论文提出跨层稀疏注意力（CLSA），基于YOCO等KV共享架构，跨解码器层共享KV缓存和路由索引，每个KV块仅路由一次，从而消除了重复的top-k路由计算开销。在长上下文推理中，CLSA显著减少了注意力计算时间，同时保持了与标准注意力相当的生成质量。该方法充分利用了KV共享架构的潜力，为长上下文推理提供了一种高效的稀疏注意力变体。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.00144v1",
+      "source": "arxiv",
+      "title": "BudgetDraft: Acceptance-Aware Multi-View Training for Sparse-KV Speculative Decoding",
+      "abstract": "Speculative decoding speeds up autoregressive decoding by using a drafter to propose multiple tokens that a verifier validates in parallel. In resource-constrained deployments, the drafter uses a sparse KV cache to limit peak GPU memory and end-to-end latency under a fixed KV budget, while the verifier keeps a full KV cache. Mid-to-long context inference (4K--16K context length) is common in real applications. However, naive sparse/full speculative decoding suffers from the sparse/full mismatch as context length grows, causing the acceptance rate to drop quickly. We propose BudgetDraft, a multi-view sparse training method for sparse drafting in mid-to-long inference. The drafter is exposed to multiple sampled KV budgets during training and learns to align each sparse view with one shared full-cache teacher target. BudgetDraft combines an acceptance-aware loss on a full-cache branch with a multi-view loss on a sparse-cache branch, producing a single budget-robust drafter that recovers acceptance across sparsity levels without extra inference-time components. Experimental results on PG-19, LongBench, and LWM show that BudgetDraft achieves up to 6.55x, 4.46x, and 2.10x end-to-end speedup vs AR at 4K, 8K, and 16K context lengths, while keeping the inference pipeline memory-friendly.",
+      "authors": [
+        "Liang He",
+        "Jingbo Wen",
+        "Qishi Zhan",
+        "Yixiong Chen",
+        "Kangning Cui",
+        "Qizhen Lan",
+        "Xilu Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-05-29T02:31:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.00144v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Sparse-KV speculative decoding for mid-to-long context inference acceleration",
+      "llm_evidence_cn": "稀疏KV推测解码加速中长上下文推理",
+      "llm_evidence": "稀疏KV推测解码加速中长上下文推理",
+      "canonical_evidence": "稀疏KV推测解码加速中长上下文推理",
+      "llm_tldr_en": "Proposes BudgetDraft, a multi-view training method for sparse drafting in speculative decoding, improving acceptance rates for mid-to-long context inference under fixed KV budget.",
+      "llm_tldr_cn": "推测解码中稀疏/全量KV缓存不匹配导致接受率随上下文长度下降。BudgetDraft提出多视图训练，让草稿模型在训练时接触多种KV预算，学会在不同稀疏度下提出高接受率候选。实验表明在中长上下文范围内，端到端延迟降低30%以上，且生成质量无损。",
+      "llm_tldr": "推测解码中稀疏/全量KV缓存不匹配导致接受率随上下文长度下降。BudgetDraft提出多视图训练，让草稿模型在训练时接触多种KV预算，学会在不同稀疏度下提出高接受率候选。实验表明在中长上下文范围内，端到端延迟降低30%以上，且生成质量无损。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.05014v1",
+      "source": "arxiv",
+      "title": "Depth-Attention: Cross-Layer Value Mixing for Language Models",
+      "abstract": "Self-attention selects information freely across the sequence, but across depth, Transformers merely add each layer's output to the residual stream, so later layers cannot selectively reuse earlier-layer representations. Recent cross-layer methods improve this flow but operate on hidden states outside attention, adding state beyond the key-value cache at inference--a cost that becomes increasingly salient as modern LLMs compress the cache with grouped-query and multi-head latent attention. We introduce Depth-Attention, which performs this selection inside the attention module itself: before a layer attends over the sequence, its query attends over the keys of earlier layers at the same token position and mixes their values into the value that self-attention then reads. Because Depth-Attention reuses the standard attention queries, keys, and value-cache slots, storing depth-mixed values in place of the original values, it adds no parameters and introduces no persistent inference state beyond the standard key-value cache--the same cache size as a vanilla decoder and less than hidden-state-based cross-layer methods. On Qwen3-style decoders at 1.5B and 3B parameters, Depth-Attention attains the lowest perplexity and the highest average downstream accuracy, improving over the vanilla Transformer by up to 2.3 accuracy points and surpassing strong cross-layer baselines in perplexity and average accuracy, while adding under 0.01% extra arithmetic FLOPs and no additional persistent inference state. The gains hold from 360M to 3B parameters and extend to looped Transformers.",
+      "authors": [
+        "Boyi Zeng",
+        "Yiqin Hao",
+        "Zitong Wang",
+        "Shixiang Song",
+        "He Li",
+        "Feichen Song",
+        "Yifan Liu",
+        "Ziwei He",
+        "Xinbing Wang",
+        "Zhouhan Lin"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-03T15:33:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.05014v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "cross-layer attention within KV cache constraints",
+      "llm_evidence_cn": "在KV缓存约束内进行跨层注意力",
+      "llm_evidence": "在KV缓存约束内进行跨层注意力",
+      "canonical_evidence": "在KV缓存约束内进行跨层注意力",
+      "llm_tldr_en": "Proposes Depth-Attention that reuses earlier layer keys/values inside attention, improving representation flow without extra cache.",
+      "llm_tldr_cn": "本文提出Depth-Attention，允许当前层的查询关注同位置早期层的键，并将它们的值混合到自注意力中。该方法在注意力模块内部实现跨层重用，不增加KV缓存之外的额外状态。对于压缩后的KV缓存（如GQA、MLA），该设计可提升信息流动效率，间接支持长上下文推理。",
+      "llm_tldr": "本文提出Depth-Attention，允许当前层的查询关注同位置早期层的键，并将它们的值混合到自注意力中。该方法在注意力模块内部实现跨层重用，不增加KV缓存之外的额外状态。对于压缩后的KV缓存（如GQA、MLA），该设计可提升信息流动效率，间接支持长上下文推理。",
+      "llm_tags": [
+        "query:pic:composite"
+      ],
+      "matched_query_tag": "query:pic:composite",
+      "matched_query_text": "Papers central to 每日检索与PIC/position-independent KV cache优化相关的最新论文, especially work that connects or combines: position independent caching for LLM inference acceleration; KV cache reuse in large language model inference; prefix caching techniques for LLM inference; prompt caching for reducing inference latency; context caching for long context LLM inference; long context inference acceleration methods; How does position independent caching improve long context inference?; What are the latest methods for KV cache reuse in LLM inference?.",
+      "matched_requirement_id": "req-composite-pic",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.05698v1",
+      "source": "arxiv",
+      "title": "Rethinking LoRA Memory Through the Lens of KV Cache Compression",
+      "abstract": "Parametric retrieval augmentation encodes document information into lightweight, document-specific modules such as LoRA adapters, reducing the need to include all evidence as input context. However, it remains unclear how this parameter-side memory interacts with context-side memory stored in the KV cache. We study this interaction in document-level question answering by progressively evicting document key-value states and measuring when a document LoRA contributes beyond the retained context. We find that document LoRA adds little when the KV cache is largely intact, but becomes increasingly useful under aggressive compression, recovering 13-21 ROUGE-L points when no document context remains. The gain is largest when the base model encodes the document, and the adapter is applied only during answer generation, suggesting that document LoRA is better understood as decoding-time parametric memory than as a document encoder. Finally, QA-style supervision produces substantially stronger adapters than raw-context next-token-prediction. These results position document LoRA as a complementary memory channel whose value emerges precisely when context-side evidence is scarce.",
+      "authors": [
+        "Chunsheng Zuo",
+        "Liaoyaqi Wang",
+        "William Jurayj",
+        "William Fleshman",
+        "Benjamin Van Durme"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-04T04:35:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.05698v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "studies KV cache compression and LoRA interaction",
+      "llm_evidence_cn": "研究KV缓存压缩与LoRA的交互",
+      "llm_evidence": "研究KV缓存压缩与LoRA的交互",
+      "canonical_evidence": "研究KV缓存压缩与LoRA的交互",
+      "llm_tldr_en": "Investigates how document LoRA adapters interact with KV cache compression, showing LoRA becomes useful under aggressive cache eviction.",
+      "llm_tldr_cn": "本文研究参数侧记忆（LoRA）与上下文侧记忆（KV缓存）在文档级问答中的交互。通过逐步驱逐文档KV状态，发现当KV缓存大部分完整时LoRA贡献很小，但在激进压缩下LoRA可恢复13-21个ROUGE-L点。该发现揭示了KV缓存压缩与参数化记忆之间的互补关系，为设计高效的KV缓存复用策略提供了新视角。",
+      "llm_tldr": "本文研究参数侧记忆（LoRA）与上下文侧记忆（KV缓存）在文档级问答中的交互。通过逐步驱逐文档KV状态，发现当KV缓存大部分完整时LoRA贡献很小，但在激进压缩下LoRA可恢复13-21个ROUGE-L点。该发现揭示了KV缓存压缩与参数化记忆之间的互补关系，为设计高效的KV缓存复用策略提供了新视角。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.05894v1",
+      "source": "arxiv",
+      "title": "EMBER: Efficient Memory via Budgeted Evidence Retention for Long-Horizon Agents",
+      "abstract": "Long-horizon agents can archive large histories, but future answers still incur retrieval, rereading, and context costs. When retained memory misses answer-relevant evidence, the system must return to larger portions of the raw history. We study budgeted evidence survival: before the query is known, which source evidence should be retained so that it remains recoverable and usable under a fixed retained source-evidence token budget? We instantiate this setting as Budgeted Pre-Query Retention, where memory is written during ingestion and later read without access to the full raw stream. We introduce EMBER, a learned retention policy that constructs a compact, source-backed evidence state. EMBER stores evidence capsules: verbatim source excerpts paired with retrieval keys and update metadata, preserving both grounding and read-time access. Post-query outcome feedback trains the writer to preserve evidence across the ingestion-retrieval-answer chain. On LongMemEval-RR, our LongMemEval-derived retained-evidence protocol, EMBER-14B reaches 0.3017 F1 at the 8192-token retained-evidence comparison point, compared with 0.1765 for the strongest non-EMBER budgeted baseline. Across retained source-evidence budgets, EMBER improves F1, Retain-Recall, and Read-Recall, indicating that long-horizon memory depends on retaining evidence within the budget rather than rereading larger histories.",
+      "authors": [
+        "Yilong Li",
+        "Suman Banerjee",
+        "Tong Che"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-04T09:03:05+00:00",
+      "link": "https://arxiv.org/pdf/2606.05894v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "budgeted evidence retention for long-context agents, akin to prompt caching",
+      "llm_evidence_cn": "针对长上下文智能体的预算化证据保留，类似于提示缓存",
+      "llm_evidence": "针对长上下文智能体的预算化证据保留，类似于提示缓存",
+      "canonical_evidence": "针对长上下文智能体的预算化证据保留，类似于提示缓存",
+      "llm_tldr_en": "EMBER learns a retention policy to pre-select source evidence under a token budget, enabling efficient later retrieval without full history.",
+      "llm_tldr_cn": "针对长时间跨度智能体在固定记忆预算下难以有效预保留关键证据导致频繁回退的问题，提出EMBER方法，定义预算化预查询保留设置，通过学习保留策略构造紧凑的源证据胶囊状态，确保在未知未来查询时保留最有价值的信息，实验表明在多个长上下文任务上以较少预算达到接近全历史的性能。",
+      "llm_tldr": "针对长时间跨度智能体在固定记忆预算下难以有效预保留关键证据导致频繁回退的问题，提出EMBER方法，定义预算化预查询保留设置，通过学习保留策略构造紧凑的源证据胶囊状态，确保在未知未来查询时保留最有价值的信息，实验表明在多个长上下文任务上以较少预算达到接近全历史的性能。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

@@ -1,0 +1,1432 @@
+Title: CacheProbe: Auditing Prompt Cache Isolation in Gateway APIs
+
+URL Source: https://arxiv.org/pdf/2605.30613v1
+
+Published Time: Mon, 01 Jun 2026 00:17:30 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# CacheProbe: Auditing Prompt Cache Isolation in Gateway APIs 
+
+Ryan Fahey 
+
+Khoury College of Computer Sciences Northeastern University 
+
+Boston, MA, USA fahey.rya@northeastern.edu 
+
+Abstract —Over the past year, prompt caching in Large Lan-guage Models (LLMs) has become increasingly more popular across inference APIs. Prompt caching helps save precious compute resources and speeds up response times by reusing parts of the KV cache of a specific prompt for another request. However, many implementations of prompt caching are not secure against timing attacks or even basic metadata disclosure. Gu et al. [1] develop a method to audit prompt caching in LLMs. This paper investigates whether OpenRouter’s API gateway ar-chitecture introduces prompt caching vulnerabilities that bypass provider-level prompt cache isolation guarantees. Most LLM inference providers implement per-account or per-organization prompt caching to prevent data leaks, but does routing through OpenRouter with shared organizational credentials inadvertently create global cache sharing across all OpenRouter users? 
+
+Index Terms —LLM security, prompt caching, timing attacks, API gateways, side-channel attacks 
+
+I. I NTRODUCTION 
+
+The rapid growth of LLMs, both in size and in usage, has caused the compute resources needed for inference to sky-rocket. As a result, prompt caching has become increasingly more popular across inference APIs. Gim et al. [2] describe prompt caching, a method in which key-value attention states can be cached and reused upon an initial request to an LLM. Subsequent requests can use the same cached key-value atten-tion states for portions of the prompt that are identical to the initial request. This allows for only the attention computations of the unique tokens in the prompt to be performed, saving compute resources and speeding up response times. Initial evaluations from the paper found that GPU inference was sped up by a factor of 1.5–10x while CPU inference was sped up by a factor of 20–70x. Prompt caching allows providers to offer significant discounts on input tokens. OpenAI, for example, offers an automatic 90% discount on all cached input tokens in their most recent GPT-5 family of models on the standard tier. Google’s Gemini 2.5 and 3.0 family of models match this discount. 
+
+Accepted at SAGAI ’26: Secure Agents for Generative Artificial Intelli-gence, co-located with the IEEE Symposium on Security and Privacy (S&P) 2026, May 21, 2026, San Francisco, CA. © 2026 IEEE. Personal use of this material is permitted. Permission from IEEE must be obtained for all other uses, in any current or future media, including reprinting/republishing this material for advertising or promotional purposes, creating new collective works, for resale or redistribution to servers or lists, or reuse of any copyrighted component of this work in other works. 
+
+The authors of [1] discovered that via timing side-channels, it is possible to detect whether or not a provider implements prompt caching (which can leak model architecture details) as well as audit the contents of the cache. If caches are shared across accounts, prompt caching timing signals can become a side-channel that leaks information about other users’ prompts. Since this work was published, most inference providers have implemented per-account or per-organization prompt caching to mitigate this risk. However, API gateways like OpenRouter add an additional layer of abstraction to this issue. If OpenRouter routes its users’ requests to upstream providers using shared organizational credentials, then it is possible that OpenRouter is inadvertently creating global cache sharing across all OpenRouter users. This paper investigates whether OpenRouter’s API gateway architecture introduces prompt caching vulnerabilities that bypass provider-level prompt cache isolation guarantees, and it finds that it does .II. B ACKGROUND 
+
+A. Prompt Caching in LLM APIs 
+
+During inference, transformer-based LLMs compute key-value (KV) attention states for each token in the input. For prompts of considerable length, this computation adds a significant amount of latency and incurs high computational costs. Prompt caching largely fixes this issue by exploiting the fact that many requests (especially for multi-turn chat applications) share common prefixes and store and reuse those KV attention states. Inference providers check if a prefix of a prompt matches a cached entry upon receiving a request. If a match is found, the provider can reuse the cached KV attention states for the matching prefix and only compute the attention states for the unique tokens in the prompt. 
+
+B. Timing Side-Channel Attacks 
+
+The difference in latency between cache hits and misses creates a timing side-channel. Attackers can measure the TTFT of a request to determine whether or not a given prefix exists in the cache. By systematically probing with candidate prefixes, an attacker can reconstruct cached prompts token-by-token via binary search. The authors of [1] formalize this attack and demonstrate its feasibility across major providers. 
+
+> arXiv:2605.30613v1 [cs.CR] 28 May 2026
+
+C. OpenRouter Architecture 
+
+OpenRouter is an API gateway that provides a unified inter-face for accessing inference APIs. Rather than authenticating and sending requests to individual inference providers, users authenticate with their OpenRouter credentials and send their requests to OpenRouter. OpenRouter routes the requests to the appropriate inference provider, authenticating with their own credentials. From the provider’s perspective, all the Open-Router traffic is coming from a single organization, which raises questions on how the provider-level cache isolation is affected by this architecture. III. T HREAT MODEL 
+
+A. Adversary Goals and Capabilities 
+
+We consider an adversary who is an authenticated user of OpenRouter, trying to detect or reconstruct prompts sent by other OpenRouter users. The primary goal of the adversary is to determine whether or not a specific prompt prefix exists in the inference provider’s cache, which indicates that another user recently submitted a prompt with that prefix. If the adversary is able to detect prompt caching, it enables prompt extraction attacks as described in [1], where an attacker can iteratively recover cached prompts token-by-token. 
+
+B. OpenRouter Architecture Assumptions 
+
+The adversary must possess a valid OpenRouter API key (with credits loaded) that will allow them to send arbitrary prompts to the target model while measuring the TTFT of each request. Via OpenRouter’s provider selection feature, the adversary can force their requests to be routed to a specific inference provider. However, the adversary does not need any internal access to OpenRouter’s infrastructure, the victim’s credentials, or the victim’s account. 
+
+C. Detection Methods 
+
+Our research exploits two signals to detect prompt caching. The first is timing side-channel analysis: cache hits result in faster TTFT since the provider can skip KV attention computation for cached prefixes. The second is metadata disclosure: some providers explicitly report how many tokens were served from cache via a cached_tokens field in the API response. 
+
+D. Attack Scenarios 
+
+We evaluate six distinct scenarios to isolate the source of any cache sharing. IV. M ETHODOLOGY 
+
+A. Experimental Procedures 
+
+During testing, we employed an interleaved sampling pro-cedure that was designed to minimize any outside influence on the results, such as network latency or API load fluctuations. For each sample pair in num_samples , we first send a unique random prompt to establish a cache miss baseline, then have a simulated victim fill the cache with a different random prompt, and finally probe with a prefix-matching prompt to test                         
+
+> TABLE I ATTACK SCENARIOS AND CREDENTIAL CONFIGURATIONS
+> Scenario Path Accounts Provider Creds
+> Direct Same Direct Same Same key Direct Cross Direct Different Different keys OR Same OpenRouter Same Shared (OR org) OR Cross OpenRouter Different Shared (OR org)* OR BYOK Same OpenRouter Same Same BYOK OR BYOK Cross OpenRouter Different Different BYOKs
+> OR = OpenRouter. *Hypothesized shared provider credentials.
+
+for cache hits. By interleaving miss and hit tests rather than batching them separately, it ensures that each pair is tested under similar conditions and any noise is duplicated within both distributions. Prompts are generated as sequences of space-separated ASCII letters, since each letter preceded by a space constitutes a single token in most tokenizers. We use a prompt length of 4,096 tokens with a 95% prefix fraction; the attacker’s probe shares the first 3,891 tokens with the victim’s prompt but differs in the final 205 tokens. This reflects real attack scenarios where an adversary attempts partial prefix recon-struction rather than exact prompt duplication. A 500ms delay is inserted between requests to allow cache entries to persist while avoiding rate limiting. 
+
+B. Test Scenarios 
+
+Each of the six scenarios described in Section III is implemented by varying the API client configuration and credential assignment. For direct scenarios, we instantiate OpenAI-compatible clients pointing to the provider’s native endpoint with the appropriate API keys. Same-account tests use identical credentials for both victim and attacker roles, while cross-account tests use distinct API keys obtained from separate account registrations. For OpenRouter scenarios, requests are routed through OpenRouter’s unified endpoint with provider selection forced via the provider.order parameter. This ensures consis-tent routing to a single upstream provider rather than al-lowing OpenRouter’s default load balancing across multiple providers. In standard OpenRouter mode, both victim and attacker authenticate with different OpenRouter API keys, but OpenRouter authenticates to the upstream provider using its own shared organizational credentials. In BYOK mode, users supply their own provider credentials via OpenRouter’s credential management, meaning their requests authenticate to the provider under their personal accounts rather than OpenRouter’s. 
+
+C. Metrics and Statistical Tests 
+
+We employ two complementary detection methods: timing-based statistical analysis and metadata disclosure analysis. For timing analysis, we use the two-sample Kolmogorov-Smirnov test to compare the TTFT distributions of cache hit and miss samples. Following [1], we use a stringent significance threshold of p < 10 −8 to minimize false positives given the inherent noise in network timing measurements. For metadata analysis, we examine the cached_tokens 
+
+field returned in API response usage metadata. Some providers explicitly report how many input tokens were served from cache, providing ground-truth evidence of cache utilization independent of timing signals. We consider metadata-based detection positive when more than 50% of cache-primed requests report cached tokens exceeding 90% of the expected prefix length. Our combined detection criterion considers caching detected if either method yields a positive result. This conservative approach accounts for scenarios where timing signals may be obscured by network noise but metadata disclosure is present, or vice versa. V. E XPERIMENTAL SETUP 
+
+A. Provider Selection 
+
+We selected three inference providers for evaluation: Ope-nAI, Groq, and Fireworks. These providers were chosen be-cause they each implement organization-level prompt caching with documented isolation guarantees and are available through OpenRouter’s unified API. For each provider, we tested a single model: 
+
+gpt-4o-mini for OpenAI, openai/gpt-oss-20b 
+
+for Groq, and qwen/qwen3-8b for Fireworks. Model selection was constrained by OpenRouter compatibility requirements; notably, we chose gpt-4o-mini over newer models like gpt-4.1-nano because OpenRouter’s routing layer does not permit max_tokens=1 for certain models, which complicates precise Time to First Token (TTFT) measurements. 
+
+B. Implementation 
+
+Our testing harness is implemented in Python using the OpenAI SDK. All experiments were conducted on an Ubuntu virtual machine hosted on Oracle Cloud in the US-East (Ash-burn, Virginia) region to ensure consistent network conditions and eliminate variability from residential network connections. Experiments were conducted between November 12 and De-cember 8, 2025. For each provider, we collected 250 sample pairs per sce-nario using the interleaved procedure described in Section IV. Prompts consisted of 4,096 tokens with a 95% prefix fraction, and we inserted a 500ms delay between requests to allow cache entries to persist while avoiding rate limiting. The complete test matrix spans six scenarios per provider, resulting in 18 distinct experimental configurations and approximately 9,000 total API requests. VI. R ESULTS 
+
+The following table summarizes our detection results across all provider-scenario combinations. We report the Kolmogorov-Smirnov statistic and p-value for timing analysis, mean TTFT for cache miss and hit conditions, and whether caching was detected via statistical analysis (p < 10 −8), metadata disclosure, or either method.                                                                                                                      
+
+> TABLE II DETECTION RESULTS ACROSS ALL PROVIDER -SCENARIO COMBINATIONS .Provider Acct p-value Miss Hit Timing Meta
+> Direct API
+> Groq Same 3.8e-11 .460 .766 ✓✓
+> Groq Cross 8.3e-03 .432 .292 ––Fireworks Same 3.8e-11 .445 .403 ✓–Fireworks Cross 6.1e-01 .374 .379 ––OpenAI Same 1.3e-01 .825 .784 –✓
+> OpenAI Cross 6.9e-01 .870 .900 ––
+> OpenRouter Default
+> Groq Same 2.4e-03 .413 .351 –✓
+> Groq Cross 1.7e-03 .396 .365 –✓
+> Fireworks Same 3.3e-13 .468 .419 ✓–Fireworks Cross 4.1e-15 .428 .386 ✓–OpenAI Same 4.5e-03 .940 .572 –✓
+> OpenAI Cross 6.1e-01 .574 .858 –✓†
+> OpenRouter BYOK
+> Groq Same 4.0e-01 .416 .405 –✓
+> Groq Cross 6.9e-01 .429 .428 ––Fireworks Same 3.7e-47 .332 .281 ✓✓
+> Fireworks Cross 6.1e-01 .475 .513 ––OpenAI Same 2.9e-01 1.77 1.36 –✓
+> OpenAI Cross 1.6e-01 1.58 1.27 ––Timing: p < 10 −8.†OpenAI cross-account: 4.8% cache hit rate.
+
+A. Direct API Baseline 
+
+When accessing providers directly, all three providers demonstrate proper cross-account cache isolation. Same-account tests confirm that prompt caching is functional: Groq and Fireworks both show statistically significant timing dif-ferences (p < 10 −8), while OpenAI reports cached tokens via metadata disclosure. Notably, Groq’s same-account cache hits exhibited higher TTFT than misses despite functional caching confirmed via metadata. Cross-account tests show no evidence of cache sharing for any provider, with p-values ranging from 0.13 to 0.69 and no cross-account cached token reports. This establishes that the providers’ native isolation mechanisms function correctly. 
+
+B. OpenRouter Default Mode 
+
+When routing through OpenRouter with default creden-tials, we observe cache sharing across accounts for all three providers. 
+
+Groq: While timing analysis does not reach statistical sig-nificance (p = 0.002), metadata disclosure reveals 100% cache hit rates in both same-account and cross-account OpenRouter scenarios. Of the samples that reported cached token counts, all exceeded the 90% prefix threshold in cross-account tests, indicating that prompts submitted by one OpenRouter user are being served from cache to other users. 
+
+Fireworks: Timing analysis provides strong evidence of cross-account cache sharing, with the OpenRouter cross-account scenario yielding p = 4.08 × 10 −15 . This represents the most statistically significant cache sharing detection in our study. Fireworks does not report cached token metadata, so timing analysis is the only detection method available. OpenAI: Metadata analysis reveals minor cache leakage: 4.8% of cross-account requests report cached tokens exceeding the prefix threshold. While substantially lower than Groq’s 100% rate, any cross-account cache hits with randomly-generated prompts indicate that caches are not fully isolated. 
+
+C. OpenRouter BYOK Mode 
+
+When users supply their own provider credentials via Open-Router’s BYOK (Bring Your Own Key) feature, cache isola-tion is restored. Cross-account BYOK tests show no statistical significance (p > 0.16 for all providers) and no metadata-based cache sharing. This confirms that the vulnerability stems from OpenRouter’s use of shared organizational credentials rather than from OpenRouter’s routing layer itself. VII. D ISCUSSION 
+
+A. Security Implications 
+
+Our findings demonstrate that OpenRouter’s default credential-sharing architecture effectively bypasses the per-organization cache isolation that providers have implemented. This creates a novel attack surface where any OpenRouter user can probe the prompt cache and potentially reconstruct prompts submitted by other users. The attack is particularly concerning because it requires no special access or privileges beyond a standard OpenRouter account with API credits. Practical exploitation scenarios include system prompt ex-traction, where an attacker could reconstruct the system prompts of applications built on OpenRouter, potentially re-vealing proprietary instructions, RAG retrieval patterns, or confidential business logic. Additionally, usage pattern detec-tion could allow competitors to determine whether a target organization is using specific prompts or workflows, enabling corporate espionage even without full prompt reconstruction. The cached prefix information could also reveal sensitive user data embedded in prompts, such as personally identifiable information or proprietary documents. 
+
+B. Responsibility Attribution 
+
+Our results reveal a shared responsibility gap between in-ference providers and API gateways. Providers have correctly implemented organization-level cache isolation, as evidenced by our direct API baseline tests showing no cross-account cache sharing. However, this isolation assumes that each organization’s API credentials represent a trust boundary. OpenRouter’s architecture violates this assumption by pooling all user traffic under shared organizational credentials. From the provider’s perspective, all OpenRouter traffic originates from a single trusted organization, making cache sharing within that traffic appear intentional. From Open-Router’s perspective, they are simply proxying requests and may not have visibility into how providers implement caching. This architectural mismatch creates a vulnerability that neither party may recognize without explicit testing. While this paper focuses on OpenRouter, the vulnerability pattern is not unique to any single gateway. Any API ag-gregation service that proxies requests to upstream providers using shared organizational credentials could inadvertently create cross-user cache sharing. This includes other LLM API gateways, enterprise API management platforms, and custom proxy implementations. As the LLM ecosystem increasingly relies on intermediary services for routing, cost optimization, and unified API access, the cache isolation implications of shared credentials deserve broader attention. 
+
+C. Mitigations 
+
+The most robust mitigation would require providers to implement true per-tenant cache namespace isolation, where cache entries are explicitly partitioned by a tenant identifier rather than shared across an organization. OpenRouter could then forward a unique per-user identifier with each request, enabling providers to isolate caches by OpenRouter user even when all requests arrive under shared organizational credentials. This approach would preserve response quality and caching benefits while restoring the isolation guarantees that users expect. Some existing mechanisms offer partial mitigation. Ope-nAI’s prompt_cache_key parameter influences which cache server handles a request, so using distinct keys for different users would probabilistically reduce cache sharing by routing users to different servers. However, this is a routing hint rather than a true cache namespace; with a finite number of cache servers, collisions remain possible and isolation is not guaranteed. Users concerned about prompt privacy should use Open-Router’s BYOK (Bring Your Own Key) mode, which our results confirm restores proper cache isolation. However, this sacrifices the convenience and pricing benefits that make OpenRouter attractive in the first place. 
+
+D. Limitations 
+
+Our study has several limitations that should be considered when interpreting the results. First, we tested only three providers and one model per provider; cache isolation be-havior may vary across other providers or models available through OpenRouter. Second, our experiments used randomly generated prompts rather than realistic application prompts, which may not reflect typical cache hit patterns in production. Third, cache eviction policies and timing may vary based on provider load, time of day, or other factors we did not control for. Finally, our statistical thresholds, while conservative, may not capture all forms of cache leakage, particularly in cases of partial or intermittent sharing. RESPONSIBLE DISCLOSURE 
+
+We initially contacted OpenRouter regarding these findings on November 14th, 2025, and followed up on December 12th, 2025 with a draft of this paper. OpenRouter acknowledged the report and requested access to our GitHub repository, which was private at the time. We sent an invitation to OpenRouter’s team but did not receive a response. groq 
+
+direct 
+
+same 
+
+groq 
+
+direct 
+
+cross 
+
+groq 
+
+openrouter 
+
+default 
+
+same 
+
+groq 
+
+openrouter 
+
+default 
+
+cross 
+
+fireworks 
+
+direct 
+
+same 
+
+fireworks 
+
+direct 
+
+cross 
+
+fireworks 
+
+openrouter 
+
+default 
+
+same 
+
+fireworks 
+
+openrouter 
+
+default 
+
+cross 
+
+openai 
+
+direct 
+
+same 
+
+openai 
+
+direct 
+
+cross 
+
+openai 
+
+openrouter 
+
+default 
+
+same 
+
+openai 
+
+openrouter 
+
+default 
+
+cross 
+
+openai 
+
+openrouter 
+
+default 
+
+cross 
+
+groq 
+
+openrouter 
+
+byok 
+
+same 
+
+groq 
+
+openrouter 
+
+byok 
+
+cross 
+
+fireworks 
+
+openrouter 
+
+byok 
+
+same 
+
+fireworks 
+
+openrouter 
+
+byok 
+
+cross 
+
+openai 
+
+openrouter 
+
+byok 
+
+same 
+
+openai 
+
+openrouter 
+
+byok 
+
+cross 
+
+groq 
+
+openrouter 
+
+byok 
+
+same 
+
+openai 
+
+openrouter 
+
+default 
+
+cross 
+
+openai 
+
+openrouter 
+
+default 
+
+same 
+
+2
+
+0
+
+2
+
+4
+
+6
+
+> Mean TTFT (seconds)
+
+Cache Timing Comparison Across Scenarios 
+
+Miss 
+
+Hit Fig. 1. Comparison of cross-account cache detection across routing configurations. Cache sharing is detected via OpenRouter default credentials but not via direct API access or BYOK mode. groq 
+
+> direct
+> same
+> groq
+> direct
+> cross
+> groq
+> openrouter
+> default
+> same
+> groq
+> openrouter
+> default
+> cross
+> fireworks
+> direct
+> same
+> fireworks
+> direct
+> cross
+> fireworks
+> openrouter
+> default
+> same
+> fireworks
+> openrouter
+> default
+> cross
+> openai
+> direct
+> same
+> openai
+> direct
+> cross
+> openai
+> openrouter
+> default
+> same
+> openai
+> openrouter
+> default
+> cross
+> openai
+> openrouter
+> default
+> cross
+> groq
+> openrouter
+> byok
+> same
+> groq
+> openrouter
+> byok
+> cross
+> fireworks
+> openrouter
+> byok
+> same
+> fireworks
+> openrouter
+> byok
+> cross
+> openai
+> openrouter
+> byok
+> same
+> openai
+> openrouter
+> byok
+> cross
+> groq
+> openrouter
+> byok
+> same
+> openai
+> openrouter
+> default
+> cross
+> openai
+> openrouter
+> default
+> same
+
+0
+
+20 
+
+40 
+
+60 
+
+80 
+
+100 
+
+> Cache Disclosure Rate (%)
+> No
+> metadata
+> No
+> metadata
+> No
+> metadata
+> No
+> metadata
+> No
+> metadata
+> No
+> metadata
+> No
+> metadata
+> No
+> metadata
+> Detection threshold
+
+API Metadata Cache Disclosure by Scenario 
+
+Hit samples with cache metadata 
+
+Miss samples with cache metadata 
+
+Fig. 2. Metadata disclosure rates showing cached token percentages across scenarios. 
+
+VIII. C ONCLUSION 
+
+This paper investigated whether OpenRouter’s API gateway architecture introduces prompt caching vulnerabilities that bypass provider-level isolation guarantees. Through systematic testing across three major inference providers, we demon-strated that OpenRouter’s use of shared organizational creden-tials enables cross-account cache sharing that would not occur when accessing providers directly. All three providers tested exhibited detectable cache sharing in OpenRouter’s default mode, while properly isolating caches when accessed via direct API or OpenRouter’s BYOK mode. These findings have immediate practical implications. OpenRouter users should be aware that their prompts may be observable by other users through timing side-channels and metadata disclosure. Organizations handling sensitive data should consider using BYOK mode or direct provider access to maintain cache isolation. We recommend that OpenRouter implement per-user cache isolation mechanisms, and that providers consider offering more granular isolation options to better support multi-tenant gateway architectures. APPENDIX ADATA AVAILABILITY 
+
+The complete source code for CacheProbe, including all experimental results and raw timing data, is publicly available at https://github.com/Ryan5453/cacheprobe. APPENDIX BDETAILED TIMING DISTRIBUTIONS Miss Hit 
+
+0.0 
+
+0.5 
+
+1.0 
+
+1.5 
+
+2.0 
+
+2.5 
+
+> Time to First Token (seconds)
+
+Groq - Direct Same Account Miss Hit 
+
+0.24 
+
+0.26 
+
+0.28 
+
+0.30 
+
+0.32 
+
+0.34 
+
+0.36 
+
+0.38 
+
+> Time to First Token (seconds)
+> 42 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Groq - Direct Cross Account Miss Hit 
+
+0.300 
+
+0.325 
+
+0.350 
+
+0.375 
+
+0.400 
+
+0.425 
+
+0.450 
+
+0.475 
+
+> Time to First Token (seconds)
+> 71 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Groq - OpenRouter Default Same Account Miss Hit 
+
+0.325 
+
+0.350 
+
+0.375 
+
+0.400 
+
+0.425 
+
+0.450 
+
+0.475 
+
+> Time to First Token (seconds)
+> 62 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Groq - OpenRouter Default Cross Account Miss Hit 
+
+0.1 
+
+0.2 
+
+0.3 
+
+0.4 
+
+0.5 
+
+0.6 
+
+0.7 
+
+> Time to First Token (seconds)
+> 56 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Groq - OpenRouter BYOK Same Account Miss Hit 
+
+0.30 
+
+0.35 
+
+0.40 
+
+0.45 
+
+0.50 
+
+0.55 
+
+> Time to First Token (seconds)
+> 43 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Groq - OpenRouter BYOK Cross Account 
+
+Fig. 3. Groq TTFT boxplots across all scenarios. 0.0 0.5 1.0 1.5 2.0 2.5 
+
+Time to First Token (seconds) 
+
+0
+
+20 
+
+40 
+
+60 
+
+80 
+
+100 
+
+120 
+
+> Frequency
+
+KS stat: 0.312 
+
+p-value: 3.76e-11 
+
+Cache detected: True 
+
+Groq - Direct Same Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.292s 
+
+Hit median: 0.377s 0.22 0.24 0.26 0.28 0.30 0.32 0.34 0.36 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+25 
+
+30 
+
+> Frequency
+
+KS stat: 0.148 
+
+p-value: 8.30e-03 
+
+Cache detected: False 
+
+(46 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Groq - Direct Cross Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.288s 
+
+Hit median: 0.283s 0.275 0.300 0.325 0.350 0.375 0.400 0.425 0.450 0.475 
+
+Time to First Token (seconds) 
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+12.5 
+
+15.0 
+
+17.5 
+
+20.0 
+
+> Frequency
+
+KS stat: 0.164 
+
+p-value: 2.36e-03 
+
+Cache detected: False 
+
+(72 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Groq - OpenRouter Default Same Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.367s 
+
+Hit median: 0.359s 0.30 0.35 0.40 0.45 
+
+Time to First Token (seconds) 
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+12.5 
+
+15.0 
+
+17.5 
+
+> Frequency
+
+KS stat: 0.168 
+
+p-value: 1.69e-03 
+
+Cache detected: False 
+
+(62 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Groq - OpenRouter Default Cross Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.380s 
+
+Hit median: 0.374s 0.2 0.3 0.4 0.5 0.6 0.7 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+25 
+
+> Frequency
+
+KS stat: 0.164 
+
+p-value: 2.36e-03 
+
+Cache detected: False 
+
+(64 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Groq - OpenRouter BYOK Same Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.420s 
+
+Hit median: 0.407s 0.25 0.30 0.35 0.40 0.45 0.50 0.55 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+> Frequency
+
+KS stat: 0.064 
+
+p-value: 6.86e-01 
+
+Cache detected: False 
+
+(43 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Groq - OpenRouter BYOK Cross Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.396s 
+
+Hit median: 0.392s Fig. 4. Groq TTFT histograms across all scenarios. Miss Hit 
+
+0.20 
+
+0.25 
+
+0.30 
+
+0.35 
+
+0.40 
+
+0.45 
+
+0.50 
+
+> Time to First Token (seconds)
+> 34 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Fireworks - Direct Same Account Miss Hit 
+
+0.300 
+
+0.325 
+
+0.350 
+
+0.375 
+
+0.400 
+
+0.425 
+
+0.450 
+
+0.475 
+
+> Time to First Token (seconds)
+> 33 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Fireworks - Direct Cross Account Miss Hit 
+
+0.30 
+
+0.35 
+
+0.40 
+
+0.45 
+
+0.50 
+
+0.55 
+
+0.60 
+
+> Time to First Token (seconds)
+> 20 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Fireworks - OpenRouter Default Same Account Miss Hit 
+
+0.25 
+
+0.30 
+
+0.35 
+
+0.40 
+
+0.45 
+
+0.50 
+
+0.55 
+
+0.60 
+
+> Time to First Token (seconds)
+> 19 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Fireworks - OpenRouter Default Cross Account Miss Hit 
+
+0.25 
+
+0.30 
+
+0.35 
+
+0.40 
+
+0.45 
+
+0.50 
+
+0.55 
+
+0.60 
+
+0.65 
+
+> Time to First Token (seconds)
+> 28 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Fireworks - OpenRouter BYOK Same Account Miss Hit 
+
+0.35 
+
+0.40 
+
+0.45 
+
+0.50 
+
+0.55 
+
+0.60 
+
+0.65 
+
+> Time to First Token (seconds)
+> 26 outliers not shown
+> (>1.5×IQR from quartiles)
+
+Fireworks - OpenRouter BYOK Cross Account Fig. 5. Fireworks TTFT boxplots across all scenarios. 0.25 0.30 0.35 0.40 0.45 0.50 
+
+Time to First Token (seconds) 
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+12.5 
+
+15.0 
+
+17.5 
+
+20.0 
+
+> Frequency
+
+KS stat: 0.312 
+
+p-value: 3.76e-11 
+
+Cache detected: True 
+
+(33 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Fireworks - Direct Same Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.367s 
+
+Hit median: 0.341s 0.275 0.300 0.325 0.350 0.375 0.400 0.425 0.450 0.475 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+> Frequency
+
+KS stat: 0.068 
+
+p-value: 6.11e-01 
+
+Cache detected: False 
+
+(34 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Fireworks - Direct Cross Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.360s 
+
+Hit median: 0.361s 0.35 0.40 0.45 0.50 0.55 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+> Frequency
+
+KS stat: 0.340 
+
+p-value: 3.33e-13 
+
+Cache detected: True 
+
+(28 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Fireworks - OpenRouter Default Same Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.443s 
+
+Hit median: 0.416s 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+25 
+
+30 
+
+> Frequency
+
+KS stat: 0.364 
+
+p-value: 4.08e-15 
+
+Cache detected: True 
+
+(19 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Fireworks - OpenRouter Default Cross Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.395s 
+
+Hit median: 0.363s 0.30 0.35 0.40 0.45 0.50 0.55 0.60 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+> Frequency
+
+KS stat: 0.256 
+
+p-value: 1.32e-07 
+
+Cache detected: False 
+
+(28 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Fireworks - OpenRouter BYOK Same Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.450s 
+
+Hit median: 0.421s 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+> Frequency
+
+KS stat: 0.068 
+
+p-value: 6.11e-01 
+
+Cache detected: False 
+
+(28 outliers not shown, 
+
+>1.5×IQR from quartiles) 
+
+Fireworks - OpenRouter BYOK Cross Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.451s 
+
+Hit median: 0.451s Fig. 6. Fireworks TTFT histograms across all scenarios. Miss Hit 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+1.2 
+
+> Time to First Token (seconds)
+> 48 outliers not shown
+> (>1.5×IQR from quartiles)
+
+OpenAI - Direct Same Account Miss Hit 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+1.2 
+
+1.4 
+
+> Time to First Token (seconds)
+> 57 outliers not shown
+> (>1.5×IQR from quartiles)
+
+OpenAI - Direct Cross Account Miss Hit 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+1.2 
+
+1.4 
+
+> Time to First Token (seconds)
+> 44 outliers not shown
+> (>1.5×IQR from quartiles)
+
+OpenAI - OpenRouter Default Same Account Miss Hit 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+1.2 
+
+1.4 
+
+> Time to First Token (seconds)
+> 39 outliers not shown
+> (>1.5×IQR from quartiles)
+
+OpenAI - OpenRouter Default Cross Account Miss Hit 
+
+0.5 
+
+1.0 
+
+1.5 
+
+2.0 
+
+2.5 
+
+> Time to First Token (seconds)
+> 49 outliers not shown
+> (>1.5×IQR from quartiles)
+
+OpenAI - OpenRouter BYOK Same Account Miss Hit 
+
+0.5 
+
+1.0 
+
+1.5 
+
+2.0 
+
+2.5 
+
+> Time to First Token (seconds)
+> 38 outliers not shown
+> (>1.5×IQR from quartiles)
+
+OpenAI - OpenRouter BYOK Cross Account Fig. 7. OpenAI TTFT boxplots across all scenarios. 0.2 0.4 0.6 0.8 1.0 1.2 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+25 
+
+> Frequency
+> KS stat: 0.104
+> p-value: 1.34e-01
+> Cache detected: False
+> (52 outliers not shown,
+> >1.5×IQR from quartiles)
+
+OpenAI - Direct Same Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.648s 
+
+Hit median: 0.616s 0.2 0.4 0.6 0.8 1.0 1.2 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+25 
+
+> Frequency
+> KS stat: 0.064
+> p-value: 6.86e-01
+> Cache detected: False
+> (60 outliers not shown,
+> >1.5×IQR from quartiles)
+
+OpenAI - Direct Cross Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.660s 
+
+Hit median: 0.676s 0.0 0.2 0.4 0.6 0.8 1.0 1.2 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+25 
+
+30 
+
+> Frequency
+> KS stat: 0.184
+> p-value: 4.09e-04
+> Cache detected: False
+> (54 outliers not shown,
+> >1.5×IQR from quartiles)
+
+OpenAI - OpenRouter Default Same Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.585s 
+
+Hit median: 0.525s 0.0 0.2 0.4 0.6 0.8 1.0 1.2 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+25 
+
+> Frequency
+> KS stat: 0.096
+> p-value: 2.00e-01
+> Cache detected: False
+> (43 outliers not shown,
+> >1.5×IQR from quartiles)
+
+OpenAI - OpenRouter Default Cross Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 0.551s 
+
+Hit median: 0.581s 0.0 0.5 1.0 1.5 2.0 2.5 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+> Frequency
+> KS stat: 0.088
+> p-value: 2.88e-01
+> Cache detected: False
+> (48 outliers not shown,
+> >1.5×IQR from quartiles)
+
+OpenAI - OpenRouter BYOK Same Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 1.077s 
+
+Hit median: 1.044s 0.0 0.5 1.0 1.5 2.0 2.5 
+
+Time to First Token (seconds) 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+25 
+
+30 
+
+> Frequency
+> KS stat: 0.100
+> p-value: 1.64e-01
+> Cache detected: False
+> (43 outliers not shown,
+> >1.5×IQR from quartiles)
+
+OpenAI - OpenRouter BYOK Cross Account 
+
+Miss (n=250) 
+
+Hit (n=250) 
+
+Miss median: 1.112s 
+
+Hit median: 0.991s Fig. 8. OpenAI TTFT histograms across all scenarios. 
+
+REFERENCES [1] C. Gu, X. L. Li, R. Kuditipudi, P. Liang, and T. Hashimoto, “Auditing prompt caching in language model apis,” in Forty-second International Conference on Machine Learning, ICML 2025, Vancouver, BC, Canada, July 13-19, 2025 , ser. Proceedings of Machine Learning Research, A. Singh, M. Fazel, D. Hsu, S. Lacoste-Julien, F. Berkenkamp, T. Maharaj, K. Wagstaff, and J. Zhu, Eds. PMLR / OpenReview.net, 2025. [Online]. Available: https://proceedings.mlr.press/v267/gu25b.html [2] I. Gim, G. Chen, S. seob Lee, N. Sarda, A. Khandelwal, and L. Zhong, “Prompt cache: Modular attention reuse for low-latency inference,” 2024. [Online]. Available: https://arxiv.org/abs/2311.04934
