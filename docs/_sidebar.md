@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-06-06 <!--dpr-date:20260606-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/06/2606.05014v1-depth-attention-cross-layer-value-mixing-for-language-models" data-sidebar-item="{&quot;title&quot;: &quot;Depth-Attention: Cross-Layer Value Mixing for Language Models&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.05014v1-depth-attention-cross-layer-value-mixing-for-language-models&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;在注意力模块内跨层重用KV值，支持重用之前的表示&quot;}">Depth-Attention: Cross-Layer Value Mixing for Language Models</a>
   * 2026-06-05 <!--dpr-date:20260605-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/05/2605.30613v1-cacheprobe-auditing-prompt-cache-isolation-in-gateway-apis" data-sidebar-item="{&quot;title&quot;: &quot;CacheProbe: Auditing Prompt Cache Isolation in Gateway APIs&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2605.30613v1-cacheprobe-auditing-prompt-cache-isolation-in-gateway-apis&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;审计网关API中的提示缓存隔离，直接与提示缓存相关&quot;}">CacheProbe: Auditing Prompt Cache Isolation in Gateway APIs</a>

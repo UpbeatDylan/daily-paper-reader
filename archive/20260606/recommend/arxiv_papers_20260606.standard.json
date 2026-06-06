@@ -1,0 +1,60 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-06T20:59:52.549517+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2606.05014v1",
+      "source": "arxiv",
+      "title": "Depth-Attention: Cross-Layer Value Mixing for Language Models",
+      "abstract": "Self-attention selects information freely across the sequence, but across depth, Transformers merely add each layer's output to the residual stream, so later layers cannot selectively reuse earlier-layer representations. Recent cross-layer methods improve this flow but operate on hidden states outside attention, adding state beyond the key-value cache at inference--a cost that becomes increasingly salient as modern LLMs compress the cache with grouped-query and multi-head latent attention. We introduce Depth-Attention, which performs this selection inside the attention module itself: before a layer attends over the sequence, its query attends over the keys of earlier layers at the same token position and mixes their values into the value that self-attention then reads. Because Depth-Attention reuses the standard attention queries, keys, and value-cache slots, storing depth-mixed values in place of the original values, it adds no parameters and introduces no persistent inference state beyond the standard key-value cache--the same cache size as a vanilla decoder and less than hidden-state-based cross-layer methods. On Qwen3-style decoders at 1.5B and 3B parameters, Depth-Attention attains the lowest perplexity and the highest average downstream accuracy, improving over the vanilla Transformer by up to 2.3 accuracy points and surpassing strong cross-layer baselines in perplexity and average accuracy, while adding under 0.01% extra arithmetic FLOPs and no additional persistent inference state. The gains hold from 360M to 3B parameters and extend to looped Transformers.",
+      "authors": [
+        "Boyi Zeng",
+        "Yiqin Hao",
+        "Zitong Wang",
+        "Shixiang Song",
+        "He Li",
+        "Feichen Song",
+        "Yifan Liu",
+        "Ziwei He",
+        "Xinbing Wang",
+        "Zhouhan Lin"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-03T15:33:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.05014v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "cross-layer KV value reuse within attention, enabling reusing earlier representations",
+      "llm_evidence_cn": "在注意力模块内跨层重用KV值，支持重用之前的表示",
+      "llm_evidence": "在注意力模块内跨层重用KV值，支持重用之前的表示",
+      "canonical_evidence": "在注意力模块内跨层重用KV值，支持重用之前的表示",
+      "llm_tldr_en": "Depth-Attention enables query to attend to keys of earlier layers and mix their values into self-attention, reducing KV cache overhead by reusing cross-layer representations.",
+      "llm_tldr_cn": "本文提出Depth-Attention，允许当前层的查询关注前面层中同一位置的键，并将其值混入自注意力中，从而在注意力模块内部实现跨层值重用。该方法在不增加额外KV缓存的情况下增强了信息流动，有效压缩了推理时的KV缓存开销，适用于现代LLM中的分组查询和多头潜在注意力架构。实验表明该方法在保持模型质量的同时减少了缓存大小。",
+      "llm_tldr": "本文提出Depth-Attention，允许当前层的查询关注前面层中同一位置的键，并将其值混入自注意力中，从而在注意力模块内部实现跨层值重用。该方法在不增加额外KV缓存的情况下增强了信息流动，有效压缩了推理时的KV缓存开销，适用于现代LLM中的分组查询和多头潜在注意力架构。实验表明该方法在保持模型质量的同时减少了缓存大小。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

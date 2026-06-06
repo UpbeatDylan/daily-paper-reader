@@ -1,0 +1,24 @@
+{
+  "label": "2026-06-06",
+  "date": "2026-06-06",
+  "generated_at": "2026-06-06T21:00:43",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202606/06/2606.05014v1-depth-attention-cross-layer-value-mixing-for-language-models",
+      "section": "deep",
+      "title_en": "Depth-Attention: Cross-Layer Value Mixing for Language Models",
+      "authors": "Boyi Zeng, Yiqin Hao, Zitong Wang, Shixiang Song, He Li, Feichen Song, Yifan Liu, Ziwei He, Xinbing Wang, Zhouhan Lin",
+      "date": "2026-06-03",
+      "pdf": "https://arxiv.org/pdf/2606.05014v1",
+      "score": "8.0",
+      "evidence": "在注意力模块内跨层重用KV值，支持重用之前的表示",
+      "tldr": "标准Transformer中，后续层无法选择性重用早期层的表示，而现有跨层方法会额外增加推理缓存。本文提出Depth-Attention，在注意力模块内部通过查询关注同位置早期层的键并混合其值，替代原始值，不增加参数和缓存大小。在1.5B和3B参数模型上，该方法达到最低困惑度和最高下游准确率，相比基线提升高达2.3个点，且额外计算量不足0.01%。该工作以零额外推理代价实现了高效的跨层信息选择。",
+      "tags": "query:pic",
+      "abstract_en": "Self-attention selects information freely across the sequence, but across depth, Transformers merely add each layer's output to the residual stream, so later layers cannot selectively reuse earlier-layer representations. Recent cross-layer methods improve this flow but operate on hidden states outside attention, adding state beyond the key-value cache at inference--a cost that becomes increasingly salient as modern LLMs compress the cache with grouped-query and multi-head latent attention. We introduce Depth-Attention, which performs this selection inside the attention module itself: before a layer attends over the sequence, its query attends over the keys of earlier layers at the same token position and mixes their values into the value that self-attention then reads. Because Depth-Attention reuses the standard attention queries, keys, and value-cache slots, storing depth-mixed values in place of the original values, it adds no parameters and introduces no persistent inference state beyond the standard key-value cache--the same cache size as a vanilla decoder and less than hidden-state-based cross-layer methods. On Qwen3-style decoders at 1.5B and 3B parameters, Depth-Attention attains the lowest perplexity and the highest average downstream accuracy, improving over the vanilla Transformer by up to 2.3 accuracy points and surpassing strong cross-layer baselines in perplexity and average accuracy, while adding under 0.01% extra arithmetic FLOPs and no additional persistent inference state. The gains hold from 360M to 3B parameters and extend to looped Transformers.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
