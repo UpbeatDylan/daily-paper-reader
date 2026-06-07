@@ -1,0 +1,39 @@
+{
+  "label": "2026-06-07",
+  "date": "2026-06-07",
+  "generated_at": "2026-06-07T20:52:27",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202606/07/2606.03075v1-tgv-kv-text-grounded-kv-eviction-for-vision-language-models",
+      "section": "quick",
+      "title_en": "TGV-KV: Text-Grounded KV Eviction for Vision-Language Models",
+      "authors": "Jizhihui Liu, Ruizi Han, Miao Zhang, Rui Shao, Xuebo Liu, Weili Guan, Yaowei Wang",
+      "date": "2026-06-02",
+      "pdf": "https://arxiv.org/pdf/2606.03075v1",
+      "score": "7.0",
+      "evidence": "面向视觉语言模型的文本引导KV缓存驱逐",
+      "tldr": "视觉语言模型推理时缓存所有键值对导致内存随上下文长度线性增长，视觉冗余加剧问题。现有KV驱逐方法忽视文本与视觉的模态差异，性能下降严重。本文提出文本引导的KV驱逐方法TGV-KV，通过文本-视觉预算分配、文本加权排序和文本优先保留策略，在极低预算下保持高精度。在LLaVA-NeXT等模型上达到99.2%准确率，吞吐量提升52.6%。",
+      "tags": "query:pic",
+      "abstract_en": "Vision-Language Models (VLMs) inherit the auto-regressive generation paradigm and cache the keys and values (KV) of all previous tokens to accelerate inference, resulting in memory consumption that scales linearly with context length. This issue is particularly pronounced in VLMs due to substantial redundancy in the visual modality. Although KV cache eviction approaches can effectively reduce inference memory, they often incur significant performance degradation in VLMs, as most are designed for language models and overlook the inherent gap between text and vision. By systematically analyzing the modality gap in VLMs in this work, we argue that the importance of visual information should be grounded in textual guidance and accordingly propose a Text-Grounded KV Eviction method for VLMs (TGV-KV). TGV-KV comprises three submodules: (1) Text-Vision Budgeting (TVB) assigns budget to each layer based on the mutual information interaction. (2) Text-Weighted Ranking (TWR) assesses the priority of text and ranks vision importance based on weighted text-image attention. (3) Text-Prioritised Retention (TPR) policy strategically preserves text KV to avoid acute information loss. We evaluate TGV-KV across five models with different sizes and architectures, showing that TGV-KV preserves 99.2% full-KV accuracy on the VizWiz-VQA task with LLaVA-NeXT and boosts end-to-end throughput by 52.6% with an extreme retention budget of 5%. Code is available at https://github.com/Danielement321/TGV-KV.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/07/2606.03739v1-entropy-gate-entropy-quenching-for-near-lossless-token-compression-in-llm-pipelines",
+      "section": "quick",
+      "title_en": "Entropy Gate: Entropy Quenching for Near-Lossless Token Compression in LLM Pipelines",
+      "authors": "Justice Owusu Agyemang, Jerry John Kponyo, Kwame Opuni-Boachie Obour Agyekum, Francisca Adoma Acheampong, Kwame Agyeman-Prempeh Agyekum, James Dzisi Gadze",
+      "date": "2026-06-02",
+      "pdf": "https://arxiv.org/pdf/2606.03739v1",
+      "score": "6.0",
+      "evidence": "令牌压缩用于长上下文加速",
+      "tldr": "大语言模型管线中大量令牌浪费于低信息内容。Entropy Gate提出熵淬火框架，通过多因素信息能量和自适应淬火调度去除低熵令牌，同时利用保真度门控保证语义。理论证明令牌选择最优性，实验在五种提示类别上实现40-60%压缩且语义相似度>0.80，上下文去重额外节省50-70%。框架无状态、模型无关，可部署为HTTP代理。",
+      "tags": "query:pic",
+      "abstract_en": "LLM pipelines waste substantial token budgets on low-information content: repeated context, verbose responses, and redundant boilerplate. We introduce Entropy Gate, a token compression framework applying entropy quenching $-$ a thermodynamic process that progressively freezes out low-energy tokens while preserving semantic fidelity. Each token receives a multi-factor information energy $E(t)$ combining statistical, structural, and positional components. An adaptive quenching schedule $T(τ) = T_0 / (1 + ατ)$ removes tokens whose Boltzmann survival probability $p_i = \\exp(-E_i / kT)$ falls below threshold, with a fidelity gate halting compression when energy-weighted similarity drops below $θ$. We prove token selection by descending $E(t)$ maximizes expected semantic preservation, that quenching produces nested survival sets, and that achievable compression approaches the information-theoretic limit $\\text{CR} \\to 1 - I(P; T)/H(P)$. A Phase 1 heuristic achieves 40-60% compression across five prompt categories while maintaining $S_E > 0.80$, with energy-squared amplification $E \\to E^2$ adding 10-25 percentage points. Context deduplication adds 50-70% savings on repeated blocks. Output-side quenching, motivated by findings that brevity improves accuracy, further reduces response overhead. Combined with external memory, reduction composes multiplicatively to 88-96% for agentic workloads. The framework is stateless, model-agnostic, and deploys as an OpenAI-compatible HTTP proxy.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

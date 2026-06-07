@@ -6,26 +6,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-06
-- 运行时间：2026-06-06 21:00:36 UTC
+- 最新运行日期：2026-06-07
+- 运行时间：2026-06-07 20:52:19 UTC
 - 运行状态：成功
-- 本次总论文数：1
-- 精读区：1
-- 速读区：0
+- 本次总论文数：2
+- 精读区：0
+- 速读区：2
 
 ### 今日简报（AI）
-今日精读一篇高分论文，聚焦通过跨层价值混合提升语言模型表达能力。
-核心发现：Depth-Attention机制可有效增强模型对深层语义信息的利用。
-建议：对Transformer内部优化感兴趣的读者，可直接阅读该文，理解价值向量跨层融合的新思路。
-- 详情：[/202606/06/README](/202606/06/README)
+今日速读2篇论文，聚焦大语言模型效率优化与KV缓存管理。  
+最值得关注的是文本引导的KV缓存淘汰方法（TGV-KV，7分）与近无损熵压缩技术（Entropy Gate，6分）。  
+建议优先精读TGV-KV，了解其如何结合文本线索实现视觉语言模型的显存压缩。
+- 详情：[/202606/07/README](/202606/07/README)
 
 ### 精读区论文标签
-1. [Depth-Attention: Cross-Layer Value Mixing for Language Models](/202606/06/2606.05014v1-depth-attention-cross-layer-value-mixing-for-language-models)  
-   标签：评分：8.0/10、query:pic
-   evidence：在注意力模块内跨层重用KV值，支持重用之前的表示
+- 本次无精读推荐。
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [TGV-KV: Text-Grounded KV Eviction for Vision-Language Models](/202606/07/2606.03075v1-tgv-kv-text-grounded-kv-eviction-for-vision-language-models)  
+   标签：评分：7.0/10、query:pic
+   evidence：面向视觉语言模型的文本引导KV缓存驱逐
+2. [Entropy Gate: Entropy Quenching for Near-Lossless Token Compression in LLM Pipelines](/202606/07/2606.03739v1-entropy-gate-entropy-quenching-for-near-lossless-token-compression-in-llm-pipelines)  
+   标签：评分：6.0/10、query:pic
+   evidence：令牌压缩用于长上下文加速
 
 
 <div class="dpr-home-promo-card">
