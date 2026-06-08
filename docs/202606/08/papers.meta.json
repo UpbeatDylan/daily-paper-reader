@@ -1,0 +1,24 @@
+{
+  "label": "2026-06-08",
+  "date": "2026-06-08",
+  "generated_at": "2026-06-08T21:35:49",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202606/08/2606.01387v1-fail-closed-lowering-of-resident-kv-claims-onto-llm-serving-runtimes",
+      "section": "quick",
+      "title_en": "Fail-Closed Lowering of Resident KV Claims onto LLM Serving Runtimes",
+      "authors": "Lukas Stepanek",
+      "date": "2026-05-31",
+      "pdf": "https://arxiv.org/pdf/2606.01387v1",
+      "score": "7.0",
+      "evidence": "形式化KV重用声明与运行时原语",
+      "tldr": "LLM服务运行时暴露类似未来重用控制的KV缓存原语，但这些原语弱于接受的义务。论文定义ResidentClaim降级关系，要求绑定行为到声明身份、物化谓词、生命周期事件和声明域结果。提出失败关闭降级关系、检查器、描述符格式和不良降级套件。验证TensorRT-LLM、SGLang/HiCache、Dynamo等系统，仅修补后的vLLM连接器实现原生符合性。贡献在于校准语义边界，而非生产性能或兼容性调查。",
+      "tags": "query:pic",
+      "abstract_en": "LLM serving runtimes increasingly expose KV-cache primitives that resemble future-reuse controls: retention priority, TTL-like duration, host or storage offload, block events, active no-evict scheduling, and KV-aware routing. This paper argues that such primitives are weaker than accepted future-KV obligations. A runtime can expose priority, offload, events, and routing without accepting responsibility for a future reuse claim. We study ResidentClaim lowering: when a runtime primitive, trusted adapter, or patch can be treated as satisfying an accepted claim about future KV reuse. A conformant lowering must bind behavior to accepted claim identity, a materialization predicate, ordered lifecycle events, and claim-scoped outcomes. We contribute a fail-closed lowering relation, checker, descriptor format, and bad-lowering suite that classify runtime/mode mappings as native conformance, adapter-observational evidence, adapter-policy evidence under controlled pressure, approximation substrate, rejected mapping, or unknown evidence. The checker validates manually curated, anchored runtime descriptors against obligation bundles; it does not prove that unaudited runtime behavior is complete. Public TensorRT-LLM, SGLang/HiCache, and Dynamo expose strong substrates and selected adapter positives, but not native ResidentClaim conformance. The positive systems witness is a local patched vLLM connector/scheduler-boundary mechanism: claim metadata flows through real in-process offload/load behavior, and controlled same-claim restoration failure reaches vLLM's invalid-KV-load path and becomes an ordered claim-scoped fail-closed outcome. The result is a calibrated semantics boundary, not a production performance claim or a compatibility survey.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

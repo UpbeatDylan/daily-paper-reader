@@ -1,0 +1,519 @@
+Title: Fail-Closed Lowering of Resident KV Claims onto LLM Serving Runtimes
+
+URL Source: https://arxiv.org/pdf/2606.01387v1
+
+Published Time: Tue, 02 Jun 2026 01:42:11 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# Fail-Closed Lowering of Resident KV Claims onto LLM Serving Runtimes 
+
+# Lukas Stepanek luki.step@proton.me May 2026 
+
+# Abstract 
+
+LLM serving runtimes increasingly expose KV-cache primitives that look like future-reuse controls: retention pri-ority, TTL-like duration, host or storage offload, block events, active no-evict scheduling, and KV-aware routing. Feature primitives are weaker than accepted future-KV obligations: a runtime can expose priority, offload, events, and routing without accepting responsibility for a future reuse claim. This paper studies ResidentClaim lowering at the obligation level. A runtime or trusted adapter must bind behavior to accepted claim identity, a materialization predicate, ordered lifecycle events, and claim-scoped outcomes before a primitive can be treated as semantic confor-mance. We contribute a fail-closed lowering relation, checker, descriptor format, and bad-lowering suite that classify rows as native conformance, adapter-observational evidence, adapter-policy evidence under controlled pressure, ap-proximation substrate, rejected mapping, or unknown evidence. In the descriptors and evidence audited here, the checker validates manually curated, anchored runtime descriptors against obligation bundles; it is not a proof that unaudited runtime behavior is complete. Public TensorRT-LLM, SGLang/HiCache, and Dynamo expose strong substrates and selected adapter positives, not native ResidentClaim conformance. The positive systems witness is a local patched vLLM connector/scheduler-boundary mechanism: claim metadata flows through real in-process offload/load behavior, and controlled same-claim restoration failure reaches vLLM’s invalid-KV-load path and be-comes an ordered scheduler-boundary fail-closed active outcome. The result is a calibrated semantics boundary, not a production performance claim or a compatibility survey. 
+
+# 1. Introduction 
+
+KV-cache reuse has become an explicit systems surface in LLM serving. Production and research runtimes expose token-range retention priorities, duration fields, block stored/removed events, GPU/host/storage cache tiers, load-back paths, active no-evict modes, and KV-aware routing. These mechanisms are real and important. They also create a tempting inference: if a runtime has priority, offload, routing, or no-evict, perhaps it implements future-resident KV claims. This paper argues that the inference is unsound. A ResidentClaim is not a knob name. It is an accepted future-reuse responsibility over a cache identity, a reusable object, a materialization predicate, a footprint, a mode, and an ordered outcome. If a block is stored, that does not show that the claimed future computation state is materialized. If a block is removed, that does not show claim harm. If bytes move to host memory, that does not show the claim can be restored before reuse. If a router chooses a worker with useful cached KV, that does not show the route and later reuse are attributed to an accepted claim. The checker validates curated descriptors and anchored evidence against these obligation bundles. It deliberately does not prove that unaudited runtime behavior is complete. This distinction is the main calibration point: feature names can be useful substrates, but accepted future-reuse obligations require claim identity, acceptance, predicate, order, and claim-scoped outcomes at the depth being asserted. We treat ResidentClaims as the contract abstraction and focus on the lowering question: when can a runtime primitive, adapter, or patch conformantly supply the obligations of that contract? This keeps the paper’s role 1
+
+> arXiv:2606.01387v1 [cs.DC] 31 May 2026
+
+separate from the contract definition itself. The contribution here is the evidence relation that decides whether concrete serving surfaces satisfy, approximate, or fail those obligations. The first claim is semantic: accepted future-KV responsibility requires claim-level obligations. Without claim identity, a runtime cannot distinguish ordinary cache behavior from claim outcomes. Without explicit acceptance, there is no responsibility boundary. Without a predicate, block survival is not useful state survival. Without ordered lifecycle events, an observer cannot distinguish restore-before-reuse from restore-after-use, or demotion-before-loss from post-hoc explanation. Without failure outcomes, an offload substrate does not become an offloadable claim. A running example fixes the boundary. Let claim C cover prefix P with predicate leading-prefix-at-least-448 .The claim is first accepted by a mechanism that records C, P, and the predicate. The prefix becomes materialized; later, its KV blocks are offloaded from GPU to CPU. A future reuse request for P is not satisfied merely because CPU bytes exist. It requires an ordered CPU-to-GPU restoration before the reuse consumes the prefix. In the patched vLLM connector/scheduler-boundary mechanism, the failure experiment forces that same-claim restoration to fail. The scheduler invalid-KV-load path then reports a claim-scoped restoration failure and a fail-closed active outcome for C. This is the event sequence the checker accepts; generic transfer counters, fallback recomputation, wrong-claim failure, or unclaimed failure are not accepted as satisfying C.For this example, the accepted path is deliberately narrow: accept(C, P, leading-prefix-at-least-448) ,
+
+materialized(C) , offloaded(C) , restore-required(C) , same-claim load failure, restoration_failed(C) , and then active_request_refused(blocking_claim_ids=[C]) . The same bytes, counters, or request error without that ordering are insufficient. The second claim is methodological: a fail-closed lowering relation can separate native conformance, adapter-scoped evidence, approximation substrates, rejected mappings, and unknown evidence. This matters because several rows are partly positive. TensorRT-LLM block events can be joined by an external adapter to reconstruct selected 
+
+best_effort materialization observations. TensorRT priority can be joined to external claim state to reconstruct controlled soft-priority retention-order evidence. SGLang request cached-token telemetry and block events can be joined to reconstruct selected materialization observations. These rows are useful, but they are not native backend support and they do not imply enforcement. The third claim is empirical and systems-oriented: public runtimes expose strong substrates and narrow adapter pos-itives, while a targeted patched runtime mechanism demonstrates implementability of the missing lifecycle/outcome semantics. In the current artifacts, no TensorRT-LLM, SGLang/HiCache, or Dynamo descriptor produces native_ sound . The local patched vLLM connector/scheduler-boundary mechanism does pass the offload lifecycle/outcome gate at backend_patch depth: claim metadata flows through real in-process OffloadingConnector store/load jobs and worker transfers, and controlled same-claim CPU -> GPU load failure produces scheduler_resident_claim_ restoration_failed followed by the fail-closed active outcome event scheduler_active_request_refused before request termination. Negative rows are a result, not a weakness in the evaluation. A conventional compatibility table would mark “priority”, “TTL”, “offload”, “events”, and “routing” and appear to close the problem. The lowering matrix asks a different question: which obligations are actually represented, at which adapter depth, under which evidence scope? When active no-evict is active-request scoped rather than accepted future-resident protection, the correct result is rejection. When storage tiers lack restoration-before-reuse and restoration-failure outcomes, the correct result is approximation. When routing lacks claim-scoped route cost, placement, and reuse attribution, the correct result is approximation. Those classifications are what keep the contract meaningful. 
+
+Intro counterexamples: feature names versus obligations. 
+
+Feature-only inference Missing obligation boundary Correct lowering label Priority value or retention hint means soft_priority .Claim identity, claim-scoped telemetry, and controlled evidence that priority changed retention order. 
+
+approximate unless the pressure and claim-join evidence are present. Duration/TTL field means 
+
+expiring .Claim-scoped expiry boundary and ordered responsibility transition before loss. 
+
+approximate under current public evidence. 2Feature-only inference Missing obligation boundary Correct lowering label Active no-evict means future-resident hard_protected .Accepted future-resident identity, protected-victim exclusion, explicit conflict action, blocking claim ids, harm attribution, and order. 
+
+rejected for the observed active-request-scoped mapping. Host/storage tier means 
+
+offloadable .Restoration before predicate-satisfying reuse and claim-scoped restoration failure outcome. 
+
+approximate or unknown ,depending on whether the storage substrate is exercised. KV-aware routing means routed_ reuse .Claim-scoped route cost, placement attribution, later reuse attribution, predicate, and telemetry. 
+
+approximate under current docs-backed evidence. Generic transfer or request-failure counters mean restoration failure. Same accepted claim, ordered restore-required event, scheduler-boundary failure/refusal attribution, and blocking ids. Rejected by the connector gate. This paper is not a KV eviction algorithm, not a production offload evaluation, and not a claim that existing runtimes lack useful KV mechanisms. It is a semantic conformance study: what must be true before an accepted ResidentClaim can be lowered onto a serving runtime, and what current evidence can and cannot show. The paper is therefore organized around three pillars: obligation-level lowering and a fail-closed checker; public-runtime boundary studies with false-positive rejection; and the patched vLLM connector/scheduler-boundary mech-anism as the positive systems witness for the missing offload lifecycle/outcome semantics. 
+
+# 2. Contributions 
+
+This paper makes four concrete contributions. 1. It defines an obligation-based lowering model for ResidentClaim modes: best_effort , soft_priority , hard_ protected , demotable , expiring , offloadable , and routed_reuse .2. It implements a fail-closed checker and false-positive suite over machine-readable runtime descriptors. The checker counts obligations only when evidence is supported and anchored, requires anchored observed evidence atoms, and keeps adapter depth separate from classification. Descriptor and evidence mutation controls fail closed in 16/16 cases. 3. It studies the boundary of public TensorRT-LLM, SGLang/HiCache, Dynamo-style KV routing, and vLLM surfaces. The resulting matrix distinguishes adapter-observational evidence, adapter-policy evidence under controlled pressure, approximation substrates, rejected lowerings, and unknown rows. 4. It demonstrates a local patched vLLM connector/scheduler-boundary mechanism at backend_patch depth. The repeated scheduler-boundary evaluation records 131/131 completed subprocesses, 131/131 valid event sequences, 30/30 successful observation passes, 30/30 same-claim scheduler-boundary failure-outcome passes, and fail-closed rejection of wrong-claim, unclaimed, fallback-recompute, ordinary-offload-without-claim, and generic-counter controls. A clean multi-claim attribution rerun records 3/3 target-only failure/refusal attribu-tions while the non-target claim restores successfully. The contribution is deliberately bounded. We do not claim a better KV eviction policy, production performance, native/upstream vLLM support, native TensorRT-LLM/SGLang/Dynamo support, production offloadable support, pre-admission refusal, or scheduler-native admission protocol support. 
+
+# 3. ResidentClaim Obligations 
+
+ResidentClaim lowering is strict because accepted responsibility is strict. The obligations are not arbitrary hurdles for existing systems; they define a conservative audit boundary for deciding whether a future-reuse claim was satisfied, 3demoted, expired, restored, refused, harmed, or simply never accepted. Each obligation blocks a common false positive where ordinary cache behavior is misread as accepted-claim conformance. This is not a proven minimality claim. This section summarizes the contract obligations only to fix the checker input; the paper’s new object is the lowering judgment over runtime descriptors and evidence. 
+
+Table 1: ResidentClaim obligations. 
+
+Obligation Why it is necessary 
+
+claim_identity Without a stable claim id, block/request events cannot distinguish claimed KV from unclaimed KV. 
+
+explicit_acceptance Without acceptance, an application hint never becomes runtime responsibility. 
+
+materialization_predicate Without a useful-state predicate, stored blocks cannot be interpreted as satisfying the claimed future reuse. 
+
+footprint_accounting Without footprint at claim granularity, active/resident infeasibility cannot be attributed or budgeted. 
+
+ordered_lifecycle_events Without order, the observer cannot tell whether demotion, expiry, restore, refusal, or loss happened before or after the relevant claim transition. 
+
+claim_materialized_event Without a claim-scoped materialization event, best-effort telemetry remains block/request telemetry. 
+
+claim_demoted_before_loss Without an ordered demotion, losing protected state is indistinguishable from breaking a still-protected claim. 
+
+claim_expired_boundary Without a responsibility boundary, post-duration loss cannot be classified as violation or post-expiry non-responsibility. 
+
+offload_restorability Without restoration before reuse, a storage tier is only bytes somewhere else. 
+
+restoration_failure_outcome Without claim-scoped failure, offload failure is indistinguishable from ordinary miss, unrelated error, or fallback recomputation. 
+
+victim_exclusion_before_violation Without victim exclusion, hard protection collapses to soft priority under pressure unless another explicit contract transition occurs first. 
+
+explicit_conflict_action Explicit active/resident conflict action: refusal, defer, route elsewhere, bound active KV, offload, split/recompute, or explicit claim relaxation/demotion when the contract permits it. 
+
+blocking_claim_ids Without blocking ids, the chosen conflict action cannot be attributed to the resident claim that caused infeasibility. 
+
+claim_harm_attribution Without harm attribution, predicate-breaking loss is ordinary cache loss, not claim harm. 
+
+claim_scoped_telemetry Without claim-scoped telemetry, observations cannot become claim outcomes. 
+
+priority_influence Soft priority requires evidence that priority affects policy, not merely that a field exists. 
+
+route_cost_attribution Without route cost attribution, routing cannot report what cost was paid to preserve or reuse a claim. 
+
+placement_attribution Without placement attribution, worker choice is orchestration state, not a claim action. 
+
+reuse_routing_attribution Without reuse attribution, later hit/miss behavior cannot be assigned to the routed claim path. The checker keeps the older key active_refusal_or_defer only as a backward-compatible alias for explicit_ 
+
+4conflict_action ; the manuscript tables and descriptions use the latter name. The current checker groups these obligations into mode bundles. Each bundle is defined in modes.yaml ; the checker test used here is: • best_effort : claim identity, a fixed materialization predicate, and claim-scoped materialization telemetry. Raw stored/removed block events are not enough. • soft_priority : claim identity, priority influence, claim-scoped telemetry, and anchored pressure observations. Priority values or duration fields alone are not enough. • hard_protected : explicit accepted-claim responsibility, footprint accounting, victim exclusion before viola-tion, an explicit conflict action, blocking claim ids, harm attribution, and order. Refusal/defer is one valid implementation path, not the only one: routing elsewhere, bounding active KV, offloading active or resident state, recompute/split, or explicit relaxation/demotion can satisfy the action-space obligation only if the de-scriptor claims that action and provides anchored evidence for it. Active no-evict for running requests is not enough. • demotable and expiring : an ordered claim-level responsibility boundary before loss. Priority updates, lower cache levels, or wall-clock arithmetic are not enough. • offloadable : restoration before predicate-satisfying reuse and a claim-scoped restoration-failure outcome. Storage tiers, prefetch, write-back, load-back, transfer counters, or generic failures are not enough. • routed_reuse : claim-scoped route cost, placement, and later reuse attribution. KV-aware routing or worker overlap scoring alone is not enough. 
+
+Evidence-to-obligation summary. 
+
+Mode Required obligations Allowed adapter/patch depth Accepted evidence shape Rejected false positive Evidence source class 
+
+best_effort Identity, predicate, materialized event, claim telemetry. 
+
+telemetry_join 
+
+or deeper under registry/join preconditions. Anchored block, token, or request evidence joined to a pre-registered claim and named predicate at a named observation point. Raw block stored/removed events. Source, trace, artifact-generated. 
+
+soft_priority Identity, priority influence, claim telemetry, and controlled pressure atoms. Native priority plus telemetry_ join for claim attribution. Original, swapped-priority, and equal-priority pressure controls with claim-scoped retention order. Priority value, duration field, or source-level priority API alone. Source, trace, controlled pressure. 
+
+hard_protected Identity, acceptance, predicate, footprint, victim exclusion, explicit conflict action, blocking ids, harm attribution, and order. 
+
+scheduler_hook 
+
+plus allocator_ hook , or 
+
+backend_patch 
+
+when the patch supplies both. Anchored conflict trace for the claimed action: refusal, defer, route elsewhere, bound active KV, offload, split/recompute, or explicit relax-ation/demotion. Active no-evict for the running request. Source, trace, failure injection, artifact-generated. 5Mode Required obligations Allowed adapter/patch depth Accepted evidence shape Rejected false positive Evidence source class 
+
+demotable Identity, acceptance, demotion before predicate-breaking loss, and order. 
+
+claim_registry 
+
+plus ordered lifecycle evidence, or 
+
+backend_patch .Claim-scoped demotion boundary before loss. Priority update, lower cache level, or post-hoc explanation. Source, trace, artifact-generated. 
+
+expiring Identity, acceptance, expiry boundary, and order. 
+
+claim_registry 
+
+plus ordered lifecycle evidence, or 
+
+backend_patch .Claim-scoped boundary where responsibility ends before later loss. TTL/duration metadata alone. Docs, source, trace. 
+
+offloadable Identity, acceptance, predicate, restorability, restoration-failure outcome, order, and harm attribution. 
+
+storage_ restorability 
+
+or backend_ patch .Restore-before-reuse success evidence plus claim-scoped restoration failure/refusal, demotion, expiry, or harm when restoration fails. Storage tier, generic transfer counters, fallback recompute, wrong-claim failure. Source, trace, failure injection, artifact-generated. 
+
+routed_reuse Identity, predicate, route cost, placement, reuse attribution, and telemetry. 
+
+routing_hook 
+
+or backend_ patch .Route decision, placement, and later reuse success/failure attributed to the accepted claim. KV-overlap routing score or worker choice alone. Docs, source, trace. Three kinds of “acceptance” must also be kept separate. Claim registration by an external adapter can be sufficient for selected observational rows if the claim is pre-registered and the join is unambiguous. Backend primitive acceptance, such as accepting a retention-priority field, shows only that a primitive was configured. ResidentClaim semantic acceptance requires enough obligations to treat the claim as runtime responsibility. 
+
+# 4. Lowering Relation and Checker 
+
+The core judgment is: 
+
+backend + adapter + evidence |= ResidentClaim mode 
+
+A backend/adapter/evidence tuple lowers a mode only if every required obligation for that mode is represented by the native backend or by an adapter whose depth and preconditions allow it to supply that obligation. Missing required obligations fail closed. The row becomes approximate , rejected , or unknown , depending on whether approximation signals exist, enforcement critical obligations are absent, or the evidence is inconclusive. The checker core is intentionally small: 
+
+O[m] = the obligation bundle required by mode m d = descriptor with native evidence d.native a = selected adapter depth and adapter evidence d.adapters[<= a] E = anchored evidence atoms from docs, source, traces, controls e = one native or adapter evidence item 
+
+6supports(e, o) true when e marks obligation o as supported and has a concrete anchor. anchored(e) true when e names an anchor kind, path or public source, and note. For trace evidence, the anchor must also preserve the relevant order and claim scope. depth_allowed(a, o) true when o is native, or adapter depth a is allowed to supply o and its required preconditions hold. Lower(d, a, E, m) iff for every o in O[m], there exists evidence e in d.native, d.adapters[<= a], or E such that supports(e, o), anchored(e), and depth_allowed(a, o). label(d, a, E, m): native_sound if Lower holds using native evidence only. sound_with_adapter if Lower holds using allowed adapter or backend-patch evidence under its stated trust boundary. rejected if the proposed mapping violates a forbidden lowering or misses enforcement-critical obligations. approximate if related primitives or approximation signals exist, but Lower does not hold. unknown if the evidence is inconclusive and no recognized approximation signal is exercised. 
+
+The checker does not require the exact event names used by the local vLLM patch. Equivalent runtime evidence can satisfy an obligation if it is anchored, ordered, claim-scoped, and supplied at an allowed adapter depth. The patch event names are one concrete witness, not a naming convention that public runtimes must copy. The implementation is a small Python checker over YAML mode definitions and backend descriptors. The artifact section gives the exact source, descriptor, and generated-output paths. capability descriptor  
+
+> native primitives + adapter depth
+> evidence atoms
+> docs, source, traces, controls anchors
+> commit, path, event order
+> mode obligation bundle
+> identity, predicate, lifecycle, outcome
+> fail-closed checker
+> native_sound
+> native backend conformance
+> sound_with_adapter
+> adapter or backend_patch under trust boundary
+> approximate / rejected / unknown
+> missing obligation, unsound mapping, or inconclusive evidence
+
+Figure 1: Fail-closed lowering pipeline The checker enforces seven rules: 
+
+Table 2: Fail-closed checker rules. 
+
+7Rule Consequence Approximation signals never satisfy obligations by themselves. Priority, duration, block events, storage tiers, and routing can make a row plausible without making it conformant. Obligations are evidence-gated. An obligation counts only when obligation_evidence 
+
+is supported and has an anchor. Observed evidence atoms must be anchored. Pressure atoms such as pressure_controls_observed 
+
+cannot upgrade a row without trace anchors. Evidence scope matters. Docs-only and source-inspection adapter rows do not become adapter-scoped positives without adequate runtime or conformance evidence. Adapter depth constrains obligations. Telemetry joins can reconstruct observations; they cannot create allocator, scheduler, routing, or restoration enforcement. Telemetry cannot create enforcement. Block events can describe what happened, but cannot create refusal, victim exclusion, blocking claim ids, or restoration failure outcomes. Ambiguity fails closed. Missing registry, unstable ids, cache-identity mismatch, partial event streams, duplicate ownership, and ambiguous event order do not produce claim outcomes. The generated matrix uses five labels: 
+
+Table 3: Checker labels and interpretation in this paper. 
+
+Checker label Meaning Interpretation in this paper 
+
+native_sound The backend natively satisfies all obligations for the mode without an adapter or patch. Native backend conformance. No current descriptor has this label. 
+
+sound_with_adapter A represented adapter, hook, or patch supplies all obligations under explicit trust assumptions and adequate evidence. Use a precise subtype, such as adapter-observational evidence, adapter-policy evidence under controlled pressure, or backend-patch mechanism. 
+
+approximate The backend exposes related primitives but misses at least one required obligation. Useful substrate, not ResidentClaim conformance. 
+
+rejected The proposed lowering would misrepresent the contract and must fail closed. Unsound mapping. 
+
+unknown Current evidence is inconclusive or the relevant primitive was not exercised. No classification claim yet. The label names are implementation vocabulary rather than a formal proof claim. In particular, native_sound and 
+
+sound_with_adapter mean that all required obligations are supported by curated, anchored descriptor evidence at the stated depth. They do not certify unaudited runtime paths. The risky label is sound_with_adapter , so the manuscript uses more precise phrases. Adapter-observational ev-idence reconstructs selected claim-scoped observations. Adapter-policy evidence under controlled pressure recon-structs selected policy behavior in the tested pressure regime. A backend-patch mechanism supplies obligations inside a modified runtime path. These are not interchangeable and none implies native backend conformance. 
+
+Descriptor-to-row examples. 
+
+8Positive row: TensorRT soft_priority + telemetry_join combines pre-registered claims, stable joins, priority assignment, pressure controls, and observed priority influence. For mode soft_priority at telemetry_join depth, those fields become adapter-policy evidence under controlled pressure. The checker label is sound_with_adapter ,but the row is positive only for the tested controlled pressure family; it is not native TensorRT conformance or hard protection. Approximate row: TensorRT claim_joined_offload + generic_onboard_counters has one claim-joined offload plus generic onboard counters. For offloadable , the row remains approximate because it lacks claim-joined restore-before-reuse and a restoration-failure outcome. Storage movement is useful substrate evidence, not offloadable ResidentClaim conformance. 
+
+# 5. Adapter Depths and Trust Boundaries 
+
+The adapter boundary is part of the result because an adapter is part of the trusted computing base for any adapter-scoped row. The current depth ladder is: 
+
+Table 4: Adapter depths and trust boundaries. 
+
+Adapter depth Meaning in this study 
+
+none Only native backend obligations count. 
+
+telemetry_join External registry and deterministic request/cache/event joins reconstruct selected observations. 
+
+claim_registry Accepted claim state is represented outside the backend or at a shallow integration point. 
+
+storage_restorability Storage/load-back hooks can report claim-scoped restoration success and failure. 
+
+routing_hook Routing hooks can attribute route cost, placement, and later reuse to claims. 
+
+scheduler_hook Scheduler hooks can emit an explicit active/resident conflict action and report blocking claim ids. 
+
+allocator_hook Allocator hooks can exclude accepted claim victims before violation. 
+
+backend_patch A modified backend path supplies the represented obligations. The telemetry_join depth is intentionally narrow. It can satisfy selected observational obligations only under these preconditions: 
+
+Table 5: Telemetry-join preconditions. 
+
+Preconditions for telemetry_join Required meaning External accepted-claim registry Claims are pre-registered before the events being classified. Stable claim id Claim identity is stable and distinct from backend request ids. Reusable object id The reusable KV object is named consistently. Fixed materialization predicate The adapter knows the predicate being evaluated, such as leading_prefix_at_least(k) .Deterministic request-token map Request construction is derived independently from tokenizer output. Fixed cache identity Joins are scoped to model, tokenizer/token-hash domain, runtime, namespace, adapter identity, and block size. 9Preconditions for telemetry_join Required meaning Named observation point Materialization is evaluated at a named event or time boundary. Joinable backend events Backend events expose enough block hashes, token ids, cache levels, and ordering to join to the predicate. Ambiguity fails closed Missing fields, duplicate owners, cache mismatch, post-hoc claim naming, and event ambiguity produce insufficient evidence. Telemetry-only adapters cannot satisfy enforcement obligations. They cannot create hard protection, victim exclu-sion, active conflict actions, blocking claim ids, demotion-before-loss, expiry boundaries, restoration failure outcomes, or claim harm. They can only make selected observations defensible when the join keys are trustworthy. The deeper adapter levels have analogous trust boundaries. They are stronger than telemetry joins only when the descriptor anchors the specific behavior claimed. 
+
+Deeper adapter trust boundaries. 
+
+Depth Preconditions for counting obligations What can go wrong Fail-closed handling 
+
+storage_restorability Claim is accepted before offload; store/load hooks name the same claim and cache identity; restoration is ordered before predicate-satisfying reuse; failure outcome is emitted before fallback or terminal handling. Hook can lie about media, race with reuse, lose load-failure events, or relabel fallback recompute as restoration. Missing order, wrong claim id, storage-only evidence, fallback recompute, or generic counters do not satisfy 
+
+offloadable .
+
+routing_hook Route decision sees the accepted claim; worker/cache namespace is fixed; route cost, placement, and later reuse are all attributed to the same claim and predicate. Router can optimize overlap without accepting responsibility, misattribute worker state, or lose later hit/miss attribution. Routing-only evidence remains approximate until all route, placement, and reuse obligations are claim scoped. 
+
+scheduler_hook Conflict is detected at a named active/resident boundary; the claimed action is emitted before terminal handling; blocking claim ids are stable and specific. Scheduler can emit post-hoc reasons, smear blocking ids across claims, race with termination, or report refusal without the claimed resident cause. The checker requires evidence for whichever conflict action is claimed. Ambiguous or smeared attribution fails closed. 
+
+allocator_hook Allocator exposes the victim candidate set, protected resident footprint, and ordered exclusion or release before predicate-breaking loss. Allocator can hide victims, race with compaction, report aggregate pressure only, or lose protected-victim identity. Hard-protection rows remain rejected without victim exclusion or an explicit alternative contract transition. 10 Depth Preconditions for counting obligations What can go wrong Fail-closed handling 
+
+backend_patch Patch stack and imported source are identified; patched code lies on the exercised runtime path; adjacent hooks not used by the claim are absent or disabled; analyzer checks order and identity after the run. Patch can bypass the real path, rely on adjacent instrumentation, misattribute claims, or overstate coverage beyond the exercised branch. Patch evidence is a backend-patch witness only, not native support; the row counts only anchored obligations supplied by the patch and exercised trace. Adapter composition is conjunctive and fail-closed. Selecting a deeper adapter depth permits obligations from shallower represented adapters only when each obligation has anchored evidence at a depth allowed to supply it. For hard_protected , scheduler_hook + allocator_hook means both sides are required: scheduler evidence may supply the explicit conflict action and blocking claim ids, while allocator evidence must separately supply victim exclusion before violation. Telemetry joins cannot fill either enforcement role, and a scheduler-only or allocator-only row remains rejected unless an explicit alternative contract transition supplies the missing obligation. These trust assumptions are part of the result. An adapter can lie, race, drop events, or misattribute claims. The checker cannot prove such failures absent; it handles them by refusing to upgrade ambiguous evidence into a claim outcome. 
+
+# 6. External Runtime Boundary Studies 
+
+The central result is a semantic lowering table, not a feature compatibility chart. It summarizes the generated matrix and the boundary memos without treating feature names as conformance. 
+
+Table 6: Runtime boundary study summary. 
+
+Substrate Best current evidence Fail-closed boundary Patched vLLM connector/scheduler boundary 
+
+backend_patch witness for the 
+
+offloadable lifecycle/outcome bundle. Not upstream/native vLLM support, not production offload performance, and not pre-admission scheduler refusal. TensorRT-LLM Adapter-observational best_effort 
+
+and adapter-policy soft_priority 
+
+under controlled pressure. Active no-evict and storage movement do not supply future-resident hard protection or offloadable outcomes. SGLang/HiCache Adapter-observational best_effort 
+
+under explicit telemetry-join preconditions. Storage tiers and cached-token telemetry do not supply claim-scoped restoration success/failure. Dynamo-style routing Docs-backed boundary evidence and routing comparator. KV-aware routing alone lacks claim identity, route cost, placement, and later reuse attribution. 
+
+# 6.1 TensorRT-LLM 
+
+TensorRT-LLM is the strongest public-runtime boundary study in this artifact set. The audited source descriptor at commit 06cff70502 records priority, duration, KV events, host secondary cache, and active no-evict mechanisms as substrates. The executable container descriptors represent the official TensorRT-LLM 1.3.0rc14 and 1.3.0rc15 11 release containers separately, with runtime traces for block-event telemetry, priority/duration assignment, controlled soft-priority pressure, duration boundary probing, active no-evict, and corrected adaptive block-tier movement. The positive TensorRT rows are adapter-scoped. The best_effort + telemetry_join row reconstructs material-ization for selected leading-prefix claims from an external registry, tokenizer-derived request map, cache identity, named observation point, and joinable block/token events. The soft_priority + telemetry_join row is adapter-policy evidence under controlled pressure: original trials lost lower-priority prompt B first in 5/5 runs, swapped trials lost lower-priority prompt A first in 5/5 runs, equal-priority trials lost both tracked prompts in the same first-loss event in 3/3 runs, both claims were joinable before pressure in 13/13 trials, no pre-pressure claim loss occurred in 13/13 trials, and materialization changes were reconstructable in 16/16 tracked loss claims. The negative rows are equally important. GUARANTEED_NO_EVICT is available and runnable, but the observed API/source scope is active-request scheduling: the trace emitted 103 KV events, all created or stored , and did not expose native future-resident claim identity, explicit conflict action, blocking claim ids, harm fields, or victim exclusion before violation. The checker therefore rejects native hard_protected and hard_protected + telemetry_join .Duration remains approximation. A duration boundary trace assigned a 15s short claim and a 60s long control, then applied pressure after the short duration and before the long duration. It observed 480 pressure events, 448 stored events, 32 removed events, and 995 removed block hashes, but no duration/expiry event fields and no joined loss for either duration claim. That is retention metadata, not a claim-scoped expiry boundary. Offload remains below the offloadable bar for public TensorRT evidence. A corrected May 25, 2026 TensorRT-LLM 1.3.0rc15 adaptive capture observed same-prompt block-hash tier movement: tracked assignment hashes moved from cache level 0 to 1 under pressure and back from 1 to 0 on before-removal same-prompt reuse. The corrected no-retention control shows this movement does not require retention config on either assignment or reuse. Different-prompt reuse did not onboard the tracked hashes, and post-removal same-prompt reuse stored/recomputed rather than restoring. This is runtime-observed block-tier movement substrate evidence, not ResidentClaim offloadable conformance: TensorRT still lacks accepted claim identity, a claim-scoped materialization predicate, restoration-failure outcome, and active/resident outcome attribution. 
+
+# 6.2 SGLang/HiCache 
+
+SGLang/HiCache is the calibrated storage comparator. Source inspection at bbe9c7e shows radix priority, lock/reference state, protected and evictable accounting, GPU/host/storage tiers, prefetch, write-back, load-back, storage success/failure flags, cached-token details, and block events. These are strong mechanisms, but most are request, page, hash, token, or cache-node scoped rather than claim-outcome scoped. The positive SGLang row is best_effort + telemetry_join . A model-level trace and fresh-process repeat used an external accepted-claim registry, a tokenizer-derived request-token map, cache identity, request cached-token telemetry, and native block events to reconstruct materialization for leading_prefix_at_least(17) . The cold shared-prefix request reported cached_tokens=0 , the warm shared-prefix request reported cached_tokens=35 , the salted wrong-prefix control reported cached_tokens=0 , and native event replay returned 100 BlockStored events. This is adapter-observational evidence, not native SGLang ResidentClaim support. The HiCache/storage row remains approximate. HiCache exposes real storage and load-back mechanics, but the current evidence does not report claim-scoped restoration success before reuse, restoration failure as re-fusal/demotion/expiry or harm, ordered offload lifecycle, or claim harm attribution. A guarded cached_tokens_ details.storage proxy can support storage-backed materialization observations, but its ceiling explicitly excludes restoration success/failure semantics. 
+
+# 6.3 Dynamo-Style Routing 
+
+Dynamo-style KV routing is included as a first-class boundary row because routing and placement are natural places to preserve future reuse. The public docs-backed descriptor records KV-aware routing, overlap and prefill-cost routing, worker KV event tracking, queue priority, and placement decisions as useful orchestration substrates. The 
+
+routed_reuse mode asks for more: claim-scoped route cost, placement attribution, later reuse-routing attribution, 12 materialization predicate, accepted claim identity, and claim-scoped telemetry. Those obligations are not shown in the current docs-backed evidence, so routing remains approximate rather than conformant. Dynamo would upgrade from routing comparator to ResidentClaim evidence only if it exposed claim-scoped route cost, placement attribution, and later reuse success/failure attribution for an accepted claim. 
+
+# 7. Patched vLLM Connector/Scheduler-Boundary Mechanism 
+
+The local patched vLLM connector/scheduler-boundary mechanism supplies the missing offloadable lifecy-cle/outcome witness at backend_patch depth. It patches the vLLM pydev OffloadingConnector path rather than replacing the offload path with a standalone simulator. Native vLLM supplies real in-process connector lookup, store/load job creation, worker transfer submission/completion, and failed-load propagation into the scheduler invalid-block path. The patch supplies ResidentClaim metadata, lifecycle joins, scheduler-boundary restoration failure telemetry, and claim-scoped outcome emission. patch metadata 
+
+> C, P, predicate
+> native connector path
+> lookup, jobs, transfer
+> invalid-KV-load boundary
+> same-claim load fails
+> patch fail-closed outcome
+> restoration_failed(C)
+> active_request_refused([C])
+> checker accepts
+> offloadable @ backend_patch
+
+Figure 2: Patched vLLM connector/scheduler-boundary witness The mechanism has three trust boundaries. Native vLLM supplies connector lookup, store/load job creation, worker transfer submission/completion, and failed-load propagation into scheduler invalid-block handling. The patch supplies the accepted claim metadata, lifecycle joins, controlled same-claim failure injection, scheduler-boundary restoration failure telemetry, and active outcome emission. The artifact analyzer supplies no runtime behavior; it only checks order, claim match, and controls after the run. This separation is why the row is a backend-patch witness rather than native support. In this mechanism, “accepted” means that pre-request claim metadata is accepted by the patched path before the relevant lifecycle events. It does not mean an upstream user-facing vLLM ResidentClaim API exists. “Refused” means the patched scheduler emits a fail-closed active outcome after same-claim restoration failure is detected at the invalid-KV-load path and before terminal error handling. The scheduler-side active-refusal event is not pre-admission scheduling refusal. “Scheduler-boundary” means the patched path emits the active outcome at vLLM’s invalid-KV-load handling bound-ary before terminal request-finished/error handling. It is not initial scheduling admission and not upstream/native scheduler API support. Failure injection is disabled unless the resident-claim load-failure flag is enabled. When enabled, the hook matches only CPU -> GPU transfers and can filter by claim id. Unclaimed generic failures require a separate flag. The decisive positive path is not “a request failed”; it is the ordered sequence: accepted claim metadata exists, the claim has been offloaded, reuse requires restoration, the matching CPU -> GPU load fails under controlled injection, scheduler invalid-block handling identifies the affected request, emits scheduler_resident_claim_restoration_failed , and emits scheduler_active_request_refused with that claim in blocking_claim_ids before the request-finished boundary. The previous connector-level resident_claim_restoration_failed and active_request_refused 
+
+events remain as downstream evidence. The witness tables use short aliases for layout; these are exact artifact event names and the observed failure reason: 
+
+E0 request_initialized E1 offload_lookup_result E2 offload_store_job_created E3 offload_worker_transfer_submitted E4 offload_worker_transfer_finished E5 resident_claim_offloaded E6 resident_claim_restore_required 
+
+13 E7 offload_load_job_created E8 resident_claim_restored E9 offload_job_completed E10 offload_request_finished_no_pending_jobs E11 offload_worker_load_failed E12 scheduler_resident_claim_restoration_failed E13 scheduler_active_request_refused E14 offload_request_finished_pending_jobs F0 controlled_resident_claim_cpu_to_gpu_load_failure 
+
+vLLM witness path A: successful offload/load observation. 
+
+Order Events What it establishes 1 E0 Claim metadata exists before the offload/load lifecycle. 2 E2, E3, E4 success, E5 Store/offload job and GPU-to-CPU transfer complete for the claim. 3 E0 reuse, E1 hit=448 Reuse lookup hits the offloaded claim footprint. 4 E6, E7 Restore/load is required before reuse can satisfy the predicate. 5 E3, E4 success, E8, E9 CPU-to-GPU restoration succeeds before reuse completion. 6 E10 plus summary served Reuse is served after predicate-satisfying cached tokens are restored. 
+
+vLLM witness path B: same-claim failure outcome. 
+
+Order Events What it establishes 1 E0 Claim metadata exists before lifecycle events. 2 E2, E3, E4 success, E5 The same claim was offloaded. 3 E1 hit=448, E6 Reuse lookup hits and restoration is required. 4 E7, E3, E4 failure F0 The CPU-to-GPU load failure is tied to the same claim. 5 E11 vLLM’s invalid-KV-load path has affected block evidence. 6 E12 with matching claim and 
+
+FINISHED_ERROR 
+
+Scheduler-boundary failure is claim-scoped. 7 E13 with 
+
+blocking_claim_ids=[C] 
+
+The active request is fail-closed because of the blocking claim. 8 E14 after E12/E13 The scheduler outcome occurs before terminal request-finished handling. 
+
+vLLM witness path C: multi-claim attribution control. 
+
+The clean attribution rerun creates two accepted ResidentClaim-shaped identities in one process. The non-target claim restores successfully through the offload/load path. The target claim arms controlled CPU -> GPU restoration 14 failure and receives scheduler-boundary scheduler_resident_claim_restoration_failed , scheduler_active_ request_refused , and blocking_claim_ids attribution. In 3/3 repetitions, scheduler events and blocking_ claim_ids named only the target claim; the non-target claim restored successfully in 3/3 repetitions and received 0/3 failure or refusal attributions. This is a target-attribution control for the backend-patch witness. It is not upstream/native vLLM support and not pre-admission refusal. The rerun provenance is deliberately narrow. The attribution summary is recorded in the paper artifact submod-ule at commit 558a069bd6fd897f4c5e7273e95d05f69c835a23 . The vLLM source tree was at 0b129d97135c1f01 cc907008b7c93ad65256ea64 with no uncommitted changes, and the imported vLLM module matched that source in 3/3 repetitions. The adjacent 0004 prefix-cache materialization hook emitted 0/3 events in the raw traces. The target-attribution result therefore depends on the clean 0001 –0003 connector and scheduler-boundary stack, not on the adjacent prefix-cache hook. Equivalent event names would be acceptable in another runtime. What matters is the anchored order: same accepted claim, offload, restore-required reuse, restore-before-reuse on success, and same-claim restoration failure becoming a claim-scoped fail-closed active outcome on failure. This mechanism is not native/upstream vLLM support. It is not scheduler-native pre-admission refusal, and it is not a production offload performance result. Its purpose is narrower and important: it demonstrates that the missing offload lifecycle/outcome obligations are implementable in a real connector path with scheduler-boundary invalid-load handling. 
+
+What would make public runtimes native? 
+
+Runtime family Native evidence the checker would accept TensorRT-LLM and SGLang/HiCache Accepted claim identity, a materialization predicate, ordered lifecycle events, and claim-scoped outcomes. For offload, the trace must also expose restore-before-reuse and a restoration-failure outcome. Dynamo-style routing Accepted claim identity, a materialization predicate, claim-scoped route cost, placement attribution, and later reuse success/failure attribution. Any public runtime Equivalent anchored evidence is enough; the checker requires obligation conformance, not the patch’s event names. 
+
+# 8. Evaluation 
+
+The evaluation answers four questions. The first two are matrix questions: does the checker reject false positives, and do studied runtimes natively satisfy the obligations under current public evidence? The second two are mechanism questions: can the missing offloadable semantics be implemented in a real runtime path, and is the mechanism stable in the tested setting with characterized artifact/analyzer costs but no production performance claim? 
+
+Table 7: Evaluation questions and answers. 
+
+Question Evidence used Answer Does the checker reject false positives? Generated matrix, bad-lowering counterexamples, descriptor provenance, independent TensorRT descriptor audit, and descriptor/evidence mutation controls. Yes. Feature-only mappings and small evidence mutations remain approximate, rejected, unknown, or invalid unless the required obligations and observed atoms are present. 15 Question Evidence used Answer Do studied runtimes natively satisfy the obligations under current public evidence? TensorRT-LLM, SGLang/HiCache, and Dynamo descriptors plus boundary studies. No native conformance is established. Public evidence supports substrates and selected adapter positives. Can the missing offloadable semantics be implemented in a real runtime path? Patched vLLM connector/scheduler-boundary run. Yes, at backend_patch depth: real in-process offload/load behavior carries claim metadata and same-claim restoration failure becomes a scheduler-boundary fail-closed active outcome. Is the mechanism stable in the tested setting? 131 repeated subprocess runs, 3 multi-claim attribution repetitions, and the common analyzer. Yes for the local semantic gate: 131/131 subprocesses completed with valid event sequences, and 3/3 multi-claim repetitions attributed failure/refusal only to the target claim. 
+
+# 8.1 Matrix Evaluation 
+
+The generated matrix contains no native_sound rows. This is expected. TensorRT-LLM and SGLang/HiCache produce selected adapter positives and many approximation rows. Dynamo routing produces approximation rows for routing/placement. The patched vLLM reference produces backend-patch witness rows only at backend_patch 
+
+depth for represented state-machine and connector obligations. The matrix is regenerated from manually curated descriptors and mode obligations, not edited by hand. The bad-lowering suite separately checks feature-table false positives against the same checker. The positive rows also have an explicit provenance index. The generated companion files results/descriptor-provenance.* in the artifact, mirrored as studies/lowering/results/descriptor-provenance.* in this worktree, keep the full per-obligation anchor list. The compact version uses obligation codes so each row can be traced to the obligation bundle: I=claim_identity , A=explicit_acceptance , P=materialization_predicate ,
+
+F=footprint_accounting , L=ordered_lifecycle_events , M=claim_materialized_event , D=claim_demoted_ before_loss , E=claim_expired_boundary , R=offload_restorability , RF=restoration_failure_outcome ,
+
+V=victim_exclusion_before_violation , X=explicit_conflict_action , B=blocking_claim_ids , H=claim_ harm_attribution , T=claim_scoped_telemetry , and Pr=priority_influence .
+
+Descriptor provenance for positive rows. 
+
+Descriptor path Mode / depth / evidence Anchor/result path Obligations Non-claim 
+
+capabilities/ sglang_hicache_ bbe9c7e.yaml best_effort /
+
+telemetry_join /
+
+litmus_trace results/sglang/ sglang_claim_ telemetry_ adapter_join_ summary.json ; fresh repeat I, P, M, T No native SGLang; no offloadable restoration outcome. 
+
+capabilities/ tensorrt_llm_1_3_ 0rc14_container. yaml best_effort /
+
+telemetry_join /
+
+litmus_trace adapters/tests/ test_telemetry_ join.py ; TensorRT L3 block-event summary I, P, M, T No native TensorRT; no hard/offloadable claim. 16 Descriptor path Mode / depth / evidence Anchor/result path Obligations Non-claim 
+
+capabilities/ tensorrt_llm_1_3_ 0rc14_container. yaml soft_priority /
+
+telemetry_join /
+
+litmus_trace results/tensorrt/ trt_soft_ priority_ pressure_ controls_summary. json ; claim-join summary I, Pr, T Controlled-pressure adapter-policy row only. 
+
+capabilities/ vllm_patched.yaml best_effort /
+
+backend_patch /
+
+conformance_trace artifacts/kv-residency-vllm-arbiter/ artifacts/ conformance/ results.json 
+
+I, P, M, T Patch witness; no upstream/native vLLM. 
+
+capabilities/ vllm_patched.yaml demotable /
+
+backend_patch /
+
+conformance_trace artifacts/kv-residency-vllm-arbiter/ artifacts/ conformance/ results.json 
+
+I, A, D, L Patch witness; no production performance. 
+
+capabilities/ vllm_patched.yaml expiring /
+
+backend_patch /
+
+conformance_trace artifacts/kv-residency-vllm-arbiter/ artifacts/ conformance/ results.json 
+
+I, A, E, L Patch witness; no upstream/native vLLM. 
+
+capabilities/ vllm_patched.yaml hard_protected /
+
+backend_patch /
+
+conformance_trace artifacts/kv-residency-vllm-arbiter/ artifacts/ conformance/ results.json 
+
+I, A, P, F, V, X, B, H, L Patch witness; not native admission. 
+
+capabilities/ vllm_patched.yaml offloadable /
+
+backend_patch /
+
+conformance_trace results/vllm_ scheduler_ boundary/ repetitions/ 20260522Tresident_ claim_scheduler_ boundary/ aggregate.json ;
+
+results/vllm-multi-claim-attribution-control.json 
+
+I, A, P, R, RF, L, H Connector patch witness; no produc-tion/upstream claim. As an audit control, the TensorRT rc14 descriptor has a reviewer-auditable independent descriptor pass at results/ tensorrt-rc14-independent-descriptor-audit.* . That pass re-derives all 14 TensorRT rc14 rows from the descriptor’s anchored obligation evidence, evidence atoms, mode obligations, adapter-depth rules, and preconditions without reading results/lowering-matrix.* as the answer. It agrees with the descriptor checker rows in 14/14 cases, including the two positive adapter rows and the rejected hard_protected rows. This is an independent audit over curated evidence, not proof that TensorRT-LLM behavior is complete. 17 8.2 Descriptor Mutation Controls 
+
+The descriptor/evidence mutation controls address the self-certification objection directly. They mutate positive descriptor rows or replay near-miss runtime summaries and require fail-closed behavior. The generated controls pass in 16/16 cases. The mutations cover anchor deletion or empty anchors, supported evidence changed to partial/unknown/missing, ob-served pressure atoms without anchors, adapter scope weakened to docs-only or source-inspection, missing telemetry-join preconditions, routing-only evidence, wrong claim id failure attribution, post-hoc claim naming, restore-after-reuse ordering, fallback recompute, generic counters, storage-only offload evidence, and routing-only evidence. This establishes a narrow property: the checker and runtime gates are sensitive to small evidence, identity, order, precondition, adapter-scope, and source-shape mutations that would otherwise create false positives. It does not prove that descriptors are independently complete. Descriptors remain curated evidence summaries, and unaudited runtime behavior remains outside the proof boundary. 
+
+# 8.3 Connector Repetition Results 
+
+The repeated connector evaluation ran the artifact harness in subprocesses against the local patched vLLM pydev source. It used the real connector path in small in-process runs. The artifact section lists the canonical artifact aggregate and manifest. 
+
+Table 8: Connector repetition semantic gates. 
+
+Gate Runs Result Interpretation Event-sequence validity 131 131/131 valid All subprocess runs produced analyzer-parseable event order. Positive observation path 30 30/30 observation passes Claim metadata flows through successful offload/load behavior. Same-claim failure outcome 30 30/30 failure-outcome passes Controlled CPU -> GPU 
+
+load failure for the accepted claim becomes scheduler-boundary fail-closed active outcome. False-positive controls 41 0/41 failure-outcome passes Ordinary offload without claim, unclaimed failure, wrong-claim failure, fallback recompute, and generic counters do not satisfy the gate. Timing, byte, and analyzer-latency numbers are artifact diagnostics rather than semantic gates; they are summarized in Appendix A. The clean multi-claim rerun adds attribution evidence that the broader repetition suite did not isolate. The target claim fails controlled CPU -> GPU restoration and receives scheduler-boundary restoration-failed/refused/blocking ids. The non-target claim restores successfully and receives no failure/refusal attribution. The gate passes in 3/3 repetitions. This is a backend-patch witness for target attribution, not upstream/native vLLM and not pre-admission refusal. 18 8.4 Interpretation 
+
+The repeated-run result is a stable semantic gate result. The same analyzer that accepts same-claim controlled failure rejects missing events, success-only observations as failure evidence, ordinary offload without ResidentClaim metadata, wrong claim ids, unclaimed failures, fallback recomputation, and generic counters. For claimed_load_ failure , all 30 repeated rows record the scheduler-side failure outcome, scheduler-side refusal, same-claim match, event-before-termination order, connector-level outcome, and no native scheduler admission refusal. That is the important property: the mechanism is falsifiable at the obligation boundary. 
+
+# 9. False Positive Counterexamples 
+
+The bad-lowering suite records feature-table inferences that a less strict study might accidentally call supported. Each case is checked against the same obligation relation as the main matrix. 
+
+Table 9: False-positive counterexamples. 
+
+Naive inference Checker result Why it fails 
+
+priority_value_in_event -> soft_priority approximate A priority value is block metadata unless priority influence and claim-scoped telemetry are both established. 
+
+active_no_evict -> future_resident hard_protected rejected Active no-evict can protect running requests without accepted future-resident claim identity, victim exclusion, explicit conflict action, blocking claim ids, or harm attribution. 
+
+duration_metadata -> expiring approximate Duration metadata does not report the claim-scoped boundary where responsibility ends. 
+
+storage_tier -> offloadable approximate Storage movement does not show restoration before reuse or claim-scoped restoration failure. 
+
+claim_joined_offload + generic_onboard_counters -> offloadable approximate Even a claim-joined offload plus generic onboard counters does not establish claim-joined restore-before-reuse or a restoration-failure outcome. 
+
+same_prompt_block_tier_movement -> offloadable approximate Corrected TensorRT rc15 rows observed same-prompt tracked hashes moving 0 -> 1 under pressure and 1 -> 0 before removal without retention config, but exposed no native claim identity, predicate, failure outcome, lifecycle, or harm/refusal/demotion/expiry attribution. 
+
+kv_aware_routing -> routed_reuse approximate Routing needs route cost, placement, and future reuse success/failure attributed to an accepted claim. 19 Naive inference Checker result Why it fails 
+
+block_removed -> claim_harm invalid lowering claim Removed blocks are ordinary cache behavior unless accepted claim identity, predicate-breaking loss, and claim harm attribution are present. fallback recompute after failed load -> restored offloadable claim rejected by connector gate Recomputing after a failed load is not evidence that the accepted offloaded claim was restored. wrong-claim or unclaimed load failure -> restoration failure outcome rejected by connector gate The failure must be tied to the same accepted claim; generic or wrong-claim failures are not claim outcomes. These counterexamples are central because they explain why negative rows are not merely missing evidence. Some lowerings would actively misrepresent the contract and must fail closed. 
+
+# 10. Limitations and Threats to Validity 
+
+Table 10: Limitations and consequences. 
+
+Limitation Consequence No native conformance is shown for public TensorRT-LLM, SGLang/HiCache, Dynamo, or upstream vLLM evidence. The positive claims are adapter-scoped or patch-scoped, not native backend support. The patched vLLM connector result is local backend_ patch evidence. It demonstrates implementability of the missing lifecycle/outcome mechanism, not upstream support. Refusal is scheduler-boundary at the invalid-KV-load handling boundary, not pre-admission. The paper does not claim upstream/native scheduler admission/refusal. Restoration failure uses controlled injection. The gate tests ordered same-claim failure handling, not arbitrary production failure coverage. The connector runs are small, in-process, and single-GPU. The results support semantic gate stability, not broad model/GPU/concurrency generality. TTFT and vLLM stat-logger connector metrics are unavailable. 
+
+disable_log_stats=True is required because of an OffloadingConnector metrics serialization issue. TensorRT runtime traces use specific container paths and pressure families. Do not generalize to every TensorRT version, backend, model, or workload. SGLang best_effort evidence is model-level adapter evidence. It does not upgrade HiCache storage to offloadable or native SGLang conformance. Dynamo evidence is docs-backed. It is a routing/placement boundary row, not a runtime conformance trace. Generated historical artifacts contain absolute local paths as provenance. Those fields are not portable commands and should be read as historical run metadata. Local vLLM patch content is provided as format patches. The patch is not an upstream branch and should be applied deliberately to a clean matching base. The most important non-claims are: 
+
+Table 11: Calibrated non-claims. 
+
+20 Do not claim Calibrated claim Upstream/native vLLM ResidentClaim support. A local patched vLLM connector mechanism supplies selected lifecycle/outcome obligations at backend_ patch depth. Native ResidentClaim conformance for TensorRT-LLM, SGLang/HiCache, or Dynamo. They expose strong substrates and selected adapter-observational or adapter-policy positives. No native conformance is shown. Host cache, storage tiers, or generic counters implement 
+
+offloadable .Offloadable requires restoration before reuse and a claim-scoped restoration-failure outcome. 
+
+GUARANTEED_NO_EVICT implements future-resident 
+
+hard_protected .The observed TensorRT no-evict path is active-request scoped. Production readiness or general serving-overhead bounds for the connector result. It is a small controlled semantic mechanism evaluation. The vLLM result is upstream/native scheduler admission. It is a local scheduler-boundary patch at invalid-KV-load handling, not pre-admission or upstream support. Routing implements routed_reuse . Routing remains an approximation until route cost, placement, and reuse are claim-attributed. 
+
+# 11. Related Work and Prior-Art Boundary 
+
+TensorRT-LLM is the closest primitive-level comparator. Its versioned KV-cache documentation describes cross-request reuse, prioritized LRU, retention priority/duration fields, and secondary-memory offload (NVIDIA TensorRT-LLM KV Cache System, commit 06cff70502 ). This paper treats those mechanisms as serious substrates. The boundary is that the public evidence does not expose accepted ResidentClaim identity, claim-scoped expiry, restoration-before-reuse, restoration-failure outcomes, or active-side conflict outcomes. SGLang/HiCache is the strongest storage/offload comparator. The audited HiCache documentation describes RadixAttention-derived prefix reuse, GPU/host/L3 tiers, local match, L3 prefetch, write-back policies, CPU-to-GPU transfer optimizations, and L3 backends including Mooncake and LMCache (SGLang HiCache design, commit 
+
+bbe9c7e ). Those mechanisms move toward useful future reuse, but request/page/hash/token scoped storage me-chanics are not, by themselves, claim-scoped restoration lifecycle outcomes. Dynamo-style KV-aware routing is the orchestration comparator. NVIDIA’s Dynamo router documentation de-scribes KV routing modes that use worker KV events, cache-overlap accounting, queue policy, prefill-cost modeling, and placement decisions (NVIDIA Dynamo Router Guide). The routed_reuse obligation bundle asks for a differ-ent boundary: route cost, placement, and later reuse must be attributed to an accepted claim and materialization predicate. Current public docs evidence supports a routing substrate, not ResidentClaim routed-reuse conformance. vLLM supplies the implementation substrate used by the positive witness. PagedAttention introduced block-structured KV memory management for LLM serving (Kwon et al., SOSP 2023), and vLLM documents automatic prefix caching for shared prefixes (vLLM APC documentation, 2025-08-07). The public vLLM offloading connector material describes asynchronous connector load/store behavior and CPU-backed offload (vLLM offloading connector blog, 2026-01-08; vLLM RFC #19854). The local mechanism in this paper uses those kinds of connector/scheduler surfaces as substrate while adding ResidentClaim identity and outcomes in a patch. A separate vLLM retention RFC confirms that priority/TTL-style retention is an active serving-community design topic, not a solved ResidentClaim contract (vLLM RFC #37003). Adjacent systems sharpen the non-claim. KVCache Cache in the Wild characterizes production reuse patterns and workload-aware KV eviction (Wang et al., arXiv:2506.02634). Continuum uses TTL-based KV retention for multi-turn agent scheduling (Li et al., arXiv:2511.02230). KVFlow uses workflow structure for prefix caching and prefetch in multi-agent workflows (Pan et al., arXiv:2507.07400). Marconi studies prefix caching for hybrid LLMs with reuse/cost-aware cache decisions (Pan et al., arXiv:2411.19379). Pie exposes programmable serving control, including KV-cache strategies, to application code (Gim et al., arXiv:2510.24051). Mooncake and LMCache make KV cache storage and transfer first-class system surfaces (Qin et al., ACM TOS 2025; Liu et al., arXiv:2510.09665). 21 Newer adjacent systems such as TokenCake, FlowKV, Tutti, and FlexKV further strengthen the non-claim boundary because they provide KV movement/scheduling/offload mechanisms; the distinction here is accepted-claim lifecycle and outcome conformance (Bian et al., arXiv:2510.18586; Li et al., arXiv:2504.03775; Qiu et al., arXiv:2605.03375; NVIDIA FlexKV documentation). These systems constrain broad novelty claims about future-reuse policy, workflow-aware cache management, and distributed KV storage. They are compatible with the narrower contribution here: a fail-closed conformance relation for accepted future-KV obligations and a patched systems witness for one missing offload lifecycle/outcome path. 
+
+# 12. Artifact Availability and Reproducibility Notes 
+
+The audit surface for this paper is the curated artifact repository resident-kv-lowering-artifact at commit 
+
+b9f82f456e56e48454a9b4e0c608c2c783d0cbdb :
+
+https://github.com/gustavgauge/resident-kv-lowering-artifact.git 
+
+The curated snapshot contains the checker, capability descriptors, generated matrix, bad-lowering counterexamples, selected runtime summaries, vLLM scheduler-boundary evidence, descriptor/evidence mutation controls, the multi-claim attribution control summary, and format patches. The key artifact paths are: • checker/ , checker/modes.yaml , and checker/generate_matrix.py 
+
+• capabilities/ for backend descriptors • results/lowering-matrix.md and results/lowering-matrix.json 
+
+• results/central-result-table.md 
+
+• bad_lowering/ and results/bad-lowering-counterexamples.* 
+
+• checker/generate_mutation_controls.py and results/descriptor-evidence-mutation-controls.* 
+
+• checker/generate_descriptor_provenance.py , results/descriptor-provenance.* , and results/ tensorrt-rc14-independent-descriptor-audit.* 
+
+• results/vllm-multi-claim-attribution-control.* 
+
+• results/vllm_scheduler_boundary/ for aggregate scheduler-boundary evidence • results/tensorrt/tensorrt_rc15_corrected_adaptive_restore/ for the corrected TensorRT rc15 retention-confound rerun and mechanical gate • vllm_patches/ for patches against vLLM base 9b9d5dbaab852a1c615fe83a7f92881d353503db 
+
+The curated snapshot also records two provenance identities: • arbiter branch resident-claim-lifecycle-outcome at commit prefix f2658451 
+
+• local vLLM patches through commit prefix 0b129d97 
+
+The artifact README records the full hashes. Generated historical evidence may preserve absolute local paths as provenance; those fields are not portable commands. The strengthened connector attribution evidence used in this revision is summarized in the public artifact as 
+
+results/vllm-multi-claim-attribution-control.* . The raw rerun provenance is the local paper artifact submodule artifacts/kv-residency-vllm-arbiter at commit 558a069bd6fd897f4c5e7273e95d05f69c835a23 .That rerun uses a clean vLLM 0001 –0003 patch stack at source head 0b129d97135c1f01cc907008b7c93ad6 5256ea64 ; the adjacent 0004 prefix-cache materialization hook is absent from the raw traces. In the curated artifact repository, use the README commands: 
+
+uv run --with pytest --with pyyaml pytest -q checker/tests bad_lowering/tests adapters/tests uv run --with pyyaml python checker/generate_matrix.py uv run --with pyyaml python checker/generate_mutation_controls.py uv run --with pyyaml python checker/generate_descriptor_provenance.py uv run --with pyyaml python bad_lowering/check_bad_lowerings.py 
+
+# Appendix A. Artifact Diagnostics 
+
+The semantic gates in the main evaluation are event order, claim identity, failure/refusal attribution, and false-positive rejection. The repeated connector artifacts also record timing, byte, and analyzer-cost diagnostics so 22 the evidence scale is inspectable. These diagnostics are not serving-overhead, TTFT, throughput, cache-hit, or production-performance results. For the claimed_load_failure row in the 30-run scheduler-boundary suite, median/p95 local diagnostics are: resident wall time 0.187152/0.204366 s, reuse wall time 0.003159/0.003468 s, event size 26,702/26,702 bytes, analyzer runtime 128,560/146,290 ns, failure-to-outcome latency 151,544/174,749 ns, and restoration_failed to active_ request_refused latency 80,319.5/92,189 ns. The 3-run multi-claim attribution control records 46,619/46,620 event bytes, 168,610/171,470 analyzer ns, 143,790/144,809 failure-to-outcome ns, and 74,560/74,760 restoration_ failed to active_request_refused ns. TTFT is unavailable because the connector runs use disable_log_stats=True to avoid a vLLM Offloading Connector metrics serialization assertion: the offload stats path stores OffloadingOperationMetrics objects while the reducer and Prometheus observer expect serialized dictionaries. The lower wall time in some success-path rows is not a speedup result. 
+
+# 13. Conclusion 
+
+ResidentClaim lowering is an obligation problem, not a feature-name problem. TensorRT-LLM, SGLang/HiCache, Dynamo-style routing, and vLLM connector paths all expose useful KV mechanisms, but useful mechanisms do not automatically become accepted future-KV obligations. The fail-closed checker and boundary studies show how the artifact makes that distinction mechanically for manually curated, anchored descriptors: adapter-scoped observations can be positive under explicit preconditions, storage and routing can remain useful substrates without becoming conformance, and unsound feature-table lowerings can be rejected. The calibrated systems result is the local patched vLLM connector/scheduler-boundary mechanism. It carries claim metadata through a real connector path and reports same-claim restoration failure as a scheduler-boundary claim-scoped outcome followed by fail-closed active refusal at the invalid-KV-load branch under controlled load failure. That is enough to demonstrate implementability of the missing offload lifecycle/outcome semantics at patch depth, while preserving the boundary that public runtime primitives, by themselves, do not establish native ResidentClaim conformance. 
+
+# 14. References 
+
+• Woosuk Kwon et al. “Efficient Memory Management for Large Language Model Serving with PagedAttention.” SOSP 2023. DOI: https://doi.org/10.1145/3600006.3613165. • NVIDIA. “TensorRT-LLM KV Cache System.” Versioned documentation at commit 06cff70502 , accessed 2026-05-23. https://github.com/NVIDIA/TensorRT-LLM/blob/06cff70502/docs/source/features/kvcache.m d. • SGLang Project. “HiCache System Design and Optimization.” Versioned documentation at commit bbe9c7e ,accessed 2026-05-23. https://github.com/sgl-project/sglang/blob/bbe9c7e/docs/advanced_features/hicache _design.md. • NVIDIA. “Dynamo Router Guide.” Documentation, accessed 2026-05-23. https://docs.nvidia.com/dynamo /user-guides/kv-cache-aware-routing. • vLLM Project. “Automatic Prefix Caching.” Documentation dated 2025-08-07, accessed 2026-05-23. https: //docs.vllm.ai/en/v0.10.1/features/automatic_prefix_caching.html. • vLLM Project. “Inside vLLM’s New KV Offloading Connector: Smarter Memory Transfer for Maximizing Inference Throughput.” Blog post dated 2026-01-08, accessed 2026-05-23. https://vllm.ai/blog/2026-01-08-kv-offloading-connector. • vLLM Project. “[RFC]: KV cache offloading.” GitHub issue #19854, opened 2025-06-19, accessed 2026-05-23. https://github.com/vllm-project/vllm/issues/19854. • vLLM Project. “[RFC]: Context-Aware KV-Cache Retention API (Prioritized Evictions).” GitHub issue #37003, opened 2026-03-13, accessed 2026-05-23. https://github.com/vllm-project/vllm/issues/37003. • Jiahao Wang et al. “KVCache Cache in the Wild: Characterizing and Optimizing KVCache Cache at a Large Cloud Provider.” arXiv:2506.02634, 2025. https://doi.org/10.48550/arXiv.2506.02634. • Hanchen Li et al. “Continuum: Efficient and Robust Multi-Turn LLM Agent Scheduling with KV Cache Time-to-Live.” arXiv:2511.02230, 2025. https://doi.org/10.48550/arXiv.2511.02230. 23 • Zaifeng Pan et al. “KVFlow: Efficient Prefix Caching for Accelerating LLM-Based Multi-Agent Workflows.” arXiv:2507.07400, 2025. https://doi.org/10.48550/arXiv.2507.07400. • Rui Pan et al. “Marconi: Prefix Caching for the Era of Hybrid LLMs.” arXiv:2411.19379, 2024. https: //doi.org/10.48550/arXiv.2411.19379. • In Gim et al. “Pie: A Programmable Serving System for Emerging LLM Applications.” arXiv:2510.24051, 2025. https://doi.org/10.48550/arXiv.2510.24051. • Ruoyu Qin et al. “Mooncake: A KVCache-centric Disaggregated Architecture for LLM Serving.” ACM Trans-actions on Storage, 2025. https://doi.org/10.1145/3773772. • Yuhan Liu et al. “LMCache: An Efficient KV Cache Layer for Enterprise-Scale LLM Inference.” arXiv:2510.09665, 2025. https://doi.org/10.48550/arXiv.2510.09665. • Zhuohang Bian et al. “TokenCake: A KV-Cache-centric Serving Framework for LLM-based Multi-Agent Applications.” arXiv:2510.18586, 2025. https://doi.org/10.48550/arXiv.2510.18586. • Weiqing Li et al. “FlowKV: A Disaggregated Inference Framework with Low-Latency KV Cache Transfer and Load-Aware Scheduling.” arXiv:2504.03775, 2025. https://doi.org/10.48550/arXiv.2504.03775. • Shi Qiu et al. “Tutti: Making SSD-Backed KV Cache Practical for Long-Context LLM Serving.” arXiv:2605.03375, 2026. https://doi.org/10.48550/arXiv.2605.03375. • NVIDIA. “FlexKV.” Dynamo documentation, accessed 2026-05-23. https://docs.nvidia.com/dynamo/integra tions/flex-kv. 24

@@ -6,29 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-07
-- 运行时间：2026-06-07 20:52:19 UTC
+- 最新运行日期：2026-06-08
+- 运行时间：2026-06-08 21:35:42 UTC
 - 运行状态：成功
-- 本次总论文数：2
+- 本次总论文数：1
 - 精读区：0
-- 速读区：2
+- 速读区：1
 
 ### 今日简报（AI）
-今日速读2篇论文，聚焦大语言模型效率优化与KV缓存管理。  
-最值得关注的是文本引导的KV缓存淘汰方法（TGV-KV，7分）与近无损熵压缩技术（Entropy Gate，6分）。  
-建议优先精读TGV-KV，了解其如何结合文本线索实现视觉语言模型的显存压缩。
-- 详情：[/202606/07/README](/202606/07/README)
+今日速读1篇，聚焦LLM服务运行时中KV缓存的安全降级机制。  
+论文提出“故障关闭”方法防止KV声明越界，对推理安全与资源隔离有重要参考价值。  
+建议关注KV缓存隔离技术，以提升大模型服务在生产环境下的鲁棒性。
+- 详情：[/202606/08/README](/202606/08/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [TGV-KV: Text-Grounded KV Eviction for Vision-Language Models](/202606/07/2606.03075v1-tgv-kv-text-grounded-kv-eviction-for-vision-language-models)  
+1. [Fail-Closed Lowering of Resident KV Claims onto LLM Serving Runtimes](/202606/08/2606.01387v1-fail-closed-lowering-of-resident-kv-claims-onto-llm-serving-runtimes)  
    标签：评分：7.0/10、query:pic
-   evidence：面向视觉语言模型的文本引导KV缓存驱逐
-2. [Entropy Gate: Entropy Quenching for Near-Lossless Token Compression in LLM Pipelines](/202606/07/2606.03739v1-entropy-gate-entropy-quenching-for-near-lossless-token-compression-in-llm-pipelines)  
-   标签：评分：6.0/10、query:pic
-   evidence：令牌压缩用于长上下文加速
+   evidence：形式化KV重用声明与运行时原语
 
 
 <div class="dpr-home-promo-card">

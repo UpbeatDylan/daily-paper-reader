@@ -1,0 +1,52 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-08T21:34:37.232510+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2606.01387v1",
+      "source": "arxiv",
+      "title": "Fail-Closed Lowering of Resident KV Claims onto LLM Serving Runtimes",
+      "abstract": "LLM serving runtimes increasingly expose KV-cache primitives that resemble future-reuse controls: retention priority, TTL-like duration, host or storage offload, block events, active no-evict scheduling, and KV-aware routing. This paper argues that such primitives are weaker than accepted future-KV obligations. A runtime can expose priority, offload, events, and routing without accepting responsibility for a future reuse claim. We study ResidentClaim lowering: when a runtime primitive, trusted adapter, or patch can be treated as satisfying an accepted claim about future KV reuse. A conformant lowering must bind behavior to accepted claim identity, a materialization predicate, ordered lifecycle events, and claim-scoped outcomes. We contribute a fail-closed lowering relation, checker, descriptor format, and bad-lowering suite that classify runtime/mode mappings as native conformance, adapter-observational evidence, adapter-policy evidence under controlled pressure, approximation substrate, rejected mapping, or unknown evidence. The checker validates manually curated, anchored runtime descriptors against obligation bundles; it does not prove that unaudited runtime behavior is complete. Public TensorRT-LLM, SGLang/HiCache, and Dynamo expose strong substrates and selected adapter positives, but not native ResidentClaim conformance. The positive systems witness is a local patched vLLM connector/scheduler-boundary mechanism: claim metadata flows through real in-process offload/load behavior, and controlled same-claim restoration failure reaches vLLM's invalid-KV-load path and becomes an ordered claim-scoped fail-closed outcome. The result is a calibrated semantics boundary, not a production performance claim or a compatibility survey.",
+      "authors": [
+        "Lukas Stepanek"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-05-31T18:23:21+00:00",
+      "link": "https://arxiv.org/pdf/2606.01387v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "formalizing KV reuse claims and runtime primitives",
+      "llm_evidence_cn": "形式化KV重用声明与运行时原语",
+      "llm_evidence": "形式化KV重用声明与运行时原语",
+      "canonical_evidence": "形式化KV重用声明与运行时原语",
+      "llm_tldr_en": "Fail-Closed Lowering formalizes resident KV cache reuse obligations, defining how runtime primitives can satisfy future reuse claims to ensure correct behavior.",
+      "llm_tldr_cn": "本文讨论LLM服务运行时KV缓存原语（如保留优先级、TTL、卸载）与未来重用声明之间的差距。提出ResidentClaim降低模型，要求运行时原语绑定声明标识、实例化谓词和生命周期事件，确保满足重用承诺。该工作为KV缓存重用提供了理论框架，但属于概念性贡献。",
+      "llm_tldr": "本文讨论LLM服务运行时KV缓存原语（如保留优先级、TTL、卸载）与未来重用声明之间的差距。提出ResidentClaim降低模型，要求运行时原语绑定声明标识、实例化谓词和生命周期事件，确保满足重用承诺。该工作为KV缓存重用提供了理论框架，但属于概念性贡献。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

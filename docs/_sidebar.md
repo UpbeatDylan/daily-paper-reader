@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-06-08 <!--dpr-date:20260608-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/08/2606.01387v1-fail-closed-lowering-of-resident-kv-claims-onto-llm-serving-runtimes" data-sidebar-item="{&quot;title&quot;: &quot;Fail-Closed Lowering of Resident KV Claims onto LLM Serving Runtimes&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.01387v1-fail-closed-lowering-of-resident-kv-claims-onto-llm-serving-runtimes&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;形式化KV重用声明与运行时原语&quot;}">Fail-Closed Lowering of Resident KV Claims onto LLM Serving Runtimes</a>
   * 2026-06-07 <!--dpr-date:20260607-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/07/2606.03075v1-tgv-kv-text-grounded-kv-eviction-for-vision-language-models" data-sidebar-item="{&quot;title&quot;: &quot;TGV-KV: Text-Grounded KV Eviction for Vision-Language Models&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.03075v1-tgv-kv-text-grounded-kv-eviction-for-vision-language-models&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;面向视觉语言模型的文本引导KV缓存驱逐&quot;}">TGV-KV: Text-Grounded KV Eviction for Vision-Language Models</a>
