@@ -6,50 +6,49 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-09
-- 运行时间：2026-06-09 21:54:46 UTC
+- 最新运行日期：2026-06-10
+- 运行时间：2026-06-10 22:09:42 UTC
 - 运行状态：成功
-- 本次总论文数：10
-- 精读区：5
-- 速读区：5
+- 本次总论文数：9
+- 精读区：6
+- 速读区：3
 
 ### 今日简报（AI）
-今日重点报道LLM推理优化中稀疏注意力与KV缓存技术突破，以及多模态推理框架新进展。精读推荐《SparseX》的交错服务段级缓存共享和《FlashMemory-DeepSeek-V4》的闪电索引超长上下文稀疏注意力，均获9.0高分。建议关注稀疏预填充在混合长上下文模型中的进一步探索，如《How Much Dense Attention is Necessary?》提出的Oracle引导方法。
-- 详情：[/202606/09/README](/202606/09/README)
+今日精读两篇9分论文，聚焦长上下文稀疏注意力与Agent推理的KV缓存优化。  
+最值得看方向：FlashMemory的稀疏注意力实现超长上下文，IntentKV的跨轮意图剪枝提升智能体推理效率。  
+建议关注KV缓存管理在推理模型中的实际应用，可从这两篇论文的代码复现入手。
+- 详情：[/202606/10/README](/202606/10/README)
 
 ### 精读区论文标签
-1. [SparseX: Efficient Segment-Level KV Cache Sharing for Interleaved LLM Serving](/202606/09/2606.01751v2-sparsex-efficient-segment-level-kv-cache-sharing-for-interleaved-llm-serving)  
+1. [FlashMemory-DeepSeek-V4: Lightning Index Ultra-Long Context via Lookahead Sparse Attention](/202606/10/2606.09079v2-flashmemory-deepseek-v4-lightning-index-ultra-long-context-via-lookahead-sparse-attention)  
    标签：评分：9.0/10、query:pic
-   evidence：段级KV缓存共享处理交错服务中的非前缀重复内容
-2. [FlashMemory-DeepSeek-V4: Lightning Index Ultra-Long Context via Lookahead Sparse Attention](/202606/09/2606.09079v1-flashmemory-deepseek-v4-lightning-index-ultra-long-context-via-lookahead-sparse-attention)  
+   evidence：基于神经内存索引器的前瞻稀疏注意力实现长上下文加速
+2. [IntentKV: Cross-Turn Intent-Aware KV Cache Pruning for Agent Inference](/202606/10/2606.09916v1-intentkv-cross-turn-intent-aware-kv-cache-pruning-for-agent-inference)  
    标签：评分：9.0/10、query:pic
-   evidence：前瞻稀疏注意力通过选择性KV缓存实现超长上下文
-3. [From Rigid to Dynamic: Entropy-Guided Adaptive Inference for Long-Context LLMs](/202606/09/2606.09508v1-from-rigid-to-dynamic-entropy-guided-adaptive-inference-for-long-context-llms)  
+   evidence：面向多轮代理的KV缓存剪枝
+3. [Prefilling-dLLM: Predictive Prefilling for Long-Context Inference in Diffusion Language Models](/202606/10/2606.10537v1-prefilling-dllm-predictive-prefilling-for-long-context-inference-in-diffusion-language-models)  
    标签：评分：9.0/10、query:pic
-   evidence：熵引导自适应稀疏注意力和KV缓存压缩用于长上下文LLM
-4. [Semantic Cache Distillation: Efficient State Transfer via Reuse and Selective Patching](/202606/09/2606.07684v1-semantic-cache-distillation-efficient-state-transfer-via-reuse-and-selective-patching)  
+   evidence：通过分块级KV缓存和稀疏预填充加速长上下文推理
+4. [Express Language Modeling](/202606/10/2606.10944v1-express-language-modeling)  
+   标签：评分：9.0/10、query:pic
+   evidence：注意力近似转换用于KV缓存压缩和长上下文预填充
+5. [RKSC: Reasoning-Aware KV Cache Sharing and Confident Early Exit for Multi-Step LLM Inference](/202606/10/2606.09937v1-rksc-reasoning-aware-kv-cache-sharing-and-confident-early-exit-for-multi-step-llm-inference)  
    标签：评分：8.0/10、query:pic
-   evidence：通过重用和选择性补丁实现KV缓存蒸馏以高效传输状态
-5. [End-to-End Context Compression at Scale](/202606/09/2606.09659v1-end-to-end-context-compression-at-scale)  
+   evidence：通过语义相似度将精确前缀缓存泛化为可共享前缀，实现KV缓存复用
+6. [Parallel Causal Associative Fields: Gated Sparse Memory for Long-Context Language Modeling](/202606/10/2606.10435v1-parallel-causal-associative-fields-gated-sparse-memory-for-long-context-language-modeling)  
    标签：评分：8.0/10、query:pic
-   evidence：针对长上下文推理的上下文压缩
+   evidence：用于长上下文语言建模的并行内容寻址稀疏缓存
 
 ### 速读区论文标签
-1. [How Much Dense Attention is Necessary? Oracle-Guided Sparse Prefill for Full/GQA Layers in Hybrid Long-Context Models](/202606/09/2606.07703v1-how-much-dense-attention-is-necessary-oracle-guided-sparse-prefill-for-fullgqa-layers-in-hybrid-long-context-models)  
-   标签：评分：7.0/10、query:pic
-   evidence：基于oracle的稀疏预填充，降低长上下文预填充开销
-2. [Still: Amortized KV Cache Compaction in a Single Forward Pass](/202606/09/2606.07878v1-still-amortized-kv-cache-compaction-in-a-single-forward-pass)  
-   标签：评分：7.0/10、query:pic
-   evidence：单次前向的KV缓存压缩用于长上下文部署
-3. [vla.cpp: A Unified Inference Runtime for Vision-Language-Action Models](/202606/09/2606.08094v1-vlacpp-a-unified-inference-runtime-for-vision-language-action-models)  
-   标签：评分：7.0/10、query:pic
-   evidence：缓存视觉-语言前缀用于VLA推理，类似前缀缓存
-4. [SpectrumKV: Per-Token Mixed-Precision KV Cache Transfer for Prefill-Decode Disaggregated LLM Serving](/202606/09/2606.08635v1-spectrumkv-per-token-mixed-precision-kv-cache-transfer-for-prefill-decode-disaggregated-llm-serving)  
+1. [ReasonAlloc: Hierarchical Decoding-Time KV Cache Budget Allocation for Reasoning Models](/202606/10/2606.11164v1-reasonalloc-hierarchical-decoding-time-kv-cache-budget-allocation-for-reasoning-models)  
+   标签：评分：8.0/10、query:pic
+   evidence：提出面向推理模型的分层解码时KV缓存预算分配方法
+2. [SpectrumKV: Per-Token Mixed-Precision KV Cache Transfer for Prefill-Decode Disaggregated LLM Serving](/202606/10/2606.08635v1-spectrumkv-per-token-mixed-precision-kv-cache-transfer-for-prefill-decode-disaggregated-llm-serving)  
    标签：评分：7.0/10、query:pic
    evidence：面向分离式服务的混合精度KV缓存传输
-5. [BUDDY: BUdget-Driven DYnamic Depth Routing for Adaptive Large Language Model Inference](/202606/09/2606.09514v1-buddy-budget-driven-dynamic-depth-routing-for-adaptive-large-language-model-inference)  
-   标签：评分：6.0/10、query:pic
-   evidence：动态深度路由中重用第一层KV缓存作为全局上下文
+3. [FadeMem: Distance-Aware Memory Consolidation for Autoregressive Video Diffusion](/202606/10/2606.10671v1-fademem-distance-aware-memory-consolidation-for-autoregressive-video-diffusion)  
+   标签：评分：7.0/10、query:pic
+   evidence：用于长视频生成的距离感知KV记忆整合
 
 
 <div class="dpr-home-promo-card">
