@@ -1,0 +1,225 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-11T21:55:04.709708+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2606.10650v1",
+      "source": "arxiv",
+      "title": "Dynamic Linear Attention",
+      "abstract": "The scalability of Large Language Models (LLMs) to long contexts is fundamentally constrained by the quadratic complexity of standard attention, motivating the adoption of linear attention mechanisms with sub-quadratic cost. To improve representation capacity under long contexts, recent approaches organize memory in a multi-state manner. However, existing multi-state linear attention methods rely on fixed state merging policies that cannot adapt to dynamically varying token importance, irreversibly obscuring critical tokens and causing severe error accumulation over long sequences. To address this limitation, we propose DLA, a dynamic memory modeling framework for multi-state linear attention. DLA introduces (i) Information-Aware Dynamic State Merging, which adaptively determines state boundaries based on token-level information variation, preserving high-resolution representations around semantic transitions while aggressively summarizing stable regions, and (ii) Capacity-Bounded Memory Modeling, which maintains a fixed-size, chronologically ordered state cache by selectively merging adjacent low-information states to control memory growth with minimal information loss. We pre-train DLA on two different linear attention models and evaluate on 16 datasets across three categories. Experimental results demonstrate the superiority of DLA over state-of-the-art.",
+      "authors": [
+        "Xin Wang",
+        "Hui Shen",
+        "Boyuan Zheng",
+        "Xueshen Liu",
+        "Minkyoung Cho",
+        "Zhongwei Wan",
+        "Zesen Zhao",
+        "Zhuoqing Mao",
+        "Shen Yan",
+        "Mi Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-09T09:57:48+00:00",
+      "link": "https://arxiv.org/pdf/2606.10650v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "dynamic linear attention for long-context LLM",
+      "llm_evidence_cn": "面向长上下文LLM的动态线性注意力",
+      "llm_evidence": "面向长上下文LLM的动态线性注意力",
+      "canonical_evidence": "面向长上下文LLM的动态线性注意力",
+      "llm_tldr_en": "DLA introduces information-aware dynamic state merging for multi-state linear attention, reducing error accumulation in long sequences.",
+      "llm_tldr_cn": "DLA提出信息感知动态状态合并机制，自适应决定状态边界，避免因固定合并策略掩盖关键token，从而减少长序列中的误差累积。实验证明在长上下文语言建模中，DLA在保持线性复杂度的同时提升了性能。",
+      "llm_tldr": "DLA提出信息感知动态状态合并机制，自适应决定状态边界，避免因固定合并策略掩盖关键token，从而减少长序列中的误差累积。实验证明在长上下文语言建模中，DLA在保持线性复杂度的同时提升了性能。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.11634v1",
+      "source": "arxiv",
+      "title": "Architecture-Aware Reinforcement Learning Makes Sliding-Window Attention Competitive in Math Reasoning",
+      "abstract": "The rapid progress of reasoning and agentic large language models (LLMs) has increased the demand for long-context inference, but self-attention (SA) scales quadratically with context length.   To address this, we study SWARR (Sliding-Window Attention with Reinforced Adaptation for Math Reasoning), a practical recipe for adapting SWA models to mathematical reasoning. SWARR has two stages: (1) efficient conversion from a pretrained SA model to SWA with supervised fine-tuning (SFT), which avoids pretraining a new base model, and (2) policy adaptation with reinforcement learning (RL).   We find that SWA still underperforms SA after SFT, and we hypothesize that this gap is caused in part by a data-architecture mismatch: most SFT data are prepared for SA models and may contain long-range dependencies that are difficult for SWA to model. Because on-policy RL optimizes self-generated trajectories under the SWA constraint, it can adapt trajectories to better match SWA.   Experiments on mathematical reasoning benchmarks show that this recipe substantially narrows the gap between SWA and SA, recovering much of the accuracy lost during SWA conversion while preserving the efficiency benefits of linear-complexity attention. Our central contribution is the empirical finding that RL changes the conclusion one would draw from conversion and SFT alone about SWA's viability for math reasoning.",
+      "authors": [
+        "Kai Liu",
+        "Peijie Dong",
+        "Xinchen Xie",
+        "Jianfei Gao",
+        "Qipeng Guo",
+        "Xiaowen Chu",
+        "Shaoting Zhang",
+        "Kai Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-10T03:56:03+00:00",
+      "link": "https://arxiv.org/pdf/2606.11634v1",
+      "tags": [
+        "keyword:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "sliding-window attention for long-context inference acceleration",
+      "llm_evidence_cn": "滑动窗口注意力加速长上下文推理",
+      "llm_evidence": "滑动窗口注意力加速长上下文推理",
+      "canonical_evidence": "滑动窗口注意力加速长上下文推理",
+      "llm_tldr_en": "SWARR adapts sliding-window attention to math reasoning via RL, achieving competitive accuracy with self-attention while reducing KV cache memory.",
+      "llm_tldr_cn": "针对长上下文推理中自注意力二次复杂度问题，提出SWARR，通过监督微调将预训练模型转换为滑动窗口注意力，再通过强化学习策略适配，在数学推理任务上缩小与全注意力的差距，同时大幅降低KV缓存开销。",
+      "llm_tldr": "针对长上下文推理中自注意力二次复杂度问题，提出SWARR，通过监督微调将预训练模型转换为滑动窗口注意力，再通过强化学习策略适配，在数学推理任务上缩小与全注意力的差距，同时大幅降低KV缓存开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.10759v1",
+      "source": "arxiv",
+      "title": "miniReranker: Efficient Multimodal Reranking through Visual Cache Reuse and Interaction Sparsity",
+      "abstract": "Multimodal large language models (MLLMs) have recently shown strong potential as point-wise rerankers by directly modeling query--document relevance through next-token prediction. However, point-wise reranking suffers from substantial repeated computation across query--document pairs, while the causal structure of transformers allows only prefix segments to be reused via pre-caching. To address the misalignment of existing query-first and document-first formats with both VQA-style prompting and computation-aware reuse, we propose a \\textit{vision-first} formulation that improves both cache reuse efficiency and reranking performance. However, the remaining cost is still considerable and stems from three main sources: (1) \\textit{model depth}, for which we reduce active parameters via early exit; (2) \\textit{cross-segment attention}, which we restrict to a narrow interaction band across a few layers; and (3) \\textit{visual tokens}, where we reduce the number of tokens via embedder-guided pruning. Together, these designs form miniReranker, which reduces reranking runtime to <1% of the dense implementation under high-reuse settings for a single query, while preserving >96% of the dense model performance.",
+      "authors": [
+        "Yingqi Fan",
+        "Xuan Lu",
+        "Anhao Zhao",
+        "Junlong Tong",
+        "Ping Nie",
+        "Kai Zou",
+        "Yunpu Ma",
+        "Wei Zhang",
+        "Xiaoyu Shen"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR"
+      ],
+      "published": "2026-06-09T12:11:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.10759v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "visual cache reuse for efficient reranking with LLMs",
+      "llm_evidence_cn": "利用视觉缓存复用提升重排序效率",
+      "llm_evidence": "利用视觉缓存复用提升重排序效率",
+      "canonical_evidence": "利用视觉缓存复用提升重排序效率",
+      "llm_tldr_en": "Proposes vision-first formulation to improve cache reuse efficiency in multimodal reranking, addressing misalignment with VQA-style prompting.",
+      "llm_tldr_cn": "针对多模态重排序中重复计算问题，提出vision-first的提示格式，通过视觉缓存复用提升计算效率，同时不损失重排序性能。",
+      "llm_tldr": "针对多模态重排序中重复计算问题，提出vision-first的提示格式，通过视觉缓存复用提升计算效率，同时不损失重排序性能。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.11853v1",
+      "source": "arxiv",
+      "title": "Task-Aware Structured Memory for Dynamic Multi-modal In-Context Learning",
+      "abstract": "Multi-modal large language models (MLLMs) depend on in-context learning (ICL) for rapid task adaptation, but their scalability is severely limited by finite context windows and the growing cost of key-value (KV) caches in long multi-modal sequences. Existing memory compression approaches typically rely on rigid token removal or sample-dependent importance estimation, which introduces bias, disrupts semantic structure, particularly for visual representations, and yields static memories that cannot adapt to new queries. We introduce TASM (Task-Aware Structured Memory), a training-free framework that addresses these limitations through task-aware, structure-preserving, and dynamically accessible memory construction. TASM employs task-vector guided compression to replace sample-specific signals with a task-level direction that captures shared relevance across demonstrations. To preserve the underlying manifold, it applies semantics-aware token merging via bipartite graph matching, aggregating tokens without destructive pruning. Finally, TASM structures memory into a hierarchy comprising a compact Core Memory and a Latent Bank, facilitating query-adaptive dynamic retrieval. Evaluations confirm TASM maintains high performance under heavy compression, effectively balancing efficiency with adaptability.",
+      "authors": [
+        "Zhirui Chen",
+        "Ziwei Chen",
+        "Ling Shao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-10T09:30:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.11853v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "task-aware KV cache reduction for multi-modal in-context learning",
+      "llm_evidence_cn": "面向多模态上下文学习的任务感知KV缓存压缩",
+      "llm_evidence": "面向多模态上下文学习的任务感知KV缓存压缩",
+      "canonical_evidence": "面向多模态上下文学习的任务感知KV缓存压缩",
+      "llm_tldr_en": "Introduces TASM, a training-free framework for task-aware memory construction that reduces KV cache size while preserving semantic structure.",
+      "llm_tldr_cn": "针对多模态大语言模型上下文学习中KV缓存随序列增长而膨胀的问题，提出TASM（任务感知结构化记忆），一种无需训练的记忆构建框架，通过任务向量引导的压缩保留语义结构，并支持动态访问，有效降低了KV缓存开销。",
+      "llm_tldr": "针对多模态大语言模型上下文学习中KV缓存随序列增长而膨胀的问题，提出TASM（任务感知结构化记忆），一种无需训练的记忆构建框架，通过任务向量引导的压缩保留语义结构，并支持动态访问，有效降低了KV缓存开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.12400v1",
+      "source": "arxiv",
+      "title": "Doc-to-Atom: Learning to Compile and Compose Memory Atoms",
+      "abstract": "Long input sequences are central to document understanding and multi-step reasoning in Large Language Models, yet the quadratic cost of attention makes inference both memory-intensive and slow. Context distillation mitigates this by compressing contextual information into model parameters, and recent work such as Doc-to-LoRA amortizes context distillation into a single forward pass that generates one LoRA adapter per document. However, producing a single monolithic adapter for all queries leads to irrelevant-query interference, limited compositional recall, and poor scalability to long-document reasoning. To address these challenges, we propose Doc-to-Atom (Doc2Atom), a compositional parametric memory framework that decomposes each document into semantically typed knowledge atoms. Each atom is compiled into an independent micro-LoRA adapter and a provenance retrieval key. At inference time, a lightweight query router selects and assembles only the relevant atoms into a query-specific adapter, which is then injected into a frozen base model. The entire system is trained end-to-end through a multi-objective distillation framework. Experiments on six diverse QA benchmarks demonstrate that Doc2Atom outperforms Doc-to-LoRA baselines while reducing the memory cost of document internalization.",
+      "authors": [
+        "Xingjian Diao",
+        "Wenbo Li",
+        "Yashas Malur Saidutta",
+        "Avinash Amballa",
+        "Lazar Valkov",
+        "Srinivas Chappidi"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.IR"
+      ],
+      "published": "2026-06-10T17:58:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.12400v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "context compression into parametric memory for long context inference",
+      "llm_evidence_cn": "将长上下文压缩为参数化记忆用于推理",
+      "llm_evidence": "将长上下文压缩为参数化记忆用于推理",
+      "canonical_evidence": "将长上下文压缩为参数化记忆用于推理",
+      "llm_tldr_en": "Proposes Doc-to-Atom, a compositional parametric memory framework that decomposes documents into typed atoms for efficient long-context LLM inference.",
+      "llm_tldr_cn": "针对长上下文推理中注意力二次复杂度导致内存和速度瓶颈的问题，提出Doc-to-Atom（Doc2Atom）框架，将文档分解为语义类型的记忆原子，通过组合式参数化记忆实现高效的上下文蒸馏，支持多查询推理且避免干扰，在长文档推理任务上展现了更优的效率和准确率。",
+      "llm_tldr": "针对长上下文推理中注意力二次复杂度导致内存和速度瓶颈的问题，提出Doc-to-Atom（Doc2Atom）框架，将文档分解为语义类型的记忆原子，通过组合式参数化记忆实现高效的上下文蒸馏，支持多查询推理且避免干扰，在长文档推理任务上展现了更优的效率和准确率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

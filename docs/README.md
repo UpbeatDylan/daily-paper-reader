@@ -6,49 +6,40 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-10
-- 运行时间：2026-06-10 22:09:42 UTC
+- 最新运行日期：2026-06-11
+- 运行时间：2026-06-11 21:57:41 UTC
 - 运行状态：成功
-- 本次总论文数：9
-- 精读区：6
-- 速读区：3
+- 本次总论文数：5
+- 精读区：0
+- 速读区：5
 
 ### 今日简报（AI）
-今日精读两篇9分论文，聚焦长上下文稀疏注意力与Agent推理的KV缓存优化。  
-最值得看方向：FlashMemory的稀疏注意力实现超长上下文，IntentKV的跨轮意图剪枝提升智能体推理效率。  
-建议关注KV缓存管理在推理模型中的实际应用，可从这两篇论文的代码复现入手。
-- 详情：[/202606/10/README](/202606/10/README)
+今日速读三篇7分论文，聚焦动态线性注意力、多模态重排序高效化及任务感知结构记忆。
+
+最值得关注《Dynamic Linear Attention》与《miniReranker》，前者突破传统注意力平方复杂度，后者通过视觉缓存复用显著降低多模态重排序计算开销。
+
+建议普通读者留意线性注意力与稀疏交互思路，它们有望在长文本、多模态场景中降低模型推理成本。
+- 详情：[/202606/11/README](/202606/11/README)
 
 ### 精读区论文标签
-1. [FlashMemory-DeepSeek-V4: Lightning Index Ultra-Long Context via Lookahead Sparse Attention](/202606/10/2606.09079v2-flashmemory-deepseek-v4-lightning-index-ultra-long-context-via-lookahead-sparse-attention)  
-   标签：评分：9.0/10、query:pic
-   evidence：基于神经内存索引器的前瞻稀疏注意力实现长上下文加速
-2. [IntentKV: Cross-Turn Intent-Aware KV Cache Pruning for Agent Inference](/202606/10/2606.09916v1-intentkv-cross-turn-intent-aware-kv-cache-pruning-for-agent-inference)  
-   标签：评分：9.0/10、query:pic
-   evidence：面向多轮代理的KV缓存剪枝
-3. [Prefilling-dLLM: Predictive Prefilling for Long-Context Inference in Diffusion Language Models](/202606/10/2606.10537v1-prefilling-dllm-predictive-prefilling-for-long-context-inference-in-diffusion-language-models)  
-   标签：评分：9.0/10、query:pic
-   evidence：通过分块级KV缓存和稀疏预填充加速长上下文推理
-4. [Express Language Modeling](/202606/10/2606.10944v1-express-language-modeling)  
-   标签：评分：9.0/10、query:pic
-   evidence：注意力近似转换用于KV缓存压缩和长上下文预填充
-5. [RKSC: Reasoning-Aware KV Cache Sharing and Confident Early Exit for Multi-Step LLM Inference](/202606/10/2606.09937v1-rksc-reasoning-aware-kv-cache-sharing-and-confident-early-exit-for-multi-step-llm-inference)  
-   标签：评分：8.0/10、query:pic
-   evidence：通过语义相似度将精确前缀缓存泛化为可共享前缀，实现KV缓存复用
-6. [Parallel Causal Associative Fields: Gated Sparse Memory for Long-Context Language Modeling](/202606/10/2606.10435v1-parallel-causal-associative-fields-gated-sparse-memory-for-long-context-language-modeling)  
-   标签：评分：8.0/10、query:pic
-   evidence：用于长上下文语言建模的并行内容寻址稀疏缓存
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [ReasonAlloc: Hierarchical Decoding-Time KV Cache Budget Allocation for Reasoning Models](/202606/10/2606.11164v1-reasonalloc-hierarchical-decoding-time-kv-cache-budget-allocation-for-reasoning-models)  
-   标签：评分：8.0/10、query:pic
-   evidence：提出面向推理模型的分层解码时KV缓存预算分配方法
-2. [SpectrumKV: Per-Token Mixed-Precision KV Cache Transfer for Prefill-Decode Disaggregated LLM Serving](/202606/10/2606.08635v1-spectrumkv-per-token-mixed-precision-kv-cache-transfer-for-prefill-decode-disaggregated-llm-serving)  
+1. [Dynamic Linear Attention](/202606/11/2606.10650v1-dynamic-linear-attention)  
    标签：评分：7.0/10、query:pic
-   evidence：面向分离式服务的混合精度KV缓存传输
-3. [FadeMem: Distance-Aware Memory Consolidation for Autoregressive Video Diffusion](/202606/10/2606.10671v1-fademem-distance-aware-memory-consolidation-for-autoregressive-video-diffusion)  
+   evidence：面向长上下文LLM的动态线性注意力
+2. [miniReranker: Efficient Multimodal Reranking through Visual Cache Reuse and Interaction Sparsity](/202606/11/2606.10759v1-minireranker-efficient-multimodal-reranking-through-visual-cache-reuse-and-interaction-sparsity)  
    标签：评分：7.0/10、query:pic
-   evidence：用于长视频生成的距离感知KV记忆整合
+   evidence：利用视觉缓存复用提升重排序效率
+3. [Task-Aware Structured Memory for Dynamic Multi-modal In-Context Learning](/202606/11/2606.11853v1-task-aware-structured-memory-for-dynamic-multi-modal-in-context-learning)  
+   标签：评分：7.0/10、query:pic
+   evidence：面向多模态上下文学习的任务感知KV缓存压缩
+4. [Doc-to-Atom: Learning to Compile and Compose Memory Atoms](/202606/11/2606.12400v1-doc-to-atom-learning-to-compile-and-compose-memory-atoms)  
+   标签：评分：7.0/10、query:pic
+   evidence：将长上下文压缩为参数化记忆用于推理
+5. [Architecture-Aware Reinforcement Learning Makes Sliding-Window Attention Competitive in Math Reasoning](/202606/11/2606.11634v1-architecture-aware-reinforcement-learning-makes-sliding-window-attention-competitive-in-math-reasoning)  
+   标签：评分：6.0/10、query:pic
+   evidence：滑动窗口注意力加速长上下文推理
 
 
 <div class="dpr-home-promo-card">
