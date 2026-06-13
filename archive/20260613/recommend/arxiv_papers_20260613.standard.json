@@ -1,0 +1,101 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-13T20:26:09.281067+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.08382v1",
+      "source": "arxiv",
+      "title": "STAR-KV: Low-Rank KV Cache Compression via Soft Thresholding for Adaptive Rank Control",
+      "abstract": "Low-rank projection has emerged as a promising approach for compressing the KV cache by exploiting hidden-dimension redundancy. However, prior methods rely on fixed or heuristic rank selection and struggle to achieve aggressive compression with minimal accuracy degradation. We propose STAR-KV, an adaptive low-rank KV cache compression framework with fine-grained rank control. STAR-KV encompasses 1) a differentiable thresholding mechanism that enables optimal rank selection at both attention-head and block levels, 2) a hybrid decomposition strategy that applies different low-rank factorizations according to the sensitivity of key and value projections, and 3) a low-rank-aware mixed precision quantization that leverages data statistics for near lossless low-bit quantization. Evaluated across multiple LLMs and benchmarks, STAR-KV achieves up to 75% KV cache compression and up to 20x overall KV cache reduction when combined with quantization. Enabled by custom Triton-based GPU kernels, STAR-KV delivers up to 6.9x speedup for the attention module and 3.1x end-to-end generation throughput. Our code is publicly available at: https://github.com/PriyanshBhatnagar/STAR-KV.",
+      "authors": [
+        "Priyansh Bhatnagar",
+        "Ashkan Moradifirouzabadi",
+        "Se-Hyun Yang",
+        "SeungJae Lee",
+        "Jungwook Choi",
+        "Mingu Kang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-07T00:24:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.08382v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "low-rank KV cache compression via adaptive rank control",
+      "llm_evidence_cn": "通过自适应秩控制的低秩KV缓存压缩",
+      "llm_evidence": "通过自适应秩控制的低秩KV缓存压缩",
+      "canonical_evidence": "通过自适应秩控制的低秩KV缓存压缩",
+      "llm_tldr_en": "STAR-KV proposes an adaptive low-rank KV cache compression framework with differentiable thresholding for fine-grained rank control, enabling aggressive compression with minimal accuracy loss.",
+      "llm_tldr_cn": "现有低秩KV缓存压缩依赖固定或启发式秩选择，难以兼顾压缩率与精度。STAR-KV提出可微阈值机制，实现注意头级和块级的最优秩选择；混合分解策略按敏感度应用不同低秩分解；低秩感知混合精度量化。在多种LLM上取得显著压缩比且准确率几乎无损，直接支持KV缓存重用与长上下文推理加速。",
+      "llm_tldr": "现有低秩KV缓存压缩依赖固定或启发式秩选择，难以兼顾压缩率与精度。STAR-KV提出可微阈值机制，实现注意头级和块级的最优秩选择；混合分解策略按敏感度应用不同低秩分解；低秩感知混合精度量化。在多种LLM上取得显著压缩比且准确率几乎无损，直接支持KV缓存重用与长上下文推理加速。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.12411v1",
+      "source": "arxiv",
+      "title": "Context-Driven Incremental Compression for Multi-Turn Dialogue Generation",
+      "abstract": "Modern conversational agents condition on an ever-growing dialogue history at each turn, incurring redundant attention and encoding costs that grow with conversation length. Naive truncation or summarization degrades fidelity, while existing context compressors lack cross-turn memory sharing or revision, causing information loss and compounding errors in long dialogues. We revisit the context compression under conversational dynamics and empirically present its fragility. To improve both efficiency and robustness, we introduce Context-Driven Incremental Compression (C-DIC), which treats a conversation as interleaved contextual threads and stores revisable per-thread compression states in a single, compact dialogue memory. At each turn, a lightweight retrieve, revise, and write-back loop shares information across turns and updates stale memories, stabilizing long-horizon behavior. In addition, we adapt truncated backpropagation-through-time (TBPTT) to our multi-turn setting, learning cross-turn dependencies without full-history backpropagation. Extensive experiments on long-form dialogue benchmarks demonstrate superior performance and efficiency of C-DIC; notably, C-DIC shows stable inference latency and perplexity over hundreds of dialogue turns, supporting a scalable path to high-quality dialogue modeling.",
+      "authors": [
+        "Yeongseo Jung",
+        "Jaehyeok Kim",
+        "Eunseo Jung",
+        "Jiachuan Wang",
+        "Yongqi Zhang",
+        "Ka Chun Cheung",
+        "Simon See",
+        "Lei Chen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-10T17:59:54+00:00",
+      "link": "https://arxiv.org/pdf/2606.12411v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "context compression for multi-turn dialogue with cross-turn memory sharing",
+      "llm_evidence_cn": "多轮对话上下文压缩，跨轮记忆共享",
+      "llm_evidence": "多轮对话上下文压缩，跨轮记忆共享",
+      "canonical_evidence": "多轮对话上下文压缩，跨轮记忆共享",
+      "llm_tldr_en": "C-DIC treats conversations as interleaved threads with revisable per-thread compression states, enabling incremental context compression for long dialogues while maintaining fidelity.",
+      "llm_tldr_cn": "针对对话历史不断增长导致冗余计算的问题，本文提出上下文驱动增量压缩（C-DIC），将对话视为交织的上下文线程，为每个线程存储可修正的压缩状态。在每轮对话中，仅更新相关线程的压缩表示，避免全量重编码。实验表明，该方法在压缩率和对话质量上优于截断和摘要方法，为长上下文LLM推理中的缓存压缩提供了新思路。",
+      "llm_tldr": "针对对话历史不断增长导致冗余计算的问题，本文提出上下文驱动增量压缩（C-DIC），将对话视为交织的上下文线程，为每个线程存储可修正的压缩状态。在每轮对话中，仅更新相关线程的压缩表示，避免全量重编码。实验表明，该方法在压缩率和对话质量上优于截断和摘要方法，为长上下文LLM推理中的缓存压缩提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

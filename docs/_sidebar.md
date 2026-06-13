@@ -1,6 +1,11 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-06-13 <!--dpr-date:20260613-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/13/2606.08382v1-star-kv-low-rank-kv-cache-compression-via-soft-thresholding-for-adaptive-rank-control" data-sidebar-item="{&quot;title&quot;: &quot;STAR-KV: Low-Rank KV Cache Compression via Soft Thresholding for Adaptive Rank Control&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.08382v1-star-kv-low-rank-kv-cache-compression-via-soft-thresholding-for-adaptive-rank-control&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;通过自适应秩控制的低秩KV缓存压缩&quot;}">STAR-KV: Low-Rank KV Cache Compression via Soft Thresholding for Adaptive Rank Control</a>
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/13/2606.12411v1-context-driven-incremental-compression-for-multi-turn-dialogue-generation" data-sidebar-item="{&quot;title&quot;: &quot;Context-Driven Incremental Compression for Multi-Turn Dialogue Generation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.12411v1-context-driven-incremental-compression-for-multi-turn-dialogue-generation&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;多轮对话上下文压缩，跨轮记忆共享&quot;}">Context-Driven Incremental Compression for Multi-Turn Dialogue Generation</a>
   * 2026-06-11 <!--dpr-date:20260611-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/11/2606.10650v1-dynamic-linear-attention" data-sidebar-item="{&quot;title&quot;: &quot;Dynamic Linear Attention&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.10650v1-dynamic-linear-attention&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;面向长上下文LLM的动态线性注意力&quot;}">Dynamic Linear Attention</a>
