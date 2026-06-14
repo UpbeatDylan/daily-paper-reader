@@ -6,28 +6,27 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-13
-- 运行时间：2026-06-13 20:28:26 UTC
+- 最新运行日期：2026-06-14
+- 运行时间：2026-06-14 21:02:01 UTC
 - 运行状态：成功
 - 本次总论文数：2
-- 精读区：1
-- 速读区：1
+- 精读区：2
+- 速读区：0
 
 ### 今日简报（AI）
-今日精读一篇高分论文《STAR-KV: Low-Rank KV Cache Compression via Soft Thresholding for Adaptive Rank Control》，速读一篇多轮对话增量压缩研究。  
-最值得关注的方向：通过软阈值自适应控制低秩压缩KV缓存，在保持质量的同时显著降低内存占用。  
-建议普通读者优先精读STAR-KV论文，理解其自适应秩控制机制对长上下文推理的优化启发。
-- 详情：[/202606/13/README](/202606/13/README)
+今日精读两篇高分论文：满分论文《MiniPIC》以不到100行代码实现位置无关缓存，以及8分《MiniMax Sparse Attention》探索稀疏注意力机制。最值得深入研读《MiniPIC》的极简设计思路，其灵活性对缓存系统优化极具启发。普通读者可尝试将MiniPIC方法移植到个人项目中，或借鉴稀疏注意力思路改进模型效率。
+- 详情：[/202606/14/README](/202606/14/README)
 
 ### 精读区论文标签
-1. [STAR-KV: Low-Rank KV Cache Compression via Soft Thresholding for Adaptive Rank Control](/202606/13/2606.08382v1-star-kv-low-rank-kv-cache-compression-via-soft-thresholding-for-adaptive-rank-control)  
-   标签：评分：9.0/10、query:pic
-   evidence：通过自适应秩控制的低秩KV缓存压缩
+1. [MiniPIC: Flexible Position-Independent Caching in <100LOC](/202606/14/2606.13126v1-minipic-flexible-position-independent-caching-in-100loc)  
+   标签：评分：10.0/10、query:pic
+   evidence：面向LLM推理的灵活位置无关缓存（PIC）实现
+2. [MiniMax Sparse Attention](/202606/14/2606.13392v1-minimax-sparse-attention)  
+   标签：评分：8.0/10、query:pic
+   evidence：块稀疏注意力通过选择top-k块减少KV缓存
 
 ### 速读区论文标签
-1. [Context-Driven Incremental Compression for Multi-Turn Dialogue Generation](/202606/13/2606.12411v1-context-driven-incremental-compression-for-multi-turn-dialogue-generation)  
-   标签：评分：7.0/10、query:pic
-   evidence：多轮对话上下文压缩，跨轮记忆共享
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">

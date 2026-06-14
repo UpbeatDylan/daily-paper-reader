@@ -1,0 +1,39 @@
+{
+  "label": "2026-06-14",
+  "date": "2026-06-14",
+  "generated_at": "2026-06-14T21:02:10",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202606/14/2606.13126v1-minipic-flexible-position-independent-caching-in-100loc",
+      "section": "deep",
+      "title_en": "MiniPIC: Flexible Position-Independent Caching in <100LOC",
+      "authors": "Nathan Ordonez, Thomas Parnell",
+      "date": "2026-06-11",
+      "pdf": "https://arxiv.org/pdf/2606.13126v1",
+      "score": "10.0",
+      "evidence": "面向LLM推理的灵活位置无关缓存（PIC）实现",
+      "tldr": "针对检索增强和智能体工作负载中重复结构化输入（span）的缓存问题，提出MiniPIC。通过无位置编码的KV缓存和用户控制缓存重用原语，仅需<100行核心引擎修改即可实现多种位置无关缓存方法。在2WikiMultihopQA上预填充吞吐量提升49%，缓存span的首令牌延迟降低两个数量级，开销仅5.7%。",
+      "tags": "query:pic",
+      "abstract_en": "Retrieval-augmented and agentic workloads repeatedly prefill recurring predictable structured inputs (which we call \"spans\") such as documents and code files. Yet, prefix caching in engines such as vLLM cannot reuse their KV entries unless they share identical prefixes with another request, while Position-Independent Caching (PIC) implementations within production-grade inference servers typically either require substantial server code changes or keep KV state outside the server, incurring host-to-device transfer overhead. We present Minimalistic PIC (MiniPIC): a minimal, flexible and fast vLLM design built from two ingredients: positional-encoding-free KV cache and user-controlled cache-reuse primitives. MiniPIC stores unrotated K vectors in the KV cache, applies RoPE to K tiles inside attention using per-request logical positions, and exposes three user-facing and token-level primitives: block-aligned padding, span separator (SSep), and prompt depend (PDep), that modify hashing behavior and effective block-level causal attention structure. With fewer than 100 lines of core-engine changes plus a custom attention backend, these primitives are sufficient to realize multiple PIC methods, including Block-Attention, EPIC, and Prompt Cache, within the same running vLLM instance, while natively integrating with KV cache CPU offload implementations. On 2WikiMultihopQA, MiniPIC with interleaved scheduling improves prefill throughput by 49% over baseline vLLM, reduces cached-span time-to-first-token by up to two orders of magnitude, preserves the linear prefill scaling of uncached spans, and incurs only 5.7% worst-case overhead.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/14/2606.13392v1-minimax-sparse-attention",
+      "section": "deep",
+      "title_en": "MiniMax Sparse Attention",
+      "authors": "Xunhao Lai, Weiqi Xu, Yufeng Yang, Qiaorui Chen, Yang Xu, Lunbin Zeng, Xiaolong Li, Haohai Sun, Haichao Zhu, Vito Zhang, Pengyu Zhao",
+      "date": "2026-06-11",
+      "pdf": "https://arxiv.org/pdf/2606.13392v1",
+      "score": "8.0",
+      "evidence": "块稀疏注意力通过选择top-k块减少KV缓存",
+      "tldr": "针对超长上下文场景下Softmax Attention二次复杂度导致的部署瓶颈，提出基于分组查询注意力（GQA）的块级稀疏注意力机制MiniMax Sparse Attention (MSA)。该方法通过轻量级索引分支对各GQA组的KV块独立打分并选取Top-k子集，在主分支上仅对选中块执行精确稀疏计算。配合无exp的Top-k选择与KV-outer稀疏注意力优化张量核心利用率，在109B多模态模型上实现与GQA相当的性能，同时将1M上下文时的每token注意力计算量降低28.4倍。结合协同设计的GPU kernel，在H800上获得14.2倍prefill与7.6倍decoding的端到端加速。",
+      "tags": "query:pic",
+      "abstract_en": "Ultra-long-context capability is becoming indispensable for frontier LLMs: agentic workflows, repository-scale code reasoning, and persistent memory all require the model to jointly attend over hundreds of thousands to millions of tokens, yet the quadratic cost of softmax attention makes this untenable at deployment scale. We introduce MiniMax Sparse Attention (MSA), a blockwise sparse attention built upon Grouped Query Attention (GQA). A lightweight Index Branch scores key-value blocks and independently selects a Top-k subset for each GQA group, enabling group-specific sparse retrieval while maintaining efficient block-level execution; the Main Branch then performs exact block-sparse attention over only the selected blocks. Designed around a principle of simplicity and scalability, MSA is deliberately streamlined, making it straightforward to deploy efficiently across a broad range of GPUs. To translate sparsity into practical speedups, we co-design MSA with a GPU execution path that uses exp-free Top-k selection and KV-outer sparse attention to improve tensor-core utilization under block-granular access. On a 109B-parameter model with native multimodal training, MSA performs on par with GQA while reducing per-token attention compute by 28.4x at 1M context. Paired with our co-designed kernel, MSA achieves 14.2x prefill and 7.6x decoding wall-clock speedups on H800. Our inference kernel is available at: https://github.com/MiniMax-AI/MSA. A production-grade natively multimodal model powered by MSA has been publicly released at: https://huggingface.co/MiniMaxAI/MiniMax-M3.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
