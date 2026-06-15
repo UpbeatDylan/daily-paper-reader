@@ -1,0 +1,69 @@
+{
+  "label": "2026-06-15",
+  "date": "2026-06-15",
+  "generated_at": "2026-06-15T22:45:20",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202606/15/2606.13392v2-minimax-sparse-attention",
+      "section": "deep",
+      "title_en": "MiniMax Sparse Attention",
+      "authors": "Xunhao Lai, Weiqi Xu, Yufeng Yang, Qiaorui Chen, Yang Xu, Lunbin Zeng, Xiaolong Li, Haohai Sun, Haichao Zhu, Vito Zhang, Jinkai Hu, Jiayao Li, Rui Gao, Zekun Li, Songquan Zhu, Jingkai Zhou, Pengyu Zhao",
+      "date": "2026-06-11",
+      "pdf": "https://arxiv.org/pdf/2606.13392v2",
+      "score": "8.0",
+      "evidence": "块级稀疏注意力加速超长上下文推理",
+      "tldr": "大型语言模型需超长上下文能力，但softmax注意力的二次复杂度阻碍实际部署。本文提出MiniMax Sparse Attention (MSA)，基于GQA的块稀疏注意力，通过轻量级索引分支为每组独立选择Top-k KV块，主分支仅执行精确块稀疏注意力。在109B多模态模型上，1M上下文时注意力计算量减少28.4倍，H800上prefill加速14.2倍、decoding加速7.6倍。MSA通过协同设计GPU执行路径，实现高效超长上下文推理，已开源推理内核并发布生产级模型。",
+      "tags": "query:pic",
+      "abstract_en": "Ultra-long-context capability is becoming indispensable for frontier LLMs: agentic workflows, repository-scale code reasoning, and persistent memory all require the model to jointly attend over hundreds of thousands to millions of tokens, yet the quadratic cost of softmax attention makes this untenable at deployment scale. We introduce MiniMax Sparse Attention (MSA), a blockwise sparse attention built upon Grouped Query Attention (GQA). A lightweight Index Branch scores key-value blocks and independently selects a Top-k subset for each GQA group, enabling group-specific sparse retrieval while maintaining efficient block-level execution; the Main Branch then performs exact block-sparse attention over only the selected blocks. Designed around a principle of simplicity and scalability, MSA is deliberately streamlined, making it straightforward to deploy efficiently across a broad range of GPUs. To translate sparsity into practical speedups, we co-design MSA with a GPU execution path that uses exp-free Top-k selection and KV-outer sparse attention to improve tensor-core utilization under block-granular access. On a 109B-parameter model with native multimodal training, MSA performs on par with GQA while reducing per-token attention compute by 28.4x at 1M context. Paired with our co-designed kernel, MSA achieves 14.2x prefill and 7.6x decoding wall-clock speedups on H800. Our inference kernel is available at: https://github.com/MiniMax-AI/MSA. A production-grade natively multimodal model powered by MSA has been publicly released at: https://huggingface.co/MiniMaxAI/MiniMax-M3.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/15/2606.14672v1-towards-direct-latent-space-synthesis-for-parallel-branches-in-llm-agent-workflows",
+      "section": "deep",
+      "title_en": "Towards Direct Latent-Space Synthesis for Parallel Branches in LLM-Agent Workflows",
+      "authors": "Shikun Liu, Mufei Li, Dongqi Fu, Haoyu Wang, Yinglong Xia, Hong Li, Hong Yan, Pan Li",
+      "date": "2026-06-12",
+      "pdf": "https://arxiv.org/pdf/2606.14672v1",
+      "score": "8.0",
+      "evidence": "通过直接潜在空间合成重用KV缓存",
+      "tldr": "大型语言模型在代理工作流中常以顺序文本接口处理并行分支，导致信息冗余与计算浪费。本文提出Parallel-Synthesis框架，让合成模型直接复用并行工作代理的KV缓存，通过缓存映射器校准独立分支，并微调解码器适配器实现非顺序缓存生成。在九项任务中，七项匹配或超越文本拼接基线，首令牌延迟降低2.5-11倍。该方法为并行代理分支提供了更高效的原生合成接口。",
+      "tags": "query:pic",
+      "abstract_en": "Large language models increasingly serve as execution engines for agentic systems, yet they still consume context through a sequential text interface. This creates a mismatch with modern structured agent workflows, in which independent branches explore subtasks, retrieve evidence, or generate candidate solutions before a final synthesis step. Existing systems typically merge these branches by concatenating their textual outputs, which discards the parallel structure and incurs redundant prefill computation. In this work, we introduce Parallel-Synthesis, a plug-and-play framework that enables a synthesizer to directly consume the KV caches produced by parallel worker agents. Parallel-Synthesis combines a cache mapper that calibrates independently generated branch caches with a fine-tuned synthesizer adapter that enables generation from this non-sequential cache interface. We train Parallel-Synthesis using data that exposes the synthesizer to parallel cache contexts, teaches aggregation across cached branches, and distills reasoning behavior from standard text-concatenation-based synthesis. Across nine downstream datasets spanning math, science QA, code generation, GAIA, and multi-agent database diagnosis, Parallel-Synthesis matches or outperforms text-based synthesis on seven datasets and remains close on the other two. It also reduces time-to-first-token by 2.5x-11x, suggesting that direct cache-based synthesis is a promising interface for more native and efficient synthesis over parallel agent branches.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/15/2606.11700v1-comprank-efficient-llm-reranking-via-token-level-compression-and-decoding-free-scoring",
+      "section": "quick",
+      "title_en": "CompRank: Efficient LLM Reranking via Token-Level Compression and Decoding-Free Scoring",
+      "authors": "Xuan Lu, Haohang Huang, Yingqi Fan, Junlong Tong, Yuxuan Zhang, Ping Nie, Rui Meng, Xiaoyu Shen",
+      "date": "2026-06-10",
+      "pdf": "https://arxiv.org/pdf/2606.11700v1",
+      "score": "6.0",
+      "evidence": "通过令牌压缩实现文档侧状态复用",
+      "tldr": "LLM重排序器计算成本高，限制长候选列表应用。CompRank通过解耦文档表示、分段token压缩和CopyNet目标减少冗余计算。在BEIR数据集上仅保留10.2%文档token，NDCG@10达39.2（全token为39.7），并在TREC-COVID上实现4.9-9.5倍端到端加速。该方法提供了一种可扩展的基于LLM的重排序路径。",
+      "tags": "query:pic",
+      "abstract_en": "Large language model (LLM) rerankers have become an important component of modern retrieval and retrieval-augmented generation pipelines, but their high computational cost limits their applicability to long candidate lists. In this paper, we propose \\textbf{CompRank}, a token-efficient reranking framework that reduces redundant computation by aligning reranker design with the sparsity of ranking signals. CompRank decouples document representations from candidate order and query context, enabling reusable document-side states; applies segment-wise token compression to reduce query--document interaction cost; and introduces a CopyNet-style objective that directly aligns attention-based document scoring with training supervision. Experiments on seven BEIR datasets show that CompRank achieves strong reranking performance while retaining only 10.2\\% of document tokens, reaching an average NDCG@10 of 39.2 compared with 39.7 under full-token attention. Further scaling experiments on TREC-COVID show that CompRank remains stable when evaluated on candidate lists of up to 500 documents after training on 30-document lists, while achieving $4.9\\times$--$9.5\\times$ end-to-end speedup over generation-based listwise reranking and approximately $1.3\\times$ speedup over the full-token CompRank variant. These results suggest that token-level compression and decoding-free attention scoring provide an effective path toward scalable LLM-based reranking.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/15/2606.13740v1-efficient-on-device-diffusion-llm-inference-with-mobile-npu",
+      "section": "quick",
+      "title_en": "Efficient On-Device Diffusion LLM Inference with Mobile NPU",
+      "authors": "Tuowei Wang, Yanfan Sun, Ju Ren",
+      "date": "2026-06-11",
+      "pdf": "https://arxiv.org/pdf/2606.13740v1",
+      "score": "6.0",
+      "evidence": "NPU上扩散LLM的KV缓存重用",
+      "tldr": "扩散大模型（dLLM）通过并行去噪加速生成，但手机端重复计算量大。移动NPU虽提供高吞吐矩阵计算，却面临工作负载收缩、KV缓存复用困难和地址空间限制。本文提出llada.cpp，首个NPU感知的dLLM推理框架，采用多块投机解码、双路径渐进修订和交换优化内存运行时三项技术，在LLaDA-8B上比CPU基线延迟降低17-42倍，且保障生成质量，为移动端高效部署dLLM提供了新方案。",
+      "tags": "query:pic",
+      "abstract_en": "Diffusion large language models (dLLMs) accelerate generation by denoising multiple tokens in parallel, making them attractive for latency-sensitive mobile inference. However, repeated denoising introduces substantial computation on smartphones. Mobile neural processing units (NPUs) offer high-throughput dense matrix computation, but efficiently exploiting them remains challenging: token commitment shrinks per-block effective workloads, token revision complicates KV cache reuse, and limited NPU-visible address space incurs costly remapping and data transfer overheads.   In this paper, we propose llada.cpp, the first NPU-aware inference framework for accelerating dLLMs on smartphones. llada.cpp aligns block-wise dLLM inference with the execution characteristics of mobile NPUs through three techniques. (1) Multi-Block Speculative Decoding fills the shrinking workload in late-stage current-block decoding with speculative future-block tokens. (2) Dual-Path Progressive Revision keeps committed tokens revisable until stable and refreshes unstable tokens through a CPU-side path without stalling dense NPU execution. (3) Swap-Optimized Memory Runtime compacts NPU-visible address layouts and overlaps data staging with NPU computation to reduce remapping and transfer overheads. We implement llada.cpp as an end-to-end framework and evaluate it across diverse hardware platforms and dLLM workloads. llada.cpp reduces LLaDA-8B generation latency by 17x-42x over the CPU baseline with prefix KV cache reuse, while preserving generation quality.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
