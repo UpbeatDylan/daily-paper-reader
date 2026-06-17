@@ -1,0 +1,210 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-17T21:21:55.649276+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.17107v1",
+      "source": "arxiv",
+      "title": "Models Take Notes at Prefill: KV Cache Can Be Editable and Composable",
+      "abstract": "Prefix caching reuses prefill only across an exactly shared prefix, so one changed field invalidates the entire downstream cache. Yet overwriting the field's own key/value vectors and reusing the rest leaves the model acting on the old value. The reason, established causally across four model families: at prefill the model has already written the field-conditioned conclusion onto downstream notes; the field's own key/value drives under 1% of the decision. Read as a notebook of memoized conclusions, two capabilities follow. (1) It is editable. A salient erratum amends the notes; and with chain-of-thought, editing the field alone recovers the decision (1.00 at 8B, ~1% compute), while without CoT it is ignored. (2) It is composable. The notes are position-portable, so a precompiled skill can be RoPE-repositioned and spliced into any context, indistinguishable from full recompute (logit cosine 0.90-0.999, twelve models) at O(L) rather than O(L^2) time-to-first-token. A unified edit+compose agent stays decision-identical to recompute at up to 14.9x lower latency. The approach applies to any per-token attention KV cache, validated across scale, quantization, Mixture-of-Experts, and multimodal caches, and extends to several attention variants through small adapters. Because the erratum is append-only, it composes with production prefix caching: in an online vLLM benchmark it keeps the prefix cache-aligned (98.5% hit-rate), cutting p90 time-to-first-token by 53-398x.",
+      "authors": [
+        "Bojie Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-14T15:31:23+00:00",
+      "link": "https://arxiv.org/pdf/2606.17107v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "prefix cache editing and composing via position-independent KV notes",
+      "llm_evidence_cn": "通过位置无关的KV笔记实现前缀缓存编辑与组合",
+      "llm_evidence": "通过位置无关的KV笔记实现前缀缓存编辑与组合",
+      "canonical_evidence": "通过位置无关的KV笔记实现前缀缓存编辑与组合",
+      "llm_tldr_en": "This paper reveals that prefix KV cache behaves like memoized conclusions, enabling editability and composability where field-specific KV can be updated or swapped without full reprocessing, achieving near-zero overhead for cache reuse.",
+      "llm_tldr_cn": "该研究通过因果分析发现，前缀缓存中的KV条目实质上是预填充阶段已写好的条件结论，字段本身的KV对决策贡献极小。基于此洞察，作者提出KV缓存可编辑和可组合的能力：通过仅修改字段KV即可纠正错误（在思维链下恢复准确决策），且由于位置无关性，可将不同前缀的缓存笔记自由组合。这一方法在仅需约1%计算开销下实现了灵活的缓存复用。",
+      "llm_tldr": "该研究通过因果分析发现，前缀缓存中的KV条目实质上是预填充阶段已写好的条件结论，字段本身的KV对决策贡献极小。基于此洞察，作者提出KV缓存可编辑和可组合的能力：通过仅修改字段KV即可纠正错误（在思维链下恢复准确决策），且由于位置无关性，可将不同前缀的缓存笔记自由组合。这一方法在仅需约1%计算开销下实现了灵活的缓存复用。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.17872v1",
+      "source": "arxiv",
+      "title": "AnchorKV: Safety-Aware KV Cache Compression via Soft Penalty with a Refusal Anchor",
+      "abstract": "Large language models (LLMs) outperform earlier architectures on generative inference and long-context tasks, but their large size introduces significant challenges in memory usage, energy cost, and on-device deployment. Since scaling pre-trained language models improves downstream capability \\cite{zhao2023survey}, the key-value (KV) cache becomes a dominant inference bottleneck. Recent KV cache compression methods \\cite{jo2025fastkv,li2024snapkv,zhou2024dynamickv} reduce this cost by retaining only a subset of attention-relevant tokens. However, while these approaches preserve accuracy on benign workloads, their compression policies either fail to defend against jailbreak attacks \\cite{jiang2024robustkv} or degrade safety alignment under aggressive eviction.   We propose AnchorKV, a drop-in modification to KV cache compression that biases token retention scores away from directions in key space associated with harmful prompts. AnchorKV constructs an offline safety anchor by adapting a difference-of-means representation engineering approach \\cite{arditi2024refusal,zou2023representation} to the layer-specific key projection space used in KV caching. Based on this anchor, a soft penalty token selection rule trades a small amount of utility for substantially improved safety alignment, while reducing to the original compressor when the penalty is zero.",
+      "authors": [
+        "Ning Ni",
+        "Yingjie Lao"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-16T12:43:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.17872v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache compression with safety awareness, directly addresses KV cache bottleneck",
+      "llm_evidence_cn": "安全感知的KV缓存压缩，直接解决KV缓存瓶颈",
+      "llm_evidence": "安全感知的KV缓存压缩，直接解决KV缓存瓶颈",
+      "canonical_evidence": "安全感知的KV缓存压缩，直接解决KV缓存瓶颈",
+      "llm_tldr_en": "AnchorKV introduces a soft penalty with a refusal anchor for safety-aware KV cache compression, balancing memory efficiency and defense.",
+      "llm_tldr_cn": "KV缓存是LLM推理的主要瓶颈，现有压缩方法在安全性上不足。AnchorKV提出通过软惩罚和拒绝锚点实现安全感知的KV缓存压缩，在保持准确性的同时抵御越狱攻击。实验表明其在压缩率和安全性上都优于基线。",
+      "llm_tldr": "KV缓存是LLM推理的主要瓶颈，现有压缩方法在安全性上不足。AnchorKV提出通过软惩罚和拒绝锚点实现安全感知的KV缓存压缩，在保持准确性的同时抵御越狱攻击。实验表明其在压缩率和安全性上都优于基线。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14782v2",
+      "source": "arxiv",
+      "title": "Last But Not Least: Boundary Attention CalibratiON for Multimodal KV Cache Compression",
+      "abstract": "Multimodal Large Language Models (MLLMs) achieve strong vision-language reasoning, but long visual contexts enlarge the KV cache and increase decoding latency. Existing compression methods rely on observation window attention for stable token-importance estimation, yet this aggregation can dilute sparse visual evidence and discard answer-critical tokens under aggressive compression. Therefore, we identify last-query attention as a complementary source for recovering such evidence, but its answer-irrelevant signals can mislead retention. We propose BACON, a plug-and-play method that calibrates observation window attention with last-query evidence and suppresses isolated noise via intra-layer coherence and inter-layer persistence. Across diverse benchmarks, models, budgets, and compression methods, BACON improves multimodal KV compression by 7.5% on average under the most aggressive budget, with gains up to 30.9%. Our project page is available at https://ryu1ion.github.io/official_BACON/",
+      "authors": [
+        "Tianhao Chen",
+        "Yuheng Wu",
+        "Kelu Yao",
+        "Xiaogang Xu",
+        "Xiaobin Hu",
+        "Dongman Lee"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.CL"
+      ],
+      "published": "2026-06-10T10:09:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.14782v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache compression method for multimodal LLMs",
+      "llm_evidence_cn": "多模态LLM的KV缓存压缩方法",
+      "llm_evidence": "多模态LLM的KV缓存压缩方法",
+      "canonical_evidence": "多模态LLM的KV缓存压缩方法",
+      "llm_tldr_en": "BACON calibrates observation window attention with last-query evidence to improve KV cache compression for multimodal LLMs, recovering answer-critical tokens lost under aggressive compression.",
+      "llm_tldr_cn": "多模态大语言模型面临长视觉上下文导致的KV缓存膨胀和解码延迟问题。现有压缩方法依赖观察窗口注意力，但可能稀释稀疏视觉证据。BACON方法通过校准观察窗口注意力和最后查询注意力，并抑制孤立噪声，实现了更准确的token重要性估计，在多个基准上提升了压缩后的生成质量。",
+      "llm_tldr": "多模态大语言模型面临长视觉上下文导致的KV缓存膨胀和解码延迟问题。现有压缩方法依赖观察窗口注意力，但可能稀释稀疏视觉证据。BACON方法通过校准观察窗口注意力和最后查询注意力，并抑制孤立噪声，实现了更准确的token重要性估计，在多个基准上提升了压缩后的生成质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.10759v2",
+      "source": "arxiv",
+      "title": "miniReranker: Efficient Multimodal Reranking through Visual Cache Reuse and Interaction Sparsity",
+      "abstract": "Multimodal large language models (MLLMs) have recently shown strong potential as point-wise rerankers by directly modeling query--document relevance through next-token prediction. However, point-wise reranking suffers from substantial repeated computation across query--document pairs, while the causal structure of transformers allows only prefix segments to be reused via pre-caching. To address the misalignment of existing query-first and document-first formats with both VQA-style prompting and computation-aware reuse, we propose a $\\textit{vision-first}$ formulation that improves both cache reuse efficiency and reranking performance. However, the remaining cost is still considerable and stems from three main sources: (1) $\\textit{model depth}$, for which we reduce active parameters via early exit; (2) $\\textit{cross-segment attention}$, which we restrict to a narrow interaction band across a few layers; and (3) $\\textit{visual tokens}$, where we reduce the number of tokens via embedder-guided pruning. Together, these designs form miniReranker, which reduces reranking runtime to <1% of the dense implementation under high-reuse settings for a single query, while preserving >96% of the dense model performance.",
+      "authors": [
+        "Yingqi Fan",
+        "Xuan Lu",
+        "Anhao Zhao",
+        "Junlong Tong",
+        "Ping Nie",
+        "Kai Zou",
+        "Yunpu Ma",
+        "Wei Zhang",
+        "Xiaoyu Shen"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR"
+      ],
+      "published": "2026-06-09T12:11:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.10759v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Visual cache reuse and prefix caching for MLLM reranking",
+      "llm_evidence_cn": "多模态重排序中的视觉缓存重用与前缀缓存",
+      "llm_evidence": "多模态重排序中的视觉缓存重用与前缀缓存",
+      "canonical_evidence": "多模态重排序中的视觉缓存重用与前缀缓存",
+      "llm_tldr_en": "miniReranker proposes vision-first formulation to improve cache reuse efficiency in multimodal reranking, reducing repeated computation.",
+      "llm_tldr_cn": "miniReranker针对多模态大模型点式重排序中重复计算问题，提出视觉优先格式以提升前缀缓存复用效率，结合交互稀疏性降低计算成本，实验显示在保持精度的同时显著加速。",
+      "llm_tldr": "miniReranker针对多模态大模型点式重排序中重复计算问题，提出视觉优先格式以提升前缀缓存复用效率，结合交互稀疏性降低计算成本，实验显示在保持精度的同时显著加速。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.16332v1",
+      "source": "arxiv",
+      "title": "SMEPilot: Characterizing and Optimizing LLM Inference with Scalable Matrix Extensions",
+      "abstract": "Modern CPUs increasingly integrate matrix extensions, such as Arm Scalable Matrix Extension (SME), that provide high-throughput matrix execution within the CPU. For LLM inference, however, these units are not a universal replacement for conventional CPU cores: prefill, decode, attention, and KV-cache operations expose different arithmetic intensities, vector behavior, and layout requirements, while SME units and CPU cores still compete for shared memory bandwidth. This paper studies this mismatch through a roofline-based characterization of SME-enabled CPUs and uses the resulting model to guide operator-level execution choices. We present SMEPilot, an LLM inference engine that selects CPU-only, SME-only, or cooperative SME+CPU execution for each operator shape. SMEPilot partitions matrix work across SME and CPU cores at tile granularity, overlaps SME-suitable matrix stages with CPU-suitable vector stages in attention, and maintains layout state so packed tensor representations are reused rather than repeatedly rebuilt on critical paths. Across Llama-3.2-3B, Qwen3-4B, and Qwen3-30BA3B on phone, PC, and server platforms, SMEPilot improves end-to-end inference performance by up to 3.94$\\times$.",
+      "authors": [
+        "Feiyang Chen",
+        "Haibo Chen"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.PF"
+      ],
+      "published": "2026-06-15T07:35:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.16332v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Optimizing LLM inference with CPU matrix extensions, addressing KV-cache operations",
+      "llm_evidence_cn": "利用CPU矩阵扩展优化LLM推理，涉及KV缓存操作",
+      "llm_evidence": "利用CPU矩阵扩展优化LLM推理，涉及KV缓存操作",
+      "canonical_evidence": "利用CPU矩阵扩展优化LLM推理，涉及KV缓存操作",
+      "llm_tldr_en": "SMEPilot characterizes LLM inference on SME-enabled CPUs and selects optimal operator-level execution (CPU-only, SME-only, or cooperative) to accelerate prefill, decode, attention, and KV-cache operations.",
+      "llm_tldr_cn": "现代CPU集成的矩阵扩展单元在LLM推理中并非万能，预填充、解码、注意力和KV缓存操作各有不同特性。SMEPilot通过基于roofline的硬件表征模型，指导算子级执行策略，在CPU上实现显著推理加速。",
+      "llm_tldr": "现代CPU集成的矩阵扩展单元在LLM推理中并非万能，预填充、解码、注意力和KV缓存操作各有不同特性。SMEPilot通过基于roofline的硬件表征模型，指导算子级执行策略，在CPU上实现显著推理加速。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
