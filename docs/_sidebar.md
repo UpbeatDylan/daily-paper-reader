@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-06-18 <!--dpr-date:20260618-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/18/2606.18587v1-dual-dimensionality-for-local-and-global-attention" data-sidebar-item="{&quot;title&quot;: &quot;Dual Dimensionality for Local and Global Attention&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.18587v1-dual-dimensionality-for-local-and-global-attention&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;根据token距离自适应调整KV缓存表示维度，远程token使用更低维度&quot;}">Dual Dimensionality for Local and Global Attention</a>
   * 2026-06-17 <!--dpr-date:20260617-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/17/2606.17107v1-models-take-notes-at-prefill-kv-cache-can-be-editable-and-composable" data-sidebar-item="{&quot;title&quot;: &quot;Models Take Notes at Prefill: KV Cache Can Be Editable and Composable&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.17107v1-models-take-notes-at-prefill-kv-cache-can-be-editable-and-composable&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;通过位置无关的KV笔记实现前缀缓存编辑与组合&quot;}">Models Take Notes at Prefill: KV Cache Can Be Editable and Composable</a>

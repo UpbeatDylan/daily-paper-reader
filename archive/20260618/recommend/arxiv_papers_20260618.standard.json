@@ -1,0 +1,56 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-18T22:07:56.811844+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2606.18587v1",
+      "source": "arxiv",
+      "title": "Dual Dimensionality for Local and Global Attention",
+      "abstract": "Decoder-only Transformers compute attention over the KV cache of preceding tokens. Keys (and Values) are typically represented with the same dimensionality, regardless of its distance from the prediction target. In natural language, however, the next word is most strongly influenced by the immediately preceding tokens. We hypothesize that local and distant tokens impose asymmetric demands on representational capacity: local tokens are more critical for predicting immediate outputs and thus require richer representations, whereas distant tokens primarily serve as long-range memory, for which lower-dimensional representations may suffice. We formalize this idea as Distance-Adaptive Representation (DAR), implemented in a controlled setting that preserves full-dimensional representations within a local context window while assigning reduced-dimensional representations (e.g. 1/4 of the original dimensionality) to tokens beyond that window. Across multiple pretraining scales (70M to 410M parameters), as well as continued supervised fine-tuning on a 1B-scale model, this approach closely matches the performance of full-dimensional baselines. In contrast, uniformly reducing dimensionality across all token positions leads to worse performance. These results challenge the common assumption that key and value dimensionality should be uniform across token positions. Our findings suggest a new direction for designing attention architectures that adaptively allocate representational capacity across sequences, enabling further reductions in KV cache during inference.",
+      "authors": [
+        "Zhiyuan Wang",
+        "Xuan Luo",
+        "Sirui Zeng",
+        "Xifeng Yan"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-17T01:27:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.18587v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "distance-adaptive representation for KV cache, reduces dimensionality for distant tokens",
+      "llm_evidence_cn": "根据token距离自适应调整KV缓存表示维度，远程token使用更低维度",
+      "llm_evidence": "根据token距离自适应调整KV缓存表示维度，远程token使用更低维度",
+      "canonical_evidence": "根据token距离自适应调整KV缓存表示维度，远程token使用更低维度",
+      "llm_tldr_en": "Proposes Distance-Adaptive Representation (DAR) for KV cache, using lower dimensionality for distant tokens to reduce cache memory and compute, while preserving full precision locally.",
+      "llm_tldr_cn": "现有Transformer对所有位置的键值使用相同维度，但远程token对即时预测贡献较小。本文提出距离自适应表示（DAR），对远程token使用更低维度表示，保留局部token的全维度。这种方法在保持模型质量的前提下减少了KV缓存大小和注意力计算量，为长上下文推理提供了高效的缓存优化策略。",
+      "llm_tldr": "现有Transformer对所有位置的键值使用相同维度，但远程token对即时预测贡献较小。本文提出距离自适应表示（DAR），对远程token使用更低维度表示，保留局部token的全维度。这种方法在保持模型质量的前提下减少了KV缓存大小和注意力计算量，为长上下文推理提供了高效的缓存优化策略。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

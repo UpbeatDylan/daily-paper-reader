@@ -1,0 +1,24 @@
+{
+  "label": "2026-06-18",
+  "date": "2026-06-18",
+  "generated_at": "2026-06-18T22:08:45",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202606/18/2606.18587v1-dual-dimensionality-for-local-and-global-attention",
+      "section": "quick",
+      "title_en": "Dual Dimensionality for Local and Global Attention",
+      "authors": "Zhiyuan Wang, Xuan Luo, Sirui Zeng, Xifeng Yan",
+      "date": "2026-06-17",
+      "pdf": "https://arxiv.org/pdf/2606.18587v1",
+      "score": "7.0",
+      "evidence": "根据token距离自适应调整KV缓存表示维度，远程token使用更低维度",
+      "tldr": "Decoder-only Transformer对所有token的键值使用相同维度，但局部与远距离token对预测影响不对称。本文提出距离自适应表示(DAR)，在局部窗口内保持全维度，对窗口外token使用1/4维度。实验表明，在70M到1B参数规模上，DAR性能接近全维度基线，而均匀降维效果更差。该工作挑战了维度均匀假设，为自适应分配序列表示能力、减少推理KV缓存提供了新方向。",
+      "tags": "query:pic",
+      "abstract_en": "Decoder-only Transformers compute attention over the KV cache of preceding tokens. Keys (and Values) are typically represented with the same dimensionality, regardless of its distance from the prediction target. In natural language, however, the next word is most strongly influenced by the immediately preceding tokens. We hypothesize that local and distant tokens impose asymmetric demands on representational capacity: local tokens are more critical for predicting immediate outputs and thus require richer representations, whereas distant tokens primarily serve as long-range memory, for which lower-dimensional representations may suffice. We formalize this idea as Distance-Adaptive Representation (DAR), implemented in a controlled setting that preserves full-dimensional representations within a local context window while assigning reduced-dimensional representations (e.g. 1/4 of the original dimensionality) to tokens beyond that window. Across multiple pretraining scales (70M to 410M parameters), as well as continued supervised fine-tuning on a 1B-scale model, this approach closely matches the performance of full-dimensional baselines. In contrast, uniformly reducing dimensionality across all token positions leads to worse performance. These results challenge the common assumption that key and value dimensionality should be uniform across token positions. Our findings suggest a new direction for designing attention architectures that adaptively allocate representational capacity across sequences, enabling further reductions in KV cache during inference.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
