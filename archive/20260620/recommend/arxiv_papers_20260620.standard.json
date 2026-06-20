@@ -1,0 +1,99 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-20T20:19:53.273431+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.19719v1",
+      "source": "arxiv",
+      "title": "Closing the Calibration Gap in Semantic Caching",
+      "abstract": "Semantic caching cuts LLM inference costs by serving a cached response to semantically similar queries. Standard practice evaluates these systems using PR-AUC, a metric that only measures how well scores rank and ignores whether they are usable at a fixed threshold. We show this mismatch leads to systematically poor deployment choices, as models with the highest PR-AUC are often the worst in operation. We introduce Precision-Cache Hit Ratio (P-CHR) AUC, a cache-aware metric that measures precision across cache utilization levels, and Calibration Retention Rate (CRR), which captures how much offline ranking quality survives at deployment. We decompose the operational gap between offline and deployed quality into a recoverable calibration component and an irreducible structural component fixed by the dataset's positive rate. Our experiments show that the calibration gap is governed by the training objective rather than data scale, and post-hoc calibration only partially closes it. Ultimately, model selection for semantic caching is a calibration problem, not a ranking one, and measuring it is the first step to closing the gap.",
+      "authors": [
+        "Aditeya Baral",
+        "Radoslav Ralev",
+        "Iliya Sotirov Zhechev",
+        "Srijith Rajamohan",
+        "Jen Agarwal"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-18T02:34:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.19719v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "semantic caching for LLM inference cost reduction",
+      "llm_evidence_cn": "语义缓存用于降低LLM推理成本",
+      "llm_evidence": "语义缓存用于降低LLM推理成本",
+      "canonical_evidence": "语义缓存用于降低LLM推理成本",
+      "llm_tldr_en": "Proposes new metrics (P-CHR AUC and CRR) to fix the calibration gap in semantic caching systems, improving deployment decisions for LLM inference cost reduction.",
+      "llm_tldr_cn": "语义缓存通过缓存相似查询的响应来降低LLM推理成本，但现有评估指标PR-AUC无法反映实际部署效果。本文提出缓存感知的P-CHR AUC和校准保持率CRR，分解离线和部署质量差距，从而改善语义缓存系统的评估与选择，显著提升实际推理加速效果。",
+      "llm_tldr": "语义缓存通过缓存相似查询的响应来降低LLM推理成本，但现有评估指标PR-AUC无法反映实际部署效果。本文提出缓存感知的P-CHR AUC和校准保持率CRR，分解离线和部署质量差距，从而改善语义缓存系统的评估与选择，显著提升实际推理加速效果。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.15555v1",
+      "source": "arxiv",
+      "title": "Service-Induced Congestion in Memory-Constrained LLM Serving",
+      "abstract": "In large language model (LLM) serving, each request accumulates persistent graphics processing unit (GPU) memory during service as its key-value cache grows with every generated token. Under high concurrency, aggregate memory usage therefore increases endogenously over time: the service process itself creates future capacity pressure. When memory capacity is exceeded, systems evict active requests, discarding cached state and restarting them later, which wastes computation and reduces throughput. We develop a discrete-time dynamical model of memory-constrained LLM inference that captures admission, memory growth, and eviction under continuous batching. In the saturated-input regime, the system admits both eviction-free fixed points and limit cycles with evictions. For homogeneous workloads, we show that the eviction-free equilibrium is unstable and that, except for a Lebesgue-measure-zero exact-capture set, the system converges to a unique worst-case limit cycle that is asymptotically stable outside this exceptional set, with throughput losses as large as 50%. For heterogeneous workloads, we prove a stability criterion in the two-class common-input setting and explain how the survival-polynomial mechanism generalizes to multiple classes and heterogeneous-input lengths. Under an input-dominated scaling regime, coprime decoding lengths stabilize the eviction-free equilibrium, while non-coprime lengths create synchronized modes that drive instability. These results characterize when workload heterogeneity desynchronizes completions and helps stabilize memory-constrained serving. More broadly, we identify service-induced congestion as a structural instability mechanism and derive scheduling design principles for sustaining high throughput.",
+      "authors": [
+        "Ruicheng Ao",
+        "Jing Dong",
+        "Gan Luo",
+        "David Simchi-Levi"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC",
+        "cs.AI",
+        "cs.LG",
+        "stat.ML"
+      ],
+      "published": "2026-06-14T02:49:03+00:00",
+      "link": "https://arxiv.org/pdf/2606.15555v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "models memory-constrained LLM serving with KV cache growth and eviction",
+      "llm_evidence_cn": "建模内存受限的LLM服务中KV缓存增长与驱逐",
+      "llm_evidence": "建模内存受限的LLM服务中KV缓存增长与驱逐",
+      "canonical_evidence": "建模内存受限的LLM服务中KV缓存增长与驱逐",
+      "llm_tldr_en": "Models memory-constrained LLM serving with KV cache growth and eviction, analyzing fixed points and limit cycles under continuous batching.",
+      "llm_tldr_cn": "针对LLM服务中KV缓存不断增长导致的内存压力问题，该论文建立了离散时间动力学模型，捕获了请求准入、缓存增长和驱逐过程。在饱和输入下，系统存在无驱逐的稳态和带驱逐的极限环。该工作为理解KV缓存管理中的拥塞现象提供了理论框架。",
+      "llm_tldr": "针对LLM服务中KV缓存不断增长导致的内存压力问题，该论文建立了离散时间动力学模型，捕获了请求准入、缓存增长和驱逐过程。在饱和输入下，系统存在无驱逐的稳态和带驱逐的极限环。该工作为理解KV缓存管理中的拥塞现象提供了理论框架。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

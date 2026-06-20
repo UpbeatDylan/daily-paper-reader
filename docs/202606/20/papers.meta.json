@@ -1,0 +1,39 @@
+{
+  "label": "2026-06-20",
+  "date": "2026-06-20",
+  "generated_at": "2026-06-20T20:24:57",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202606/20/2606.19719v1-closing-the-calibration-gap-in-semantic-caching",
+      "section": "deep",
+      "title_en": "Closing the Calibration Gap in Semantic Caching",
+      "authors": "Aditeya Baral, Radoslav Ralev, Iliya Sotirov Zhechev, Srijith Rajamohan, Jen Agarwal",
+      "date": "2026-06-18",
+      "pdf": "https://arxiv.org/pdf/2606.19719v1",
+      "score": "8.0",
+      "evidence": "语义缓存用于降低LLM推理成本",
+      "tldr": "语义缓存的常用指标PR-AUC仅衡量排序质量，忽略固定阈值下的实用性，导致部署选择错误。本文提出缓存感知的P-CHR AUC和校准保持率CRR，将离线与部署差距分解为可恢复的校准部分和不可约的结构部分。实验表明校准差距由训练目标决定，数据规模影响小，事后校准仅部分弥补。模型选择本质是校准问题而非排序问题。",
+      "tags": "query:pic",
+      "abstract_en": "Semantic caching cuts LLM inference costs by serving a cached response to semantically similar queries. Standard practice evaluates these systems using PR-AUC, a metric that only measures how well scores rank and ignores whether they are usable at a fixed threshold. We show this mismatch leads to systematically poor deployment choices, as models with the highest PR-AUC are often the worst in operation. We introduce Precision-Cache Hit Ratio (P-CHR) AUC, a cache-aware metric that measures precision across cache utilization levels, and Calibration Retention Rate (CRR), which captures how much offline ranking quality survives at deployment. We decompose the operational gap between offline and deployed quality into a recoverable calibration component and an irreducible structural component fixed by the dataset's positive rate. Our experiments show that the calibration gap is governed by the training objective rather than data scale, and post-hoc calibration only partially closes it. Ultimately, model selection for semantic caching is a calibration problem, not a ranking one, and measuring it is the first step to closing the gap.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/20/2606.15555v1-service-induced-congestion-in-memory-constrained-llm-serving",
+      "section": "quick",
+      "title_en": "Service-Induced Congestion in Memory-Constrained LLM Serving",
+      "authors": "Ruicheng Ao, Jing Dong, Gan Luo, David Simchi-Levi",
+      "date": "2026-06-14",
+      "pdf": "https://arxiv.org/pdf/2606.15555v1",
+      "score": "7.0",
+      "evidence": "建模内存受限的LLM服务中KV缓存增长与驱逐",
+      "tldr": "大语言模型服务中，每个请求的键值缓存随生成token增长，高并发下内存内源性增长导致容量超限，引发驱逐和重启浪费计算。本文建立离散时间动力学模型分析连续批处理下的内存增长与驱逐，发现同质负载下免驱逐平衡不稳定，系统收敛至吞吐损失达50%的极限环，而异质负载和互质解码长度可稳定系统。揭示了服务引发拥塞的结构不稳定机制，为高吞吐调度设计提供原则。",
+      "tags": "query:pic",
+      "abstract_en": "In large language model (LLM) serving, each request accumulates persistent graphics processing unit (GPU) memory during service as its key-value cache grows with every generated token. Under high concurrency, aggregate memory usage therefore increases endogenously over time: the service process itself creates future capacity pressure. When memory capacity is exceeded, systems evict active requests, discarding cached state and restarting them later, which wastes computation and reduces throughput. We develop a discrete-time dynamical model of memory-constrained LLM inference that captures admission, memory growth, and eviction under continuous batching. In the saturated-input regime, the system admits both eviction-free fixed points and limit cycles with evictions. For homogeneous workloads, we show that the eviction-free equilibrium is unstable and that, except for a Lebesgue-measure-zero exact-capture set, the system converges to a unique worst-case limit cycle that is asymptotically stable outside this exceptional set, with throughput losses as large as 50%. For heterogeneous workloads, we prove a stability criterion in the two-class common-input setting and explain how the survival-polynomial mechanism generalizes to multiple classes and heterogeneous-input lengths. Under an input-dominated scaling regime, coprime decoding lengths stabilize the eviction-free equilibrium, while non-coprime lengths create synchronized modes that drive instability. These results characterize when workload heterogeneity desynchronizes completions and helps stabilize memory-constrained serving. More broadly, we identify service-induced congestion as a structural instability mechanism and derive scheduling design principles for sustaining high throughput.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

@@ -6,40 +6,28 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-19
-- 运行时间：2026-06-19 21:32:04 UTC
+- 最新运行日期：2026-06-20
+- 运行时间：2026-06-20 20:24:51 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：3
-- 速读区：3
+- 本次总论文数：2
+- 精读区：1
+- 速读区：1
 
 ### 今日简报（AI）
-今日日报聚焦KV缓存优化与LLM系统效率，共6篇论文。  
-最值得看的两篇精读分别提出基于CXL互连的稀疏注意力KV缓存分离系统（SAC）和面向上下文密集型代理的4-bit KV缓存量化（UltraQuant），均获9/10高分。  
-建议普通读者优先关注KV缓存压缩与硬件协同设计方向，这对降低LLM推理成本有直接帮助。
-- 详情：[/202606/19/README](/202606/19/README)
+1) 今日精读语义缓存的校准方法，并速读内存受限LLM服务中的拥塞问题。  
+2) 最值得关注《Closing the Calibration Gap in Semantic Caching》（8.0分），它解决了缓存命中率偏差的关键矛盾；《Service-Induced Congestion in Memory-Constrained LLM Serving》（7.0分）则揭示了资源限制下的系统瓶颈。  
+3) 建议优先精读校准方法论文，可迅速提升缓存系统实用性；同时留意拥塞分析，利于优化部署成本。
+- 详情：[/202606/20/README](/202606/20/README)
 
 ### 精读区论文标签
-1. [SAC: Disaggregated KV Cache System for Sparse Attention LLMs with CXL](/202606/19/2606.19746v1-sac-disaggregated-kv-cache-system-for-sparse-attention-llms-with-cxl)  
-   标签：评分：9.0/10、query:pic
-   evidence：面向稀疏注意力LLM的KV缓存系统
-2. [UltraQuant: 4-bit KV Caching for Context-Heavy Agents](/202606/19/2606.20474v1-ultraquant-4-bit-kv-caching-for-context-heavy-agents)  
-   标签：评分：9.0/10、query:pic
-   evidence：面向重上下文智能体的4位KV缓存，直接解决KV缓存复用
-3. [CacheWeaver: Cache-Aware Evidence Ordering for Efficient Grounded RAG Inference](/202606/19/2606.19667v1-cacheweaver-cache-aware-evidence-ordering-for-efficient-grounded-rag-inference)  
+1. [Closing the Calibration Gap in Semantic Caching](/202606/20/2606.19719v1-closing-the-calibration-gap-in-semantic-caching)  
    标签：评分：8.0/10、query:pic
-   evidence：缓存感知的证据排序以提高RAG中前缀缓存重用
+   evidence：语义缓存用于降低LLM推理成本
 
 ### 速读区论文标签
-1. [ReMP: Low-Downtime Runtime Model-Parallelism Reconfiguration for LLM Serving](/202606/19/2606.18741v1-remp-low-downtime-runtime-model-parallelism-reconfiguration-for-llm-serving)  
-   标签：评分：6.0/10、query:pic
-   evidence：处理并行重配置中的KV缓存丢失
-2. [PACMS: Submodular Context Selection as a Pluggable Engine for LLM Agents](/202606/19/2606.20047v1-pacms-submodular-context-selection-as-a-pluggable-engine-for-llm-agents)  
-   标签：评分：6.0/10、query:pic
-   evidence：面向LLM智能体的子模上下文选择，与上下文缓存相关
-3. [Execution-State Capsules: Graph-Bound Execution-State Checkpoint and Restore for Low-Latency, Small-Batch, On-Device Physical-AI Serving](/202606/19/2606.20537v1-execution-state-capsules-graph-bound-execution-state-checkpoint-and-restore-for-low-latency-small-batch-on-device-physical-ai-serving)  
-   标签：评分：6.0/10、query:pic
-   evidence：讨论KV缓存前缀重用的局限性，提出执行状态胶囊作为完整状态检查点
+1. [Service-Induced Congestion in Memory-Constrained LLM Serving](/202606/20/2606.15555v1-service-induced-congestion-in-memory-constrained-llm-serving)  
+   标签：评分：7.0/10、query:pic
+   evidence：建模内存受限的LLM服务中KV缓存增长与驱逐
 
 
 <div class="dpr-home-promo-card">

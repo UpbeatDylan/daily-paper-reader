@@ -1,6 +1,11 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-06-20 <!--dpr-date:20260620-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/20/2606.19719v1-closing-the-calibration-gap-in-semantic-caching" data-sidebar-item="{&quot;title&quot;: &quot;Closing the Calibration Gap in Semantic Caching&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.19719v1-closing-the-calibration-gap-in-semantic-caching&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;语义缓存用于降低LLM推理成本&quot;}">Closing the Calibration Gap in Semantic Caching</a>
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/20/2606.15555v1-service-induced-congestion-in-memory-constrained-llm-serving" data-sidebar-item="{&quot;title&quot;: &quot;Service-Induced Congestion in Memory-Constrained LLM Serving&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.15555v1-service-induced-congestion-in-memory-constrained-llm-serving&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;建模内存受限的LLM服务中KV缓存增长与驱逐&quot;}">Service-Induced Congestion in Memory-Constrained LLM Serving</a>
   * 2026-06-19 <!--dpr-date:20260619-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/19/2606.19746v1-sac-disaggregated-kv-cache-system-for-sparse-attention-llms-with-cxl" data-sidebar-item="{&quot;title&quot;: &quot;SAC: Disaggregated KV Cache System for Sparse Attention LLMs with CXL&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.19746v1-sac-disaggregated-kv-cache-system-for-sparse-attention-llms-with-cxl&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;面向稀疏注意力LLM的KV缓存系统&quot;}">SAC: Disaggregated KV Cache System for Sparse Attention LLMs with CXL</a>
