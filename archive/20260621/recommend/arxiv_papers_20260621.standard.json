@@ -1,0 +1,183 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-21T21:05:34.429504+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2606.16310v1",
+      "source": "arxiv",
+      "title": "QK-Normed MLA: QK normalization without full key caching",
+      "abstract": "Query-key (QK) normalization stabilizes attention by controlling the scale of queries and keys before the dot product, but is not immediately compatible with Multi-head Latent Attention (MLA). MLA achieves efficient decoding by caching low-dimensional latent states instead of full keys, whereas post-projection QK RMSNorm appears to require the fully projected key for every cached token. We show this apparent incompatibility is an implementation artifact, not an architectural constraint. RMSNorm decomposes into a static affine weight and a dynamic scalar RMS statistic. The static key-side weight can be absorbed into the MLA query-side projection; the dynamic key statistic reduces to one inverse-RMS scalar per token and KV group. The resulting formulation is exactly equivalent to explicit post-projection QK RMSNorm in exact arithmetic and preserves MLA's latent decode path. In our 400M runs trained for up to 100B tokens, QK-Normed MLA achieves lower training loss and better downstream accuracy than QK clipping, while H800 decode benchmarks show less than 2% latency overhead up to 256k context. These results make QK normalization a practical stabilization option for MLA models without requiring full-key caching.",
+      "authors": [
+        "Yizhou Han",
+        "Yao Zhao",
+        "Jun Zhou",
+        "Longfei Li",
+        "Ruoyu Sun"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-06-15T07:16:30+00:00",
+      "link": "https://arxiv.org/pdf/2606.16310v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache optimization for MLA",
+      "llm_evidence_cn": "MLA的KV缓存优化",
+      "llm_evidence": "MLA的KV缓存优化",
+      "canonical_evidence": "MLA的KV缓存优化",
+      "llm_tldr_en": "Proposes QK normalization for Multi-head Latent Attention without full key caching, enabling efficient decoding with minimal overhead.",
+      "llm_tldr_cn": "多头潜在注意力（MLA）通过缓存低维潜在状态实现高效解码，但QK归一化看似需要完整键。本文证明该不兼容是实现伪像，通过吸收静态权重和动态标量实现无需完整键缓存的QK归一化，显著降低内存开销。",
+      "llm_tldr": "多头潜在注意力（MLA）通过缓存低维潜在状态实现高效解码，但QK归一化看似需要完整键。本文证明该不兼容是实现伪像，通过吸收静态权重和动态标量实现无需完整键缓存的QK归一化，显著降低内存开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.15453v1",
+      "source": "arxiv",
+      "title": "A Spatio-Temporal Expert Prefetching Framework for Efficient MoE-based LLM Inference",
+      "abstract": "Mixture-of-Experts (MoE) based large language models (LLMs), such as Qwen and DeepSeek, have recently emerged as an effective approach to improving model capacity without proportionally increasing computational cost. By replacing the conventional feed-forward network in dense LLMs with a set of experts and activating only a subset of them for each input token, MoE models significantly increase the total number of parameters while keeping the per-token computation relatively manageable. However, this dynamic and irregular expert activation pattern also introduces substantial expert loading overhead during inference, since the required experts must be fetched on demand according to token-dependent routing results. As a result, expert loading latency becomes a major source of performance and energy inefficiency. To this end, we first perform a comprehensive analysis of expert selection behavior in various MoE-based LLMs and applications, including language understanding and code generation. Our analysis reveals that, within each application domain, expert requests exhibit strong correlation across both adjacent MoE layers and consecutive decoding tokens, making future expert activations predictable. Based on this insight, we propose ST-MoE, a spatio-temporal expert prefetching framework that proactively stages experts ahead of use to overlap expert loading with ongoing computation. ST-MoE combines a lightweight runtime prediction mechanism that preserves the original routing behavior with a reconfigurable hardware design that efficiently supports dynamic expert prefetching. The combined effect of the prediction mechanism with the supporting hardware significantly improves MoE inference performance and energy efficiency while preserving model inference accuracy.",
+      "authors": [
+        "Yingnan Zhao",
+        "Razvan Bunescu",
+        "Ahmed Louri",
+        "Avinash Karanth",
+        "Ke Wang"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.LG"
+      ],
+      "published": "2026-06-13T20:09:54+00:00",
+      "link": "https://arxiv.org/pdf/2606.15453v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "expert prefetching for MoE inference, reducing expert loading overhead",
+      "llm_evidence_cn": "MoE专家预取，减少专家加载开销",
+      "llm_evidence": "MoE专家预取，减少专家加载开销",
+      "canonical_evidence": "MoE专家预取，减少专家加载开销",
+      "llm_tldr_en": "Proposes spatio-temporal expert prefetching framework to reduce expert loading latency in MoE-based LLM inference, accelerating inference.",
+      "llm_tldr_cn": "MoE大模型推理中，动态专家激活导致显著的专家加载开销。本文提出时空专家预取框架，通过预测未来令牌的专家需求并提前加载，减少等待时间。实验在多种MoE模型上降低解码延迟，是对推理加速的补充方法，但非直接KV缓存优化。",
+      "llm_tldr": "MoE大模型推理中，动态专家激活导致显著的专家加载开销。本文提出时空专家预取框架，通过预测未来令牌的专家需求并提前加载，减少等待时间。实验在多种MoE模型上降低解码延迟，是对推理加速的补充方法，但非直接KV缓存优化。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.18431v1",
+      "source": "arxiv",
+      "title": "Beyond Prediction: Tail-Aware Scheduling for LLM Inference",
+      "abstract": "LLM serving exhibits extreme length variability, making size-based scheduling difficult in practice. Recent LLM schedulers approximate SJF/SRPT using predicted decode lengths or ranks and primarily report mean-centric metrics such as TTFT and TBT. We show that these prediction-driven policies can be fragile under distribution shifts, bursty arrivals, and GPU memory pressure, while offering limited control over the tail latency (P90-P99) that dominates user experience, even with perfect decode-length knowledge. We introduce a distribution-aware, prediction-free scheduling framework that replaces explicit length prediction with soft priority boosting driven by lightweight statistical signals. Our design co-optimizes scheduling and cache-aware preemption to account for memory-coupled decode dynamics across workload mixes. Evaluated on production and open-source traces, our method reduces P99 TTLT by up to 35-50% relative to SRPT with perfect length knowledge and reduces TTFT by 34-47% across workloads, including reasoning-heavy and chat-heavy tasks. These results demonstrate a robust alternative for optimizing tail latency in online LLM serving.",
+      "authors": [
+        "Yueying Li",
+        "Yuanfan Chen",
+        "Jiayang Chen",
+        "Esha Choukse",
+        "Haoran Qiu",
+        "G. Edward Suh",
+        "Rodrigo Fonseca",
+        "Ziv Scully",
+        "Udit Gupta"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-06-16T19:25:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.18431v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "tail-aware scheduling for LLM inference with cache-aware preemption, relevant to long-context inference acceleration",
+      "llm_evidence_cn": "面向LLM推理的尾部感知调度，结合缓存感知的抢占，与长上下文推理加速相关",
+      "llm_evidence": "面向LLM推理的尾部感知调度，结合缓存感知的抢占，与长上下文推理加速相关",
+      "canonical_evidence": "面向LLM推理的尾部感知调度，结合缓存感知的抢占，与长上下文推理加速相关",
+      "llm_tldr_en": "This paper introduces a prediction-free, distribution-aware scheduling framework for LLM inference that co-optimizes scheduling and cache-aware preemption to reduce tail latency under memory pressure, relevant for long-context workloads.",
+      "llm_tldr_cn": "本文提出一种无预测、分布感知的LLM推理调度框架，通过轻量级统计信号实现软优先级提升，并与缓存感知预取结合。在内存压力下，该框架能有效控制P90-P99尾部延迟，优于预测驱动策略。该工作为长上下文推理中的调度与缓存协同优化提供了新视角。",
+      "llm_tldr": "本文提出一种无预测、分布感知的LLM推理调度框架，通过轻量级统计信号实现软优先级提升，并与缓存感知预取结合。在内存压力下，该框架能有效控制P90-P99尾部延迟，优于预测驱动策略。该工作为长上下文推理中的调度与缓存协同优化提供了新视角。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.18741v1",
+      "source": "arxiv",
+      "title": "ReMP: Low-Downtime Runtime Model-Parallelism Reconfiguration for LLM Serving",
+      "abstract": "Current large language model (LLM) inference systems universally deploy ultra-large-scale models using a combination of Tensor Parallelism (TP) and Pipeline Parallelism (PP). However, existing systems treat the model parallelism topology as a static configuration that cannot be flexibly adjusted at runtime. This rigid design creates a fundamental contradiction with the dynamically changing inference workloads in real-world scenarios. State-of-the-art systems lack online reconfiguration capabilities and can only switch configurations by restarting the service, resulting in several minutes of service interruption, KV cache loss, and prohibitive recomputation overhead. To address this problem, this paper presents ReMP, a runtime model parallelism reconfiguration framework that supports low downtime. ReMP achieves dynamic adjustment through three key techniques: (1) decoupling the model parallelism topology from runtime state to avoid full service reconstruction; (2) designing a two-dimensional KV cache migration mechanism to preserve reusable cache states after TP/PP changes; and (3) implementing end-to-end online reconfiguration. Experiments demonstrate that ReMP can complete most topology switches within 1-7 seconds on models ranging from 7B to 70B parameters, achieving speedups of tens to over a hundred times compared to the restart approach. Moreover, ReMP significantly outperforms fixed configurations under dynamic workloads, delivering superior performance in terms of TTFT, TPOT, and output throughput.",
+      "authors": [
+        "Haipeng Yuan",
+        "Kaining Zheng",
+        "Yongshu Bai",
+        "Yuchen Zhang",
+        "Yunquan Zhang",
+        "Baodong Wu",
+        "Xiang Gao",
+        "Daning Cheng"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-06-17T06:36:40+00:00",
+      "link": "https://arxiv.org/pdf/2606.18741v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "addresses KV cache loss during runtime reconfiguration",
+      "llm_evidence_cn": "解决运行时重配置中的KV缓存丢失问题",
+      "llm_evidence": "解决运行时重配置中的KV缓存丢失问题",
+      "canonical_evidence": "解决运行时重配置中的KV缓存丢失问题",
+      "llm_tldr_en": "ReMP enables low-downtime model parallelism reconfiguration for LLM serving, preserving KV cache to avoid recomputation overhead.",
+      "llm_tldr_cn": "现有LLM推理系统无法在线调整并行配置，重启服务会导致数分钟中断、KV缓存丢失和高昂重计算开销。ReMP提出运行时模型并行重配置方法，通过保存和迁移KV缓存，在切换拓扑时避免数据丢失，大幅降低服务中断时间。实验表明，该方法有效支持动态负载变化，提升推理效率。",
+      "llm_tldr": "现有LLM推理系统无法在线调整并行配置，重启服务会导致数分钟中断、KV缓存丢失和高昂重计算开销。ReMP提出运行时模型并行重配置方法，通过保存和迁移KV缓存，在切换拓扑时避免数据丢失，大幅降低服务中断时间。实验表明，该方法有效支持动态负载变化，提升推理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
