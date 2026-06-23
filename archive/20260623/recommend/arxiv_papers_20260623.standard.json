@@ -1,0 +1,324 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-23T22:00:09.954534+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2606.21238v1",
+      "source": "arxiv",
+      "title": "Recency/Frequency Adaptive KV Caching for Large Language Model Serving",
+      "abstract": "Key-value (KV) caching is a powerful technique for accelerating large language model inference and generation. Inference workloads are large and diverse, which makes them difficult to cache effectively. Existing cache management strategies adopt the least-recently-used policy for evicting cache blocks. However, LRU leads to multiple unrelated workloads flushing each other's caches. To address this, we integrate adaptive caching that dynamically allocates cache space between recently and frequently occurring KV blocks. Evaluations show that it improves the KV cache hit rate by up to 10.8% and reduces time to first token by up to 12.6% over naive vLLM on synthetic document question answering workloads, and 2.1% and 2.0% respectively on real-world conversation workloads. The method generalizes well to batch inference and demonstrates clear interpretability while effectively accommodating diverse workloads.",
+      "authors": [
+        "Yang Shen",
+        "Meghana Madhyastha",
+        "Robert Underwood",
+        "Bogdan Nicolae",
+        "Randal Burns"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-19T09:05:01+00:00",
+      "link": "https://arxiv.org/pdf/2606.21238v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "adaptive KV caching for LLM serving improving hit rate and TTFT",
+      "llm_evidence_cn": "自适应KV缓存用于LLM服务，提升命中率和首Token延迟",
+      "llm_evidence": "自适应KV缓存用于LLM服务，提升命中率和首Token延迟",
+      "canonical_evidence": "自适应KV缓存用于LLM服务，提升命中率和首Token延迟",
+      "llm_tldr_en": "Recency/Frequency adaptive KV caching dynamically allocates cache space between recent and frequent blocks, improving hit rate by 10.8% and reducing TTFT by 12.6%.",
+      "llm_tldr_cn": "现有LLM服务中KV缓存采用最近最少使用策略，多任务场景下相互冲刷。本文提出自适应缓存，根据访问频率和时效性动态分配缓存空间。在文档问答负载上KV缓存命中率提升10.8%，首Token延迟降低12.6%。",
+      "llm_tldr": "现有LLM服务中KV缓存采用最近最少使用策略，多任务场景下相互冲刷。本文提出自适应缓存，根据访问频率和时效性动态分配缓存空间。在文档问答负载上KV缓存命中率提升10.8%，首Token延迟降低12.6%。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.21848v1",
+      "source": "arxiv",
+      "title": "Keyless Attention: Value-Space Routing and Value-Only Caching for Efficient Transformers",
+      "abstract": "We propose Keyless Attention, an attention mechanism that eliminates the key projection entirely, operating over queries and values only. This yields a Value-Only Cache that reduces KV cache memory and access overhead by exactly 50% over standard attention, while matching or exceeding standard attention's decode throughput. Beyond efficiency, we introduce Depth-$m$ Attention Factorization: standard attention computes a depth-2 factorization of the attention bilinear form, while Keyless Attention realizes a depth-$m$ instance of this family. At m=3, Keyless Attention matches the projection matrix count of standard attention via a value-space routing matrix that replaces the key projection and introduces a coupling between routing and retrieval. Experiments across five models and four architectures (GPT-2 280M, GPT-2 557M, Pythia 410M, Qwen2 1.5B, and Llama 3.2 1B) show that Keyless Attention matches or outperforms standard QKV attention on perplexity in 4 out of 5 models. On downstream zero-shot evaluation (GPT-2 557M), Keyless Attention outperforms on 4 out of 5 commonsense reasoning benchmarks, while achieving 50% KV cache reduction throughout.",
+      "authors": [
+        "Xin Gao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-20T03:12:30+00:00",
+      "link": "https://arxiv.org/pdf/2606.21848v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Value-Only Cache reduces KV cache memory by 50%",
+      "llm_evidence_cn": "仅值缓存将KV缓存内存减少50%",
+      "llm_evidence": "仅值缓存将KV缓存内存减少50%",
+      "canonical_evidence": "仅值缓存将KV缓存内存减少50%",
+      "llm_tldr_en": "Keyless Attention proposes a value-only cache that halves KV cache memory while matching decode throughput, enabling more efficient transformer inference.",
+      "llm_tldr_cn": "Keyless Attention提出了一种去键注意力机制，完全消除键投影并采用仅值缓存，将KV缓存内存和访问开销降低50%，同时保持或超越标准注意力的解码吞吐量。通过值空间路由矩阵替代键投影，实现了注意力双线性形式的深度m分解，在m=3时匹配标准注意力的投影矩阵数量。该方法在保持模型容量的同时显著减少了缓存需求，为高效Transformer推理提供了新思路。",
+      "llm_tldr": "Keyless Attention提出了一种去键注意力机制，完全消除键投影并采用仅值缓存，将KV缓存内存和访问开销降低50%，同时保持或超越标准注意力的解码吞吐量。通过值空间路由矩阵替代键投影，实现了注意力双线性形式的深度m分解，在m=3时匹配标准注意力的投影矩阵数量。该方法在保持模型容量的同时显著减少了缓存需求，为高效Transformer推理提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22874v1",
+      "source": "arxiv",
+      "title": "SpotAttention: Plug-In Block-Sparse Routing for Pretrained Long-Context Transformers",
+      "abstract": "Long contexts have become standard in pretrained LLMs, yet they remain expensive to run: prefill compute grows quadratically with sequence length, and every decode step re-reads a key-value cache that grows linearly with it. Sparse attention cuts these costs by attending only to a relevant subset of past tokens, but selecting that subset is itself expensive. We present SpotAttention, a lightweight selector that attaches to a frozen pretrained transformer and learns by KL distillation to estimate its attention distribution. The selector picks the top-K keys each query attends to, and because its estimate is a calibrated distribution, a dual top-p rule reads the per-query, per-layer budget directly from it. Across Qwen3 (dense, 4B-32B) and Qwen3.5 (hybrid linear/full attention, 4B-9B), SpotAttention matches dense accuracy at contexts up to 128K tokens, eight times the training length. Decode at L=128K runs 3.9x faster than FlashAttention and 1.8x faster than Twilight, the strongest training-free baseline. Quantizing the selector's K-cache to INT4 or FP4 microscale shrinks it 3.5x at no accuracy cost.",
+      "authors": [
+        "Huzama Ahmad",
+        "Se-Young Yun"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-22T05:39:12+00:00",
+      "link": "https://arxiv.org/pdf/2606.22874v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "sparse attention for long-context acceleration",
+      "llm_evidence_cn": "用于长上下文加速的稀疏注意力",
+      "llm_evidence": "用于长上下文加速的稀疏注意力",
+      "canonical_evidence": "用于长上下文加速的稀疏注意力",
+      "llm_tldr_en": "SpotAttention uses KL distillation to learn a lightweight selector that picks top-K keys for sparse attention, reducing prefill and decode costs for long-context LLMs.",
+      "llm_tldr_cn": "该论文针对预训练长上下文Transformer推理成本高的问题，提出SpotAttention：一个轻量级选择器，通过KL蒸馏学习预测注意力分布，为每个查询选择top-K键，并利用双重top-p规则动态分配每层预算。该方法可直接插入冻结的预训练模型，无需微调。实验表明，SpotAttention在Qwen3等模型上大幅减少KV缓存读取和计算，加速长上下文推理，同时保持输出质量。",
+      "llm_tldr": "该论文针对预训练长上下文Transformer推理成本高的问题，提出SpotAttention：一个轻量级选择器，通过KL蒸馏学习预测注意力分布，为每个查询选择top-K键，并利用双重top-p规则动态分配每层预算。该方法可直接插入冻结的预训练模型，无需微调。实验表明，SpotAttention在Qwen3等模型上大幅减少KV缓存读取和计算，加速长上下文推理，同时保持输出质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.21633v1",
+      "source": "arxiv",
+      "title": "HERALD: High-Throughput Block Diffusion LLM Serving via CPU-GPU Cooperative KV Cache Retrieval",
+      "abstract": "Diffusion LLMs (dLLMs) improve GPU utilization over autoregressive decoding by generating multiple tokens per forward pass, but their KV cache still grows linearly with context, limiting throughput at long contexts. KV cache offloading to host DRAM alleviates this memory pressure, but the limited PCIe bandwidth necessitates recalling only a sparse subset of KV entries. In block dLLMs, the relevant KV entries remain consistent across denoising steps within a block, enabling high-accuracy selection by identifying the top-k entries once and reusing them throughout all denoising steps. This property appears attractive for offloading as it amortizes the selection overhead across the entire block, but it requires exact attention over the full KV cache, which is too expensive under offloading. We present HERALD, a KV offloading system for block dLLMs that resolves this through two opportunities that reduce the required selection compute by a factor of the block size and enable selection to be overlapped with denoising. Across three block dLLMs and five long context tasks, HERALD achieves near-lossless accuracy at 5-10% KV budget and up to 1.59x lower per block latency and 2.47x higher throughput over GPU-only inference, with speedups growing with context length.",
+      "authors": [
+        "Omin Kwon",
+        "Doyeon Kim",
+        "Jongseok Park",
+        "Seung Yul Lee",
+        "Ion Stoica",
+        "Jae W. Lee"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-19T17:36:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.21633v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache offloading and sparse retrieval for reuse in block diffusion LLMs",
+      "llm_evidence_cn": "块扩散LLM中的KV缓存卸载与稀疏检索复用",
+      "llm_evidence": "块扩散LLM中的KV缓存卸载与稀疏检索复用",
+      "canonical_evidence": "块扩散LLM中的KV缓存卸载与稀疏检索复用",
+      "llm_tldr_en": "HERALD uses CPU-GPU cooperative KV cache retrieval for block diffusion LLMs, achieving high throughput by reusing sparse KV entries across denoising steps.",
+      "llm_tldr_cn": "针对扩散LLM中KV缓存随上下文线性增长限制吞吐量的问题，HERALD提出CPU-GPU协作的KV缓存检索方案，利用块扩散中相关KV条目跨去噪步骤一致的特点，通过稀疏检索和重用大幅降低PCIe传输开销，在长上下文下实现高吞吐服务。",
+      "llm_tldr": "针对扩散LLM中KV缓存随上下文线性增长限制吞吐量的问题，HERALD提出CPU-GPU协作的KV缓存检索方案，利用块扩散中相关KV条目跨去噪步骤一致的特点，通过稀疏检索和重用大幅降低PCIe传输开销，在长上下文下实现高吞吐服务。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.21868v1",
+      "source": "arxiv",
+      "title": "WiSP: A Working-Set View of Mixture-of-Experts Serving on Extremely Low-Resource Hardware",
+      "abstract": "Modern Mixture-of-Experts (MoE) models place most of their parameters in expert layers, yet only a small fraction of those experts are used for any token. The unused weights must still be stored where the GPU can reach them. On commodity GPUs the common fix is layer-level CPU offloading, which keeps memory low but streams all of a layer's experts across PCIe on every forward pass, losing much of MoE's sparsity benefit. We cast low-resource MoE serving as a working-set management problem on the GPU: routed expert weights and the key-value (KV) cache are two streams of memory demand competing for limited VRAM. We realize this in WiSP (Working-Set Paging), a routing-aware expert pager that plugs into an unmodified serving engine with byte-identical outputs. Keeping resident only the experts a workload reuses, WiSP reaches up to 1.95x the decode throughput of static offload at the same memory budget when the model does not fit. We also find that prefetching experts from predicted routing helps little in single-stream decode: the bottleneck is PCIe bandwidth, not prediction accuracy. This shifts the question from prefetching to allocation: how should VRAM be split between experts and the KV cache? We answer with MV-WSA (Marginal-Value Working-Set Allocation), which equalizes marginal latency benefit per byte subject to a KV admission floor. MV-WSA runs either as an offline configurator or as an online controller that resizes both pools while serving. In real serving the offline configurator is the only policy we test that does well on both prefill and decode; in trace-driven simulation it stays within a few percent of a per-workflow oracle while fixed splits are about 20% worse. The online controller adds a further 1.20x without changing model outputs.",
+      "authors": [
+        "Jiamu Zhang",
+        "Liang Wu",
+        "Mayank Darbari",
+        "Liangjie Hong"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-20T04:10:34+00:00",
+      "link": "https://arxiv.org/pdf/2606.21868v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache as memory demand competing with expert weights",
+      "llm_evidence_cn": "KV缓存与专家权重竞争内存",
+      "llm_evidence": "KV缓存与专家权重竞争内存",
+      "canonical_evidence": "KV缓存与专家权重竞争内存",
+      "llm_tldr_en": "WiSP frames low-resource MoE serving as working-set management, paging KV cache and expert weights; directly addresses KV cache reuse in constrained memory.",
+      "llm_tldr_cn": "该论文将低资源MoE模型的推理服务视为工作集管理问题，其中路由后的专家权重和KV缓存竞争有限的显存。WiSP提出了路由感知的专家换页机制，动态管理KV缓存与专家权重的内存占用，实现超出物理显存容量的大模型服务。该方法直接涉及KV缓存的复用与换出，在极低资源硬件上显著提升吞吐量，为KV缓存管理提供了新视角。",
+      "llm_tldr": "该论文将低资源MoE模型的推理服务视为工作集管理问题，其中路由后的专家权重和KV缓存竞争有限的显存。WiSP提出了路由感知的专家换页机制，动态管理KV缓存与专家权重的内存占用，实现超出物理显存容量的大模型服务。该方法直接涉及KV缓存的复用与换出，在极低资源硬件上显著提升吞吐量，为KV缓存管理提供了新视角。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.19719v2",
+      "source": "arxiv",
+      "title": "Closing the Calibration Gap in Semantic Caching",
+      "abstract": "Semantic caching cuts LLM inference costs by serving a cached response to semantically similar queries. Standard practice evaluates these systems using PR-AUC, a metric that only measures how well scores rank and ignores whether they are usable at a fixed threshold. We show this mismatch leads to systematically poor deployment choices, as models with the highest PR-AUC are often the worst in operation. We introduce Precision-Cache Hit Ratio (P-CHR) AUC, a cache-aware metric that measures precision across cache utilization levels, and Calibration Retention Rate (CRR), which captures how much offline ranking quality survives at deployment. We decompose the operational gap between offline and deployed quality into a recoverable calibration component and an irreducible structural component fixed by the dataset's positive rate. Our experiments show that the calibration gap is governed by the training objective rather than data scale, and post-hoc calibration only partially closes it. Ultimately, model selection for semantic caching is a calibration problem, not a ranking one, and measuring it is the first step to closing the gap.",
+      "authors": [
+        "Aditeya Baral",
+        "Radoslav Ralev",
+        "Iliya Sotirov Zhechev",
+        "Srijith Rajamohan",
+        "Jen Agarwal"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-18T02:34:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.19719v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "semantic caching calibration for LLM inference cost reduction",
+      "llm_evidence_cn": "语义缓存校准用于降低LLM推理成本",
+      "llm_evidence": "语义缓存校准用于降低LLM推理成本",
+      "canonical_evidence": "语义缓存校准用于降低LLM推理成本",
+      "llm_tldr_en": "Semantic caching reduces LLM inference costs but standard metrics misalign with deployment; P-CHR AUC and CRR are proposed to bridge the calibration gap.",
+      "llm_tldr_cn": "语义缓存通过缓存语义相似查询的响应来降低LLM推理成本，但现有评估指标与部署效果存在偏差。本文提出精度-缓存命中率AUC和校准保持率，分解了离线与部署质量之间的差距，使缓存系统更实用。",
+      "llm_tldr": "语义缓存通过缓存语义相似查询的响应来降低LLM推理成本，但现有评估指标与部署效果存在偏差。本文提出精度-缓存命中率AUC和校准保持率，分解了离线与部署质量之间的差距，使缓存系统更实用。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.21842v1",
+      "source": "arxiv",
+      "title": "Agent-Assisted Side-Channel Attacks on Non-Prefix KV Cache in RAG",
+      "abstract": "Modern Large Language Model (LLM) serving engines increasingly rely on Retrieval-Augmented Generation (RAG) and non-prefix Key-Value (KV) cache fusion to accelerate long-context, multi-tenant inference. While existing KV cache side-channel attacks require strict linear prefix alignment--rendering them ineffective against real-world RAG queries that contain unique, user-specific private prefixes--we uncover a critical class of structural vulnerabilities inherent to chunk-aware memory scheduling. We demonstrate that the deterministic micro-architectural mechanisms used to align and fuse disjoint memory chunks inadvertently leak a continuous \"Step-Wave\" timing signature. Exploiting this physical observation, we introduce SpliceLeak, the first end-to-end side-channel attack targeting non-prefix KV cache fusion. SpliceLeak executes a systematic two-phase privacy breach: it first structurally fingerprints the exact length of hidden private prompts, and subsequently manipulates boundary collisions to extract exact semantic content token-by-token. Extensive evaluations on production-grade frameworks (vLLM integrated with LMCache) demonstrate that SpliceLeak achieves up to a 100% extraction success rate in bounded-entropy scenarios. Driven by a deterministic +104 ms hardware latency void, the attack requires as few as 63 requests per token, piercing through realistic continuous batching noise. To resolve the inherent conflict between memory deduplication and security, we propose SpliceDefense, a bipartite mitigation framework consisting of Quantized Chunk Padding (QCP) and Constant-Time Boundary Fusion (CTBF). Our evaluations confirm that SpliceDefense effectively flattens the side-channel signal (Delta TTFT ~ 0) with negligible throughput overhead, preserving the critical benefits of global cache sharing.",
+      "authors": [
+        "He Sun",
+        "Shinan Liu",
+        "Siyuan Ma",
+        "Junhao Li",
+        "Mingjun Xiao",
+        "Wenhao Jiang"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-06-20T02:28:28+00:00",
+      "link": "https://arxiv.org/pdf/2606.21842v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache side-channel attack reveals structure of non-prefix KV cache",
+      "llm_evidence_cn": "KV缓存侧信道攻击揭示了非前缀KV缓存的结构",
+      "llm_evidence": "KV缓存侧信道攻击揭示了非前缀KV缓存的结构",
+      "canonical_evidence": "KV缓存侧信道攻击揭示了非前缀KV缓存的结构",
+      "llm_tldr_en": "SpliceLeak uses timing side-channel to exploit structural vulnerabilities in non-prefix KV cache fusion for RAG, revealing step-wave signatures.",
+      "llm_tldr_cn": "现代LLM服务引擎采用非前缀KV缓存融合加速长上下文推理，但存在结构漏洞。本文发现拼接内存块时微观架构泄露步波时序信号，并实现首个端到端侧信道攻击SpliceLeak，揭示了非前缀KV缓存的安全隐患。",
+      "llm_tldr": "现代LLM服务引擎采用非前缀KV缓存融合加速长上下文推理，但存在结构漏洞。本文发现拼接内存块时微观架构泄露步波时序信号，并实现首个端到端侧信道攻击SpliceLeak，揭示了非前缀KV缓存的安全隐患。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.22327v1",
+      "source": "arxiv",
+      "title": "Geometry-Aware Online Scheduling for LLM Serving: From Theoretical Bound to System Practice",
+      "abstract": "The explosive demand for interactive Large Language Model serving has highlighted the management of the Key-Value cache's dynamic memory footprint as a critical area for performance optimization in inference engines. Modern inference systems overwhelmingly rely on time-centric scheduling heuristics, such as Shortest Job First. However, their theoretical optimality is rooted in traditional schedule modeling, failing to capture the highly dynamic, 2D spatio-temporal geometric growth specific to LLM inference mechanisms. To resolve this, we propose the geometry-aware online scheduling by introducing the Smallest Volume First (SVF) algorithm and its highly efficient variant, 1-bit SVF. Theoretically, we provide a rigorous mathematical foundation for our approach. Utilizing a novel proof methodology, we tighten the worst-case competitive ratio ($\\text{CR} \\le 48 \\rightarrow \\text{CR} \\le 5$) for SVF with known output lengths. Building upon this core breakthrough, we complete a comprehensive theoretical taxonomy analyzing our algorithms across different traffic scenarios and information availability. Practically, we seamlessly integrate our approach as a plug-and-play layer in vLLM. Extensive evaluations on Llama-3.1 models demonstrate comprehensive performance gains: SVF delivers strong reductions in both average and tail latency, while 1-bit SVF, with merely a single bit information, achieves competitive throughput and latency. This work establishes a theoretically sound and empirically proven approach for resolving memory-constrained scheduling in modern LLM deployments. To facilitate future research, our code is available at https://github.com/Aurora-Kl/Geometry-Aware-Online-Scheduling.git.",
+      "authors": [
+        "Li Kong",
+        "Qi Qi",
+        "Yinyu Ye",
+        "Zijie Zhou"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-21T04:05:38+00:00",
+      "link": "https://arxiv.org/pdf/2606.22327v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache dynamic memory management for inference scheduling",
+      "llm_evidence_cn": "KV缓存动态内存管理与推理调度",
+      "llm_evidence": "KV缓存动态内存管理与推理调度",
+      "canonical_evidence": "KV缓存动态内存管理与推理调度",
+      "llm_tldr_en": "Proposes geometry-aware online scheduling (SVF) for LLM serving that optimizes KV cache memory footprint, improving throughput under long contexts.",
+      "llm_tldr_cn": "该论文针对LLM推理中KV缓存动态内存占用问题，提出几何感知在线调度算法Smallest Volume First（SVF），通过考虑KV缓存的2D时空几何特征进行调度，理论证明其最优性并设计高效变体1-bit SVF，显著提升长上下文下的服务吞吐量。",
+      "llm_tldr": "该论文针对LLM推理中KV缓存动态内存占用问题，提出几何感知在线调度算法Smallest Volume First（SVF），通过考虑KV缓存的2D时空几何特征进行调度，理论证明其最优性并设计高效变体1-bit SVF，显著提升长上下文下的服务吞吐量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
