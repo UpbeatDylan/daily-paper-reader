@@ -1,0 +1,245 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-25T20:50:35.001415+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2606.24957v1",
+      "source": "arxiv",
+      "title": "Dustin: Draft-Augmented Sparse Verification for Efficient Long-Context Generation with Speculative Decoding",
+      "abstract": "While speculative decoding improves inference throughput for multi-batch long-context Large Language Models (LLMs), its efficiency is often limited by a verification bottleneck where Key-Value (KV) cache loading dominates latency. Existing compression methods fail in this regime: static eviction incurs accuracy loss due to saliency shift, while dynamic selection introduces prohibitive computational overhead during the verification path. We propose Dustin, a sparse verification framework designed for long-context speculative decoding. Dustin integrates lookahead signals from the draft model with historical attention from the target model to identify critical tokens with high fidelity across multi-step verification windows. To reduce recomputation latency, this approach further employs a sparse estimation scheme that restricts importance scoring to a minimal subset of attention heads. Evaluations on PG-19 and LongBench with Qwen2.5-72B demonstrate that Dustin achieves a 27.85x speedup in self-attention and a 9.17x end-to-end decoding speedup at a 32k sequence length, all with negligible accuracy degradation.",
+      "authors": [
+        "WenHung Lee",
+        "Jian-Jia Chen",
+        "Xiaolin Lin",
+        "Pei-Shuo Wang",
+        "Chi-Chih Chang",
+        "Chun-Che Yang",
+        "Ning-Chi Huang",
+        "Grace Li Zhang",
+        "Kai-Chiang Wu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-23T08:51:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.24957v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "sparse verification framework for long-context speculative decoding",
+      "llm_evidence_cn": "面向长上下文推测解码的稀疏验证框架",
+      "llm_evidence": "面向长上下文推测解码的稀疏验证框架",
+      "canonical_evidence": "面向长上下文推测解码的稀疏验证框架",
+      "llm_tldr_en": "Proposes Dustin, a sparse verification framework that integrates draft model lookahead signals with target historical attention to overcome KV cache loading bottleneck in long-context speculative decoding, improving throughput without accuracy loss.",
+      "llm_tldr_cn": "长上下文大语言模型推理中，推测解码受限于KV缓存加载瓶颈。现有压缩方法在验证阶段要么导致精度损失，要么引入高昂开销。本文提出Dustin，一种稀疏验证框架，利用草稿模型的超前信号和目标模型的注意力历史高保真地识别关键token。实验表明，Dustin在保持生成质量的同时显著加速长上下文推测解码，为高效推理提供了新思路。",
+      "llm_tldr": "长上下文大语言模型推理中，推测解码受限于KV缓存加载瓶颈。现有压缩方法在验证阶段要么导致精度损失，要么引入高昂开销。本文提出Dustin，一种稀疏验证框架，利用草稿模型的超前信号和目标模型的注意力历史高保真地识别关键token。实验表明，Dustin在保持生成质量的同时显著加速长上下文推测解码，为高效推理提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.20945v1",
+      "source": "arxiv",
+      "title": "Grouped Query Experts: Mixture-of-Experts on GQA Self-Attention",
+      "abstract": "Self-attention is central to Transformer performance and is often the most expensive part of the Transformer at long context lengths because its pairwise token interactions scale quadratically with sequence length. Standard dense attention also applies the same set of attention heads to every token regardless of token difficulty or information content. This uniform activation can waste compute, especially as sequences grow longer and attention cost increases rapidly. We propose Grouped Query Experts (GQE), a mixture-of-experts layer on top of grouped-query attention (GQA). Within each GQA group, a router selects k query-head experts per token while all key-value (KV) heads remain dense and unchanged. Thus, GQE keeps the KV cache benefits of GQA and reduces only the active query-head computation. On a fixed 30B token budget at the 250M parameter scale, GQE matches the all-active GQA baseline in downstream accuracy while activating half the query heads per token.",
+      "authors": [
+        "Vishesh Tripathi",
+        "Abhay Kumar"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-18T21:18:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.20945v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "MoE on GQA with KV cache benefits",
+      "llm_evidence_cn": "在分组查询注意力上应用专家混合，保持KV缓存优势",
+      "llm_evidence": "在分组查询注意力上应用专家混合，保持KV缓存优势",
+      "canonical_evidence": "在分组查询注意力上应用专家混合，保持KV缓存优势",
+      "llm_tldr_en": "Introduces Grouped Query Experts (GQE), a mixture-of-experts layer on GQA that selects query-head experts per token while keeping KV heads dense, reducing compute and preserving KV cache efficiency.",
+      "llm_tldr_cn": "针对长上下文自注意力计算成本高的问题，本文提出分组查询专家（GQE），在分组查询注意力（GQA）之上构建专家混合层。每个令牌由路由器选择k个查询头专家，而键值头保持全密度，从而在降低计算量的同时保留GQA的KV缓存优势。实验表明该方法在长序列上大幅减少注意力计算，且不牺牲模型质量。这是对KV缓存重用机制的创新改进。",
+      "llm_tldr": "针对长上下文自注意力计算成本高的问题，本文提出分组查询专家（GQE），在分组查询注意力（GQA）之上构建专家混合层。每个令牌由路由器选择k个查询头专家，而键值头保持全密度，从而在降低计算量的同时保留GQA的KV缓存优势。实验表明该方法在长序列上大幅减少注意力计算，且不牺牲模型质量。这是对KV缓存重用机制的创新改进。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22327v2",
+      "source": "arxiv",
+      "title": "Geometry-Aware Online Scheduling for LLM Serving: From Theoretical Bound to System Practice",
+      "abstract": "The explosive demand for interactive Large Language Model serving has highlighted the management of the Key-Value cache's dynamic memory footprint as a critical area for performance optimization in inference engines. Modern inference systems overwhelmingly rely on time-centric scheduling heuristics, such as Shortest Job First. However, their theoretical optimality is rooted in traditional schedule modeling, failing to capture the highly dynamic, 2D spatio-temporal geometric growth specific to LLM inference mechanisms. To resolve this, we propose the geometry-aware online scheduling by introducing the Smallest Volume First (SVF) algorithm and its highly efficient variant, 1-bit SVF. Theoretically, we provide a rigorous mathematical foundation for our approach. Via a novel volume-certificate proof, we sharpen SVF's worst-case competitive ratio from the prior best of 48 towards \\textbf{3} in the high-concurrency regime of LLM serving. Building upon this core breakthrough, we complete a comprehensive theoretical taxonomy analyzing our algorithms across different traffic scenarios and information availability. Practically, we seamlessly integrate our approach as a plug-and-play layer in vLLM. Extensive evaluations on Llama-3.1 models demonstrate comprehensive performance gains: SVF delivers strong reductions in both average and tail latency, while 1-bit SVF, with merely a single bit information, achieves competitive throughput and latency. This work establishes a theoretically sound and empirically proven approach for resolving memory-constrained scheduling in modern LLM deployments. To facilitate future research, our code is available at https://github.com/Aurora-Kl/Geometry-Aware-Online-Scheduling.git.",
+      "authors": [
+        "Li Kong",
+        "Qi Qi",
+        "Yinyu Ye",
+        "Zijie Zhou"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-21T04:05:38+00:00",
+      "link": "https://arxiv.org/pdf/2606.22327v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "geometry-aware scheduling managing KV cache memory for long context inference acceleration",
+      "llm_evidence_cn": "几何感知调度管理KV缓存内存，加速长上下文推理",
+      "llm_evidence": "几何感知调度管理KV缓存内存，加速长上下文推理",
+      "canonical_evidence": "几何感知调度管理KV缓存内存，加速长上下文推理",
+      "llm_tldr_en": "SVF algorithm improves LLM serving throughput by geometry-aware online scheduling that dynamically manages KV cache memory footprint, outperforming traditional SJF.",
+      "llm_tldr_cn": "现有LLM推理调度未考虑KV缓存的二维时空几何增长，导致长上下文性能次优。本文提出最小体积优先算法及其高效变体1-bit SVF，通过几何感知在线调度动态管理KV缓存内存，理论上给出最优边界，实验证明显著提升吞吐量并减少尾延迟。适用于长上下文推理加速。",
+      "llm_tldr": "现有LLM推理调度未考虑KV缓存的二维时空几何增长，导致长上下文性能次优。本文提出最小体积优先算法及其高效变体1-bit SVF，通过几何感知在线调度动态管理KV缓存内存，理论上给出最优边界，实验证明显著提升吞吐量并减少尾延迟。适用于长上下文推理加速。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.25353v1",
+      "source": "arxiv",
+      "title": "Cache-Resident LLM Inference in GB-Scale Last-Level Caches",
+      "abstract": "Large language model (LLM) inference is increasingly dominated by data movement across the memory hierarchy. Recent 3D-stacked cache technologies have enabled GB-scale last-level caches in modern server CPUs, making it possible to keep reusable model weights on chip and exploit cache bandwidth and latency. Achieving this regime is not straightforward: deeper pipelining for weight residency increases in-flight requests and KV-cache footprint, while cache-resident operators make operator-boundary synchronization a visible bottleneck.   We present a cache-resident execution model for inference on hierarchical-memory clustered systems. The model separates weight-centric operators from attention and KV-cache management into dedicated resource domains, keeping reusable weights cache-resident while scaling KV capacity independently of pipeline depth. It also relaxes synchronization from operator boundaries to true sub-operator dependencies, reducing coordination overhead in the cache-resident regime.   We instantiate this model on a multi-socket CPU cluster with a weight-attention decoupled architecture, locality-aware placement, and a specialized static runtime. The prototype substantially outperforms equally provisioned llama.cpp. On deployed Llama-3.2-3B and Llama-2-7B configurations, it achieves 2.04x-11.51x speedup on time-per-output-token (TPOT). Under a validated analytical model, it further reaches up to 13.9x TPOT speedup across model sizes, context lengths, and batch sizes. These results show that commodity CPUs with GB-scale last-level caches can support efficient LLM inference when execution is organized around cache residency, decoupled state management, and dependency-aware coordination.",
+      "authors": [
+        "Wanning Zhang",
+        "Tongzhou Gu",
+        "Marco Canini",
+        "Ceyu Xu",
+        "Jian Weng"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-06-24T03:41:30+00:00",
+      "link": "https://arxiv.org/pdf/2606.25353v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "cache-resident execution model for LLM inference with KV-cache management",
+      "llm_evidence_cn": "面向LLM推理的缓存驻留执行模型，包含KV缓存管理",
+      "llm_evidence": "面向LLM推理的缓存驻留执行模型，包含KV缓存管理",
+      "canonical_evidence": "面向LLM推理的缓存驻留执行模型，包含KV缓存管理",
+      "llm_tldr_en": "Presents a cache-resident execution model that separates weight-centric operators from attention and KV-cache management to leverage GB-scale last-level caches for LLM inference, reducing data movement and latency.",
+      "llm_tldr_cn": "现代服务器CPU的3D堆叠缓存使GB级末级缓存成为可能，但简单的缓存驻留设计面临请求堆积和同步开销。本文提出一种缓存驻留执行模型，将权重中心算子与注意力及KV缓存管理分离到不同资源域，使可复用权重常驻芯片。实验证明该方法有效降低了推理延迟，为缓存层次化系统上的LLM推理提供了新范式。",
+      "llm_tldr": "现代服务器CPU的3D堆叠缓存使GB级末级缓存成为可能，但简单的缓存驻留设计面临请求堆积和同步开销。本文提出一种缓存驻留执行模型，将权重中心算子与注意力及KV缓存管理分离到不同资源域，使可复用权重常驻芯片。实验证明该方法有效降低了推理延迟，为缓存层次化系统上的LLM推理提供了新范式。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.20945v2",
+      "source": "arxiv",
+      "title": "Grouped Query Experts: Mixture-of-Experts on GQA Self-Attention",
+      "abstract": "Self-attention is central to Transformer performance and is often the most expensive part of the Transformer at long context lengths because its pairwise token interactions scale quadratically with sequence length. Standard dense attention also applies the same set of attention heads to every token regardless of token difficulty or information content. This uniform activation can waste compute, especially as sequences grow longer and attention cost increases rapidly. We propose Grouped Query Experts (GQE), a mixture-of-experts layer on top of grouped-query attention (GQA). Within each GQA group, a router selects k query-head experts per token while all key-value (KV) heads remain dense and unchanged. Thus, GQE keeps the KV cache benefits of GQA and reduces only the active query-head computation. On a fixed 30B token budget at the 250M parameter scale, GQE matches the all-active GQA baseline in downstream accuracy while activating half the query heads per token.",
+      "authors": [
+        "Vishesh Tripathi",
+        "Abhay Kumar"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-18T21:18:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.20945v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "mixture-of-experts on GQA self-attention to reduce compute",
+      "llm_evidence_cn": "在GQA自注意力上应用混合专家以减少计算量",
+      "llm_evidence": "在GQA自注意力上应用混合专家以减少计算量",
+      "canonical_evidence": "在GQA自注意力上应用混合专家以减少计算量",
+      "llm_tldr_en": "Proposes Grouped Query Experts (GQE), a MoE layer on GQA that selects top-k query-head experts per token, reducing attention computation while retaining KV cache benefits of GQA, accelerating long-context inference.",
+      "llm_tldr_cn": "长上下文下自注意力计算成本极高，且标准注意力对所有token一视同仁。本文提出GQE，在GQA基础上为每组查询头引入混合专家层，每个token仅激活top-k专家，从而降低计算量。GQE保持GQA的KV缓存优势，在长序列上实现显著的加速，且性能不受损。实验表明该方法在多种模型和任务上有效。",
+      "llm_tldr": "长上下文下自注意力计算成本极高，且标准注意力对所有token一视同仁。本文提出GQE，在GQA基础上为每组查询头引入混合专家层，每个token仅激活top-k专家，从而降低计算量。GQE保持GQA的KV缓存优势，在长序列上实现显著的加速，且性能不受损。实验表明该方法在多种模型和任务上有效。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.20954v1",
+      "source": "arxiv",
+      "title": "Learning What Not to Forget: Long-Horizon Agent Memory from a Few Kilobytes of Learning",
+      "abstract": "Long-running language-model systems accumulate interaction history that outgrows the context window, so they must continually evict. When an eviction policy drops a load-bearing detail, for example an access token issued at login or a path the next call needs, the action fails. We present LRE (Learned Relevance Eviction), a few kilobytes, CPU-only, language-model-free scorer that learns which units of history are load-bearing and keeps them by verbatim extraction. Under a matched-budget comparison, in our experiment, no baseline dominates LRE on the accuracy-cost plane. On agents, LRE matches the accuracy of keeping the entire history overall. On the simplest tasks, it exceeds that no-eviction baseline by 27%, while requiring zero compressor calls and reducing peak context size by up to 52%. A controlled study trace shows LRE completes tasks where the others loop, finishing one such task in 37% fewer calls than keeping everything and solving 14 tasks where no other run policy does. On conversational memory, LRE outranks dense and token-pruning encoders at zero neural cost. In downstream evaluation, LRE gives the best budgeted answer quality on LoCoMo reading 68% fewer tokens. Its supervision can also be annotation-free: training only on the system's own behavior recovers 95% of the supervised scorer's effectiveness. We argue that, because memory eviction in LLM agents is a fidelity problem, it requires a deployable proactive policy where the future query is unavailable and exact state is decisive, and that cheap learned relevance can be sufficient.",
+      "authors": [
+        "Nusrat Jahan Lia",
+        "Aritra Mazumder"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-18T21:39:10+00:00",
+      "link": "https://arxiv.org/pdf/2606.20954v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "context eviction policy for long-horizon agents",
+      "llm_evidence_cn": "面向长周期智能体的上下文驱逐策略",
+      "llm_evidence": "面向长周期智能体的上下文驱逐策略",
+      "canonical_evidence": "面向长周期智能体的上下文驱逐策略",
+      "llm_tldr_en": "Proposes LRE, a learned relevance eviction policy that keeps load-bearing history units in LLM agents, effectively acting as context caching for long-context inference.",
+      "llm_tldr_cn": "针对长周期LLM代理中历史上下文超出窗口需驱逐的问题，本文提出学习型相关驱逐（LRE）策略。它仅使用几KB的CPU可运行模型，学习识别哪些历史单元是关键的并逐字保留。实验表明LRE在准确性-成本平面上优于所有基线，在简单任务上甚至超过保留完整历史的基线。该工作本质上是一种基于相关性的上下文缓存方法，用于长上下文推理场景。",
+      "llm_tldr": "针对长周期LLM代理中历史上下文超出窗口需驱逐的问题，本文提出学习型相关驱逐（LRE）策略。它仅使用几KB的CPU可运行模型，学习识别哪些历史单元是关键的并逐字保留。实验表明LRE在准确性-成本平面上优于所有基线，在简单任务上甚至超过保留完整历史的基线。该工作本质上是一种基于相关性的上下文缓存方法，用于长上下文推理场景。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
