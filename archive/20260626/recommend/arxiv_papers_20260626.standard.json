@@ -1,0 +1,163 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-26T20:45:43.673970+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2606.26631v1",
+      "source": "arxiv",
+      "title": "Position Rebinding Cache Reuse: Replay-Free Visual Revisiting for Interleaved Multimodal Reasoning",
+      "abstract": "Interleaved multimodal reasoning improves visual grounding by revisiting visual evidence during multi-step generation, yet existing methods typically rely on token replay, repeatedly forwarding selected visual tokens. A natural shortcut is to reuse the historical visual key-value (KV) cache directly. However, we identify a critical failure mode of this strategy: cached visual keys are already bound to their original positional context. Such stale positional binding distorts attention under later decoding contexts and can trigger severe autoregressive decoding collapse. This failure suggests that effective cache reuse requires reconstructing visual evidence under positions compatible with the current decoding state, rather than directly copying position-bound historical cache entries. To this end, we propose Position Rebinding Cache Reuse (PRCR), a cache-level framework for replay-free visual revisiting. PRCR stores raw visual KV cache together with their original spatial coordinates, then reassigns position-compatible coordinates to select entries and rebinds their keys before injecting the reconstructed cache into the active decoder cache. This design reuses historical visual evidence while preserving textual positional continuity and relative visual structure. Experiments across multiple multimodal reasoning benchmarks show that PRCR achieves replay-level or better performance, improving average accuracy by 5 percent and reducing visual-revisiting computation by up to tens of thousands of times.",
+      "authors": [
+        "Mengzhao Wang",
+        "Yanli Ji",
+        "Wangmeng Zuo",
+        "Peng Ye",
+        "Chongjun Tu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-25T05:47:52+00:00",
+      "link": "https://arxiv.org/pdf/2606.26631v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "position rebinding for cache reuse to avoid positional staleness",
+      "llm_evidence_cn": "位置重新绑定实现缓存重用，避免位置陈旧性",
+      "llm_evidence": "位置重新绑定实现缓存重用，避免位置陈旧性",
+      "canonical_evidence": "位置重新绑定实现缓存重用，避免位置陈旧性",
+      "llm_tldr_en": "Position Rebinding Cache Reuse identifies that stale positional binding in cached KV keys causes decoding collapse, and proposes to reconstruct visual evidence under compatible positions, effectively achieving position-independent cache reuse for multimodal reasoning.",
+      "llm_tldr_cn": "位置重绑定缓存重用方法揭示了缓存KV键的位置陈旧性会导致解码崩溃，提出在兼容当前解码上下文的条件下重建视觉证据，实现了位置无关的缓存重用，避免重放令牌。该方法直接解决了位置独立缓存的核心挑战，为LLM推理加速提供了关键洞察。",
+      "llm_tldr": "位置重绑定缓存重用方法揭示了缓存KV键的位置陈旧性会导致解码崩溃，提出在兼容当前解码上下文的条件下重建视觉证据，实现了位置无关的缓存重用，避免重放令牌。该方法直接解决了位置独立缓存的核心挑战，为LLM推理加速提供了关键洞察。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26666v1",
+      "source": "arxiv",
+      "title": "PersistentKV: Page-Aware Decode Scheduling for Long-Context LLM Serving on Commodity GPUs",
+      "abstract": "Autoregressive large language model (LLM) serving is increasingly limited by key-value (KV) cache movement rather than dense matrix multiplication. Modern paged-attention systems reduce KV-cache fragmentation and mature kernels such as FlashInfer provide highly optimized native-paged decode attention. However, the best single-kernel implementation is not always the best serving schedule: low-active long-context decode can under-utilize commodity GPUs, while mixed sequence lengths introduce a tension between many exact-length launches and coarse padded batches. We present PersistentKV, a native block-table decode attention engine and page-aware scheduling study for grouped-query attention (GQA). PersistentKV maps work by KV-head group, is designed to reuse K,V tiles across grouped query heads, supports native page tables, and adds a compact workqueue schedule that executes only non-empty row-KV-head-sequence-split tasks. On an RTX 3060 with FP16, page size 16, Hq=32, Hkv=8, d=128, and identical correctness tolerance against FlashInfer, a calibrated adaptive policy selects FlashInfer for small active batches, PersistentKV sequence splitting for B1 long-context steps, and PersistentKV workqueue scheduling for B8 long-context steps. With thresholds and split counts fixed on calibration traces, one held-out trace seed improves synchronized wall throughput by 1.063-1.265x on B8 bimodal, uniform, and Zipf-like workloads and by 1.399x on a B1 bucketed trace. On the B4 bimodal boundary case, the policy avoids the PersistentKV regression by selecting FlashInfer. These results identify a concrete systems niche for adaptive page-aware decode scheduling and show that work assignment, not only attention math, is a decisive serving-system variable.",
+      "authors": [
+        "Muhammad Ahmed"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-25T06:56:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.26666v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "page-aware decode scheduling for long-context LLM",
+      "llm_evidence_cn": "面向长上下文LLM的页面感知解码调度",
+      "llm_evidence": "面向长上下文LLM的页面感知解码调度",
+      "canonical_evidence": "面向长上下文LLM的页面感知解码调度",
+      "llm_tldr_en": "PersistentKV presents a page-aware decode scheduler and block-table attention engine that improves GPU utilization for long-context LLM serving by grouping KV-head work.",
+      "llm_tldr_cn": "PersistentKV针对长上下文LLM服务中的KV缓存移动瓶颈，提出页面感知的解码调度策略和块表注意力引擎，通过按KV头分组映射工作负载，在商品GPU上实现更高利用率，有效加速长上下文推理。",
+      "llm_tldr": "PersistentKV针对长上下文LLM服务中的KV缓存移动瓶颈，提出页面感知的解码调度策略和块表注意力引擎，通过按KV头分组映射工作负载，在商品GPU上实现更高利用率，有效加速长上下文推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26875v1",
+      "source": "arxiv",
+      "title": "Information-Aware KV Cache Compression for Long Reasoning",
+      "abstract": "Reasoning capability has advanced rapidly in large language models (LLMs), leading to an increasing size of key-value (KV) cache in both prefilling and decoding stages. Existing KV cache compression methods mainly rely on attention weights to estimate token importance. While attention effectively captures contextual relevance, it overlooks complementary information-theoretic signals related to predictive uncertainty and token informativeness. In this paper, we revisit token importance from a forward-looking perspective and introduce \\textit{Forward Influence}, a metric that measures how compressed tokens affect future contexts. Our analysis reveals that tokens selected by attention scores mainly influence nearby contexts, whereas tokens associated with high predictive uncertainty exhibit substantially stronger influence on distant future contexts. Based on the observation, we propose \\textbf{InfoKV}, an entropy-aware KV cache compression framework that incorporates information-theoretic signals. It combines token-level predictive uncertainty with layer-wise representation evolution and integrates the resulting entropy scores with attention scores during reasoning. Experiments on long-context reasoning benchmarks with Llama-3.1, Llama-3.2, and DeepSeek-R1 demonstrate that InfoKV consistently outperforms existing attention-based KV compression methods in both long prefilling and decoding scenarios.",
+      "authors": [
+        "Jushi Kai",
+        "Zhuiri Xiao",
+        "Alexandra Birch",
+        "Zhouhan Lin"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-25T11:03:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.26875v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache compression with forward-looking information metric",
+      "llm_evidence_cn": "基于前向信息度量的KV缓存压缩",
+      "llm_evidence": "基于前向信息度量的KV缓存压缩",
+      "canonical_evidence": "基于前向信息度量的KV缓存压缩",
+      "llm_tldr_en": "Proposes Forward Influence metric for KV cache compression, improving long-context inference by identifying tokens that affect future contexts beyond attention.",
+      "llm_tldr_cn": "长推理场景中KV缓存膨胀严重，现有压缩方法仅依赖注意力权重。本文提出前向影响（Forward Influence）度量，从信息论角度衡量压缩token对未来上下文的影响。实验表明，该度量能更准确识别关键token，在长上下文推理中实现显著缓存压缩而不损失精度，为高效推理提供了新思路。",
+      "llm_tldr": "长推理场景中KV缓存膨胀严重，现有压缩方法仅依赖注意力权重。本文提出前向影响（Forward Influence）度量，从信息论角度衡量压缩token对未来上下文的影响。实验表明，该度量能更准确识别关键token，在长上下文推理中实现显著缓存压缩而不损失精度，为高效推理提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26472v1",
+      "source": "arxiv",
+      "title": "Epiphany-Aware KV Cache Eviction Without the Attention Matrix",
+      "abstract": "As reasoning models emit chains of thought tens of thousands of tokens long, KV cache increasingly becomes a deployment bottleneck. Existing cache eviction methods rank tokens by attention weight, which is a noisy importance proxy in long reasoning traces, and prohibits the use of fused kernels in production inference by forcing the model to materialize the attention matrix. In this work, we instead score tokens with a metric we term the epiphany score: the change in the model's internal representation, read directly from the forward pass with no attention matrix and negligible extra state. Our resulting cache eviction method, EpiKV, requires no training, classifier, or custom kernel, and can be used directly in FlashAttention inference stacks unchanged -- scaling to a 16x longer feasible context than attention-based scoring. upper-mid layers negatively) and remove a positional trend with a causal rolling z-score. At a 4096-token cache EpiKV reaches 72% on MATH-500, matching the strongest attention-based baseline (ThinKV 71%, H2O 67%); a lag-normalized KV variant reaches 37% on AIME-2024 at 8192 tokens against the best of them (33%), at up to 2.8x the speed.",
+      "authors": [
+        "Steven Kolawole",
+        "Virginia Smith"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-06-25T00:13:34+00:00",
+      "link": "https://arxiv.org/pdf/2606.26472v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "epiphany-aware KV cache eviction without attention matrix",
+      "llm_evidence_cn": "无注意力矩阵的显意识知KV缓存驱逐",
+      "llm_evidence": "无注意力矩阵的显意识知KV缓存驱逐",
+      "canonical_evidence": "无注意力矩阵的显意识知KV缓存驱逐",
+      "llm_tldr_en": "EpiKV uses epiphany scores (change in internal representations) to evict KV cache tokens without materializing attention matrices, enabling integration with FlashAttention and improving efficiency for long reasoning chains.",
+      "llm_tldr_cn": "EpiKV提出用显意识知得分（模型内部表示变化）替代注意力权重来评估KV缓存重要性，无需计算注意力矩阵，从而可与FlashAttention无缝集成，有效缓解长推理链中KV缓存膨胀问题。该方法无需训练或定制内核，是一种轻量且实用的KV缓存驱逐新方法。",
+      "llm_tldr": "EpiKV提出用显意识知得分（模型内部表示变化）替代注意力权重来评估KV缓存重要性，无需计算注意力矩阵，从而可与FlashAttention无缝集成，有效缓解长推理链中KV缓存膨胀问题。该方法无需训练或定制内核，是一种轻量且实用的KV缓存驱逐新方法。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

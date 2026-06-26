@@ -6,38 +6,35 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-25
-- 运行时间：2026-06-25 20:55:04 UTC
+- 最新运行日期：2026-06-26
+- 运行时间：2026-06-26 20:47:58 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：3
-- 速读区：3
+- 本次总论文数：4
+- 精读区：4
+- 速读区：0
 
 ### 今日简报（AI）
-今日收录6篇论文（精读3篇），重点关注长上下文生成中的投机解码验证机制和分组查询专家注意力优化。最值得精读的是《Dustin》提出的草稿增强稀疏验证（9分）和《Grouped Query Experts》的创新分组专家架构（8分）。建议普通读者优先理解这两篇如何通过投机解码和分组注意力提升大模型推理效率。
-- 详情：[/202606/25/README](/202606/25/README)
+今日精读两篇核心论文，聚焦多模态推理缓存复用与长上下文LLM解码调度。  
+最值得关注的是《Position Rebinding Cache Reuse》提出的无重放重访机制，以及《PersistentKV》的页感知调度方法。  
+建议进一步关注这两个方向在大型多模态模型和长序列服务中的落地效果。
+- 详情：[/202606/26/README](/202606/26/README)
 
 ### 精读区论文标签
-1. [Dustin: Draft-Augmented Sparse Verification for Efficient Long-Context Generation with Speculative Decoding](/202606/25/2606.24957v1-dustin-draft-augmented-sparse-verification-for-efficient-long-context-generation-with-speculative-decoding)  
+1. [Position Rebinding Cache Reuse: Replay-Free Visual Revisiting for Interleaved Multimodal Reasoning](/202606/26/2606.26631v1-position-rebinding-cache-reuse-replay-free-visual-revisiting-for-interleaved-multimodal-reasoning)  
+   标签：评分：10.0/10、query:pic
+   evidence：位置重新绑定实现缓存重用，避免位置陈旧性
+2. [PersistentKV: Page-Aware Decode Scheduling for Long-Context LLM Serving on Commodity GPUs](/202606/26/2606.26666v1-persistentkv-page-aware-decode-scheduling-for-long-context-llm-serving-on-commodity-gpus)  
    标签：评分：9.0/10、query:pic
-   evidence：面向长上下文推测解码的稀疏验证框架
-2. [Grouped Query Experts: Mixture-of-Experts on GQA Self-Attention](/202606/25/2606.20945v1-grouped-query-experts-mixture-of-experts-on-gqa-self-attention)  
+   evidence：面向长上下文LLM的页面感知解码调度
+3. [Information-Aware KV Cache Compression for Long Reasoning](/202606/26/2606.26875v1-information-aware-kv-cache-compression-for-long-reasoning)  
+   标签：评分：9.0/10、query:pic
+   evidence：基于前向信息度量的KV缓存压缩
+4. [Epiphany-Aware KV Cache Eviction Without the Attention Matrix](/202606/26/2606.26472v1-epiphany-aware-kv-cache-eviction-without-the-attention-matrix)  
    标签：评分：8.0/10、query:pic
-   evidence：在分组查询注意力上应用专家混合，保持KV缓存优势
-3. [Geometry-Aware Online Scheduling for LLM Serving: From Theoretical Bound to System Practice](/202606/25/2606.22327v2-geometry-aware-online-scheduling-for-llm-serving-from-theoretical-bound-to-system-practice)  
-   标签：评分：8.0/10、query:pic
-   evidence：几何感知调度管理KV缓存内存，加速长上下文推理
+   evidence：无注意力矩阵的显意识知KV缓存驱逐
 
 ### 速读区论文标签
-1. [Cache-Resident LLM Inference in GB-Scale Last-Level Caches](/202606/25/2606.25353v1-cache-resident-llm-inference-in-gb-scale-last-level-caches)  
-   标签：评分：7.0/10、query:pic
-   evidence：面向LLM推理的缓存驻留执行模型，包含KV缓存管理
-2. [Grouped Query Experts: Mixture-of-Experts on GQA Self-Attention](/202606/25/2606.20945v2-grouped-query-experts-mixture-of-experts-on-gqa-self-attention)  
-   标签：评分：6.0/10、query:pic
-   evidence：在GQA自注意力上应用混合专家以减少计算量
-3. [Learning What Not to Forget: Long-Horizon Agent Memory from a Few Kilobytes of Learning](/202606/25/2606.20954v1-learning-what-not-to-forget-long-horizon-agent-memory-from-a-few-kilobytes-of-learning)  
-   标签：评分：6.0/10、query:pic
-   evidence：面向长周期智能体的上下文驱逐策略
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">
