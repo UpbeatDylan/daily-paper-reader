@@ -1,0 +1,24 @@
+{
+  "label": "2026-06-27",
+  "date": "2026-06-27",
+  "generated_at": "2026-06-27T21:18:44",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202606/27/2606.24506v1-crosspool-efficient-multi-llm-serving-for-cold-moe-models-through-kv-cache-and-weight-disaggregation",
+      "section": "deep",
+      "title_en": "CrossPool: Efficient Multi-LLM Serving for Cold MoE Models through KV-Cache and Weight Disaggregation",
+      "authors": "Zhuoren Ye, Tianyu Wo, Dinghao Xue, Mingming Zhang, Yuchen Teng, Chunming Hu, Renyu Yang",
+      "date": "2026-06-23",
+      "pdf": "https://arxiv.org/pdf/2606.24506v1",
+      "score": "9.0",
+      "evidence": "KV缓存与权重解聚实现高效多LLM服务",
+      "tldr": "冷MoE模型服务面临GPU内存浪费问题：静态权重与动态KV-cache竞争内存，且低并发下KV容量利用率低。CrossPool将FFN权重与KV-cache分离为两个GPU内存池，权重池合并冷模型，KV-cache池动态服务请求，并保持注意力局部化。结合KV-cache规划器、层流水线调度和持久内核，减少控制开销。在突发长上下文请求下，P99 TBT相比现有系统降低10.4倍，显著提升多模型服务效率。",
+      "tags": "query:pic",
+      "abstract_en": "Emerging LLM services increasingly host many sparse MoE models, yet most models receive sparse requests and remain cold. This creates a GPU memory problem: model weights are stable and model-determined, while KV-cache is transient and demand-determined. Because cold models rarely reach peak KV-cache demand at the same time, reserving worst-case KV capacity per model wastes memory; a shared KV-cache pool can instead provision aggregate active demand. However, KV-cache sharing is not sufficient when weights and KV-cache remain in a monolithic GPU memory pool. Static weights compete with dynamic KV-cache, and KV-head-limited attention under cold, low-concurrency traffic exposes only a fraction of replicated KV capacity, leading to low GPU memory utilization and weak long-context support. We present CrossPool, a serving engine for cold MoE models that separates FFN weights and KV-cache into two GPU memory pools: a weights pool that consolidates FFN weights across cold models, and a KV-cache pool that dynamically serves active requests while keeping attention local to KV-cache. CrossPool combines a KV-cache planner and virtualizer, a layer-wise pipeline scheduler that hides hidden-state transfers, and persistent kernels with control lowering to reduce CPU-GPU control overhead. With efficient GPU memory pooling, CrossPool underpins bursty long-context requests and outperforms the state-of-the-art kvcached-based multi-LLM serving system, reducing P99 TBT by up to $10.4\\times$.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

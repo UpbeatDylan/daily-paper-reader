@@ -1,0 +1,60 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-27T21:17:35.902085+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2606.24506v1",
+      "source": "arxiv",
+      "title": "CrossPool: Efficient Multi-LLM Serving for Cold MoE Models through KV-Cache and Weight Disaggregation",
+      "abstract": "Emerging LLM services increasingly host many sparse MoE models, yet most models receive sparse requests and remain cold. This creates a GPU memory problem: model weights are stable and model-determined, while KV-cache is transient and demand-determined. Because cold models rarely reach peak KV-cache demand at the same time, reserving worst-case KV capacity per model wastes memory; a shared KV-cache pool can instead provision aggregate active demand. However, KV-cache sharing is not sufficient when weights and KV-cache remain in a monolithic GPU memory pool. Static weights compete with dynamic KV-cache, and KV-head-limited attention under cold, low-concurrency traffic exposes only a fraction of replicated KV capacity, leading to low GPU memory utilization and weak long-context support. We present CrossPool, a serving engine for cold MoE models that separates FFN weights and KV-cache into two GPU memory pools: a weights pool that consolidates FFN weights across cold models, and a KV-cache pool that dynamically serves active requests while keeping attention local to KV-cache. CrossPool combines a KV-cache planner and virtualizer, a layer-wise pipeline scheduler that hides hidden-state transfers, and persistent kernels with control lowering to reduce CPU-GPU control overhead. With efficient GPU memory pooling, CrossPool underpins bursty long-context requests and outperforms the state-of-the-art kvcached-based multi-LLM serving system, reducing P99 TBT by up to $10.4\\times$.",
+      "authors": [
+        "Zhuoren Ye",
+        "Tianyu Wo",
+        "Dinghao Xue",
+        "Mingming Zhang",
+        "Yuchen Teng",
+        "Chunming Hu",
+        "Renyu Yang"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG",
+        "cs.PF"
+      ],
+      "published": "2026-06-23T12:34:09+00:00",
+      "link": "https://arxiv.org/pdf/2606.24506v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV-cache and weight disaggregation for efficient multi-LLM serving",
+      "llm_evidence_cn": "KV缓存与权重解聚实现高效多LLM服务",
+      "llm_evidence": "KV缓存与权重解聚实现高效多LLM服务",
+      "canonical_evidence": "KV缓存与权重解聚实现高效多LLM服务",
+      "llm_tldr_en": "Proposes CrossPool, a system that disaggregates KV-cache and weights for cold MoE models, enabling efficient KV-cache sharing and reducing memory waste.",
+      "llm_tldr_cn": "针对冷MoE模型服务中KV缓存和权重的内存竞争问题，提出CrossPool框架，通过KV缓存与权重解聚实现共享KV缓存池。该方法避免了静态权重与动态缓存的冲突，提高了GPU内存利用率。实验表明，在低并发场景下显著提升了推理吞吐量，为多模型服务提供了高效缓存复用方案。",
+      "llm_tldr": "针对冷MoE模型服务中KV缓存和权重的内存竞争问题，提出CrossPool框架，通过KV缓存与权重解聚实现共享KV缓存池。该方法避免了静态权重与动态缓存的冲突，提高了GPU内存利用率。实验表明，在低并发场景下显著提升了推理吞吐量，为多模型服务提供了高效缓存复用方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}
