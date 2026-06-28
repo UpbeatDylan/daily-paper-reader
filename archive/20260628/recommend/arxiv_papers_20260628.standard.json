@@ -1,0 +1,97 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-28T21:15:48.849668+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2606.26762v1",
+      "source": "arxiv",
+      "title": "ProtoKV: Streaming Video Understanding under Delayed Query with Summary-State Memory",
+      "abstract": "Streaming video understanding (SVU) must answer queries that arrive asynchronously while visual tokens stream continuously under strict GPU-memory and query-time latency budgets. A key challenge is delayed query: decisive cues may appear briefly, yet many subsequent updates occur before the query arrives, increasing the risk that those cues are evicted or diluted under bounded memory. We propose ProtoKV, a constant-footprint SVU memory that represents far history as a fixed-capacity summary state rather than retaining token instances. ProtoKV keeps an exact near-window KV cache and aggregates older content into a semantic-spatial prototype bank with residual statistics. At query time, each prototype is exposed through a bounded pseudo-token interface that is drop-in compatible with standard attention. Under matched budgets and comparable query-time cost, ProtoKV improves accuracy by up to 12.5 points over token-retention baselines on SVU benchmarks in the long-delay regime, with gains that grow as query delay increases.",
+      "authors": [
+        "Le Tu Ngoc Minh",
+        "Jinyeong Lim",
+        "Dongsu Han"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-25T08:47:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.26762v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Summary-state memory for streaming, akin to context caching",
+      "llm_evidence_cn": "摘要状态记忆用于流式处理，类似于上下文缓存",
+      "llm_evidence": "摘要状态记忆用于流式处理，类似于上下文缓存",
+      "canonical_evidence": "摘要状态记忆用于流式处理，类似于上下文缓存",
+      "llm_tldr_en": "Proposes ProtoKV with a summary-state memory that aggregates far history into prototypes, enabling efficient streaming video understanding under delayed queries.",
+      "llm_tldr_cn": "流视频理解面临延迟查询挑战，关键线索可能被后续更新冲淡。ProtoKV提出恒足迹记忆机制，将远距离历史压缩为固定容量的摘要状态（原型），保持精确的近窗口KV缓存。查询时通过有界伪令牌暴露原型，实现了在严格GPU内存和延迟预算下的高效视频理解，方法可迁移至长上下文LLM的上下文缓存场景。",
+      "llm_tldr": "流视频理解面临延迟查询挑战，关键线索可能被后续更新冲淡。ProtoKV提出恒足迹记忆机制，将远距离历史压缩为固定容量的摘要状态（原型），保持精确的近窗口KV缓存。查询时通过有界伪令牌暴露原型，实现了在严格GPU内存和延迟预算下的高效视频理解，方法可迁移至长上下文LLM的上下文缓存场景。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.22541v1",
+      "source": "arxiv",
+      "title": "ASAP: A Disaggregated and Asynchronous Inference System for MoE Prefill",
+      "abstract": "Mixture-of-Experts (MoE) models have become the de facto standard for scaling large language models. To maintain computational efficiency, modern MoE serving systems typically employ a hybrid parallelism strategy, combining Data Parallelism (DP) for attention stages with Expert Parallelism (EP) for MoE stages. However, this design necessitates frequent global synchronization barriers between attention DP groups and experts. In online serving, significant variance in request arrival rates and sequence lengths inherently leads to DP imbalance, causing severe synchronization stalls that degrade Time-to-First-Token (TTFT) and system throughput. We present ASAP, an asynchronous inference system specifically designed to accelerate the prefill phase of MoE models. ASAP disaggregates the attention and MoE stages and implements a fully asynchronous execution pipeline. This is achieved through a suite of specialized asynchronous communication primitives and four coordinated optimizations across request scheduling and model execution, which collectively dismantle global synchronization barriers. We implement and evaluate ASAP on CloudMatrix384 super-nodes, demonstrating that it improves SLO-compliant prefill throughput by 90% compared to state-of-the-art synchronous serving solutions.",
+      "authors": [
+        "Weiwei Chen",
+        "Shuang Chen",
+        "Lele Li",
+        "Qiang Hu",
+        "Han Li",
+        "Xin Ye",
+        "Ming Yan",
+        "Zhibin Yu"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-06-21T14:57:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.22541v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "disaggregated and asynchronous prefill acceleration for MoE models",
+      "llm_evidence_cn": "MoE模型解耦异步预填充加速",
+      "llm_evidence": "MoE模型解耦异步预填充加速",
+      "canonical_evidence": "MoE模型解耦异步预填充加速",
+      "llm_tldr_en": "ASAP reduces TTFT and improves throughput for MoE LLMs by eliminating synchronization barriers in prefill.",
+      "llm_tldr_cn": "针对MoE模型预填充阶段DP同步瓶颈，提出解耦异步推理系统ASAP，通过消除同步障碍显著降低首个token延迟（TTFT）并提升系统吞吐量。",
+      "llm_tldr": "针对MoE模型预填充阶段DP同步瓶颈，提出解耦异步推理系统ASAP，通过消除同步障碍显著降低首个token延迟（TTFT）并提升系统吞吐量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
