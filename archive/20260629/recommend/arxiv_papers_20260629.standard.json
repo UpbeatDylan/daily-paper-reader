@@ -1,0 +1,109 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-29T20:45:04.580081+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2606.24506v2",
+      "source": "arxiv",
+      "title": "CrossPool: Efficient Multi-LLM Serving for Cold MoE Models through KV-Cache and Weight Disaggregation",
+      "abstract": "Emerging LLM services increasingly host many sparse MoE models, yet most models receive sparse requests and remain cold. This creates a GPU memory problem: model weights are stable and model-determined, while KV-cache is transient and demand-determined. Because cold models rarely reach peak KV-cache demand at the same time, reserving worst-case KV capacity per model wastes memory; a shared KV-cache pool can instead provision aggregate active demand. However, KV-cache sharing is not sufficient when weights and KV-cache remain in a monolithic GPU memory pool. Static weights compete with dynamic KV-cache, and KV-head-limited attention under cold, low-concurrency traffic exposes only a fraction of replicated KV capacity, leading to low GPU memory utilization and weak long-context support. We present CrossPool, a serving engine for cold MoE models that separates FFN weights and KV-cache into two GPU memory pools: a weights pool that consolidates FFN weights across cold models, and a KV-cache pool that dynamically serves active requests while keeping attention local to KV-cache. CrossPool combines a KV-cache planner and virtualizer, a layer-wise pipeline scheduler that hides hidden-state transfers, and persistent kernels with control lowering to reduce CPU-GPU control overhead. With efficient GPU memory pooling, CrossPool underpins bursty long-context requests and outperforms the state-of-the-art kvcached-based multi-LLM serving system, reducing P99 TBT by up to 10.4x.",
+      "authors": [
+        "Zhuoren Ye",
+        "Tianyu Wo",
+        "Dinghao Xue",
+        "Mingming Zhang",
+        "Yuchen Teng",
+        "Chunming Hu",
+        "Renyu Yang"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG",
+        "cs.PF"
+      ],
+      "published": "2026-06-23T12:34:09+00:00",
+      "link": "https://arxiv.org/pdf/2606.24506v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV-cache pooling and disaggregation for cold MoE models",
+      "llm_evidence_cn": "针对冷门MoE模型的KV缓存池化与权重分离优化",
+      "llm_evidence": "针对冷门MoE模型的KV缓存池化与权重分离优化",
+      "canonical_evidence": "针对冷门MoE模型的KV缓存池化与权重分离优化",
+      "llm_tldr_en": "Proposes CrossPool, a system that disaggregates KV-cache and model weights for cold MoE models, enabling efficient shared KV-cache pool across models.",
+      "llm_tldr_cn": "提出CrossPool系统，通过将KV缓存与模型权重分离来服务冷门MoE模型，利用共享KV缓存池按需分配内存，结合权重动态加载，显著降低GPU内存浪费并提升多模型推理的吞吐量。实验表明该方法在冷模型场景下大幅优于传统方案。",
+      "llm_tldr": "提出CrossPool系统，通过将KV缓存与模型权重分离来服务冷门MoE模型，利用共享KV缓存池按需分配内存，结合权重动态加载，显著降低GPU内存浪费并提升多模型推理的吞吐量。实验表明该方法在冷模型场景下大幅优于传统方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.27732v1",
+      "source": "arxiv",
+      "title": "Bifocal Diffusion Language Models: Asymmetric Bidirectional Context for Parallel Generation",
+      "abstract": "Discrete diffusion language models (dLLMs) recover masked tokens in parallel, offering significant speedups over autoregressive (AR) generation. However, such promising frameworks face a fundamental architectural design dilemma: \\ding{182} Adopting bidirectional attention achieves strong generation quality by allowing each position to access the full context, but is inherently incompatible with KV caching, limiting inference throughput in batch-serving scenarios; \\ding{183} Conversely, causal attention enables efficient cached inference but loses all right-side context, substantially degrading generation quality. This paper introduces Bifocal dLLMs, a new paradigm that resolves this dilemma through \\emph{asymmetric bidirectional context}. Analogous to bifocal lenses, we instantiate the paradigm as \\textbf{R2LM} (Right-to-Left Mamba), which combines two complementary mechanisms: $a$) standard causal attention providing precise left-context with full KV cache compatibility, while $b$) a lightweight reverse Mamba SSM sidecar supplying compressed right-side context without breaking cacheability. Comprehensive experiments on continued pretraining of Qwen3-1.7B with 60B tokens demonstrate that R2LM achieves $2.4\\times$ to $12.9\\times$ higher throughput than bidirectional dLLMs and $1.9\\times$ to $2.9\\times$ speedup over AR baselines in batch serving through parallel decoding with KV caching, while exceeding the causal baseline on most benchmarks and surpassing the bidirectional dLLM on average.",
+      "authors": [
+        "Yuhang Chen",
+        "Xianfeng Wu",
+        "Jinhao Duan",
+        "Mingfu Liang",
+        "Xiaohan Wei",
+        "Yunchen Pu",
+        "Fei Tian",
+        "Chonglin Sun",
+        "Parish Aggarwal",
+        "Frank Shyu",
+        "Luke Simon",
+        "Sandeep Pandey",
+        "Xi Liu",
+        "Tianlong Chen"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-26T05:26:11+00:00",
+      "link": "https://arxiv.org/pdf/2606.27732v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Resolves KV caching incompatibility with bidirectional attention in diffusion LLMs",
+      "llm_evidence_cn": "解决扩散语言模型中双向注意力与KV缓存不兼容的问题",
+      "llm_evidence": "解决扩散语言模型中双向注意力与KV缓存不兼容的问题",
+      "canonical_evidence": "解决扩散语言模型中双向注意力与KV缓存不兼容的问题",
+      "llm_tldr_en": "Bifocal dLLMs use asymmetric bidirectional context to enable both high-quality parallel generation and efficient KV caching, overcoming the dilemma in discrete diffusion models.",
+      "llm_tldr_cn": "针对离散扩散语言模型在双向注意力下无法使用KV缓存而因果注意力又丢失右侧上下文的问题，提出双焦扩散模型，通过非对称双向设计在保持并行生成速度的同时兼容KV缓存。实验表明在质量和效率上均优于现有方法，为扩散模型的高效推理提供了新思路。",
+      "llm_tldr": "针对离散扩散语言模型在双向注意力下无法使用KV缓存而因果注意力又丢失右侧上下文的问题，提出双焦扩散模型，通过非对称双向设计在保持并行生成速度的同时兼容KV缓存。实验表明在质量和效率上均优于现有方法，为扩散模型的高效推理提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}
