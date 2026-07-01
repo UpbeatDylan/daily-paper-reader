@@ -1,0 +1,1407 @@
+Title: Multi-Block Diffusion Language Models
+
+URL Source: https://arxiv.org/pdf/2606.29215v1
+
+Published Time: Tue, 30 Jun 2026 01:09:07 GMT
+
+Number of Pages: 27
+
+Markdown Content:
+# Multi-Block Diffusion Language Models 
+
+Yijie Jin 1, Jiajun Xu 2, Yuxuan Liu 1, Chenkai Xu 1, Yi Tu 3, Jiajun Li 3, Dandan Tu 3, Xiaohui Yan 3, Kai Yu 1, Pengfei Liu 1, Zhijie Deng 1,†
+
+> 1
+
+Shanghai Jiao Tong University, 2Xi’an Jiao Tong University, 3Huawei Block Diffusion Language Models (BD-LMs) improve diffusion-based text generation with KV caching and flexible-length generation. A natural next step is to extend them from Single-Block Diffusion (SingleBD) to Multi-Block Diffusion (MultiBD), where a running-set of consecutive blocks is decoded concurrently for inter-block parallelism. However, existing BD-LMs are mostly trained under teacher forcing, where the model observes only one noisy block conditioned on a clean prefix. While the recent diffusion forcing strategy introduces visibility among multiple noisy blocks, its training states still differ from MultiBD inference, where decoding operates on a bounded running-set with heterogeneous slot-wise noise patterns. To bridge this gap, we propose Multi-Block Diffusion Language Models (MBD-LMs), obtained by post-training BD-LMs with Multi-block Teacher Forcing (MultiTF). MultiTF integrates teacher forcing and diffusion forcing by training on bounded noise-groups conditioned on clean prefixes, with randomized noise-schedulers that better match MultiBD inference states. To make MultiBD practically executable, we further introduce an optimized decoding algorithm based on the Block Buffer mechanism that preserves prefix-cache reuse, keeps input shapes static, and translates increased decoding parallelism into wall-clock acceleration. Empirically, MBD-LLaDA2-Mini increases average Tokens Per Forward pass (TPF) from 3.47 to 6.19 and improves average accuracy from 79.95% to 81.03% ; when combined with DMax, MBD-LLaDA2-Mini-DMax reaches an average TPF of 9.34 with only a 1.02% accuracy drop on math and code benchmarks. 
+
+Project Page: https://sjtu-deng-lab.github.io/mbd-lms 
+
+Correspondence: Zhijie Deng: zhijied@sjtu.edu.cn 
+
+Contributions: † Corresponding author. 
+
+Date: June 30, 2026 
+
+## 1 Introduction 
+
+Diffusion Language Models (DLMs) have emerged as a promising alternative to autoregressive language models by enabling native parallel decoding (Sahoo et al., 2024; Nie et al., 2025). However, fully bidirectional DLMs struggle to serve efficiently because they lack support for KV caching and dynamic-length generation. Recent Block Diffusion Language Models (BD-LMs) have become a representative DLM paradigm for efficient generation, addressing the above limitations through block-causal generation (Arriola et al., 2025; Bie et al., 2025; Cheng et al., 2025). Most BD-LMs trained under Teacher Forcing (TF) naturally support Single-Block Diffusion (SingleBD): at each forward pass, the model decodes one noisy block while preceding blocks are already clean and cached, enabling KV caching and intra-block parallelism. However, blocks themselves are still processed sequentially. As shown in Figure 1, SingleBD must finish decoding a block and storing its KV cache before later blocks can proceed, creating storing bubbles and locking inter-block parallelism. The Discrete Diffusion Forcing (D2F) (Wang et al., 2025) strategy introduces the visibility of multiple noisy blocks to BD-LMs. Conditioned on a clean prefix, it corrupts suffix blocks with monotonic increasing noise ratios during training. Consequently, D2F obtains Multi-Block Diffusion (MultiBD) capability, as shown in Figure 1, enabling decode-store overlap and inter-block parallelism. However, a train–inference mismatch problem remains. Specifically, it is not possible to process the entire noisy suffix as one running-set in a single forward pass, from both the perspectives of efficiency and empirical efficacy (Lu et al., 2026). For the naive MultiBD introduced by D2F, the expected running-set size is often around two, and adjacent slots exhibit large noise-ratio gaps. This suggests that reliable MultiBD requires training states that match both the bounded running-set size and the heterogeneous slot-wise noise patterns observed during inference. 
+
+> arXiv:2606.29215v1 [cs.LG] 28 Jun 2026 1
+
+Forward-pass Steps    
+
+> Block Index
+> Multi-Block Decoding: Ours 2-Level Pipelining: Store KV Cache and generate tokens in parallel
+> Assuming a multi-block decoding process with buffer-size of 2, which construct a 2-level decoding pipeline, overlapping decoding and storing.
+> Padding Storing Step
+> Parallel Decoding: 2 active blocks are decoded in parallel
+> Goal: Generate 4 blocks of tokens
+> 1
+> 2
+> 3
+> 4
+> Single-Block Decoding: Block Diffusion Inference
+> KV Cache Storing Bubble: No token generated, no inter-block overlap
+> 2
+> 3
+> 4Active Step: darker color -> higher noise
+
+Figure 1 SingleBD decodes blocks sequentially and creates KV cache storing bubbles. In contrast, MultiBD overlaps future-block refinement with KV cache storing of completed blocks, and enables inter-block parallelism. 
+
+To this end, we formulate Multi-Block Diffusion Language Models (MBD-LMs), a unified view of existing BD-LMs. This view covers both TF-trained BD-LMs and D2F-trained BD-LMs as extreme cases, while identifying practical MultiBD as the bounded intermediate regime for reliable and efficient inference. We introduce Multi-block Teacher Forcing (MultiTF), a post-training method that turns BD-LMs into MBD-LMs. MultiTF extends TF by concatenating the clean prefix with a bounded group of consecutive noisy blocks, where noisy blocks can attend to each other under a Group-Aware Dual-Stream Mask . It applies a more aggressive and randomized noise-scheduler within each noise-group to simulate the heterogeneous slot-wise noise patterns observed during inference. During training, blocks are partitioned into groups with varying sizes to cover possible running-set sizes and group-relative positions. We further propose an optimized inference pipeline for MultiBD. MultiBD relies on a dynamic running-set 
+
+for decoding, which is unfriendly to CUDA Graph capture and replay. To address this, we introduce the 
+
+Block Buffer mechanism, which maintains a fixed number of block slots. Future blocks enter the Block Buffer 
+
+by activating existing idle slots rather than extending the physical input, while completed front blocks leave after being committed to the KV cache. This design keeps the input shape static, preserves KV caching and prefix caching, and translates the increased TPF into practical wall-clock speedup. Experiments on math and code benchmarks show that MBD-LMs improve decoding parallelism while pre-serving generation quality. Compared with LLaDA2-Mini (Bie et al., 2025), MBD-LLaDA2-Mini increases the average TPF from 3.47 to 6.19 (+78.4%) and improves the average accuracy from 79.95% to 81.03% .When combined with DMax (Chen et al., 2026), MBD-LLaDA2-Mini-DMax further reaches an average TPF of 9.34 (+47.1% over LLaDA2-Mini-DMax under SingleBD) with only a 1.02 percentage-point accuracy drop. Using our inference engine, MBD-LLaDA2-Mini-DMax achieves 951.41 TPS on average, compared with 781.50 TPS for LLaDA2-Mini-DMax. 
+
+ Main Contributions 
+
+¥ Unified MBD-LM formulation. We formulate Multi-Block Diffusion Language Models (MBD-LMs) as a unified DLM framework parameterized by a running-set of consecutive blocks. This view covers both TF-trained BD-LMs and D2F-trained BD-LMs, while identifying practical MultiBD as the bounded intermediate regime for reliable and efficient inference. 
+
+¥ MultiTF post-training for MBD-LMs. We propose Multi-block Teacher Forcing (MultiTF), a post-training method that turns BD-LMs into MBD-LMs. MultiTF improves train–inference align-ment by training BD-LMs on states that resemble practical MultiBD inference. 
+
+¥ Optimized MultiBD inference engine. We design and implement an optimized MultiBD infer-ence pipeline based on the Block Buffer mechanism. The pipeline overlaps decoding and KV cache storing, preserves prefix caching, and keeps input shapes static for CUDA Graph capture and replay, translating increased TPF into practical TPS gains. 0.0 0.2 0.4 0.6 0.8 1.0                       
+
+> Noise / Mask Ratio
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> 3.5
+> 4.0
+> Density
+> (A) Training Noise — D2F
+> slot 1
+> slot 2
+> slot 4
+> slot 6
+> slot 8
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Noise / Mask Ratio
+> 0
+> 2
+> 4
+> 6
+> 8
+> (B) Training Noise — Chain Uniform (Ours)
+> slot 1 slot 2
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Noise / Mask Ratio
+> 0
+> 1
+> 2
+> 3
+> 4
+> (C) Inference Mask Ratio
+> trained slot 1
+> trained slot 2
+> base slot 1
+> base slot 2
+> 050 100 150 200 250
+> Decode Step
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> 2.00
+> 2.25
+> 2.50
+> Active Blocks
+> (D) Mean ± 1σ Active Blocks
+> ±1σ
+> Mean
+> 020 40 60 80 100 120
+> Decode Step
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> 3.5
+> 4.0
+> Active Blocks
+> (E) Sampled Trajectories
+> sample 1
+> sample 2
+> sample 3
+> sample 4
+> sample 5
+> sample 6
+
+Figure 2 Train–inference statistics for MultiBD. (A) Slot-wise mask-ratio distributions induced by the D2F-style monotonic scheduler. (B) Slot-wise mask-ratio distributions induced by our chain-uniform scheduler. (C) Inference-time mask-ratio distributions before and after MultiTF post-training. (D) Mean and one-standard-deviation range of the active-block count during MultiBD inference. (E) Sampled active-block trajectories during decoding. Panels (A–C) compare scheduler-induced training noise patterns with inference-time mask-ratio patterns for train–inference alignment analysis. Panels (D–E) report the active part of the MultiBD running-set under a buffer size of four; the active-block count can therefore occasionally exceed two. 
+
+## 2 Preliminaries 
+
+2.1 Diffusion Language Models 
+
+Diffusion Language Models (DLMs) (Sahoo et al., 2024; Nie et al., 2025; Ye et al., 2025) formulate text generation as iterative denoising. Let V denote the vocabulary, [M] denote a special mask token, and L
+
+denote the sequence length. Given a clean sequence x0 = ( x10, . . . , x L
+
+0 ) ∈ V L, the forward process gradually masks tokens independently. For t ∈ [0 , 1] , the noisy sequence xt ∈ (V ∪ { [M] })L masks each token with probability t:
+
+qt(xit | xi
+
+0) = 
+
+
+
+1 − t, xit = xi
+
+0,t, xit = [M] ,
+
+0, otherwise .
+
+(2.1) Let M(xt) = {i : xit = [M] } denote the masked positions. A DLM parameterized by θ predicts clean tokens at masked positions: 
+
+pθ (x0 | xt) = 
+
+LY
+
+i=1 
+
+pθ (xi
+
+0 | xt). (2.2) The standard training objective is a weighted masked-token cross-entropy (Nie et al., 2025): 
+
+LDLM (θ) = −Et, x0,xt
+
+ 1
+
+t
+
+LX
+
+i=1 
+
+1[xit = [M] ] · log pθ (xi
+
+0 | xt)
+
+
+
+, (2.3) where t ∼ U (0 , 1) , xt ∼ qt(· | x0), and 1[·] denotes the indicator function, ensuring that the loss is computed only on masked tokens. The inference starts from an all-[M] sequence and iteratively fills high-confidence masked positions. 
+
+2.2 Block Diffusion Language Models 
+
+Block Diffusion Language Models (BD-LMs) (Arriola et al., 2025; Bie et al., 2025) partition the sequence into blocks, i.e., 
+
+x0 = [ b1, . . . , bK ], bk ∈ V B , (2.4) where B is the block size and K = L/B is the number of blocks. BD-LMs model the sequence autoregressively at the block level: 
+
+pθ (x0) = 
+
+KY
+
+k=1 
+
+pθ (bk | x(<k )0 ), x(<k )0 = [ b1, . . . , bk−1]. (2.5) Each conditional term is implemented by a DLM decoding process within the current block. The block-causal attention pattern is used to allow each block to attend to itself and preceding blocks. This enables KV caching during Single-Block Diffusion (SingleBD) inference.  
+
+> Teacher forcing.
+
+Block Diffusion (Arriola et al., 2025) trains BD-LMs under Teacher Forcing (TF). For block 
+
+bk, only the current block is corrupted by the same masking process, 
+
+bk,t ∼ qt(· | bk), (2.6) and the model predicts masked tokens conditioned on clean prefix blocks: 
+
+LTF (θ) = −Ek,t, x0,bk,t 
+
+ 1
+
+t
+
+> B
+
+X
+
+> i=1
+
+1[bik,t = [M] ] · log pθ
+
+ bik | x(<k )0 , bk,t 
+
+
+
+. (2.7) Namely, the model only learns to decode one noisy block conditioned on clean prefix blocks, which is concep-tually incompatible with the aforementioned MultiBD inference.  
+
+> Discrete diffusion forcing.
+
+Another training paradigm for BD-LMs is Discrete Diffusion Forcing (D2F) (Wang et al., 2025). D2F introduces visibility among noisy blocks by sampling block-level noise ratios t = ( t1, . . . , t K )
+
+for a block-partitioned suffix. Let 
+
+xpre 0 = ( x10, . . . , x P 
+
+> 0
+
+) ∈ V P
+
+denote a clean token-level prefix of length P , and let 
+
+xsuf 0 = [ b1, . . . , bK ], bk ∈ V B ,
+
+denote the suffix partitioned into blocks. D2F constructs noisy suffix blocks 
+
+xsuf  
+
+> t
+
+= [ b1,t 1 , . . . , bK,t K ], bk,t k ∼ qtk (· | bk), (2.8) where 0 ≤ t1 < · · · < t K ≤ 1. Thus, earlier suffix blocks are less masked, while later suffix blocks are more uncertain. Conditioned on the clean prefix, D2F trains the student to predict each suffix block from a noisy-prefix view: 
+
+pθ
+
+ xsuf 0 | xpre 0 , xsuf 
+
+> t
+
+ =
+
+> K
+
+Y
+
+> k=1
+
+pθ
+
+ bk | xpre 0 , b1,t 1 , . . . , bk,t k
+
+. (2.9) In practice, D2F is trained with an asymmetric distillation paradigm (Wang et al., 2025). Despite the goal to perform Multi-Block Diffusion (MultiBD), D2F still differs from MultiBD inference in its training states, as detailed in Section 3.1. Beyond the aforementioned mismatch, native D2F also raises a prefix-caching concern. Its clean prefix xpre 0 can have arbitrary length P and is processed with full attention rather than block-causal attention. Therefore, its native formulation is not directly compatible with the prefix caching of BD-LMs. We analyze this issue in Appendix C.5, where we compare native D2F with a fully block-causal D2F variant and show that enforcing cache compatibility causes a larger quality degradation, further motivating MultiTF. 
+
+## 3 Methodology 
+
+3.1 Multi-Block Diffusion Language Models 
+
+Multi-Block Diffusion (MultiBD) generalizes the standard BD-LM factorization in Equation 2.5 by allowing a running-set of consecutive blocks to be decoded concurrently. At decoding step s, MultiBD maintains a 
+
+running-set 
+
+Rs = {as, . . . , c s},where as and cs denote the first and last block indices that have not yet entered the prefix KV cache. The 
+
+running-set contains the real blocks currently involved in MultiBD decoding, including active noisy blocks and completed preceding blocks waiting to be cached. Blocks before the running-set have already been committed and form the clean cached prefix: 
+
+x(<a s)0 = [ b1, . . . , bas−1].
+
+For each block k ∈ R s, let tk,s ∈ [0 , 1] denote its current mask ratio at decoding step s. If block k is still active, bk,t k,s is its current noisy state. If block k is completed but not yet cached, we set tk,s = 0 , so that 
+
+bk,t k,s = bk, 0 = bk. We refer to each relative block position inside Rs as a logical slot; for example, the block at index as is the first slot and the block at index as + 1 is the second slot. We define Multi-Block Diffusion Language Models (MBD-LMs) as: 
+
+pθ (bRs | x(<a s)0 , bRs,ts ) = 
+
+> cs
+
+Y
+
+> k=as
+
+pθ
+
+ bk | x(<a s)0 , bas,t as,s , . . . , bk,t k,s 
+
+, (3.1) where 
+
+bRs = [ bas , . . . , bcs ], bRs,ts = [ bas,t as,s , . . . , bcs,t cs,s ].Teacher Forcing Discrete Diffusion Forcing  
+
+> A. Existing Training Paradigm
+> B. Multi-Block Diffusion C. Multi-block Teacher Forcing
+> Figure 3
+
+Train–inference alignment across paradigms. (A) 
+
+TF and D2F provide existing BD-LM training states, but neither matches practical MultiBD. (B) MultiBD main-tains a bounded running-set for concurrent block refine-ment. (C) MultiTF builds inference-like noise-groups with heterogeneous slot-wise noise patterns. 
+
+This formulation asks the model to recover the cur-rent running-set from the clean cached prefix and the visible block states inside Rs. The running-set 
+
+size is defined as |R s|.The running-set view gives a unified way to de-scribe existing BD-LM regimes. As illustrated in Figure 3, TF-trained BD-LMs correspond to the SingleBD extreme, where the model only observes one noisy block conditioned on a clean cached prefix. D2F-trained BD-LMs introduce visibility among multiple noisy suffix blocks, but their train-ing states still differ from practical MultiBD infer-ence in running-set size and slot-wise noise pat-terns. Under the MBD-LM formulation, these regimes can be viewed as limiting cases, while prac-tical MultiBD is the bounded intermediate regime that decodes a small running-set concurrently. Conceptually, MultiBD reduces to SingleBD when 
+
+|R s| = 1 : the model decodes only one block con-ditioned on the clean cached prefix. At the other extreme, if the running-set is expanded to cover all suffix blocks and a monotonic D2F-style noise-scheduler is used, the resulting training state resembles the fully block-causal D2F variant discussed in Appendix C.5. This connection is only at the level of training-state construction: D2F remains a training paradigm, while MultiBD is the inference regime targeted by MBD-LMs. In practice, useful MultiBD operates between these two extremes: |R s| should be larger than 1 to expose inter-block parallelism, but remain bounded to keep each forward pass efficient and executable. This bounded running-set view is consistent with the empirical MultiBD traces analyzed in Section 4.4, and is reflected in both the training-side and inference-side designs proposed below. 
+
+3.2 Multi-block Teacher Forcing 
+
+Multi-block Teacher Forcing (MultiTF) post-trains BD-LMs into MBD-LMs by constructing inference-like training states, with particular emphasis on matching the bounded running-set structure and the slot-wise noise patterns of MultiBD inference. MultiTF can be viewed as an extension of TF from one noisy block to a bounded group of consecutive noisy blocks. We call such a group a noise-group . Following the bounded Group Size 2          
+
+> Group Size 3 Group Size 4
+> A. Systematic Group Layouts: Enumerate group sizes and shifts
+> Group-Aware Dual-Stream Mask Random 1
+> Build input sequence: noisy + clean
+> Generate Group-Aware Dual-Stream Mask
+> Random 2 Random 3 Random 4 Shift 0 Shift 1 Shift 0 Shift 1 Shift 2 Shift 0 Shift 1 Shift 2 Shift 3
+> B. Random Group Layouts: Increase diversity beyond systematic shifts
+> Input Sequence: Noisy + Clean
+> GroupSize 2, Shift 0 GroupSize 2, Shift 1
+> Systematic Group Layouts
+> GroupSize 3, Shift 0
+> Random Group Layouts
+> Random 1
+> Random 2
+> BD-LM
+> Naive CE Loss DMax OPUT Loss ... Systematic and random group layouts approximate MultiBD running-set states up to max group size G=4 .
+> C. Multi-block Teacher Forcing Training Pipeline
+> MBD-LM
+> MultiTF Post-training
+
+Figure 4 Overview of MultiTF. (A) Systematic group-layouts enumerate group sizes and shifts so that blocks appear at different group-relative positions. (B) Random group-layouts increase layout diversity; each layout is converted into a noisy–clean input sequence with the Group-Aware Dual-Stream Mask . (C) The resulting input sequences are used to post-train BD-LMs into MBD-LMs with masked CE and optional model-specific objectives. 
+
+running-set view in Section 3.1, MultiTF uses Gmax as the training-side upper bound on noise-group size. Throughout the paper, Gmax denotes the maximum noise-group size, Λ denotes the set of sampled group-layouts , λ ∈ Λ denotes one layout, and Hm denotes one noise-group . Each noise-group Hm is constructed as a bounded training analogue of a possible MultiBD running-set . Notably, later noise-groups are conditioned on clean earlier noise-groups during training. Here J is only the finite-layout estimator accumulated inside Algorithm 1; the population-level training objective is LMultiTF in Equation 3.4. 
+
+Group-layout construction. Given a clean block sequence [b1, . . . , bK ], MultiTF constructs a set of group-layouts Λ, where each group-layout λ = ( H1, . . . , H |λ|) partitions the sequence into consecutive noise-groups .Each noise-group Hm = {am, . . . , c m} has the same consecutive-block form as a possible MultiBD running-set 
+
+Rs = {as, . . . , c s}. We use both systematic and random group-layouts to cover different bounded running-set 
+
+sizes and group-relative positions, as shown in Figure 4. 
+
+• Systematic layouts. We specify a maximum noise-group size Gmax . For each noise-group size g ∈{2, . . . , G max } and each shift h ∈ { 0, . . . , g − 1}, we define a shifted layout λg,h by placing group boundaries every g blocks with offset h:
+
+Hg,h,q = { 1 + h + qg, . . . , h + ( q + 1) g } ∩ { 1, . . . , K },
+
+where q indexes groups within the shifted layout, and boundary groups are clipped to the valid block range. The systematic layout set is 
+
+Λsys = {λg,h : g ∈ { 2, . . . , G max }, h ∈ { 0, . . . , g − 1}} .
+
+This construction ensures that, ignoring boundary effects, every consecutive running-set {a, . . . , a + g −
+
+1} of length g appears as one noise-group in exactly one shifted layout, with shift h = ( a − 1) mod g.Equivalently, for each fixed g, every block appears once at every group-relative position across the g
+
+shifts. 
+
+• Random layouts. Systematic layouts provide structured coverage but are regular by construction. To increase layout diversity, we further sample random layouts by drawing noise-group sizes gm ∈Algorithm 1 Multi-block Teacher Forcing 
+
+Require: Clean sequence x0; block size B; maximum noise-group size Gmax ; noise bounds tlow , t high ; margin ratio ρ; number of random layouts Nrand ; mask token [M] .// Construct noise-group layouts 
+
+1: Partition x0 into K blocks [b1, . . . , bK ].2: Generate systematic layouts by enumerating noise-group sizes g ∈ { 2, . . . , G max } and all g group shifts. 3: Generate Nrand random layouts by sampling noise-group sizes from {2, . . . , G max } until all blocks are covered. 4: Let Λ be the union of systematic and random layouts. // Apply MultiTF corruption and training 
+
+5: Set teff ← thigh − ρ(thigh − tlow ), where ρ is the noise-transition margin ratio. 6: Initialize accumulated loss J ← 0.7: for each layout λ ∈ Λ do 
+
+8: Initialize noisy sequence xλ 
+
+> t
+
+← x0.9: for each noise-group Hm = ( j1, . . . , j nm ) ∈ λ do 
+
+// Chain-uniform block-level noise-scheduler 
+
+10: Sample group floor ℓ ∼ U (tlow , t eff ).11: for i ← 1 to nm do 
+
+12: Sample tji ∼ U (ℓ, t eff ) and set ℓ ← tji .13: Mask ⌊B · tji ⌋ random positions in bji as [M] .14: end for 
+
+15: end for 
+
+// Build input sequence and attention mask 
+
+16: Construct Xλ = [ xλ 
+
+> t
+
+; x0].17: Construct the Group-Aware Dual-Stream Mask Aλ.18: Run the model on (Xλ, Aλ).// Compute masked CE 
+
+19: Let Mλ = {i : xλ 
+
+> t
+
+[i] = [M] }.20: Compute layout-level masked CE estimate Jλ over Mλ.21: J ← J + Jλ.22: end for 
+
+23: return J /|Λ|.
+
+{2, . . . , G max } and forming consecutive groups 
+
+Hm = {am, . . . , min( am + gm − 1, K )}, am+1 = min( am + gm, K + 1) ,
+
+until the full sequence is covered. These random layouts add non-regular noise-group -size combinations and boundary patterns without replacing the coverage guarantee of systematic layouts. The final layout set is 
+
+Λ = Λ sys ∪ Λrand .
+
+We provide a theoretical coverage view in Appendix A, showing how systematic shifts cover bounded running-sets while random layouts add distributional diversity. 
+
+Chain-uniform noise-scheduling. After sampling a group-layout , MultiTF assigns mask ratios within each 
+
+noise-group . Unlike D2F’s monotonic block-level schedule over a long noisy sequence, MultiTF uses a ran-domized chain-uniform noise-scheduler inside each bounded noise-group . Specifically, for each noise-group ,we sample a group-level floor and then sample each block’s mask ratio with the previous block’s ratio as the lower bound, as shown in Algorithm 1. This produces monotonic but randomized group-internal noise levels, encouraging larger slot-wise noise gaps that better match MultiBD inference. 
+
+Group-Aware Dual-Stream Mask. For each layout λ, the sampled block-level mask ratios corrupt the clean sequence into a noisy sequence xλ 
+
+> t
+
+. Following the TF-style construction (Arriola et al., 2025), MultiTF builds the input sequence by concatenating the noisy sequence with the clean sequence: 
+
+Xλ = [ xλ 
+
+> t
+
+; x0]. (3.2) The noisy part represents the MultiBD-like decoding state, while the clean part provides clean-prefix context. We construct a Group-Aware Dual-Stream Mask over Xλ:
+
+Aλ =
+
+MGD MGOC 
+
+0 MBC 
+
+
+
+, (3.3) In KV Cache       
+
+> Active Parts Pad
+> To KV Cache
+> In KV Cache
+> B. Three-level Block Buffer Hierarchy
+> Block BlockBuffer Request
+> In KV Cache
+> In KV Cache
+> In KV Cache
+> To KV Cache
+> In KV Cache
+> In KV Cache
+> To KV Cache
+> C. Multi-Block Diffusion Inference Pipeline and Attention Pattern
+> Attention against KV Cache QKV Self Attention
+> Attention against KV Cache QKV Self Attention
+> A. Status of Blocks
+> DUMMY ACTIVE TO_CACHE IN_CACHE
+
+Figure 5 Inference and system support in MultiBD. (1) Blocks follow a four-state transition: dummy → active →
+
+to-cache → in-cache . (2) MultiBD organizes decoding with a block–buffer–request hierarchy, where each request maintains Block Buffers and each buffer contains multiple block slots for parallel refinement. (3) During MultiBD inference, noisy blocks are refined jointly under block-causal self-attention, while committed prefix blocks are served from the KV cache; completed blocks enter the cache and the Block Buffer slides forward. 
+
+where MGD enables group-internal noisy-block visibility, MGOC lets each noise-group condition on its clean prefix, and MBC preserves standard block-causal visibility on the clean part. The zero lower-left block prevents clean tokens from attending to noisy tokens; detailed mask definitions are provided in Appendix B. 
+
+Training objective. MultiTF optimizes masked-token cross-entropy on the noisy part of the input sequence: 
+
+LMultiTF = −Eλ, t,x0
+
+ 1
+
+|M λ|
+
+X
+
+> i∈M λ
+
+log pθ
+
+ xi 
+
+> 0
+
+| Xλ, Aλ
+
+
+
+, (3.4) where 
+
+Mλ = {i : xλ 
+
+> t
+
+[i] = [M] } (3.5) denotes masked positions on the noisy part. All systematic and random layouts are batched as independent input sequences, as illustrated in Figure 4. For models with additional objectives, such as DMax, we apply the corresponding model-specific loss on top of the same MultiTF inputs. The concrete MultiTF objective and model-specific training variants are detailed in Appendix B.4. 
+
+3.3 Optimized Multi-Block Diffusion 
+
+After MultiTF post-training, an MBD-LM performs MultiBD inference over the running-set Rs in Equa-tion 3.1. The inference objective is to expose inter-block parallelism without losing the serving advantages of BD-LMs. Concretely, practical MultiBD should satisfy the following inference requirements: 
+
+Inference Requirements for Practical MultiBD 
+
+• Inter-block parallelism: multiple noisy blocks are decoded in parallel. 
+
+• Decode-store overlap: decoding of later active blocks overlaps with KV cache storing of completed preceding blocks. 
+
+• Prefix-cache preservation: committed prefix blocks should produce stable KV cache that remains reusable by the standard BD-LM prefix cache. 
+
+• Static-shape execution: the physical input shape remains fixed for CUDA Graph capture and replay and efficient execution. Naive MultiBD and dynamic execution. A naive block-causal MultiBD implementation naturally supports inter-block parallelism and decode-store overlap. As illustrated in Figure 1 and detailed in Algorithm 4, it directly materializes the running-set Rs as the input to each forward pass: future noisy blocks are appended to Rs
+
+when the latest active block makes sufficient progress, and completed preceding blocks are removed after being cached. Thus, later blocks can already be decoded while earlier completed blocks are being stored, avoiding the storing bubbles of SingleBD. This dynamic procedure only needs three logical block states, 
+
+active → to-cache → in-cache ,
+
+because every block in the running-set corresponds to a real block being decoded or committed. However, since each forward pass is built directly from Rs, the number of processed tokens changes over time and across requests, making CUDA Graph capture and replay difficult.  
+
+> Static-shape execution with Block Buffer.
+
+To satisfy all four requirements simultaneously, we decouple the logical running-set from the physical input by using a Block Buffer mechanism, as detailed in Algorithm 5. As shown in Figure 5(B), our inference engine organizes MultiBD decoding with a three-level hierarchy: a request manages one or more Block Buffers , each Block Buffer contains a fixed number of block slots, and each slot stores one block state. The request level handles generation progress and cache ownership, the Block Buffer level provides a static physical input for CUDA Graph replay, and the block level tracks whether each slot is dummy , active , to-cache , or in-cache .Let Ws denote the physical Block Buffer at decoding step s. It contains a fixed number of block slots: 
+
+|W s| = Nbuf ,
+
+where Nbuf is the buffer size. The real resident blocks inside Ws form the running-set Rs, while the remaining slots are dummy slots. Thus, the buffer can be written as 
+
+Ws = Rs∥D s, |W s| = |R s| + |D s| = Nbuf , |R s| ≤ Nbuf ,
+
+where Ds denotes the trailing dummy segment. Thus, Nbuf is the inference-side realization of the bounded 
+
+running-set assumption introduced in Section 3.1. In practice, Nbuf is chosen within the running-set sizes covered by MultiTF through Gmax .A future block enters decoding by activating an existing dummy slot rather than extending the physical input sequence. When the front block of Rs is completed, it is marked as to-cache ; once committed to the KV cache, it leaves Rs and becomes part of the cached prefix. The Block Buffer then slides forward by appending a new dummy slot at the tail. Thus, MultiBD can advance its running-set while keeping the physical buffer shape fixed, thereby enabling static-shape execution for CUDA Graph capture and replay. As shown in Figure 5(A), each physical slot follows the state transition 
+
+dummy → active → to-cache → in-cache .
+
+The key difference from the naive three-state dynamic procedure is the additional dummy state, which reserves inactive capacity inside the Block Buffer . This allows future blocks to enter by activating existing slots instead of extending the physical input, while completed front blocks are committed into the KV cache.  
+
+> Prefix-cache preservation.
+
+The Block Buffer mechanism also preserves the cache semantics of block-causal BD-LMs. Committed front blocks become immutable clean prefix blocks and are represented only through cached KV states, while active blocks remain inside the Block Buffer for iterative refinement. This separation is important because native D2F uses prefix-full attention and is not directly compatible with the standard BD-LM prefix-cache interface, as discussed in Section 2.2. Appendix C.5 further shows that simply converting D2F into a fully block-causal variant improves cache compatibility but causes a larger quality degradation. In contrast, MultiTF trains MBD-LMs with block-causal clean-prefix conditioning, and the Block Buffer 
+
+inference pipeline preserves this prefix-cache interface during MultiBD decoding. This design preserves inter-block parallelism, overlaps decoding with KV cache storing, maintains prefix-cache reuse, and supports static-shape execution for CUDA Graph replay. As a result, the increased TPF of MBD-LMs can be converted into practical wall-clock speedup. Additional implementation details, including the Table 1 Evaluation results across math and code benchmarks. SingleBD (Native) denotes the native single-block diffusion inference of each BD-LM; MultiBD (training-free) applies multi-block decoding without retraining; MBD-* denotes the corresponding MultiTF-post-trained MBD-LM. AUP (Accuracy Under Parallelism) combines accuracy and TPF, reported in the Average column as an aggregate across four benchmarks. MBD-LMs consistently improve TPF over SingleBD. In most settings, MultiTF recovers or improves the quality lost by training-free MultiBD, leading to a better accuracy–parallelism trade-off. 
+
+GSM8K MATH500 MBPP+ HumanEval+ Average Model Acc ↑ TPF ↑ Acc ↑ TPF ↑ Acc ↑ TPF ↑ Acc ↑ TPF ↑ Acc ↑ TPF ↑ AUP ↑
+
+LLaDA2-Mini-DMax (bufsz=2, blksz=32) 
+
+SingleBD (Native) 91.89 5.70 76.80 6.13 72.22 6.14 77.44 7.44 79.59 6.35 459.54 MultiBD (training-free) 89.84 8.76 73.80 9.08 72.22 8.44 76.83 10.96 78.17 9.31 651.98 
+
+MBD-LLaDA2-Mini-DMax 91.74 8.95 75.00 9.31 70.11 8.34 77.44 10.78 78.57 9.34 661.28 
+
+LLaDA2-Mini (bufsz=2, blksz=32) 
+
+SingleBD (Native) 91.89 2.27 74.20 2.83 75.66 3.25 78.05 5.53 79.95 3.47 247.41 MultiBD (training-free) 92.65 2.76 73.60 3.53 72.49 3.97 75.61 7.37 78.59 4.41 301.81 
+
+MBD-LLaDA2-Mini 91.96 5.55 79.20 6.02 72.49 5.35 80.49 7.85 81.03 6.19 449.18 
+
+SDAR-8B-Chat-b32 (bufsz=4, blksz=32) 
+
+SingleBD (Native) 90.07 2.52 65.60 3.81 52.65 1.83 67.68 2.00 69.00 2.54 141.64 MultiBD (training-free) 89.01 2.78 60.60 5.06 52.12 1.97 65.85 2.24 66.89 3.01 156.35 
+
+MBD-SDAR-8B-Chat-b32 89.16 3.08 68.00 5.08 58.99 4.87 62.80 4.82 69.74 4.46 210.42 
+
+SDAR-8B-Chat-b4 (bufsz=4, blksz=4) 
+
+SingleBD (Native) 91.05 1.33 72.80 1.46 64.80 1.13 73.70 1.07 75.59 1.25 85.46 MultiBD (training-free) 90.45 2.39 70.60 2.68 65.80 1.55 74.39 1.47 75.31 2.00 129.59 
+
+MBD-SDAR-8B-Chat-b4 91.81 2.28 72.40 2.52 64.29 2.62 72.56 2.24 75.27 2.42 148.65 
+
+(a) Training-free MultiBD transfers to additional model variants. SingleBD (Native) denotes each model’s native single-block dif-fusion inference.                                              
+
+> GSM8K MATH500 Average Acc ↑TPF ↑Acc ↑TPF ↑Acc ↑TPF ↑AUP ↑
+> LLaDA2-Mini-CAP (bufsz=2, blksz=32)
+> SingleBD (Native) 91.74 3.08 77.80 3.71 84.77 3.40 247.30 MultiBD (training-free) 91.21 4.00 77.20 4.94 84.21 4.47 319.17
+> LLaDA2.1-Mini (bufsz=2, blksz=32)
+> SingleBD (Native) 93.03 4.12 81.40 4.87 87.22 4.50 390.64 MultiBD (training-free) 92.27 5.80 81.00 7.20 86.63 6.50 558.52
+
+(b) Ablation of MultiTF training components averaged over HumanEval+ and GSM8K with LLaDA2-Mini-DMax.                               
+
+> Configuration Acc ↑TPF ↑AUP ↑
+> SingleBD (Native) 84.67 6.57 536.89
+> noise-group layouts construction
+> + systematic layouts 83.22 9.71 774.03 + random layouts 82.72 9.42 747.46
+> systematic + random layouts (ours) 84.59 9.87 805.34
+> block-level noise-scheduler
+> D2F-style monotonic scheduler 79.34 8.76 657.74 random scheduler 83.14 9.70 771.74 sorted-uniform scheduler 81.28 9.73 748.73
+> chain-uniform scheduler (ours) 84.59 9.87 805.34
+
+Table 2 Transfer and ablation results. (a) Training-free MultiBD transfers to additional model variants on math benchmarks. (b) MultiTF component ablations averaged over HumanEval+ and GSM8K. All reported metrics are higher-is-better. 
+
+naive dynamic MultiBD, the optimized MultiBD, block-state transitions, threshold rules, and prefix-cache analysis, are provided in Appendix C. The realized speedup is validated by the TPS results in Table 3. 
+
+## 4 Experiments 
+
+4.1 Experimental Setup 
+
+Models and training. We evaluate MultiTF on representative BD-LMs from the LLaDA2.x (Bie et al., 2025, 2026) and SDAR (Cheng et al., 2025) families, including variants enhanced with DMax (Chen et al., 2026). For each base model, MultiTF post-training constructs multiple group-layouts per sample, including systematic shifted layouts and random layouts, to approximate the MultiBD running-set states described in Section 3.1. The resulting models are denoted as MBD-* models, e.g., MBD-LLaDA2-Mini and MBD-SDAR-8B-Chat. We also evaluate training-free MultiBD, which directly applies MultiBD inference to the original BD-LMs without post-training. 
+
+Benchmarks and metrics. We evaluate mathematical reasoning on GSM8K (Cobbe et al., 2021) and MATH500 (Hendrycks et al., 2021), and code generation on MBPP+ and HumanEval+ (Liu et al., 2023). We report Accuracy, Tokens Per Forward pass (TPF), and Accuracy Under Parallelism (AUP). Accuracy is exact match for math and pass@1 for code. TPF measures decoding parallelism, while AUP summarizes the accuracy–parallelism trade-off following d3LLM (Qian et al., 2026). Given a set of decoding configurations 
+
+C, we sort them by TPF and compute AUP as the trapezoidal area under the accuracy–TPF curve: 
+
+AUP = 
+
+> |C|− 1
+
+X
+
+> i=1
+
+Aci + Aci+1 
+
+2
+
+ Pci+1 − Pci
+
+ , (4.1) where Aci and Pci denote the accuracy and TPF of configuration ci, respectively. For multi-benchmark evaluation, we report the average AUP across benchmarks. 
+
+Experimental details. Detailed training hyperparameters, inference hyperparameters, hardware settings, and training costs are provided in Appendix D. 
+
+4.2 Main Results 
+
+We first evaluate whether MBD-LMs can improve decoding parallelism without sacrificing generation quality. The analysis focuses on four questions: (i) whether MultiTF-post-trained MBD-LMs improve the TPF– accuracy trade-off over native SingleBD; (ii) whether MultiTF is complementary to T2T-enhanced decoding methods such as DMax; (iii) whether train–inference alignment is necessary beyond training-free MultiBD; and (iv) whether the gains generalize across different BD-LM backbones.  
+
+> Baselines and configurations.
+
+Table 1 reports results across four benchmarks. For each base BD-LM, we compare three configurations: (1) SingleBD (Native) , the model’s native single-block diffusion inference; (2) MultiBD (training-free) , MultiBD inference applied without post-training; and (3) MBD-* , the corresponding MultiTF-post-trained model using MultiBD inference.  
+
+> Main analysis.
+
+MBD-LMs improve decoding parallelism while preserving generation quality. Compared with LLaDA2-Mini under SingleBD (Native), MBD-LLaDA2-Mini increases average TPF from 3.47 to 6.19 
+
+(+78.4%) and improves average accuracy from 79.95% to 81.03% . Notably, even without DMax, MBD-LLaDA2-Mini reaches a TPF comparable to LLaDA2-Mini-DMax under SingleBD (6.19 vs. 6.35), while achieving higher average accuracy (81.03% vs. 79.59%). This shows that MultiTF can turn a standard BD-LM into an MBD-LM with DMax-level decoding parallelism.  
+
+> Compatibility with T2T-enhanced decoding.
+
+MultiTF is complementary to DMax, a Token-to-Token (T2T) en-hanced acceleration method. When combined with DMax, MBD-LLaDA2-Mini-DMax further increases aver-age TPF from 6.35 to 9.34 (+47.1%) over LLaDA2-Mini-DMax under SingleBD, with only a 1.02 percentage-point average accuracy drop. This indicates that MBD-LMs can stack with existing T2T-enhanced recipes.  
+
+> Effect of train–inference alignment.
+
+The comparison between training-free MultiBD and MultiTF-post-trained MBD-LMs highlights the importance of train–inference alignment. Directly applying MultiBD already in-creases TPF, confirming that multi-block decoding relaxes the single-block bottleneck. However, it can de-grade accuracy because the original BD-LMs are not trained on practical MultiBD states. MultiTF reduces this mismatch: on LLaDA2-Mini, accuracy improves from 78.59% under training-free MultiBD to 81.03% af-ter MultiTF post-training, while average TPF further increases from 4.41 to 6.19 . On LLaDA2-Mini-DMax, MultiTF improves average accuracy from 78.17% to 78.57% while preserving high TPF.  
+
+> Generalization across BD-LM backbones.
+
+MBD-LMs also generalize beyond the LLaDA2 family. On SDAR-8B-Chat-b32, MBD-SDAR-8B-Chat-b32 increases average TPF from 2.54 to 4.46 (+75.6%) and improves average accuracy from 69.00% to 69.74% . With block size 4, MBD-SDAR-8B-Chat-b4 reaches the best average AUP among the three SDAR configurations. These results suggest that the MBD-LM formulation and MultiTF post-training are not tied to a specific BD-LM backbone. Transfer of training-free MultiBD. In addition, Table 2a shows that training-free MultiBD transfers to additional model variants such as LLaDA2-Mini-CAP and LLaDA2.1-Mini, improving TPF without post-training. This suggests that the inference-side MultiBD mechanism itself has broad applicability, while MultiTF is needed to recover and further improve generation quality under practical MultiBD states. 
+
+4.3 Ablation Study 
+
+Table 2b ablates the key MultiTF training components with LLaDA2-Mini-DMax, averaged over HumanEval+ and GSM8K. Compared with SingleBD (Native), the full MBD configuration increases TPF from 6.57 to 
+
+9.87 and AUP from 536.89 to 805.34 , while nearly preserving the average accuracy, with only a 0.08-point change from 84.67% to 84.59%. This shows that MultiTF substantially improves the TPF–accuracy trade-off by aligning BD-LMs with practical MultiBD inference states.  
+
+> Effect of noise-group group-layouts.
+
+We first ablate the group-layout construction for noise-groups . Using only systematic layouts or only random layouts already improves TPF over SingleBD, increasing TPF from 6.57 to 9.71 and 9.42, respectively. However, both single-source variants reduce accuracy, with systematic layouts achieving 83.22% and random layouts achieving 82.72%. Combining systematic and random layouts gives the best trade-off, reaching the highest TPF of 9.87 and the highest AUP of 805.34 , while recovering the accuracy to 84.59%, close to the SingleBD level of 84.67%. This suggests that the two layout sources are complementary: systematic group-layouts provide structured coverage of bounded running-set sizes and group-relative positions, while random group-layouts add distributional diversity beyond the systematic con-struction.  
+
+> Effect of block-level noise-schedulers.
+
+We then ablate the block-level noise-scheduler within each noise-group .Replacing the chain-uniform noise-scheduler with a D2F-style monotonic noise-scheduler increases TPF over SingleBD from 6.57 to 8.76, but causes a large accuracy drop from 84.67% to 79.34%. This indicates that exposing the model to multiple noisy blocks is insufficient when the slot-wise noise pattern is not aligned with practical MultiBD inference. Random and sorted-uniform noise-schedulers further improve TPF to 9.70 and 9.73, respectively, but still underperform chain-uniform in AUP. In particular, sorted-uniform achieves a high TPF but suffers a larger accuracy drop, suggesting that sorted mask ratios alone do not capture the heterogeneous noise gaps induced by MultiBD decoding. The full chain-uniform noise-scheduler achieves the best accuracy, TPF, and AUP among the scheduler variants, reaching 84.59%, 9.87, and 805.34, respectively. This confirms the importance of training with heterogeneous slot-wise noise gaps. The sorted-uniform noise-scheduler baseline samples mask ratios uniformly and sorts them before assigning them to slots; details are provided in Appendix B. We further analyze the train–inference alignment gap in Section 4.4. 
+
+4.4 Train–Inference Alignment Analysis 
+
+Figure 2 analyzes the training-state mismatch that motivates MultiTF. The figure focuses on two aspects of practical MultiBD inference: slot-wise mask-ratio patterns and the size of the active part of the running-set . 
+
+> D2F-style noise schedules mismatch MultiBD inference.
+
+As shown in Figure 2(A), the D2F-style monotonic scheduler induces highly overlapping slot-wise mask-ratio distributions. This weak slot-wise separation differs from practical MultiBD inference, where adjacent active slots often exhibit large noise-ratio gaps. This explains the ablation result in Table 2b: the D2F-style monotonic noise-scheduler improves TPF by enabling multi-block decoding, but causes a large accuracy drop because its training states do not match practical MultiBD inference states.  
+
+> Chain-uniform scheduling improves slot-wise alignment.
+
+By contrast, the chain-uniform scheduler used by Mul-tiTF creates more heterogeneous slot-wise noise patterns. As shown in Figure 2(B), different slots in a 
+
+noise-group receive more separated mask-ratio distributions. These scheduler-induced training distributions better match the inference-time mask-ratio distributions in Figure 2(C), especially the large gap between the first and second active slots. After MultiTF post-training, the inference-time mask-ratio distribution becomes further aligned with the designed training states. MultiBD inference uses a bounded active set. Figure 2(D–E) further shows that MultiBD inference usually main-tains a small active part of the running-set , with an expectation around two and occasional expansion to three or four active blocks. This supports the bounded running-set view in Section 3.1. Reliable MultiBD therefore requires training states that match both the bounded running-set structure and the heterogeneous slot-wise noise patterns of inference, rather than merely exposing the model to future noisy blocks. 
+
+4.5 Efficiency Analysis 
+
+We further analyze how the increased TPF of MBD-LMs translates into realized wall-clock throughput. At decoding step s, the optimized MultiBD engine executes a fixed physical Block Buffer Ws defined in Section 3.3. Let Ps denote the cached prefix length at this step and let 
+
+Qs = |W s|B = Nbuf B
+
+denote the number of processed tokens in one forward pass. For SingleBD, this reduces to Nbuf = 1 and 
+
+Qs = B. For MultiBD, Nbuf > 1, and the forward pass processes all physical buffer slots, including active blocks, completed resident blocks, and dummy slots used to preserve static input shapes. Thus, Qs measures the computational workload of a forward pass, whereas TPF measures the number of useful tokens committed by that forward pass. This distinction defines a token-efficiency factor: 
+
+ηtok (s) = TPF s
+
+Qs
+
+.
+
+Equivalently, 
+
+TPS = TPF 
+
+Tstep 
+
+= ηtok Qs
+
+Tstep 
+
+.
+
+Therefore, increasing the block-buffer size can improve throughput only when the useful-token gain outweighs the additional per-step cost. MultiBD increases Qs and enables more tokens to be committed per forward pass, but its token efficiency can be reduced by inactive dummy slots and resident blocks that are processed for static-shape execution but do not immediately contribute to committed tokens. Each decoding forward can be viewed as an extend-attention step with Qs query tokens and a cached prefix of length Ps. For a transformer with Nlayer layers, hidden size d, FFN hidden size dff , and vocabulary V, the per-step FLOPs can be approximated as 
+
+Fstep (Qs, P s) = Θ  Nlayer 
+
+Qs(d2 + dd ff ) + d(QsPs + Q2
+
+> s
+
+) + Qsd|V|  .
+
+The first term comes from QKV/O projections and FFN layers, the second term comes from attention between the buffer and the cached prefix as well as attention inside the buffer, and the last term comes from the LM head when logits are computed. Thus, increasing Nbuf from 1 to a larger value improves inter-block decoding parallelism, but also increases the amount of computation performed by each forward pass. The memory cost follows the same extend-attention structure. Let sdtype be the number of bytes per activation element. The per-step weight traffic scales as 
+
+MW = Θ  Nlayer sdtype (d2 + dd ff ) ,
+
+while the KV-cache traffic of extend attention can be approximated as 
+
+MKV (Qs, P s) = Θ ( Nlayer sdtype [ρ(Qs)( Ps + Qs)d + Qsd]) ,
+
+where ρ(Qs) captures repeated KV reads caused by query tiling. The first term corresponds to reading KV cache for the prefix and current buffer, while the second term corresponds to KV cache storing. This gives a roofline-style view of the step latency: 
+
+Tstep (Qs, P s) ≈ max 
+
+ Fstep (Qs, P s)Πeff 
+
+, MW + MKV (Qs, P s)
+
+BHBM 
+
+
+
++ Tcomm (Qs) + Tlaunch ,Table 3 Throughput and single-step latency comparison. Results are measured for single-sample decoding on two H100 GPUs with tensor parallelism degree 2 (TP=2). Step latency denotes the average wall-clock latency of one decoding forward pass. TPF and TPS gains are computed relative to LLaDA2-Mini, while latency cost reports the relative increase in per-step latency.                                                              
+
+> Forward-step statistics Realized throughput Model Avg. TPF ↑TPF Gain ↑Step Lat. (ms) ↓Lat. Cost ↓GSM8K TPS ↑MATH500 TPS ↑MBPP+ TPS ↑HumanEval+ TPS ↑Avg. TPS ↑TPS Gain ↑
+> LLaDA2-Mini 3.47 –7.07 1.00 ×344.05 403.45 496.19 824.94 517.16 –MBD-LLaDA2-Mini 6.19 +78.39% 8.78 1.24 ×687.87 707.89 646.73 941.18 745.92 +44.24% LLaDA2-Mini-DMax 6.35 +83.00% 9.02 1.28 ×700.82 730.60 754.97 931.55 779.49 +50.73% MBD-LLaDA2-Mini-DMax 9.34 +169.16% 11.20 1.58 ×834.52 851.07 896.65 1124.43 926.67 +79.19%
+
+where Πeff is the effective compute throughput, BHBM is the effective HBM bandwidth, Tcomm includes fixed-configuration tensor-parallel communication, and Tlaunch denotes launch and runtime overhead. This expression shows that the realized throughput depends on both the useful-token numerator and the roofline-limited per-step cost denominator. The attention arithmetic intensity further explains why MultiBD can still be efficient despite processing more tokens per step. Ignoring lower-order terms, the attention arithmetic intensity is approximately 
+
+AI attn ≈ dQ sPs
+
+sdtype ρ(Qs)Psd = Θ 
+
+ Qs
+
+sdtype ρ(Qs)
+
+
+
+when Ps ≫ Qs. Therefore, increasing Qs through a larger Block Buffer makes the extend-attention step more compute intensive. Prefix KV reads, weight reads, and kernel-launch overheads are amortized over more query tokens. However, the gain is useful only to the extent that these processed tokens lead to committed tokens, as captured by ηtok .The measurements in Table 3 match this analysis. For LLaDA2-Mini, MBD increases the average TPF from 3.47 to 6.19, a 1.78 × improvement, while the step latency increases from 7.07 ms to 8.78 ms, a 1.24 × cost increase. The expected throughput scaling is therefore approximately 1.78 /1.24 = 1 .44 ×, closely matching the measured Avg. TPS improvement from 517.16 to 745.92, i.e., 1.44 ×. Similarly, for LLaDA2-Mini-DMax, MBD increases the average TPF from 6.35 to 9.34, a 1.47 × improvement, while the step latency increases from 9.02 ms to 11.20 ms, a 1.24 × cost increase. This predicts a throughput scaling of 1.47 /1.24 = 1 .18 ×,which closely matches the measured Avg. TPS improvement from 779.49 to 926.67, i.e., 1.19 ×. Thus, the observed gap between TPF gain and TPS gain is primarily explained by the increased per-forward cost of processing the larger static Block Buffer .Overall, MultiBD improves wall-clock throughput by increasing the number of useful tokens committed per forward pass and by making each extend-attention step more compute intensive. At the same time, static-shape execution introduces extra processed tokens through resident blocks and dummy slots, reducing token efficiency relative to the ideal case. The final TPS gain is therefore determined by the balance among TPF improvement, token efficiency, and roofline-limited step latency. 
+
+## 5 Related Work 
+
+5.1 Diffusion Language Models 
+
+Diffusion Language Models (DLMs) generate text through iterative denoising and enable parallel token refinement as an alternative to autoregressive generation. Representative models include LLaDA (Nie et al., 2025), Dream (Ye et al., 2025), and LLaDA2.x (Bie et al., 2025, 2026), which improve scaling, initialization, and editable refinement. However, fully bidirectional DLMs are difficult to serve efficiently because they do not naturally support KV caching or flexible-length generation. Block Diffusion Language Models (BD-LMs) (Arriola et al., 2025; Bie et al., 2025; Cheng et al., 2025) address these limitations by introducing block-causal generation. Their native Single-Block Diffusion (SingleBD) inference decodes one noisy block conditioned on a clean cached prefix, enabling KV caching and intra-block parallel decoding. Nevertheless, SingleBD still processes blocks sequentially, leaving inter-block parallelism underused. Our work studies Multi-Block Diffusion (MultiBD) as a broader inference regime for BD-LMs, where a bounded running-set of consecutive blocks can be refined concurrently. 
+
+5.2 Efficient DLM Inference and Training 
+
+Efficient DLMs have been studied through distillation, scheduling, caching, and parallel decoding. D2F (Wang et al., 2025) introduces noisy-block visibility during training and demonstrates the potential of MultiBD-style pipelined decoding. DMax (Chen et al., 2026), d3LLM (Qian et al., 2026), LightningRL (Hu et al., 2026), and dParallel (Chen et al., 2025) improve the accuracy–parallelism trade-off through training objectives or decoding schedules. Fast-dLLM (Wu et al., 2025) and LoPA (Xu et al., 2025) accelerate inference through caching and lookahead parallelism. Our work is complementary to these efforts but focuses on a different level of parallelism. Instead of only increasing token-level parallelism or applying MultiBD as an inference-time heuristic, we treat MultiBD as a target inference regime for BD-LMs. We identify the bounded running-set structure and heterogeneous slot-wise noise patterns as key train–inference alignment factors, and propose MultiTF to post-train BD-LMs into MBD-LMs with inference-like multi-block states. We further provide Block Buffer inference support so that MultiBD preserves prefix-cache reuse and static-shape execution. 
+
+## 6 Conclusion 
+
+We proposed Multi-Block Diffusion Language Models (MBD-LMs), a unified formulation of BD-LMs for reliable MultiBD inference. Starting from the sequential bottleneck of SingleBD, we showed that MultiBD can expose inter-block parallelism but requires training states aligned with its bounded running-set structure and heterogeneous slot-wise noise patterns. To bridge this gap, we introduced Multi-block Teacher Forcing 
+
+(MultiTF), which post-trains BD-LMs with bounded noise-groups , the Group-Aware Dual-Stream Mask , and randomized block-level noise-schedulers . We further developed an optimized MultiBD inference engine with the Block Buffer mechanism, enabling static-shape execution while preserving KV caching and prefix-cache reuse. Experiments on math and code benchmarks show that MBD-LMs improve decoding parallelism and realized throughput while maintaining generation quality, demonstrating that reliable MultiBD requires both training-time state alignment and inference-time system support. 
+
+## References 
+
+Marianne Arriola, Aaron Gokaslan, Justin T. Chiu, Zhihan Yang, Zhixuan Qi, Jiaqi Han, Subham Sekhar Sahoo, and Volodymyr Kuleshov. Block diffusion: Interpolating between autoregressive and diffusion language models. In International Conference on Learning Representations (ICLR) , 2025. URL https://arxiv.org/abs/2503.09573 . Oral Presentation. Tiwei Bie, Zenan Huang, Chongxuan Li, et al. Llada2.0: Scaling up diffusion language models to 100b. arXiv preprint arXiv:2512.15745 , 2025. URL https://arxiv.org/abs/2512.15745 .Tiwei Bie et al. Llada2.1: Speeding up text diffusion via token editing. arXiv preprint arXiv:2602.08676 , 2026. URL 
+
+> https://arxiv.org/abs/2602.08676
+
+.Nicolas Boizard, Hippolyte Gisserot-Boukhlef, Kevin El-Haddad, Céline Hudelot, and Pierre Colombo. When does reasoning matter? a controlled study of reasoning’s contribution to model performance. arXiv preprint arXiv:2509.22193 , 2025. URL https://arxiv.org/abs/2509.22193 .Zigeng Chen, Gongfan Fang, Xinyin Ma, Ruonan Yu, and Xinchao Wang. dparallel: Learnable parallel decoding for dllms. arXiv preprint arXiv:2509.26488 , 2025. URL https://arxiv.org/abs/2509.26488 .Zigeng Chen, Gongfan Fang, Xinyin Ma, Ruonan Yu, and Xinchao Wang. Dmax: Aggressive parallel decoding for dllms. arXiv preprint arXiv:2604.08302 , 2026. URL https://arxiv.org/abs/2604.08302 .Shuang Cheng, Yihan Bian, Dawei Liu, Linfeng Zhang, Qian Yao, Zhongbo Tian, Wenhai Wang, Qipeng Guo, Kai Chen, Biqing Qi, and Bowen Zhou. Sdar: A synergistic diffusion-autoregression paradigm for scalable sequence generation. arXiv preprint arXiv:2510.06303 , 2025. URL https://arxiv.org/abs/2510.06303 .Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, Christopher Hesse, and John Schulman. Training verifiers to solve math word problems. arXiv preprint arXiv:2110.14168 , 2021. Dan Hendrycks, Collin Burns, Saurav Kadavath, Akul Arora, Steven Basart, Eric Tang, Dawn Song, and Jacob Steinhardt. Measuring mathematical problem solving with the math dataset. arXiv preprint arXiv:2103.03874 ,2021. Yanzhe Hu, Yijie Jin, Pengfei Liu, Kai Yu, and Zhijie Deng. Lightningrl: Breaking the accuracy–parallelism trade-off of block-wise dllms via reinforcement learning. arXiv preprint arXiv:2603.13319 , 2026. URL https://arxiv.org/abs/2603. 13319 .jtatman. Python code dataset 500k. Hugging Face dataset, 2025. URL https://huggingface.co/datasets/jtatman/ python-code-dataset-500k .Jiawei Liu, Chunqiu Steven Xia, Yuyao Wang, and Lingming Zhang. Is your code generated by chatgpt really correct? rigorous evaluation of large language models for code generation. Advances in Neural Information Processing Systems , 36:21558–21572, 2023. Guanxi Lu, Hao Mark Chen, Yuto Karashima, Zhican Wang, Daichi Fujiki, and Hongxiang Fan. Adablock-dllm: Semantic-aware diffusion llm inference via adaptive block size. arXiv preprint arXiv:2509.26432 , 2026. URL 
+
+> https://arxiv.org/abs/2509.26432
+
+.Qianli Ma, Yaowei Zheng, Zhelun Shi, Zhongkai Zhao, Bin Jia, Ziyue Huang, Zhiqi Lin, Youjie Li, Jiacheng Yang, Yanghua Peng, Zhi Zhang, and Xin Liu. Veomni: Scaling any modality model training with model-centric distributed recipe zoo. arXiv preprint arXiv:2508.02317 , 2025. URL https://arxiv.org/abs/2508.02317 .Shen Nie, Fengqi Zhu, Zebin You, Xiaolu Zhang, Jingyang Ou, Jun Hu, Jun Zhou, Yankai Lin, Ji-Rong Wen, and Chongxuan Li. Large language diffusion models. arXiv preprint arXiv:2502.09992 , 2025. URL https://arxiv.org/abs/ 2502.09992 .Yu-Yang Qian, Junda Su, Lanxiang Hu, Peiyuan Zhang, Zhijie Deng, Peng Zhao, and Hao Zhang. d3llm: Ultra-fast diffusion llm using pseudo-trajectory distillation. arXiv preprint arXiv:2601.07568 , 2026. URL https://arxiv.org/abs/ 2601.07568 .Subham Sekhar Sahoo, Marianne Arriola, Yair Schiff, Aaron Gokaslan, Edgar Marroquin, Justin T. Chiu, Alexan-der Rush, and Volodymyr Kuleshov. Simple and effective masked diffusion language models. arXiv preprint arXiv:2406.07524 , 2024. URL https://arxiv.org/abs/2406.07524 .Xu Wang, Chenkai Xu, Yijie Jin, Jiachun Jin, Hao Zhang, and Zhijie Deng. Diffusion llms can do faster-than-ar inference via discrete diffusion forcing. arXiv preprint arXiv:2508.09192 , 2025. URL https://arxiv.org/abs/2508.09192 .Chengyue Wu et al. Fast-dllm: Training-free acceleration of diffusion llm by enabling kv cache and parallel decoding. 
+
+arXiv preprint arXiv:2505.22618 , 2025. URL https://arxiv.org/abs/2505.22618 .Chenkai Xu, Yijie Jin, Jiajun Li, Yi Tu, Guoping Long, Dandan Tu, Mingcong Song, Hongjie Si, Tianqi Hou, Junchi Yan, and Zhijie Deng. Lopa: Scaling dllm inference via lookahead parallel decoding. arXiv preprint arXiv:2512.16229 , 2025. URL https://arxiv.org/abs/2512.16229 .Jiacheng Ye, Zhihui Xie, Lin Zheng, Jiahui Gao, Zirui Wu, Xin Jiang, Zhenguo Li, and Lingpeng Kong. Dream 7b: Diffusion large language models. arXiv preprint arXiv:2508.15487 , 2025. URL https://arxiv.org/abs/2508.15487 .A Theoretical View of MultiTF 
+
+This appendix provides a simple theoretical view of Multi-block Teacher Forcing (MultiTF). The goal is not to prove that MultiTF directly improves downstream accuracy. Instead, we show that MultiTF can be interpreted as a coverage-based surrogate for the ideal MultiBD training objective, and that its approximation gap is controlled by the mismatch in running-set coverage and noise-ratio distributions.  
+
+> Ideal MultiBD objective.
+
+Let R = {a, . . . , c } denote a consecutive MultiBD running-set with size |R| ≤ Gmax ,where Gmax is the maximum noise-group size used in MultiTF. For a clean sequence x0, noise ratios t, and model θ, define the state loss 
+
+ℓθ (x0, R, t) = − 1
+
+|M R|
+
+X
+
+> i∈M R
+
+log pθ
+
+ xi 
+
+> 0
+
+| x(<a )0 , bR,t
+
+, (A.1) where x(<a )0 is the clean prefix before R, bR,t denotes the noisy blocks inside R, and MR denotes masked positions in the running-set .Let pinf (R, t) be the inference-time distribution of MultiBD states, and let qMultiTF (R, t) be the training-state distribution induced by MultiTF group-layouts and the chain-uniform noise-scheduler . The ideal MultiBD objective is 
+
+L⋆
+
+> MultiBD
+
+(θ) = Ex0 E(R,t)∼pinf [ℓθ (x0, R, t)] , (A.2) while MultiTF minimizes the surrogate objective 
+
+LMultiTF (θ) = Ex0 E(R,t)∼qMultiTF [ℓθ (x0, R, t)] . (A.3)  
+
+> Systematic shifts cover bounded running-sets.
+
+Assume the sequence is padded so that boundary effects can be ignored. For a fixed noise-group size g ∈ { 2, . . . , G max }, MultiTF constructs g shifted layouts. Then every consecutive running-set R = {a, . . . , a + g − 1} appears as one noise-group in exactly one shifted layout for that g.
+
+Proof. For a fixed g, each shifted layout places group boundaries every g blocks with a different offset. For a running-set starting at block a, choosing the shift h = ( a − 1) mod g aligns a group boundary with a, so 
+
+{a, . . . , a + g − 1} appears as one noise-group . The shift is unique modulo g, so the running-set appears once among the g shifted layouts. Thus, systematic layouts cover all consecutive running-sets with size between 2 and Gmax . Equivalently, for each fixed g, every block appears once at every group-relative logical slot across the g shifts. Random layouts do not change this support guarantee, but add additional samples with non-regular noise-group -size combinations.  
+
+> Objective mismatch bound.
+
+We next bound the gap between the ideal MultiBD objective and the MultiTF surrogate objective. Let pR and qR be the marginal distributions over running-sets under pinf and qMultiTF ,respectively. We assume: 
+
+A1. Bounded MultiBD states. The inference distribution pinf is supported on consecutive running-sets 
+
+with 2 ≤ |R| ≤ Gmax .
+
+A2. Bounded loss. For all θ, x0, R, t,
+
+0 ≤ ℓθ (x0, R, t) ≤ M. 
+
+A3. Lipschitz dependence on noise ratios. For every θ, x0, R, the state loss is Lt-Lipschitz in the noise-ratio vector: 
+
+|ℓθ (x0, R, t) − ℓθ (x0, R, t′)| ≤ Lt∥t − t′∥1. (A.4) Here TV( p, q ) = 12
+
+P 
+
+> x
+
+|p(x) − q(x)| denotes the total variation distance between two discrete distributions. Define the running-set distribution mismatch as 
+
+δR = TV( pR, q R),
+
+and assume the conditional noise-ratio mismatch satisfies 
+
+W1 (pinf (t | R ), q MultiTF (t | R )) ≤ δt
+
+for every running-set R, where W1 is the Wasserstein-1 distance under the ℓ1 metric. Under these assumptions, for any model θ,
+
+|L ⋆
+
+> MultiBD
+
+(θ) − L MultiTF (θ)| ≤ M δ R + Ltδt. (A.5) 
+
+Proof. For clarity, omit the outer expectation over x0. We decompose the objective gap into a running-set 
+
+distribution term and a conditional noise-distribution term: 
+
+EpRp(t|R )[ℓθ ] − EqRq(t|R )[ℓθ ] ≤ EpRp(t|R )[ℓθ ] − EqRp(t|R )[ℓθ ] + EqRp(t|R )[ℓθ ] − EqRq(t|R )[ℓθ ] . (A.6) The first term is bounded by M TV( pR, q R) = M δ R, since the loss is bounded in [0 , M ]. The second term is bounded by Ltδt by the Lipschitz assumption and the definition of W1. Combining the two terms gives Eq. A.5.  
+
+> Excess target risk.
+
+Let ˆθ be a model whose MultiTF objective is within ϵopt of the best model in a hypothesis class Θ:
+
+LMultiTF (ˆθ) ≤ min  
+
+> θ∈Θ
+
+LMultiTF (θ) + ϵopt .
+
+Then 
+
+L⋆
+
+> MultiBD
+
+(ˆθ) − min  
+
+> θ∈Θ
+
+L⋆
+
+> MultiBD
+
+(θ) ≤ 2( M δ R + Ltδt) + ϵopt . (A.7) This bound shows that reducing running-set distribution mismatch δR and noise-ratio mismatch δt directly tightens the gap between MultiTF training and ideal MultiBD inference. Systematic shifts reduce support mismatch by covering bounded consecutive running-sets up to size Gmax , random layouts add distributional diversity, and the chain-uniform noise-scheduler reduces noise-ratio mismatch by producing heterogeneous slot-wise noise gaps. Therefore, MultiTF can be viewed as a coverage-based surrogate for the ideal MBD-LM objective. 
+
+## B MultiTF Training Implementation Details 
+
+This appendix provides implementation details for Multi-block Teacher Forcing (MultiTF), which post-trains BD-LMs into MBD-LMs. The terminology follows Section 3.2: training-side structures are called noise-groups , group-layouts , and noise-schedulers , while inference-side structures are called Block Buffers and slots .We use Gmax for the maximum noise-group size, Λ for the set of group-layouts , λ for one group-layout , and 
+
+Hm for one noise-group . We use VeOmni (Ma et al., 2025) as the training framework. SDAR models are post-trained on reasoning/code data from prior studies (Boizard et al., 2025; jtatman, 2025); LLaDA2.x and DMax-enhanced models are post-trained on the corresponding reasoning/code mixtures used by their base recipes. 
+
+B.1 Group-Layout Construction 
+
+MultiTF constructs a group-layout set 
+
+Λ = Λ sys ∪ Λrand ,
+
+where Λsys contains systematic shifted layouts and Λrand contains random layouts. Each group-layout λ =(H1, . . . , H |λ|) partitions the block sequence [b1, . . . , bK ] into consecutive noise-groups . Each noise-group 
+
+Hm = {am, . . . , c m} has the same consecutive-block form as a possible MultiBD running-set .Systematic layouts. For each noise-group size g ∈ { 2, . . . , G max } and shift h ∈ { 0, . . . , g − 1}, MultiTF constructs a shifted layout λg,h by placing group boundaries every g blocks with offset h. Formally, define the boundary set 
+
+Bg,h = sort 
+
+
+
+{1, K + 1 } ∪ { 1 + h + qg : q ∈ Z, 1 < 1 + h + qg < K + 1 }
+
+
+
+.
+
+Let Bg,h = ( r1, . . . , r ng,h +1 ) after sorting. The q-th noise-group in λg,h is 
+
+Hg,h,q = {rq , . . . , r q+1 − 1}, q = 1 , . . . , n g,h .
+
+Boundary noise-groups can be shorter than g, while interior noise-groups have size g. The systematic layout set is 
+
+Λsys = {λg,h : g ∈ { 2, . . . , G max }, h ∈ { 0, . . . , g − 1}} .
+
+Ignoring boundary effects, every consecutive running-set {a, . . . , a + g − 1} of length g appears as one noise-group in exactly one shifted layout by choosing h = ( a − 1) mod g. Equivalently, for each fixed g, every block appears once at every group-relative position across the g shifts. The number of systematic layouts is therefore 
+
+|Λsys | =
+
+> Gmax
+
+X
+
+> g=2
+
+g = (Gmax + 2)( Gmax − 1) 2 . (B.1)  
+
+> Random layouts.
+
+Systematic layouts provide structured coverage but are regular by construction. To increase layout diversity, MultiTF further samples Nrand random layouts. For each random layout, we sequentially draw group sizes 
+
+gm ∼ Uniform {2, . . . , G max }
+
+and form consecutive groups 
+
+Hm = {am, . . . , min( am + gm − 1, K )}, am+1 = min( am + gm, K + 1) ,
+
+until the full block sequence is covered. These random layouts add non-regular noise-group -size combinations and boundary patterns without replacing the coverage guarantee of systematic layouts. The total number of layout variants per clean sequence is 
+
+|Λ| = (Gmax + 2)( Gmax − 1) 2 + Nrand . (B.2) All layouts are batched as independent input sequences during post-training. This increases the effective number of training states per clean sample, but also increases training cost; exact settings are reported in Table 5. A theoretical coverage view is provided in Appendix A. 
+
+B.2 Chain-uniform Noise-Scheduler 
+
+For each noise-group Hm = ( j1, . . . , j nm ), MultiTF applies the chain-uniform noise-scheduler used in Algo-rithm 1. We first define an effective upper bound 
+
+teff = thigh − ρ(thigh − tlow ), (B.3) where ρ is the noise-transition margin ratio, corresponding to noise_transition_margin_ratio in the im-plementation. This parameter is independent of the random noise-scheduler power-law bias γrand , which is used only for the random noise-scheduler ablation. For each group, a group-level floor ℓ is first sampled from the lower part of the noise range. Then each block samples its mask ratio from the interval between the current floor and the effective upper bound, and the sampled ratio becomes the floor for the next block: 
+
+ℓ ∼ U (tlow , t eff ), tji ∼ U (ℓ, t eff ), ℓ ← tji , i = 1 , . . . , n m. (B.4) This construction produces monotonic but randomized slot-wise mask ratios inside each noise-group . Com-pared with the fixed-step D2F schedule over a long noisy sequence, the resulting groups have larger and more variable block-level noise-ratio gaps, matching the heterogeneous active blocks observed during MultiBD inference. For each block with mask ratio tji , MultiTF replaces ⌊B · tji ⌋ randomly selected token positions in bji with 
+
+[M] . For a layout λ, the resulting noisy sequence is denoted as xλ 
+
+> t
+
+.
+
+B.3 Group-Aware Dual-Stream Mask 
+
+Following the TF-style construction of Block Diffusion, MultiTF concatenates the noisy and clean sequences into the input sequence 
+
+Xλ = [ xλ 
+
+> t
+
+; x0]. (B.5) The attention mask has the block form 
+
+Aλ =
+
+MGD MGOC 
+
+0 MBC 
+
+
+
+, (B.6) where MGD is the group-aware diagonal mask on the noisy part, MGOC is the group-aware offset-causal mask from noisy tokens to clean tokens, and MBC is the standard block-causal mask on the clean part. Let Nλ and C denote token positions in the noisy and clean parts, respectively. Let g(i) be the noise-group 
+
+index of token i, β(i) be its block index, and α(i) be the first block index of the noise-group containing i.The three masks are defined as 
+
+[MGD ]ij = 1 ⇐⇒ i, j ∈ N λ, g(i) = g(j), β(j) ≤ β(i), (B.7) 
+
+[MGOC ]ij = 1 ⇐⇒ i ∈ N λ, j ∈ C , β(j) < α (i), (B.8) 
+
+[MBC ]ij = 1 ⇐⇒ i, j ∈ C , β(j) ≤ β(i), (B.9) and all other entries are zero. Thus, noisy tokens can attend to same-noise-group noisy tokens from the same or preceding blocks, each noise-group can condition on clean prefix blocks before it, and clean tokens never attend to noisy tokens. This implements the visibility pattern required by Equation 3.1 without information leakage. 
+
+B.4 MultiTF Objective and Model-specific Training Recipes 
+
+MultiTF defines the training-state construction: the layout λ, the noisy sequence xλ 
+
+> t
+
+, the clean sequence x0,and the Group-Aware Dual-Stream Mask Aλ. Different base BD-LMs can reuse the same MultiTF input sequences while keeping their own model-specific training recipes.  
+
+> B.4.1 Default MultiTF CE Objective
+
+The default MultiTF objective is masked-token cross-entropy on masked positions in the noisy part of Xλ.Let 
+
+Mλ = {i : xλ 
+
+> t
+
+[i] = [M] } (B.10) denote the masked positions. The objective is 
+
+LMultiTF (θ) = −Eλ, t,x0
+
+ 1
+
+|M λ|
+
+X
+
+> i∈M λ
+
+log pθ
+
+ xi 
+
+> 0
+
+| Xλ, Aλ
+
+
+
+. (B.11) This objective is used for BD-LMs whose original training recipe is standard masked-token CE. Algorithm 2 DMax OPUT Self-Denoising Branch                        
+
+> Require: Model θ; input sequence Xλ= [ xλ
+> t;x0]; noisy length N; mask token id m.1: Run a no-gradient forward pass on the noisy part: L←θ(Xλ):N.2: Compute argmax predictions ˆx←arg max L.3: Replace masked positions in xλ
+> twith ˆx.4: return the partially self-denoised input sequence.
+> B.4.2 DMax-enhanced Models: OPUT Self-denoising
+
+For DMax-enhanced models, we keep the same MultiTF input sequences and add the DMax OPUT self-denoising branch. For each MultiTF input sequence, OPUT forms two branches. The standard branch computes the training loss on the original noisy input sequence. The self-denoising branch first runs a no-gradient forward pass, replaces masked positions in the noisy part with the model’s argmax predictions, and then computes the loss on this partially self-denoised input. Gradients flow only through the second forward pass of the self-denoising branch. This exposes the model to partially self-generated states while keeping the MultiTF layout and attention-mask construction unchanged. The procedure is summarized in Algorithm 2.  
+
+> B.4.3 SDAR Models: Block-wise Noise-weighted CE
+
+For SDAR models, we also reuse the same MultiTF input sequences and Group-Aware Dual-Stream Mask s. The difference lies in the loss normalization. Instead of computing one global masked-token CE over all masked positions, SDAR applies a block-wise noise-weighted CE, where the loss of each block is normalized by the mask ratio applied to that block. Let Bk denote token positions of block k in the noisy part, and let 
+
+Mλ,k = Mλ ∩ B k (B.12) be the masked positions in block k under layout λ. Let tλ,k denote the mask ratio assigned to block k. The SDAR-style MultiTF objective is 
+
+LSDAR MultiTF (θ) = −Eλ, t,x0
+
+ 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+1max( tλ,k , ϵ )
+
+X
+
+> i∈M λ,k
+
+log pθ
+
+ xi 
+
+> 0
+
+| Xλ, Aλ
+
+
+
+, (B.13) where ϵ is a small constant used for numerical stability. This block-wise normalization extends the diffusion loss to the full block sequence while preserving the per-block noise weighting used by SDAR. It differs from Equation B.11, which normalizes the loss globally over all masked positions in the noisy part. 
+
+B.5 Sorted-uniform Scheduler Baseline 
+
+The sorted-uniform noise-scheduler is a baseline for constructing monotonic block-level noise within each 
+
+noise-group . For a noise-group Hm = ( j1, . . . , j nm ), it independently samples nm mask ratios from a uniform distribution and then sorts them in ascending order before assigning them to the blocks in the noise-group ,as summarized in Algorithm 3: 
+
+u1, . . . , u nm
+
+> i.i.d.
+
+∼ U(tlow , t high ), u(1) ≤ · · · ≤ u(nm),tji = u(i), i = 1 , . . . , n m.
+
+This produces a monotonic noise pattern similar in spirit to D2F. However, unlike the chain-uniform noise-scheduler in Appendix B.2, the gaps between adjacent slots are only induced by order statistics of uniformly sampled values and are not explicitly encouraged to be large. 
+
+## C MultiBD Inference Implementation Details 
+
+This appendix expands the optimized MultiBD inference algorithm introduced in Section 3.3. The main design goal is to execute the MultiBD running-set in Equation 3.1 with a static physical input shape, while preserving prefix KV-cache reuse. Algorithm 3 Sorted-uniform Block-level Noise-Scheduler 
+
+Require: Noise-group Hm = ( j1, . . . , j nm ); noise bounds tlow , t high .1: for i ← 1 to nm do 
+
+2: Sample ui ∼ U (tlow , t high ).3: end for 
+
+4: Sort sampled ratios: u(1) ≤ · · · ≤ u(nm).5: for i ← 1 to nm do 
+
+6: Assign tji ← u(i).7: end for 
+
+8: return block-level mask ratios {tji }nm
+
+> i=1
+
+.
+
+Algorithm 4 Naive MultiBD with a Dynamic Running-Set 
+
+Require: Model θ; block size B; thresholds τadd , τsemi , τM2T .// Initialize dynamic MultiBD state 
+
+1: Initialize prefix KV cache K ← ∅ and dynamic running-set Y ← ∅ .2: Append one fully masked active block to Y.3: while generation is not complete do 
+
+// Grow the running-set dynamically 
+
+4: if the latest active block has progress > τ add and EOS has not appeared then 
+
+5: Append a fully masked future block to Y.6: end if 
+
+// Decode all blocks in the current running-set 
+
+7: Run θ on Y with prefix cache K.8: for each active block b ∈ Y do 
+
+9: Accept masked positions with confidence > τ M2T .10: if the previous active block is semi-complete and no token is accepted then 
+
+11: Accept the highest-confidence masked position. 12: end if 
+
+13: if b is fully decoded then 
+
+14: Mark b as to-cache .15: end if 
+
+16: end for 
+
+// Commit completed prefix blocks 
+
+17: while the front block of Y is to-cache do 
+
+18: Write the front block into K and remove it from Y.19: end while 
+
+20: end while 
+
+21: return generated tokens. 
+
+C.1 A dynamic running-set prevents static-shape execution. 
+
+A direct implementation of MultiBD maintains a dynamic running-set in addition to the committed prefix cache. When the latest active block reaches an add-block threshold, the decoder appends a fully masked future block to the running-set . When the front active block is completed, the decoder writes it into the KV cache and removes it from the running-set . This dynamic procedure exposes inter-block parallelism, but the number of active tokens changes across decoding steps and across requests. As shown in Figure 6a(2), such shape variation is unfriendly to CUDA Graph capture and replay. 
+
+C.2 A fixed Block Buffer implements MultiBD states. 
+
+Optimized MultiBD replaces dynamic appending with a fixed-size Block Buffer . The Block Buffer contains 
+
+Nbuf physical block slots. At each decoding step, active slots represent the logical running-set Rs, while dummy slots reserve capacity for future blocks. Adding a future block therefore activates an existing dummy slot instead of extending the physical input sequence. When the front active block is completed, it is committed to the KV cache, removed from the running-set , and the Block Buffer slides forward by replacing the consumed slot with a new dummy slot at the tail. This realizes MultiBD while keeping the number of processed buffer tokens fixed at Nbuf · B.Req1 Req2 Req3 Req4 Req5       
+
+> Static running window
+> 1. Traditional Block-wise dLLM: Block Diffusion
+> Req1 Req2 Req3 Req4
+> Dynamic running window Static Input Slot
+> 2. Our Design: Multi-Block Diffusion 3. Using Dummy Block Padding for Static CUDA Graph
+> Req1 Req2 Req3 Req4
+> Static running window Static Input Slot
+> Static Input Slot
+
+(a) CUDA Graph compatibility across decoding designs. 
+
+(1) SingleBD uses a fixed single active block but ex-poses no inter-block parallelism. (2) Naive MultiBD ap-pends future blocks dynamically, making the running-set 
+
+length change over time. (3) Optimized MultiBD maps the logical running-set into a fixed-size Block Buffer with dummy slots, keeping tensor shapes static for CUDA Graph capture and replay. Prefix-full Block Causal Fully Block Causal 
+
+> 66
+> 68
+> 70
+> 72
+> 74
+> 76
+> 78
+> 80
+> Accuracy (%)
+> 77.60
+> 69.60
+
+D2F training mask: prefix-full vs fully-block 
+
+(b) Making D2F fully block-causal hurts accuracy. Prefix-full attention gives D2F stronger noisy-prefix visibility but is not naturally compatible with prefix KV caching. Directly replacing it with a fully block-causal mask improves cache compatibility but drops accuracy from 77.60% to 69.60%. 
+
+Figure 6 Static-shape execution and prefix-cache compatibility analyses. Left: optimized MultiBD keeps tensor shapes static through a fixed-size Block Buffer , enabling CUDA Graph capture and replay. Right: making D2F fully block-causal improves cache compatibility but substantially hurts accuracy. 
+
+C.3 Block states advance the fixed Block Buffer. 
+
+Each physical slot in the Block Buffer follows the transition 
+
+dummy → active → to-cache → in-cache .
+
+A dummy slot is an idle placeholder that preserves the static buffer shape. An active slot participates in the current MultiBD forward pass. A to-cache block has completed decoding and is ready to be committed. An in-cache block has been written into the prefix KV cache and no longer belongs to the active part of the running-set . These state transitions implement the logical evolution of Rs without changing the physical input shape. 
+
+C.4 Thresholds control activation and token updates. 
+
+MultiBD uses separate thresholds for block activation, fallback progress, and token updates. The add-block threshold τadd controls when a future block can enter the fixed Block Buffer . The stability threshold τstable 
+
+prevents premature activation when the current latest active block is still unstable. The semi-completion threshold τsemi allows later active blocks to use the top-1 context of a preceding block once it has made sufficient progress, even before it is fully cached. The M2T threshold τM2T controls mask-to-token acceptance, and the optional T2T threshold τT2T controls token-to-token revision for models that support T2T updates. This separation is important because M2T and T2T updates have different reliability profiles. M2T introduces new content into an active block, while T2T overwrites tentative content before commitment. Using separate thresholds stabilizes concurrent block refinement and reduces error propagation across the running-set .Algorithm 5 Optimized MultiBD with a Fixed Block Buffer 
+
+Require: Model θ; block size B; buffer size Nbuf ; thresholds τadd , τsemi , τstable , τM2T , and optional τT2T .// Initialize fixed Block Buffer 
+
+1: Initialize prefix KV cache K and a fixed Block Buffer W with Nbuf slots. 2: Set W[0] to a fully masked active block and all remaining slots to dummy .3: while generation is not complete do 
+
+// Activate future blocks without changing shape 
+
+4: Let R be the non-dummy resident blocks in W.5: Let blast be the last active block in R.6: if blast satisfies progress > τ add and stability > τ stable then 
+
+7: Activate the first trailing dummy slot if one exists. 8: end if 
+
+// Decode the static Block Buffer 
+
+9: Run θ on the static Nbuf · B Block Buffer tokens with prefix cache K.10: for each active block b ∈ W do 
+
+11: Accept masked positions with confidence > τ M2T .12: if no masked position is accepted and the preceding active block is semi-complete then 
+
+13: Accept the highest-confidence masked position in b.14: end if 
+
+15: if T2T revision is enabled then 
+
+16: Revise eligible filled but uncommitted positions with confidence > τ T2T .17: end if 
+
+18: if b is complete and all preceding resident blocks are cached or ready-to-cache then 
+
+19: Mark b as to-cache .20: end if 
+
+21: end for 
+
+// Commit prefix blocks and slide the buffer 
+
+22: while the front slot of W is to-cache do 
+
+23: Write the front block into K; its state becomes in-cache .24: Pop the front slot and append a new dummy slot at the tail. 25: end while 
+
+26: end while 
+
+27: return generated tokens. 
+
+C.5 Prefix Caching and Fully Block-Causal D2F 
+
+Native D2F is not directly prefix-cache compatible. Prefix caching is a key advantage of BD-LMs. In SingleBD, completed blocks form an immutable clean prefix, so their KV states can be stored and directly reused in later steps. As shown in Figure 7(1), only the current noisy block requires repeated computation. By contrast, native D2F uses prefix-full attention. Future noisy blocks condition on a prefix-full context, where prefix states are not organized as immutable block-causal prefix pages in the standard BD-LM cache. As illustrated in Figure 7(2), their KV states cannot be reused in the same way as SingleBD prefix blocks. 
+
+Fully block-causal D2F variant. To isolate the prefix-caching issue, we construct a fully block-causal D2F vari-ant. Let the full clean sequence be partitioned into BD-LM blocks: 
+
+x0 = [ b1, . . . , bK ], bk ∈ V B .
+
+Suppose native D2F uses a token-level clean prefix 
+
+xpre 0 = ( x10, . . . , x P 
+
+> 0
+
+),
+
+where P can be arbitrary and need not be divisible by B. Let 
+
+a =
+
+ PB
+
+
+
++ 1 , r = P − (a − 1) B
+
+denote the first block that contains suffix tokens and the number of prefix tokens inside this boundary block, respectively. Then b1, . . . , ba−1 are complete clean prefix blocks, while ba may contain both prefix tokens and suffix tokens. We use ba as the first noisy block of the D2F-style suffix, rather than inserting padding tokens. For the boundary block, only its suffix positions are noised and included in the loss: 
+
+Ia = {r + 1 , . . . , B }.You are a helpful assistant. User: Hello! Assistant: Hi, what can I help you?                                
+
+> User: What is Diffusion LLM? Assistant: Diffusion LLM (dLLM) ...
+> 00Req1
+> User: What is PagedAttention? Assistant: PagedAttention is the core ...
+> User: Then how Pre fi x Caching work with Paged Attention? Assistant: Pre fi x Caching is a ...
+> Req1 Req2 Req3 Req4
+> 3
+> 17 15 12 16
+> 67
+> 201
+> 11
+> 54
+> 9810
+> 12345123
+> 0129
+> 3410 11 15 16
+> 5612 14 17
+> 7813
+> 13 14
+> Req2
+> 1. SingleBD enables Pre fi x Caching
+> ✓BlockSize = PageSize
+> ✓Shared pre fi x pages can be directly reused
+> ✓Only new suf fi x blocks need computation
+> ✓
+
+Pre fi x cache hit on shared pages  
+
+> 2. D2F-style pre fi x-full attention breaks Pre fi x Caching
+> ✕
+
+Cannot directly reuse pre fi x cache                            
+
+> Block Causal
+> Pre fi x Full
+> 012
+> ✕Pre fi x caching is not naturally supported
+> ✕Pre fi x blocks attend bidirectionally
+> ✕
+> Cached KV / pages are not reusable as a stable causal pre fi x
+> Pre fi x (System Prompt + User Prompt)
+> 3. How BD-LM combines PagedAttention + Pre fi x Caching
+> Ef fi cient reuse for BD-LMs
+> Same logical pre fi x pages map to the same physical pages
+> Requests (Block Size = PageSize) Page Table / Physical Page Pool (Without Pre fi x Caching) Req1 Req2 Req3 Req4
+> 0123
+> 014569
+> 017811
+> 0110
+> 3
+> 17 15 12 16
+> 67
+> 201
+> 11
+> 54
+> 9810
+> 13 14
+> Add Pre fi x Caching
+> Add Pre fi x Caching
+> ✓Paged attention manages page-level KV storage
+> ✓Pre fi x caching reuses shared pre fi x pages
+> ✓New pages are appended only for uncached suf fi x blocks
+> ✓
+
+Figure 7 Prefix caching in block-causal BD-LMs. (1) SingleBD keeps completed blocks as an immutable clean prefix, enabling direct KV-cache reuse. (2) D2F-style prefix-full attention breaks this cache semantics because noisy prefix blocks are not reusable as stable causal prefix pages. (3) Block Buffer MultiBD separates cached prefix blocks from active Block Buffer slots, enabling prefix KV reuse while refining multiple active blocks. 
+
+For later blocks j > a , all positions belong to the suffix: 
+
+Ij = {1, . . . , B }.
+
+We then apply a monotonic D2F-style noise-scheduler to the valid suffix positions of blocks a, . . . , K :
+
+0 ≤ ta < t a+1 < · · · < t K ≤ 1.
+
+Let ¯bj,t j denote the partially corrupted block, where positions in Ij are corrupted by qtj (· | bj ) and positions outside Ij are kept clean. For the boundary block, this means that the prefix part of ba remains clean, while the suffix part is noised. The fully block-causal D2F variant factorizes the suffix as 
+
+pθ
+
+ xsuf 0 | x(<a )0 , ¯ba,t a , . . . , ¯bK,t K
+
+ =
+
+KY
+
+j=a
+
+pθ
+
+ bIj
+
+j | x(<a )0 , ¯ba,t a , . . . , ¯bj,t j
+
+, (C.1) where x(<a )0 = [ b1, . . . , ba−1] is the block-causal clean prefix and bIj
+
+j denotes the suffix positions of block j.The loss is computed only on masked positions within Ij .Compared with native D2F, this variant changes the training-state construction by replacing prefix-full attention with a fully block-causal attention. Equivalently, it completes the arbitrary token-level prefix to the next block boundary using real continuation tokens from the training sequence, and treats the boundary block as the first block in the noisy suffix. This construction is the training-side counterpart of the extreme MBD-LM state discussed in Section 3.1, where the running-set covers all suffix blocks and follows a monotonic D2F-style noise-scheduler .
+
+Fully block-causal D2F is not a sufficient fix. Although the fully block-causal variant improves cache compatibil-ity, it substantially hurts accuracy. As shown in Figure 6b, changing D2F from prefix-full attention to fully block-causal attention drops accuracy from 77.60% to 69.60%. This suggests that D2F relies on stronger prefix-full visibility, and cache compatibility cannot be obtained by simply restricting the attention mask. This result further motivates MultiTF, which keeps the block-causal cached-prefix interface while training on bounded noise-groups that better match MultiBD inference. 
+
+Block Buffer MultiBD preserves cache semantics. Our Block Buffer MultiBD design preserves prefix caching by construction. Committed blocks become immutable in-cache prefix context and are represented only through cached KV states. Active blocks remain inside the Block Buffer and are recomputed during iterative Table 4 Inference hyperparameters for all evaluated configurations. τadd controls when a future block is activated; 
+
+τsemi controls semi-completion or fallback progress; τstable controls activation stability; τM2T and τT2T are confidence thresholds for mask-to-token filling and token-to-token revision. 
+
+Configuration Task Buffer Block Max Len Max New Max NFE τadd τsemi τstable τM2T τT2T 
+
+LLaDA2-Mini-DMax 
+
+SingleBD (Native) Math 1 32 4096 4096 1024 — — — 0.50 —SingleBD (Native) Code 1 32 4096 4096 1024 — — — 0.65 —MultiBD (training-free) Math 2 32 4096 4096 1024 0.10 0.90 0.50 0.50 —MultiBD (training-free) Code 2 32 4096 4096 1024 0.90 0.90 0.50 0.65 —MBD-LLaDA2-Mini-DMax Math 2 32 4096 4096 1024 0.10 0.90 0.50 0.50 —MBD-LLaDA2-Mini-DMax Code 2 32 4096 4096 1024 0.90 0.90 0.50 0.65 —
+
+LLaDA2-Mini 
+
+SingleBD (Native) Math 1 32 4096 4096 1024 — — — 0.95 —SingleBD (Native) Code 1 32 4096 4096 1024 — — — 0.95 —MultiBD (training-free) Math 2 32 4096 4096 1024 0.10 0.90 — 0.95 —MultiBD (training-free) Code 2 32 4096 4096 1024 0.90 0.90 — 0.95 —MBD-LLaDA2-Mini Math 2 32 4096 4096 1024 0.10 0.90 — 0.95 —MBD-LLaDA2-Mini Code 2 32 4096 4096 1024 0.90 0.90 — 0.95 —
+
+SDAR-8B-Chat-b32 
+
+SingleBD (Native) Math 1 32 4096 4096 1024 — — — 0.95 —SingleBD (Native) Code 1 32 4096 4096 1024 — — — 0.95 —MultiBD (training-free) Math 4 32 4096 4096 1024 0.10 0.90 — 0.95 —MultiBD (training-free) Code 4 32 4096 4096 1024 0.90 0.90 — 0.95 —MBD-SDAR-8B-Chat-b32 Math 4 32 4096 4096 1024 0.10 0.90 — 0.95 —MBD-SDAR-8B-Chat-b32 Code 4 32 4096 4096 1024 0.90 0.90 — 0.95 —
+
+SDAR-8B-Chat-b4 
+
+SingleBD (Native) Math 1 4 4096 4096 1024 — — — 0.95 —SingleBD (Native) Code 1 4 4096 4096 1024 — — — 0.95 —MultiBD (training-free) Math 4 4 4096 4096 1024 0.10 0.25 — 0.95 —MultiBD (training-free) Code 4 4 4096 4096 1024 0.75 0.75 — 0.95 —MBD-SDAR-8B-Chat-b4 Math 4 4 4096 4096 1024 0.10 0.25 — 0.95 —MBD-SDAR-8B-Chat-b4 Code 4 4 4096 4096 1024 0.75 0.75 — 0.95 —
+
+LLaDA2-Mini-CAP 
+
+SingleBD (Native) Math 1 32 4096 4096 1024 — — — 0.95 —SingleBD (Native) Code 1 32 4096 4096 1024 — — — 0.95 —MultiBD (training-free) Math 2 32 4096 4096 1024 0.10 0.90 — 0.95 —MultiBD (training-free) Code 2 32 4096 4096 1024 0.90 0.90 — 0.95 —
+
+LLaDA2.1-Mini 
+
+SingleBD (Native) Math 1 32 4096 4096 1024 — — — 0.70 0.50 SingleBD (Native) Code 1 32 4096 4096 1024 — — — 0.70 0.50 MultiBD (training-free) Math 2 32 4096 4096 1024 0.10 0.90 — 0.70 0.50 MultiBD (training-free) Code 2 32 4096 4096 1024 0.90 0.90 — 0.70 0.50 
+
+refinement, while future dummy slots remain invisible until activated. As shown in Figure 7(3), this separates cached prefix blocks from active Block Buffer slots, enabling prefix KV reuse while still refining multiple active blocks in parallel. 
+
+## D Experimental Details 
+
+This appendix reports the inference and MultiTF post-training hyperparameters used in our experiments. “—” indicates that the corresponding hyperparameter is not applicable. SingleBD (Native) denotes the original single-block inference of each BD-LM; MultiBD (training-free) denotes MultiBD inference without post-training; MBD-* denotes the corresponding MultiTF-post-trained model. Table 5 MultiTF post-training hyperparameters. tlow and thigh denote the mask-ratio range; ρ is the margin ratio used to determine the effective upper bound teff ; Nrand is the number of random group-layouts per sample. The random-scheduler ablation uses a separate power-law bias γrand , which is independent of ρ and is not used in the chain-uniform scheduler. 
+
+Target Model Task Objective Data Seq Len Block Max Group tlow thigh ρ Nrand Steps 
+
+MBD-LLaDA2-Mini-DMax Math MultiTF + DMax OPUT 60k 2048 32 2 0.001 1.00 ρcfg 0 15000 MBD-LLaDA2-Mini-DMax Code MultiTF + DMax OPUT 60k 2048 32 2 0.001 1.00 ρcfg 2 4000 MBD-LLaDA2-Mini Math MultiTF CE 60k 2048 32 2 0.001 1.00 ρcfg 0 15000 MBD-LLaDA2-Mini Code MultiTF CE 60k 2048 32 2 0.001 1.00 ρcfg 0 6500 MBD-SDAR-8B-Chat-b32 Math MultiTF CE 20k 2048 32 4 0.001 1.00 ρcfg 3 3125 MBD-SDAR-8B-Chat-b32 Code MultiTF CE 10k 2048 32 4 0.001 1.00 ρcfg 3 1670 MBD-SDAR-8B-Chat-b4 Math MultiTF CE 20k 2048 4 4 0.001 1.00 ρcfg 2 1250 MBD-SDAR-8B-Chat-b4 Code MultiTF CE 10k 2048 4 4 0.001 1.00 ρcfg 2 200

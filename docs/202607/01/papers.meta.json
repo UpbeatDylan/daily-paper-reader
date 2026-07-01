@@ -1,0 +1,69 @@
+{
+  "label": "2026-07-01",
+  "date": "2026-07-01",
+  "generated_at": "2026-07-01T21:53:32",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202607/01/2606.31145v1-sekv-resolution-adaptive-kv-cache-with-hierarchical-semantic-memory-for-long-context-llm-inference",
+      "section": "deep",
+      "title_en": "SeKV: Resolution-Adaptive KV Cache with Hierarchical Semantic Memory for Long-Context LLM Inference",
+      "authors": "Amirhossein Abaskohi, Giuseppe Carenini, Peter West, Yuhang He",
+      "date": "2026-06-30",
+      "pdf": "https://arxiv.org/pdf/2606.31145v1",
+      "score": "9.0",
+      "evidence": "面向长上下文LLM推理的分辨率自适应语义KV缓存",
+      "tldr": "长上下文LLM推理中，KV缓存内存随序列长度线性增长，现有压缩方法要么丢弃信息要么固定压缩，无法在生成时恢复被压缩的token细节。SeKV提出分辨率自适应语义KV缓存，将上下文组织为熵引导跨度，在GPU存储摘要向量、CPU存储低秩SVD基，并训练缩放机制选择性重建相关跨度，不丢弃任何信息。在四个长上下文基准上，SeKV相比最强语义压缩基线平均提升5.9%，同时相比全KV缓存减少53.3% GPU内存。该方法几乎不增加可训练参数（<0.05%），保持基LLM冻结，为高效长上下文推理提供新思路。",
+      "tags": "query:pic",
+      "abstract_en": "Large language models increasingly operate over long contexts, where the KV cache becomes a dominant memory bottleneck: its size grows linearly with sequence length and must be retained throughout decoding, making full GPU caching prohibitively expensive without compression. Existing KV cache compression methods struggle to balance efficiency with faithful context preservation. Token eviction discards information, while semantic grouping fixes compression decisions at prefill time; neither can recover token-level detail from a compressed span once it becomes relevant during generation. As a solution, we propose SeKV, a resolution-adaptive semantic KV cache that organizes context into entropy-guided semantic spans and stores them across a GPU-CPU memory hierarchy without discarding information. Each span keeps a lightweight summary vector on GPU for coarse routing and a low-rank SVD basis on CPU for on-demand token-level reconstruction. A trained zoom-in mechanism selectively expands query-relevant spans during decoding, enabling precise retrieval without materializing the full KV cache on GPU. SeKV enables adaptive token-level reconstruction while keeping the base LLM fully frozen and adding fewer than 0.05% trainable parameters. Across four benchmarks, SeKV improves over the strongest semantic compression baseline by 5.9% on average while reducing GPU memory by 53.3% versus full KV caching at 128K context. Code is available on https://github.com/AmirAbaskohi/SeKV.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/01/2606.31519v1-rabitqcache-rotated-binary-quantization-for-kvcache-in-long-context-llm-inference",
+      "section": "deep",
+      "title_en": "RaBitQCache: Rotated Binary Quantization for KVCache in Long Context LLM Inference",
+      "authors": "Wenhao Li, Jinhao Dong, Hailin Zhang, Wenhang Shi, Wei Lu, Xiaoyong Du",
+      "date": "2026-06-30",
+      "pdf": "https://arxiv.org/pdf/2606.31519v1",
+      "score": "9.0",
+      "evidence": "面向长上下文LLM中KV缓存的旋转二值量化稀疏注意力",
+      "tldr": "长上下文LLM推理中KV缓存是瓶颈，现有稀疏注意力方法存在静态固定预算或代理分数偏差问题。提出RaBitQCache，使用随机旋转二元量化与二进制-INT4算术高效估计注意力权重，提供无偏代理分数和误差界。该方法实现自适应Top-p检索动态调整令牌预算，结合硬件感知优化如异步流水线和延迟更新。实验表明RaBitQCache在保持生成质量的同时显著加速推理并降低内存I/O。",
+      "tags": "query:pic",
+      "abstract_en": "Long-context Large Language Model inference is severely bottlenecked by the massive Key-Value (KV) cache, yet existing sparse attention methods often suffer from static fixed-budget (Top-k) retrieval or rely on proxy scores that are computationally expensive and biased. To address these limitations, we propose RaBitQCache, a novel sparse attention framework that utilizes randomized rotated binary quantization and high-throughput binary-INT4 arithmetic to efficiently estimate attention weights. Our proxy score serves as an unbiased estimator with a proven error bound, enabling adaptive Top-p retrieval that dynamically adjusts the token budget based on actual attention sparsity. We further implement a hardware-aware system with asynchronous pipelining and lazy updates to mask overhead. Evaluations demonstrate that RaBitQCache significantly accelerates inference and reduces memory I/O while preserving generation quality compared to state-of-the-art baselines. Code is available at https://github.com/Sakuraaa0/RaBitQCache.git.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/01/2606.31093v1-omni-flow-a-unified-workflow-orchestration-and-distributed-kv-cache-sharing-framework-for-multimodal-inference",
+      "section": "deep",
+      "title_en": "Omni-Flow: A Unified Workflow Orchestration and Distributed KV Cache Sharing Framework for Multimodal Inference",
+      "authors": "Bin Xiao, Jingfu Dong, Changran Wang, Yitian Chen, Xiaoyu Zhao, Yuqi Peng, Jianping Lin, Yuchen Xie",
+      "date": "2026-06-30",
+      "pdf": "https://arxiv.org/pdf/2606.31093v1",
+      "score": "8.0",
+      "evidence": "面向多模态推理的分布式KV缓存共享框架",
+      "tldr": "多模态推理面临异构单元编排复杂、中间数据流传输低效、KV缓存冗余等问题。Omni-Flow提出三层系统抽象：控制流层用Python DSL统一编排并支持动态路由；数据流层提供分布式KV缓存抽象，实现GPU/CPU/SSD三级分页存储与跨角色直接零拷贝传输；计算流层支持多模态前缀匹配及统一SGLang接口。在LongCat-Next全模态对话和HunyuanImage-3图像生成场景中验证效果，有效消除冗余GPU内存，降低新模型集成成本。",
+      "tags": "query:pic",
+      "abstract_en": "As large language model (LLM) inference evolves from text-only to multimodal paradigms, inference systems face three challenges: (1) flexible orchestration of multimodal workflows, where heterogeneous computing units exhibit complex dependencies and concurrent control; (2) efficient transmission of massive intermediate data across processes and nodes, with tensors flowing at high speed among heterogeneous roles; and (3) efficient sharing of KV caches and model weights across roles to eliminate redundant GPU memory. Existing solutions deploy LLMs and diffusion models independently, lacking a system-level abstraction for multimodal pipelines; this scatters orchestration logic, tightly couples transmission paths to specific models, and incurs high cost to integrate new models. To address these challenges, we present Omni-Flow, a distributed scheduling framework for multimodal inference through a three-layer abstraction. The Control Flow layer defines workflows via a Python DSL, orchestrating heterogeneous units into a unified dataflow graph that supports static DAGs and dynamic routing, with built-in service discovery and diverse load-balancing strategies. The Data Flow layer provides a distributed KV cache abstraction beyond prefill/decode separation, unifying allocation and enabling direct cross-role transmission across a three-tier paged storage hierarchy (GPU/CPU/SSD) over zero-copy, low-latency channels. The Compute Flow layer supports complex multimodal prefix matching for KV reuse across multi-turn dialogues, and takes over KV cache and sampling logic via a unified SGLang interface, letting diffusion models directly reuse the LLM forward path under unified parallel semantics. We demonstrate that Omni-Flow supports diverse heterogeneous scenarios with a consistent programming model, including omni-modal dialogue (LongCat-Next) and complex image generation pipelines (HunyuanImage-3).",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/01/2606.29215v1-multi-block-diffusion-language-models",
+      "section": "quick",
+      "title_en": "Multi-Block Diffusion Language Models",
+      "authors": "Yijie Jin, Jiajun Xu, Yuxuan Liu, Chenkai Xu, Yi Tu, Jiajun Li, Dandan Tu, Xiaohui Yan, Kai Yu, Pengfei Liu, Zhijie Deng",
+      "date": "2026-06-28",
+      "pdf": "https://arxiv.org/pdf/2606.29215v1",
+      "score": "6.0",
+      "evidence": "多块扩散语言模型中的KV缓存",
+      "tldr": "单块扩散语言模型生成文本时需逐块解码，限制了并行效率；扩展到多块并行解码时，训练所用的teacher forcing与推理时的多噪声块状态不匹配。本文提出Multi-Block Diffusion Language Models (MBD-LMs)，通过Multi-block Teacher Forcing (MultiTF)后训练，使模型适应边界运行集上的异构噪声调度，并设计Block Buffer机制保持前缀缓存复用和输入形状静态。实验表明，MBD-LLaDA2-Mini在数学和代码基准上平均每前向传播令牌数从3.47提升至6.19，准确率从79.95%提升至81.03%；结合DMax后TPF进一步提升至9.34，仅降1.02%精度。该方法有效弥合了训练与推理的差距，为扩散语言模型的高效文本生成提供了实用且性能优异的方案。",
+      "tags": "query:pic",
+      "abstract_en": "Block Diffusion Language Models (BD-LMs) improve diffusion-based text generation with KV caching and flexible-length generation. A natural next step is to extend them from Single-Block Diffusion (SingleBD) to Multi-Block Diffusion (MultiBD), where a \\textit{running-set} of consecutive blocks is decoded concurrently for inter-block parallelism. However, existing BD-LMs are mostly trained under teacher forcing, where the model observes only one noisy block conditioned on a clean prefix. While the recent diffusion forcing strategy introduces visibility among multiple noisy blocks, its training states still differ from MultiBD inference, where decoding operates on a bounded \\textit{running-set} with heterogeneous slot-wise noise patterns. To bridge this gap, we propose \\textit{Multi-Block Diffusion Language Models} (MBD-LMs), obtained by post-training BD-LMs with \\textit{Multi-block Teacher Forcing} (MultiTF). MultiTF integrates teacher forcing and diffusion forcing by training on bounded \\textit{noise-groups} conditioned on clean prefixes, with randomized \\textit{noise-schedulers} that better match MultiBD inference states. To make MultiBD practically executable, we further introduce an optimized decoding algorithm based on the \\textit{Block Buffer} mechanism that preserves prefix-cache reuse, keeps input shapes static, and translates increased decoding parallelism into wall-clock acceleration. Empirically, MBD-LLaDA2-Mini increases average Tokens Per Forward pass (TPF) from 3.47 to \\textbf{6.19} and improves average accuracy from 79.95\\% to \\textbf{81.03\\%}; when combined with DMax, MBD-LLaDA2-Mini-DMax reaches an average TPF of \\textbf{9.34} with only a 1.02\\% accuracy drop on math and code benchmarks.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
