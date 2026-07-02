@@ -6,34 +6,34 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-01
-- 运行时间：2026-07-01 21:53:26 UTC
+- 最新运行日期：2026-07-02
+- 运行时间：2026-07-02 21:38:43 UTC
 - 运行状态：成功
 - 本次总论文数：4
 - 精读区：3
 - 速读区：1
 
 ### 今日简报（AI）
-今日精选两篇长上下文LLM的KV Cache优化方法，以及一篇扩散语言模型研究。  
-最值得关注的是SeKV的分层语义记忆机制与RaBitQCache的旋转二进制量化，均以9.0高分解决了KV缓存效率问题。  
-建议重点关注KV Cache优化在长上下文推理中的实际应用，可尝试将量化或分层记忆技术融入现有框架。
-- 详情：[/202607/01/README](/202607/01/README)
+今天重点关注长上下文LLM服务中的KV缓存优化，精读两篇高分方案并速读一篇经典缓存失效分析。  
+最值得关注MosaicKV的动态双层KV缓存压缩（9.0分）和PersistentKV的页面感知解码调度（8.0分），两者分别从压缩与调度角度破解长序列显存瓶颈。  
+建议优先精读这两篇，理解其设计差异后，可在实际部署中尝试组合优化，并留意语义缓存替换策略的启发。
+- 详情：[/202607/02/README](/202607/02/README)
 
 ### 精读区论文标签
-1. [SeKV: Resolution-Adaptive KV Cache with Hierarchical Semantic Memory for Long-Context LLM Inference](/202607/01/2606.31145v1-sekv-resolution-adaptive-kv-cache-with-hierarchical-semantic-memory-for-long-context-llm-inference)  
+1. [MosaicKV: Serving Long-Context LLM with Dynamic Two-D KV Cache Compression](/202607/02/2607.00760v1-mosaickv-serving-long-context-llm-with-dynamic-two-d-kv-cache-compression)  
    标签：评分：9.0/10、query:pic
-   evidence：面向长上下文LLM推理的分辨率自适应语义KV缓存
-2. [RaBitQCache: Rotated Binary Quantization for KVCache in Long Context LLM Inference](/202607/01/2606.31519v1-rabitqcache-rotated-binary-quantization-for-kvcache-in-long-context-llm-inference)  
-   标签：评分：9.0/10、query:pic
-   evidence：面向长上下文LLM中KV缓存的旋转二值量化稀疏注意力
-3. [Omni-Flow: A Unified Workflow Orchestration and Distributed KV Cache Sharing Framework for Multimodal Inference](/202607/01/2606.31093v1-omni-flow-a-unified-workflow-orchestration-and-distributed-kv-cache-sharing-framework-for-multimodal-inference)  
+   evidence：面向长上下文LLM服务的动态二维KV缓存压缩
+2. [PersistentKV: Page-Aware Decode Scheduling for Long-Context LLM Serving on Commodity GPUs](/202607/02/2606.26666v2-persistentkv-page-aware-decode-scheduling-for-long-context-llm-serving-on-commodity-gpus)  
    标签：评分：8.0/10、query:pic
-   evidence：面向多模态推理的分布式KV缓存共享框架
+   evidence：长上下文服务中的KV缓存移动优化
+3. [GSRQ: Gain-Shape Residual Quantization for Sub-1-bit KV Cache](/202607/02/2607.01065v1-gsrq-gain-shape-residual-quantization-for-sub-1-bit-kv-cache)  
+   标签：评分：8.0/10、query:pic
+   evidence：使用增益形状残差量化实现亚1比特KV缓存压缩，用于长上下文LLM推理
 
 ### 速读区论文标签
-1. [Multi-Block Diffusion Language Models](/202607/01/2606.29215v1-multi-block-diffusion-language-models)  
-   标签：评分：6.0/10、query:pic
-   evidence：多块扩散语言模型中的KV缓存
+1. [When Classic Cache Policies Fail: Learning-Augmented Replacement for Semantic Retrieval Buffers](/202607/02/2607.00394v1-when-classic-cache-policies-fail-learning-augmented-replacement-for-semantic-retrieval-buffers)  
+   标签：评分：7.0/10、query:pic
+   evidence：LLM智能体的语义缓存替换策略
 
 
 <div class="dpr-home-promo-card">

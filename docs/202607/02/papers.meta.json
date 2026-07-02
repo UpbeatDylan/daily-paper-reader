@@ -1,0 +1,69 @@
+{
+  "label": "2026-07-02",
+  "date": "2026-07-02",
+  "generated_at": "2026-07-02T21:38:52",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202607/02/2607.00760v1-mosaickv-serving-long-context-llm-with-dynamic-two-d-kv-cache-compression",
+      "section": "deep",
+      "title_en": "MosaicKV: Serving Long-Context LLM with Dynamic Two-D KV Cache Compression",
+      "authors": "Sheng Qiang, Ruiwei Chen, Yinpeng Wu, Jinyu Gu, Zhichao Hua, Yubin Xia, Binyu Zang, Haibo Chen",
+      "date": "2026-07-01",
+      "pdf": "https://arxiv.org/pdf/2607.00760v1",
+      "score": "9.0",
+      "evidence": "面向长上下文LLM服务的动态二维KV缓存压缩",
+      "tldr": "长上下文LLM服务中KV缓存随上下文线性增长，导致GPU内存耗尽、批处理大小减小和吞吐量下降。现有压缩方法仅针对单维度，压缩双维度会导致精度损失。为此，MosaicKV提出动态二维压缩，根据KV向量中元素重要性非均匀分布，以缓存段粒度选择压缩策略，并利用闲置GPU/CPU资源管理压缩缓存以加速注意力计算。实验表明，相比未压缩基线，MosaicKV实现高达16倍注意力加速、4.8倍解码延迟降低、7.3倍吞吐量提升，内存减少3倍，平均精度损失仅1.76%。",
+      "tags": "query:pic",
+      "abstract_en": "Long-context LLM services now sustain prompts with hundreds of thousands to millions of tokens, making the key-value (KV) cache a first-order serving cost. Because the cache grows linearly with context length, it can exhaust GPU memory, force smaller batches, and reduce serving throughput. Prior KV cache compression techniques typically target only the sequence dimension or only the channel dimension, which leaves limited headroom as context windows scale. Compressing both dimensions promises higher memory reduction, but applying the two forms of compression directly leads to significant accuracy loss.   This paper introduces MosaicKV, a dynamic two-D (dimensional) KV cache compression system for extremely long-context serving. MosaicKV uses dynamic two-D compression to address the accuracy challenge, exploiting the non-uniform importance distribution of elements within the KV cache. Instead of applying one compression pattern globally, MosaicKV identifies important elements for each KV vector and selects compression strategies at the granularity of KV cache segments. To address the performance challenge, where fine-grained sparsity and compression management overhead can offset the gains from compression, MosaicKV introduces compressed KV cache management. This mechanism uses underutilized GPU and CPU resources to maintain compressed KV caches and accelerate attention computation.   Evaluation on an H800 GPU with multiple LLMs shows that MosaicKV delivers up to 16x attention speedup, 4.8x lower decode latency, and 7.3x higher throughput than the uncompressed baseline. At the same time, it reduces memory usage by 3x and incurs only 1.76% average accuracy loss on LongBench and RULER.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/02/2606.26666v2-persistentkv-page-aware-decode-scheduling-for-long-context-llm-serving-on-commodity-gpus",
+      "section": "deep",
+      "title_en": "PersistentKV: Page-Aware Decode Scheduling for Long-Context LLM Serving on Commodity GPUs",
+      "authors": "Muhammad Ahmed",
+      "date": "2026-06-25",
+      "pdf": "https://arxiv.org/pdf/2606.26666v2",
+      "score": "8.0",
+      "evidence": "长上下文服务中的KV缓存移动优化",
+      "tldr": "长上下文LLM服务中KV缓存移动成为主要瓶颈，现有paged-attention调度未充分利用GPU。提出PersistentKV，一种原生块表解码注意力引擎，通过KV-head组映射和紧凑工作队列调度，仅执行非空任务。在RTX 3060上，相比FlashInfer，B8长上下文吞吐提升1.04x-1.08x，B1提升1.40x，同时将启动扇出从16降至2。表明工作分配是决定性服务变量。",
+      "tags": "query:pic",
+      "abstract_en": "Autoregressive large language model (LLM) serving is increasingly limited by key-value (KV) cache movement rather than dense matrix multiplication. Modern paged-attention systems reduce fragmentation, and mature kernels like FlashInfer provide highly optimized decode attention. However, the best single-kernel implementation is not always the best serving schedule: low-active long-context decode can under-utilize GPUs, while mixed sequence lengths introduce tension between many exact-length launches and coarse padded batches.   We present PersistentKV, a native block-table decode attention engine and page-aware scheduling study for grouped-query attention (GQA). PersistentKV maps work by KV-head group, executes directly over native page tables, and adds a compact workqueue schedule executing only non-empty row-KV-head-sequence-split tasks.   On an RTX 3060 (FP16, page size 16, Hq=32, Hkv=8, d=128), a calibrated roofline-style policy selects FlashInfer for small active batches, PersistentKV sequence splitting for batch size 1 (B1) long-context steps, and PersistentKV workqueue scheduling for supported B8 long-context GQA steps. With cost-model constants fixed on calibration traces, five held-out seeds improve mean wall decode-token throughput by 1.04x to 1.08x on B8 bimodal, uniform, and Zipf-like workloads, and by 1.40x on a B1 bucketed trace. For the B4 boundary case and uncalibrated GQA ratios, the policy avoids regressions by routing to FlashInfer. We also report an attention-plus-MLP timing proxy and workload counters showing workqueue scheduling reduces launch fan-out from 16.00 to 2.00 launches per step on held-out bimodal B8. These results show that work assignment is a decisive serving-system variable.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/02/2607.01065v1-gsrq-gain-shape-residual-quantization-for-sub-1-bit-kv-cache",
+      "section": "deep",
+      "title_en": "GSRQ: Gain-Shape Residual Quantization for Sub-1-bit KV Cache",
+      "authors": "Soosung Kim, Minjae Park, Eui-Young Chung, Jaeyong Chung",
+      "date": "2026-07-01",
+      "pdf": "https://arxiv.org/pdf/2607.01065v1",
+      "score": "8.0",
+      "evidence": "使用增益形状残差量化实现亚1比特KV缓存压缩，用于长上下文LLM推理",
+      "tldr": "针对大语言模型KV缓存亚1比特量化中标准K-means导致质心收缩、弱化方向保持的问题，提出Gain-Shape K-means（GSKM）改进方向保真度并保持l2失真，进而构建GSRQ残差量化框架。在LLaMA-3-8B上，1比特量化下LongBench平均准确率从11.34提升至33.54，显著超越VQLLM基线，为极低比特KV缓存提供了有效方案。",
+      "tags": "query:pic",
+      "abstract_en": "The deployment of Large Language Models (LLMs) with extended context windows is increasingly constrained by the linear growth of Key-Value (KV) cache memory. Vector Quantization (VQ), particularly Residual Quantization (RQ), is a promising approach for pushing KV cache storage toward the sub-1-bit regime by progressively encoding residuals with small codebooks. However, most VQ methods still rely on standard $\\ell_2$ $K$-means as the core codebook-learning primitive. We identify a subtle high-dimensional issue of this primitive: Euclidean centroid averaging can induce centroid shrinkage, which weakens the angular alignment term in the $\\ell_2$ distortion and makes directional preservation harder. To address this issue, we propose Gain-Shape $K$-means (GSKM), a drop-in replacement for $K$-means that improves directional fidelity while matching, and in some regimes improving, $\\ell_2$ distortion. We then build Gain-Shape Residual Quantization (GSRQ) by incorporating a weighted extension of GSKM into an RQ pipeline. On LLaMA-3-8B, GSRQ substantially improves over strong KV cache quantization baselines across bit rates. At 1-bit, it improves the average accuracy across LongBench tasks from 11.34 to 33.54, a gain of 22.20 percentage points over VQLLM.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/02/2607.00394v1-when-classic-cache-policies-fail-learning-augmented-replacement-for-semantic-retrieval-buffers",
+      "section": "quick",
+      "title_en": "When Classic Cache Policies Fail: Learning-Augmented Replacement for Semantic Retrieval Buffers",
+      "authors": "Yushi Sun, Bowen Cao, Wai Lam",
+      "date": "2026-07-01",
+      "pdf": "https://arxiv.org/pdf/2607.00394v1",
+      "score": "7.0",
+      "evidence": "LLM智能体的语义缓存替换策略",
+      "tldr": "LLM代理依赖语义检索缓冲区存储经验，但现有缓存替换策略（如LRU、LFU）因缺乏时间局部性和频率集中性，性能甚至低于简单的FIFO。本文提出SOLAR框架，通过遗憾积累决定修改时机，利用贝叶斯在线学习从隐式反馈中选择内容。理论证明SOLAR实现常数竞争比≤3，逐出遗憾接近最优下界。实验在多个数据集上相对FIFO提升5-75%，并揭示池大小与检索质量的倒U关系，表明缓存容量本质是检索噪声问题。",
+      "tags": "query:pic",
+      "abstract_en": "LLM agents increasingly rely on retrieval buffers to store and reuse past experience, yet the cache management policies governing these buffers remain largely ad-hoc. We formalize this as an online semantic cache replacement problem with switching costs, where items are matched by embedding similarity and hit quality is continuous rather than binary. Through experiments on two datasets from MemoryBench-Full (LoCoMo, DialSim) with 8 replacement policies, we reveal a surprising finding: classic heuristics (LRU, LFU) \\emph{consistently underperform} the naive FIFO baseline on semantic workloads, due to the absence of temporal locality and frequency concentration. We propose SOLAR, a learning-augmented framework that derives modification timing from regret accumulation (achieving $\\sim$17\\% modification rate) and content selection from Bayesian online learning over implicit retrieval feedback. We prove SOLAR achieves a constant competitive ratio $\\leq 3$, independent of cache size and horizon (vs.\\ $Ω(K)$ for FIFO), and eviction regret $O(\\sqrt{KT\\log T})$, matching the $Ω(\\sqrt{KT})$ lower bound up to logarithmic factors. Experiments demonstrate 5--75\\% relative improvement over FIFO at tight cache sizes, with a clearly characterized phase transition at the working set boundary. Synthetic experiments with 5000-item pools further reveal an inverted-U relationship between pool size and retrieval quality, justifying capacity constraints as a retrieval noise phenomenon rather than a storage limitation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
