@@ -1,0 +1,294 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-03T21:37:22.267820+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2607.01299v1",
+      "source": "arxiv",
+      "title": "HYPIC: Accelerating Hybrid-Attention LLM Serving with Position-Independent Caching",
+      "abstract": "In retrieval augmented generation (RAG) and agentic LLM serving, prompts are assembled from independent segments into long contexts, making the prefill stage dominate the per-request computation cost. To this cost, two directions have emerged in parallel: position-independent caching (PIC) admits KV reuse for non-contiguous segments shared across different requests, while hybrid-attention models reduce computation complexity by replacing most full-attention layers with linear attention. However, they cannot coexist: applying PIC to hybrid-attention models breaks down because per-token KV-cache reuse primitives do not transfer to the per-request recurrent state.   In this work, we present Hypic, the first serving system for hybrid-attention LLMs with position-independent caching. For linear-attention layers, we identify the segment-cumulative transition operator as the missing algebraic primitive, and cache it alongside each segment's zero-start end-state, enabling near-exact and constant-time state composition of independently cached segments. For the remaining full-attention layers, existing PIC methods also fail as linear layers do not expose the per-token hidden states for selective recomputation. We show that the most significant attention deviation concentrates at segment boundaries, so recomputing only a small seam window at each boundary suffices to restore cross-segment lookback. Finally, Hypic exploits segment-level self-containment to parallelize cache-miss prefill across instances, turning long cold requests -- a major tail-latency contributor under both prefix caching and prior PIC -- into an accelerable workload. Evaluated across four hybrid-attention models and five workloads, Hypic reduces time-to-first-token (TTFT) by 2.45x on average and improves peak throughput by up to 2.0x over existing systems, while staying within 3.3 points of full-recompute accuracy.",
+      "authors": [
+        "Yifei Liu",
+        "Juntong Wu",
+        "Yang Liu",
+        "Junhao Hu",
+        "Minghao Li",
+        "Xiaoxu Chen",
+        "Weihang Chen"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-07-01T14:03:56+00:00",
+      "link": "https://arxiv.org/pdf/2607.01299v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Position-independent caching for hybrid-attention LLM serving",
+      "llm_evidence_cn": "针对混合注意力大模型推理的位置无关缓存系统",
+      "llm_evidence": "针对混合注意力大模型推理的位置无关缓存系统",
+      "canonical_evidence": "针对混合注意力大模型推理的位置无关缓存系统",
+      "llm_tldr_en": "Hypic is the first serving system enabling position-independent KV cache reuse for hybrid-attention LLMs, accelerating RAG and agentic workloads.",
+      "llm_tldr_cn": "在RAG和智能体场景中，预填充阶段因长上下文拼接而成为计算瓶颈。已有位置无关缓存（PIC）和混合注意力模型分别尝试优化，但二者互不兼容。本文提出Hypic，首个为混合注意力模型设计的PIC系统，通过重新设计缓存原语实现跨请求的KV复用。实验证明Hypic在不牺牲生成质量的前提下显著降低了预填充延迟，为高效LLM服务提供了新范式。",
+      "llm_tldr": "在RAG和智能体场景中，预填充阶段因长上下文拼接而成为计算瓶颈。已有位置无关缓存（PIC）和混合注意力模型分别尝试优化，但二者互不兼容。本文提出Hypic，首个为混合注意力模型设计的PIC系统，通过重新设计缓存原语实现跨请求的KV复用。实验证明Hypic在不牺牲生成质量的前提下显著降低了预填充延迟，为高效LLM服务提供了新范式。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.01520v1",
+      "source": "arxiv",
+      "title": "The risk of KV cache compression",
+      "abstract": "Transformer inference on long sequences is expensive because softmax attention repeatedly reads from a large KV cache. The prevalent approach to this bottleneck is KV cache compression, which replaces the full cache with a compact summary. Despite its practical importance, the design of such summaries is largely driven by empirical experimentation. On the theoretical side, existing results show that KV cache compression can be impossible in the worst case, but offer little systematic guidance for designing algorithms in regimes where accurate compression is possible. We bridge this gap by characterizing the minimax risk of KV cache compression in terms of the intrinsic compressibility of a cache, revealing when and how accurate compression is possible. These results yield novel design principles for KV cache compression under causal masking that map efficiently to prefill and autoregressive decoding while achieving minimax-optimal risk. We instantiate these principles in a practical algorithm and report promising performance on LongBench in targeted experiments. Overall, our results provide a principled avenue for practical KV cache compression with theoretical guarantees.",
+      "authors": [
+        "Lukas Haverbeck",
+        "Carmen Amo Alonso",
+        "Andres Felipe Posada-Moreno",
+        "Sebastian Trimpe",
+        "Marco Pavone"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-01T22:36:21+00:00",
+      "link": "https://arxiv.org/pdf/2607.01520v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "theoretical analysis of KV cache compression risk",
+      "llm_evidence_cn": "KV缓存压缩风险的理论分析",
+      "llm_evidence": "KV缓存压缩风险的理论分析",
+      "canonical_evidence": "KV缓存压缩风险的理论分析",
+      "llm_tldr_en": "Characterizes minimax risk of KV cache compression, providing theoretical guidance for designing accurate compression algorithms in LLM inference.",
+      "llm_tldr_cn": "长序列Transformer推理中KV缓存压缩至关重要但缺乏理论指导。本文刻画了KV缓存压缩的极小极大风险，揭示了内在可压缩性与准确压缩的条件，为设计高效缓存压缩算法提供理论原理和设计准则。",
+      "llm_tldr": "长序列Transformer推理中KV缓存压缩至关重要但缺乏理论指导。本文刻画了KV缓存压缩的极小极大风险，揭示了内在可压缩性与准确压缩的条件，为设计高效缓存压缩算法提供理论原理和设计准则。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.01831v1",
+      "source": "arxiv",
+      "title": "Lynx: Progressive Speculative Quantization for accelerating KV Transfer in Long-Context Inference",
+      "abstract": "Long-context inference is increasingly common in large language model (LLM) serving, driven by retrieval-augmented generation and agentic systems. In disaggregated inference, these workloads require transferring large Key-Value (KV) caches across the network, where decoding cannot begin until the transfer completes. Recent KV quantization techniques reduce data volume and alleviate this bottleneck, but existing schemes fail to achieve both low network-exposed latency and high inference accuracy.   We challenge the assumption that the KV cache is an indivisible unit that must be fully received before use. We leverage the observation that different bits in the KV cache contribute unequally to attention computation and inference precision: the most significant bits capture the coarse structure of attention and the least significant bits refine precision. This property enables partial use of the KV cache during decoding. We present Lynx, a system that enables progressive, split-stream KV transfer by partitioning the KV cache into a high-priority Anchor stream carrying the most significant bits and a low-priority Residual stream carrying remaining precision. Decoding begins upon receipt of the Anchor stream and proceeds speculatively while the Residual stream is transferred concurrently, followed by verification that ensures equivalence to higher-precision decoding.   Across multiple models and serving workloads, Lynx achieves Time-to-First-Token (TTFT) comparable to aggressive 4-bit KV quantization, while matching the accuracy of high-precision (BF16) inference, improving TTFT over standard 8-bit KV quantization by up to $1.43\\times$ and improving accuracy over state-of-the-art by up to $5.1\\%$.",
+      "authors": [
+        "Wenchen Han",
+        "Gingfung Matthew Yeung",
+        "Marco Barletta",
+        "William Toner",
+        "Amory Hoste",
+        "Adam Barker"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-07-02T07:52:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.01831v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache transfer acceleration for long-context inference",
+      "llm_evidence_cn": "长上下文推理中KV缓存传输加速",
+      "llm_evidence": "长上下文推理中KV缓存传输加速",
+      "canonical_evidence": "长上下文推理中KV缓存传输加速",
+      "llm_tldr_en": "Lynx proposes progressive speculative quantization to accelerate KV cache transfer in long-context LLM inference, reducing latency without sacrificing accuracy.",
+      "llm_tldr_cn": "长上下文推理中KV缓存传输是瓶颈。Lynx提出渐进推测量化方法，利用KV缓存中不同比特对注意力贡献不均的特性，实现低网络延迟和高精度，加速推理。",
+      "llm_tldr": "长上下文推理中KV缓存传输是瓶颈。Lynx提出渐进推测量化方法，利用KV缓存中不同比特对注意力贡献不均的特性，实现低网络延迟和高精度，加速推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.01308v1",
+      "source": "arxiv",
+      "title": "Cache Merging as a Convergent Replicated State for Multi-Agent Latent Reasoning",
+      "abstract": "Multi-agent latent reasoning composes agents' KV-caches into one context for a final agent. Prior work (Agent Primitives) does this by concatenating caches along the sequence axis with RoPE re-encoding, which we call BagMerge. BagMerge is non-commutative, and the best input ordering is unpredictable, shifting with the regime, the latent-step budget, and the model scale. We make this exchange a convergent replicated state. First, CanonicalMerge fixes the layout by content: ordering caches by mean K-norm at a middle layer renders the merged cache byte-identical under any input permutation, verified algorithmically (arity N<=5) and bit-for-bit on real Qwen3-1.7B and 4B state. Second, we separate the replicated state from decode-time layout: the state is a set of content-addressed latent fragments whose merge is set union, a state-based CvRDT (commutative, associative, idempotent, absorbing), and CanonicalMerge is its deterministic render. Because the render is byte-equivalent, every N=2 accuracy number carries over unchanged and re-delivered duplicates are absorbed rather than re-concatenated. On a partitioned-reasoning benchmark, CanonicalMerge matches the best BagMerge ordering in every regime-by-budget-by-ordering cell without knowing which order is best, trading a small, statistically insignificant accuracy margin for an unconditional structural guarantee. The behaviour transfers to real multi-document QA (HotpotQA), while the closest training-free output-fusion baseline (PackLLM) loses by 45 points at matched budget, placing cache-level merging in a regime distinct from output-level fusion. Finally, at k>2 the approach transports and colocates latent traces but does not by itself compose them, which we characterize to motivate future work.",
+      "authors": [
+        "Carlos Baquero",
+        "Luís Brito"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA"
+      ],
+      "published": "2026-07-01T17:05:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.01308v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Cache merging for multi-agent latent reasoning enabling KV cache reuse",
+      "llm_evidence_cn": "用于多代理潜在推理的缓存合并，实现KV缓存重用",
+      "llm_evidence": "用于多代理潜在推理的缓存合并，实现KV缓存重用",
+      "canonical_evidence": "用于多代理潜在推理的缓存合并，实现KV缓存重用",
+      "llm_tldr_en": "CanonicalMerge orders KV caches by content to make merging commutative, enabling reliable reuse in multi-agent reasoning.",
+      "llm_tldr_cn": "多代理潜在推理中，合并各个代理的KV缓存是关键步骤。现有拼接方法非交换且对顺序敏感。本文提出CanonicalMerge，通过按内容排序（中层K范数均值）使得合并结果与输入顺序无关，实现字节级一致。进一步将复制状态与解码时布局分离，提出DecodeSwap，允许在解码过程中动态重新排列缓存，提升灵活性和缓存重用效率。",
+      "llm_tldr": "多代理潜在推理中，合并各个代理的KV缓存是关键步骤。现有拼接方法非交换且对顺序敏感。本文提出CanonicalMerge，通过按内容排序（中层K范数均值）使得合并结果与输入顺序无关，实现字节级一致。进一步将复制状态与解码时布局分离，提出DecodeSwap，允许在解码过程中动态重新排列缓存，提升灵活性和缓存重用效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.01523v1",
+      "source": "arxiv",
+      "title": "Multi-Head Recurrent Memory Agents",
+      "abstract": "Recurrent memory agents extend LLMs to arbitrarily long contexts by iteratively consolidating input into a fixed-size memory window. Despite their scalability, these agents exhibit a well-documented reliability problem: end-to-end performance degrades systematically as context length grows. We diagnose this failure by decomposing performance into two factors--memory capture and memory retention--and quantitatively confirm that retention is the dominant bottleneck. Retention collapses because existing designs maintain memory as a monolithic text block, forcing every update to risk overwriting previously retained content. Motivated by this diagnosis, we propose Multi-Head Recurrent Memory (MHM), a general, training-free framework that partitions memory into independent heads governed by a stage-wise select-then-update strategy. At each step, exactly one head is selected for update while the remaining heads are structurally shielded from overwriting, shifting the burden of retention from model behavior to architectural design. As a lightweight instantiation, we introduce Least-Recently-Updated MHM (MHM-LRU), which guarantees uniform head utilization with zero additional token overhead. Extensive experiments on long-context benchmarks show that MHM-LRU substantially improves both retention and end-to-end accuracy across the 100K--1M token range, where baselines degrade sharply. On RULER-HQA at 896K tokens, MHM-LRU improves the memory retention rate from less than 30% to 73.96%. These gains generalize across model families, scales, and task types, positioning architectural optimization as a practical and cost-efficient path toward reliable long-context recurrent memory.",
+      "authors": [
+        "Jiatong Li",
+        "Samuel Yeh",
+        "Sharon Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-07-01T22:38:54+00:00",
+      "link": "https://arxiv.org/pdf/2607.01523v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Multi-head recurrent memory for extending LLM context",
+      "llm_evidence_cn": "多头部循环记忆用于扩展LLM上下文",
+      "llm_evidence": "多头部循环记忆用于扩展LLM上下文",
+      "canonical_evidence": "多头部循环记忆用于扩展LLM上下文",
+      "llm_tldr_en": "MHM partitions memory into independent heads to avoid overwriting, improving long-context reliability.",
+      "llm_tldr_cn": "循环记忆代理通过迭代将输入合并到固定大小窗口来扩展上下文，但随着长度增长可靠性下降。本文诊断出记忆保留是主要瓶颈，并提出多头部循环记忆（MHM），将记忆划分为独立头部，每个头部由读写门控管理。该框架无需训练，通过在多个任务上实验表明，MHM能缓解记忆覆盖问题，提升长上下文下的性能稳定性。",
+      "llm_tldr": "循环记忆代理通过迭代将输入合并到固定大小窗口来扩展上下文，但随着长度增长可靠性下降。本文诊断出记忆保留是主要瓶颈，并提出多头部循环记忆（MHM），将记忆划分为独立头部，每个头部由读写门控管理。该框架无需训练，通过在多个任务上实验表明，MHM能缓解记忆覆盖问题，提升长上下文下的性能稳定性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.31121v1",
+      "source": "arxiv",
+      "title": "The Past Is Prologue: A Plug-in Controller for Selective Updates in Sequentially Evolving LLM Memory",
+      "abstract": "Sequentially evolving LLM memory enables agents to reuse past experience, but existing systems usually deploy each locally generated memory update without checking whether it improves future behavior. As a result, updates that help the current task may overwrite useful knowledge, introduce over-specific rules, or bias the final memory toward recent examples. We propose Janus, a plug-in memory controller that decides whether to accept a candidate memory update or retain the previous memory. To make this decision efficient, Janus uses a Memory Momentum Trigger to identify suspicious deviations in the memory-update trajectory, and compares old and new memories on a compact hybrid evaluation set of coverage, boundary, and fresh tasks instead of replaying the full history. Janus is method-agnostic and wraps existing updaters without changing their update rules. Across six datasets, two backbone LLMs, and two memory updaters, Janus improves average accuracy by +2.7 to +4.6 points over the corresponding base updaters.",
+      "authors": [
+        "Zihan Chen",
+        "Songwei Dong",
+        "Chengshuai Shi",
+        "Peng Wang",
+        "Song Wang",
+        "Cong Shen",
+        "Jundong Li"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-30T04:33:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.31121v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Selective memory update controller for LLM memory management",
+      "llm_evidence_cn": "用于LLM记忆管理的选择性更新控制器",
+      "llm_evidence": "用于LLM记忆管理的选择性更新控制器",
+      "canonical_evidence": "用于LLM记忆管理的选择性更新控制器",
+      "llm_tldr_en": "Janus is a plug-in controller that decides whether to accept memory updates, improving memory quality over time.",
+      "llm_tldr_cn": "现有LLM记忆系统通常直接采用每个本地生成的更新，可能导致有用知识被覆盖或偏向近期内容。本文提出Janus，一个即插即用的记忆控制器，通过记忆动量触发器检测异常更新轨迹，并在紧凑混合评估集上比较新旧记忆，决定是否采纳更新。实验表明，Janus能提升序列进化记忆的长期实用性。",
+      "llm_tldr": "现有LLM记忆系统通常直接采用每个本地生成的更新，可能导致有用知识被覆盖或偏向近期内容。本文提出Janus，一个即插即用的记忆控制器，通过记忆动量触发器检测异常更新轨迹，并在紧凑混合评估集上比较新旧记忆，决定是否采纳更新。实验表明，Janus能提升序列进化记忆的长期实用性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.02509v1",
+      "source": "arxiv",
+      "title": "ReContext: Recursive Evidence Replay as LLM Harness for Long-Context Reasoning",
+      "abstract": "Understanding and reasoning over long contexts has become a key requirement for deploying large language models (LLMs) in realistic applications. Although recent LLMs support increasingly long context windows, they often fail to use relevant evidence that is already present in the input, revealing a gap between context access and effective context utilization. In this work, we propose Recursive Evidence Replay as LLM Harness for Long-Context Reasoning (RECONTEXT), a training-free inference method for improving long-context reasoning. RECONTEXT uses model-internal relevance signals to construct a query-conditioned evidence pool and replays it before final generation while preserving the full original context. This recursive selection process separates evidence organization from answer generation without training, external memory, or context pruning. We also provide a theoretical analysis based on associative memory, which characterizes the context as a memory store, the question as a retrieval cue, attention as cue-trace association, and replay as trace reactivation. Experiments on eight long-context datasets with 128K context length show that RECONTEXT consistently improves evidence utilization across Qwen3-4B, Qwen3-8B, and Llama3-8B, achieving the best average rank on all three backbones. Code is available at https://github.com/Yanjun-Zhao/ReContext.",
+      "authors": [
+        "Yanjun Zhao",
+        "Ruizhong Qiu",
+        "Tianxin Wei",
+        "Yuanchen Bei",
+        "Zhining Liu",
+        "Lingjie Chen",
+        "Ismini Lourentzou",
+        "Hanghang Tong",
+        "Jingrui He"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-02T17:59:26+00:00",
+      "link": "https://arxiv.org/pdf/2607.02509v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Recursive evidence replay for long-context reasoning",
+      "llm_evidence_cn": "递归证据回放用于长上下文推理",
+      "llm_evidence": "递归证据回放用于长上下文推理",
+      "canonical_evidence": "递归证据回放用于长上下文推理",
+      "llm_tldr_en": "ReContext replays relevant evidence before final generation, improving long-context reasoning without training.",
+      "llm_tldr_cn": "长上下文LLM虽支持长窗口，但常未能有效利用上下文中的相关证据。本文提出ReContext，一种无需训练的推理方法，利用模型内部相关性信号构建查询条件证据池，在最终生成前回放并保留完整上下文。通过递归选择过程，该方法能分离关键证据，显著提升长上下文推理的准确性。",
+      "llm_tldr": "长上下文LLM虽支持长窗口，但常未能有效利用上下文中的相关证据。本文提出ReContext，一种无需训练的推理方法，利用模型内部相关性信号构建查询条件证据池，在最终生成前回放并保留完整上下文。通过递归选择过程，该方法能分离关键证据，显著提升长上下文推理的准确性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
