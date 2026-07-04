@@ -1,0 +1,55 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-04T21:19:52.264736+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.02010v1",
+      "source": "arxiv",
+      "title": "InduceKV: Fixed-Footprint Continual Adaptation of Multimodal LLMs via Inducing KV Memories",
+      "abstract": "Multimodal large language models must adapt to evolving tasks and domains, yet continual improvement under bounded deployment footprint remains difficult because repeated parameter updates or growing replay stores can accumulate adaptation state over time. We study fixed-footprint continual adaptation: the deployed adaptation state is kept under a fixed memory budget, while the backbone model is left unchanged and task-specific updates are externalized. We propose InduceKV, a retrieval-based method that stores each selected training prefix as an attention-ready memory entry, consisting of a frozen retrieval key and compact layerwise key--value (KV) payloads that can be appended to the model's self-attention cache. Under a strict memory budget, InduceKV constructs a compact inducing set through bilevel selection: a lightweight calibration is fit for retrieval, while the selected memory balances current-task likelihood, anchor-based retention, and coverage in the frozen retrieval space. Across task-incremental instruction tuning, continual VQA, domain-incremental adaptation, and lifelong multimodal instruction tuning, InduceKV consistently improves over PEFT, MoE, replay, and prompt-retrieval baselines under matched memory budgets. We further report backbone-matched, stage-1 CoIN, compute-matched, and scalability diagnostics, showing that the gains are not due to a stronger backbone, replay alone, or an unbounded candidate pool.",
+      "authors": [
+        "Qianyu Chen",
+        "Ziteng Feng",
+        "Canran Xiao",
+        "Runxuan Tang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-02T10:45:28+00:00",
+      "link": "https://arxiv.org/pdf/2607.02010v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV memory reuse for continual adaptation",
+      "llm_evidence_cn": "KV记忆重用实现持续适应",
+      "llm_evidence": "KV记忆重用实现持续适应",
+      "canonical_evidence": "KV记忆重用实现持续适应",
+      "llm_tldr_en": "InduceKV stores selected training prefixes as attention-ready KV payloads to enable fixed-footprint continual adaptation of multimodal LLMs without modifying the backbone model.",
+      "llm_tldr_cn": "多模态大语言模型在持续适应中面临内存增长问题。本论文提出InduceKV，将训练前缀存储为可追加到自注意力缓存的紧凑KV记忆，在固定内存预算下实现持续适应，无需修改骨干模型。该方法通过检索重用KV记忆，支持高效推理，为KV缓存复用提供了新视角。",
+      "llm_tldr": "多模态大语言模型在持续适应中面临内存增长问题。本论文提出InduceKV，将训练前缀存储为可追加到自注意力缓存的紧凑KV记忆，在固定内存预算下实现持续适应，无需修改骨干模型。该方法通过检索重用KV记忆，支持高效推理，为KV缓存复用提供了新视角。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

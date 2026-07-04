@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-04 <!--dpr-date:20260704-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/04/2607.02010v1-inducekv-fixed-footprint-continual-adaptation-of-multimodal-llms-via-inducing-kv-memories" data-sidebar-item="{&quot;title&quot;: &quot;InduceKV: Fixed-Footprint Continual Adaptation of Multimodal LLMs via Inducing KV Memories&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.02010v1-inducekv-fixed-footprint-continual-adaptation-of-multimodal-llms-via-inducing-kv-memories&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;KV记忆重用实现持续适应&quot;}">InduceKV: Fixed-Footprint Continual Adaptation of Multimodal LLMs via Inducing KV Memories</a>
   * 2026-07-03 <!--dpr-date:20260703-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/03/2607.01299v1-hypic-accelerating-hybrid-attention-llm-serving-with-position-independent-caching" data-sidebar-item="{&quot;title&quot;: &quot;HYPIC: Accelerating Hybrid-Attention LLM Serving with Position-Independent Caching&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.01299v1-hypic-accelerating-hybrid-attention-llm-serving-with-position-independent-caching&quot;, &quot;score&quot;: &quot;10.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;针对混合注意力大模型推理的位置无关缓存系统&quot;}">HYPIC: Accelerating Hybrid-Attention LLM Serving with Position-Independent Caching</a>

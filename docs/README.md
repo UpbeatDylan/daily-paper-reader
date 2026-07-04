@@ -6,41 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-03
-- 运行时间：2026-07-03 21:42:47 UTC
+- 最新运行日期：2026-07-04
+- 运行时间：2026-07-04 21:21:52 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：4
-- 速读区：3
+- 本次总论文数：1
+- 精读区：0
+- 速读区：1
 
 ### 今日简报（AI）
-今日推荐7篇论文，精读4篇，聚焦混合注意力模型加速与KV缓存压缩风险。最值得关注的是HYPIC的位置无关缓存方案（10分）及KV缓存压缩的潜在风险（9分）。建议优先精读HYPIC以理解长序列推理优化，同时留意压缩对模型生成质量的影响。
-- 详情：[/202607/03/README](/202607/03/README)
+今日速读一篇多模态大模型持续适应论文，关注KV记忆诱导方法。  
+核心结论：通过固定足迹的KV记忆诱导，实现高效持续适应而不增加内存开销。  
+建议进一步了解其与主流适配方法的性能对比及实际部署可行性。
+- 详情：[/202607/04/README](/202607/04/README)
 
 ### 精读区论文标签
-1. [HYPIC: Accelerating Hybrid-Attention LLM Serving with Position-Independent Caching](/202607/03/2607.01299v1-hypic-accelerating-hybrid-attention-llm-serving-with-position-independent-caching)  
-   标签：评分：10.0/10、query:pic
-   evidence：针对混合注意力大模型推理的位置无关缓存系统
-2. [The risk of KV cache compression](/202607/03/2607.01520v1-the-risk-of-kv-cache-compression)  
-   标签：评分：9.0/10、query:pic
-   evidence：KV缓存压缩风险的理论分析
-3. [Lynx: Progressive Speculative Quantization for accelerating KV Transfer in Long-Context Inference](/202607/03/2607.01831v1-lynx-progressive-speculative-quantization-for-accelerating-kv-transfer-in-long-context-inference)  
-   标签：评分：9.0/10、query:pic
-   evidence：长上下文推理中KV缓存传输加速
-4. [Cache Merging as a Convergent Replicated State for Multi-Agent Latent Reasoning](/202607/03/2607.01308v1-cache-merging-as-a-convergent-replicated-state-for-multi-agent-latent-reasoning)  
-   标签：评分：8.0/10、query:pic
-   evidence：用于多代理潜在推理的缓存合并，实现KV缓存重用
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Multi-Head Recurrent Memory Agents](/202607/03/2607.01523v1-multi-head-recurrent-memory-agents)  
-   标签：评分：7.0/10、query:pic
-   evidence：多头部循环记忆用于扩展LLM上下文
-2. [ReContext: Recursive Evidence Replay as LLM Harness for Long-Context Reasoning](/202607/03/2607.02509v1-recontext-recursive-evidence-replay-as-llm-harness-for-long-context-reasoning)  
-   标签：评分：7.0/10、query:pic
-   evidence：递归证据回放用于长上下文推理
-3. [The Past Is Prologue: A Plug-in Controller for Selective Updates in Sequentially Evolving LLM Memory](/202607/03/2606.31121v1-the-past-is-prologue-a-plug-in-controller-for-selective-updates-in-sequentially-evolving-llm-memory)  
+1. [InduceKV: Fixed-Footprint Continual Adaptation of Multimodal LLMs via Inducing KV Memories](/202607/04/2607.02010v1-inducekv-fixed-footprint-continual-adaptation-of-multimodal-llms-via-inducing-kv-memories)  
    标签：评分：6.0/10、query:pic
-   evidence：用于LLM记忆管理的选择性更新控制器
+   evidence：KV记忆重用实现持续适应
 
 
 <div class="dpr-home-promo-card">

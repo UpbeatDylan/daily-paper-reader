@@ -1,0 +1,24 @@
+{
+  "label": "2026-07-04",
+  "date": "2026-07-04",
+  "generated_at": "2026-07-04T21:21:59",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202607/04/2607.02010v1-inducekv-fixed-footprint-continual-adaptation-of-multimodal-llms-via-inducing-kv-memories",
+      "section": "quick",
+      "title_en": "InduceKV: Fixed-Footprint Continual Adaptation of Multimodal LLMs via Inducing KV Memories",
+      "authors": "Qianyu Chen, Ziteng Feng, Canran Xiao, Runxuan Tang",
+      "date": "2026-07-02",
+      "pdf": "https://arxiv.org/pdf/2607.02010v1",
+      "score": "6.0",
+      "evidence": "KV记忆重用实现持续适应",
+      "tldr": "多模态大语言模型持续适应面临部署存储受限的挑战。本文提出InduceKV方法，通过将选定训练前缀存储为包含冻结检索键和紧凑层KV载荷的记忆条目，并利用双层选择构建紧凑诱导集，在固定存储下实现高效持续适应。在任务增量指令微调、持续VQA等场景中，InduceKV在同等存储预算下显著优于PEFT、MoE和回放等方法。该方法无需更新主干模型，通过检索和KV记忆外部化任务特定更新。",
+      "tags": "query:pic",
+      "abstract_en": "Multimodal large language models must adapt to evolving tasks and domains, yet continual improvement under bounded deployment footprint remains difficult because repeated parameter updates or growing replay stores can accumulate adaptation state over time. We study fixed-footprint continual adaptation: the deployed adaptation state is kept under a fixed memory budget, while the backbone model is left unchanged and task-specific updates are externalized. We propose InduceKV, a retrieval-based method that stores each selected training prefix as an attention-ready memory entry, consisting of a frozen retrieval key and compact layerwise key--value (KV) payloads that can be appended to the model's self-attention cache. Under a strict memory budget, InduceKV constructs a compact inducing set through bilevel selection: a lightweight calibration is fit for retrieval, while the selected memory balances current-task likelihood, anchor-based retention, and coverage in the frozen retrieval space. Across task-incremental instruction tuning, continual VQA, domain-incremental adaptation, and lifelong multimodal instruction tuning, InduceKV consistently improves over PEFT, MoE, replay, and prompt-retrieval baselines under matched memory budgets. We further report backbone-matched, stage-1 CoIN, compute-matched, and scalability diagnostics, showing that the gains are not due to a stronger backbone, replay alone, or an unbounded candidate pool.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
