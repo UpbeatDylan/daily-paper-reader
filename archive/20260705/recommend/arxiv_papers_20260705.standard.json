@@ -1,0 +1,99 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-05T21:11:02.527243+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2607.00712v1",
+      "source": "arxiv",
+      "title": "Towards Memory-Efficient Autoregressive Video Generation via Instance-Specific Parametric Absorption",
+      "abstract": "Autoregressive (AR) streaming models have emerged as a powerful paradigm for long video generation. However, the linearly growing Key-Value (KV) cache poses a significant bottleneck, leading to memory overload and degraded inference throughput. A common compression method is to drop redundant KV tokens, which often breaks long-range dependencies, resulting in temporal flickering and identity loss. In this paper, we propose Instance-Specific Parametric Absorption (ISPA), a novel framework that shifts the KV cache compression from discarding to distilling. The core idea is to transit a subset of layers from Full-Attention (F-Layers) to memory-efficient Local-Attention (L-Layers) by \"absorbing\" historical context into the model's weights. Specifically, during a brief warmup phase, ISPA monitors the output discrepancy between global and local attention. At the transition point, we solve a closed-form least-squares problem to compute an instance-specific weight modulation that compensates for the missing history. Experiments across architectures (1.3B to 14B) demonstrate that ISPA can remove up to 50\\% of the KV cache with near-lossless visual quality. We hope this perspective encourages future work to explore parametric memory consolidation beyond external token-level cache management for streaming generative models.",
+      "authors": [
+        "Xiaomeng Fu",
+        "Jia Li",
+        "Yiming Hu",
+        "Yong Wang",
+        "Hayden Kwok-Hay So",
+        "Jiao Dai",
+        "Xiangxiang Chu",
+        "Jizhong Han"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.MM"
+      ],
+      "published": "2026-07-01T09:59:28+00:00",
+      "link": "https://arxiv.org/pdf/2607.00712v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache compression via parametric absorption for efficient inference",
+      "llm_evidence_cn": "通过参数吸收压缩KV缓存以实现高效推理",
+      "llm_evidence": "通过参数吸收压缩KV缓存以实现高效推理",
+      "canonical_evidence": "通过参数吸收压缩KV缓存以实现高效推理",
+      "llm_tldr_en": "Proposes ISPA to compress KV cache by distilling historical context into model parameters, reducing memory without dropping tokens.",
+      "llm_tldr_cn": "自回归视频生成中KV缓存线性增长导致内存瓶颈。本文提出实例特定参数吸收（ISPA），通过将部分层的全注意力转换为局部注意力，并将历史上下文'吸收'到模型参数中，从而将KV缓存压缩从丢弃转变为蒸馏。该方法在减少内存占用的同时保留了长程依赖，避免了时间闪烁和身份丢失。",
+      "llm_tldr": "自回归视频生成中KV缓存线性增长导致内存瓶颈。本文提出实例特定参数吸收（ISPA），通过将部分层的全注意力转换为局部注意力，并将历史上下文'吸收'到模型参数中，从而将KV缓存压缩从丢弃转变为蒸馏。该方法在减少内存占用的同时保留了长程依赖，避免了时间闪烁和身份丢失。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.01792v1",
+      "source": "arxiv",
+      "title": "PARTREP: Learning What to Repeat for Decoder-only LLMs",
+      "abstract": "While decoder-only LLMs excel at a vast array of natural language tasks, it suffers from an asymmetric information flow induced by causal attention: later tokens are richer in contextual grounding than earlier ones. A simple and effective remedy is prompt repetition -- just appending a second copy of prompt before generation can redistribute grounding across positions and improve reasoning performance. However, full repetition of the original prompt doubles the KV cache footprint and quadruples attention cost during prefill, making it impractical for long-context settings. We propose PartRep, a selective augmentation method that appends only the most informative tokens -- rather than the entire prompt. We use token-wise negative log-likelihood (NLL) as a selection signal, motivated by the hypothesis that less predictable tokens are less recoverable from surrounding context and therefore benefit more from late-position repetition. To avoid the heavy cost of a full forward pass for scoring, we train a lightweight gate that predicts high-NLL tokens from early-layer hidden states, enabling token selection during mid-prefill via early exit. Across eight benchmarks (including MMLU, GSM8K, and RULER) and three model families (Qwen2.5, Llama3.2, Gemma4), PartRep retains most of the gains of full repetition while using only 59.4\\% of its KV cache and 79.0\\% of its prefill FLOPs.",
+      "authors": [
+        "Andikawati P Widjaja",
+        "Yongjun Kim",
+        "Hyounghun Kim",
+        "Jaeho Lee"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-07-02T07:07:28+00:00",
+      "link": "https://arxiv.org/pdf/2607.01792v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "selective prompt repetition for prefix caching",
+      "llm_evidence_cn": "选择性提示重复用于前缀缓存",
+      "llm_evidence": "选择性提示重复用于前缀缓存",
+      "canonical_evidence": "选择性提示重复用于前缀缓存",
+      "llm_tldr_en": "PartRep selectively repeats informative prompt tokens to redistribute contextual grounding, reducing KV cache overhead compared to full repetition.",
+      "llm_tldr_cn": "大型解码器语言模型因因果注意力导致上下文分布不均，全提示重复虽能改善推理性能但加倍KV缓存占用。PartRep提出仅重复最信息丰富的令牌，基于负对数似然选择，在提升推理质量的同时显著降低缓存和计算开销，适用于长上下文场景。",
+      "llm_tldr": "大型解码器语言模型因因果注意力导致上下文分布不均，全提示重复虽能改善推理性能但加倍KV缓存占用。PartRep提出仅重复最信息丰富的令牌，基于负对数似然选择，在提升推理质量的同时显著降低缓存和计算开销，适用于长上下文场景。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

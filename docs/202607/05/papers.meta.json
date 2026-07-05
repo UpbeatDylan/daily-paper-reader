@@ -1,0 +1,39 @@
+{
+  "label": "2026-07-05",
+  "date": "2026-07-05",
+  "generated_at": "2026-07-05T21:13:04",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202607/05/2607.00712v1-towards-memory-efficient-autoregressive-video-generation-via-instance-specific-parametric-absorption",
+      "section": "deep",
+      "title_en": "Towards Memory-Efficient Autoregressive Video Generation via Instance-Specific Parametric Absorption",
+      "authors": "Xiaomeng Fu, Jia Li, Yiming Hu, Yong Wang, Hayden Kwok-Hay So, Jiao Dai, Xiangxiang Chu, Jizhong Han",
+      "date": "2026-07-01",
+      "pdf": "https://arxiv.org/pdf/2607.00712v1",
+      "score": "8.0",
+      "evidence": "通过参数吸收压缩KV缓存以实现高效推理",
+      "tldr": "自回归视频生成模型面临KV缓存随序列长度线性增长的内存瓶颈。现有方法通过丢弃冗余token压缩缓存，但破坏了长程依赖，导致时序闪烁和身份丢失。本文提出实例特定参数吸收（ISPA），将部分注意力层从全局转为局部，通过求解闭式最小二乘问题计算权重调制来蒸馏历史上下文。在1.3B至14B模型上，ISPA移除50% KV缓存且视觉质量近乎无损，为流式生成模型的内存优化提供了新视角。",
+      "tags": "query:pic",
+      "abstract_en": "Autoregressive (AR) streaming models have emerged as a powerful paradigm for long video generation. However, the linearly growing Key-Value (KV) cache poses a significant bottleneck, leading to memory overload and degraded inference throughput. A common compression method is to drop redundant KV tokens, which often breaks long-range dependencies, resulting in temporal flickering and identity loss. In this paper, we propose Instance-Specific Parametric Absorption (ISPA), a novel framework that shifts the KV cache compression from discarding to distilling. The core idea is to transit a subset of layers from Full-Attention (F-Layers) to memory-efficient Local-Attention (L-Layers) by \"absorbing\" historical context into the model's weights. Specifically, during a brief warmup phase, ISPA monitors the output discrepancy between global and local attention. At the transition point, we solve a closed-form least-squares problem to compute an instance-specific weight modulation that compensates for the missing history. Experiments across architectures (1.3B to 14B) demonstrate that ISPA can remove up to 50\\% of the KV cache with near-lossless visual quality. We hope this perspective encourages future work to explore parametric memory consolidation beyond external token-level cache management for streaming generative models.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/05/2607.01792v1-partrep-learning-what-to-repeat-for-decoder-only-llms",
+      "section": "quick",
+      "title_en": "PARTREP: Learning What to Repeat for Decoder-only LLMs",
+      "authors": "Andikawati P Widjaja, Yongjun Kim, Hyounghun Kim, Jaeho Lee",
+      "date": "2026-07-02",
+      "pdf": "https://arxiv.org/pdf/2607.01792v1",
+      "score": "7.0",
+      "evidence": "选择性提示重复用于前缀缓存",
+      "tldr": "解码器-only大语言模型因果注意力导致信息流不对称，后部token上下文更丰富。重复提示可缓解但计算开销大。PartRep通过负对数似然（NLL）挑选信息最丰富的token重复，并训练轻量门控网络从早期层隐藏状态预测高NLL token，实现早退出选择。在MMLU等8个基准和三个模型族上，PartRep几乎保留全重复性能收益，仅需59.4%的KV缓存和79.0%的预填充计算量。该方法高效提升了推理效率。",
+      "tags": "query:pic",
+      "abstract_en": "While decoder-only LLMs excel at a vast array of natural language tasks, it suffers from an asymmetric information flow induced by causal attention: later tokens are richer in contextual grounding than earlier ones. A simple and effective remedy is prompt repetition -- just appending a second copy of prompt before generation can redistribute grounding across positions and improve reasoning performance. However, full repetition of the original prompt doubles the KV cache footprint and quadruples attention cost during prefill, making it impractical for long-context settings. We propose PartRep, a selective augmentation method that appends only the most informative tokens -- rather than the entire prompt. We use token-wise negative log-likelihood (NLL) as a selection signal, motivated by the hypothesis that less predictable tokens are less recoverable from surrounding context and therefore benefit more from late-position repetition. To avoid the heavy cost of a full forward pass for scoring, we train a lightweight gate that predicts high-NLL tokens from early-layer hidden states, enabling token selection during mid-prefill via early exit. Across eight benchmarks (including MMLU, GSM8K, and RULER) and three model families (Qwen2.5, Llama3.2, Gemma4), PartRep retains most of the gains of full repetition while using only 59.4\\% of its KV cache and 79.0\\% of its prefill FLOPs.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
