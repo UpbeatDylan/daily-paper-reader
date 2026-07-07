@@ -1,0 +1,297 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-07T20:50:57.211300+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2607.02574v1",
+      "source": "arxiv",
+      "title": "From Tensor Buffer to Distributed Memory Hierarchy: A Survey of KV Cache Management for LLM Serving",
+      "abstract": "The key-value (KV) cache has become a first-order memory object in LLM serving rather than a temporary per-request tensor. This survey classifies more than thirty KV-management systems and frameworks using four axes: locality, lifetime, ownership, and substrate. The axes reveal five architectural archetypes -- local-paged, disaggregated-pipeline, shared-store, memory-pool, and hybrid-tier. Once workload and hardware are fixed, ownership accounts for much of the remaining design variance among distributed systems. The survey also audits current evaluations and identifies seven missing KV-specific measurements, linking them to open problems in fault tolerance, isolation, tiered eviction, speculative decoding, MoE serving, and shared-cache semantics.",
+      "authors": [
+        "Jie Li",
+        "Tongyang Wang",
+        "Yong Chen"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-30T16:12:40+00:00",
+      "link": "https://arxiv.org/pdf/2607.02574v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "comprehensive survey on KV cache management for LLM serving",
+      "llm_evidence_cn": "LLM服务中KV缓存管理综述",
+      "llm_evidence": "LLM服务中KV缓存管理综述",
+      "canonical_evidence": "LLM服务中KV缓存管理综述",
+      "llm_tldr_en": "A survey classifying over 30 KV-management systems across four axes, revealing five architectural archetypes and identifying open problems in KV cache reuse and management.",
+      "llm_tldr_cn": "针对LLM服务中KV缓存成为关键内存对象的现象，综述了30多种KV管理系统，从位置、生命周期、所有权和底层架构四个维度分类，归纳出五种架构原型。分析了所有权对设计差异的影响，并指出七个缺失的KV特定评估指标，联系到缓存复用、容错等开放问题。为该领域提供了系统性视角。",
+      "llm_tldr": "针对LLM服务中KV缓存成为关键内存对象的现象，综述了30多种KV管理系统，从位置、生命周期、所有权和底层架构四个维度分类，归纳出五种架构原型。分析了所有权对设计差异的影响，并指出七个缺失的KV特定评估指标，联系到缓存复用、容错等开放问题。为该领域提供了系统性视角。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.02980v1",
+      "source": "arxiv",
+      "title": "Hierarchical Sparse Attention Done Right: Toward Infinite Context Modeling",
+      "abstract": "Scaling modern large language models (LLMs) to long contexts is limited by the quadratic computation cost, and poor length extrapolation of dense attention. Chunk-wise sparse attention offers a promising alternative, but all existing methods fall short of full attention because of their inaccurate chunk selection. We propose Hierarchical Landmark Sparse (HiLS) Attention, a chunk-wise sparse attention mechanism that learns chunk selection end-to-end under the language-modeling (LM) loss. HiLS factorizes attention hierarchically: each query performs attention independently with each retrieved chunk to extract chunk-specific information, and the resulting outputs are fused according to chunk retrieval scores. By incorporating retrieval scores into the forward attention computation, HiLS optimizes them directly with the LM loss, enabling end-to-end retrieval learning and native sparse training. Experimental results show that HiLS-Attention achieves performance comparable to, and in some cases better than, full attention at in-domain context lengths. Meanwhile, HiLS-Attention extrapolates more than $64\\times$ the training context length with 90% retrieval accuracy, far beyond full attention. Moreover, existing full-attention models can be converted to HiLS-Attention with lightweight continued pretraining, preserving in-domain performance while acquiring ultra-long-context extrapolation. Together with its sparse KV access and computation, HiLS-Attention breaks the usual efficiency-performance trade-off, enabling long-context LLMs that are both more efficient and more effective on general long-context tasks than their full-attention counterparts.",
+      "authors": [
+        "Xiang Hu",
+        "Xinyu Wei",
+        "Hao Gu",
+        "Minshen Zhang",
+        "Tian Liang",
+        "Huayang Li",
+        "Lei Zhu",
+        "Yan Wang",
+        "Sirui Han",
+        "Yushi Bai",
+        "Kewei Tu",
+        "Haitao Mi",
+        "Leo Liang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-07-03T05:39:00+00:00",
+      "link": "https://arxiv.org/pdf/2607.02980v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "long context inference acceleration via sparse attention",
+      "llm_evidence_cn": "通过稀疏注意力加速长上下文推理",
+      "llm_evidence": "通过稀疏注意力加速长上下文推理",
+      "canonical_evidence": "通过稀疏注意力加速长上下文推理",
+      "llm_tldr_en": "Proposes Hierarchical Landmark Sparse (HiLS) Attention for efficient long-context modeling by learning chunk selection end-to-end, achieving near-full-attention quality with quadratic cost reduction.",
+      "llm_tldr_cn": "针对长上下文建模中注意力二次计算成本和长度外推问题，提出分层地标稀疏注意力（HiLS），通过端到端学习块选择，每个查询独立与检索块进行注意力，再融合结果。在语言建模损失下训练，有效提升了稀疏注意力的准确性。该方法大幅降低计算开销，同时保持接近全注意力的质量，为长上下文推理加速提供了新途径。",
+      "llm_tldr": "针对长上下文建模中注意力二次计算成本和长度外推问题，提出分层地标稀疏注意力（HiLS），通过端到端学习块选择，每个查询独立与检索块进行注意力，再融合结果。在语言建模损失下训练，有效提升了稀疏注意力的准确性。该方法大幅降低计算开销，同时保持接近全注意力的质量，为长上下文推理加速提供了新途径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.05061v1",
+      "source": "arxiv",
+      "title": "KVpop -- Key-Value Cache Compression with Predictive Online Pruning",
+      "abstract": "Key-value (KV) cache growth is a major bottleneck in autoregressive decoding, as memory and bandwidth scale linearly with context length. Existing KV eviction methods often rely on static heuristics or proxy scores, which poorly track future token utility and cause brittle eviction as relevance shifts. To address this, we introduce KVpop, which learns a fixed-budget KV eviction policy by directly supervising the keep-or-drop decision. The scorer is trained against a novel future-attention target, computed efficiently without materializing dense attention maps. We further introduce a delayed memory-based scorer that, uniquely among learned eviction methods, defers scoring for a fixed number of steps to exploit near-future context. On AIME and HMMT mathematical reasoning, KVpop retains 98% of full-attention performance on Qwen3-4B at 75% KV cache compression and 97% at 88% compression, consistently outperforming established eviction baselines. Qwen3-8B shows even stronger results, reaching near-full teacher performance. These results show that supervising eviction with future-attention signals cuts memory costs while maintaining quality.",
+      "authors": [
+        "Lukas Hauzenberger",
+        "Niklas Schmidinger",
+        "Anamaria-Roberta Hartl",
+        "David Stap",
+        "Thomas Schmied",
+        "Sebastian Böck",
+        "Günter Klambauer",
+        "Sepp Hochreiter"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-06T13:32:34+00:00",
+      "link": "https://arxiv.org/pdf/2607.05061v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache compression with predictive online pruning",
+      "llm_evidence_cn": "基于预测在线修剪的KV缓存压缩",
+      "llm_evidence": "基于预测在线修剪的KV缓存压缩",
+      "canonical_evidence": "基于预测在线修剪的KV缓存压缩",
+      "llm_tldr_en": "KVpop learns a fixed-budget KV eviction policy supervised by future-attention target, achieving efficient KV cache compression for LLM inference.",
+      "llm_tldr_cn": "KV缓存增长是长上下文LLM推理的主要瓶颈。现有驱逐策略依赖静态启发式，难以追踪未来效用。本文提出KVpop，通过学习未来注意力监督的驱逐策略，并引入延迟记忆评分器，实现高效的固定预算KV缓存压缩。在AIME和HMMT数学任务上，该方法在保持精度的同时显著减少缓存占用。",
+      "llm_tldr": "KV缓存增长是长上下文LLM推理的主要瓶颈。现有驱逐策略依赖静态启发式，难以追踪未来效用。本文提出KVpop，通过学习未来注意力监督的驱逐策略，并引入延迟记忆评分器，实现高效的固定预算KV缓存压缩。在AIME和HMMT数学任务上，该方法在保持精度的同时显著减少缓存占用。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.04281v1",
+      "source": "arxiv",
+      "title": "Risk-Constrained Freshness-Aware Semantic Caching for Open-Web Retrieval-Augmented LLMs",
+      "abstract": "Semantic caching reduces the latency and cost of retrieval-augmented generation (RAG) by serving cached answers to semantically similar queries, but most existing methods do not model the time-varying freshness of open-web evidence. We present FreshCache, a three-tier semantic cache that treats cache reuse as a risk-constrained temporal inference problem: before approving a cache hit, FreshCache estimates the probability that the cached result is stale using a fitted exponential decay model enhanced by a learned MLP, and approves reuse only when that probability falls below a per-tier error budget across answers (epsilon = 0.10), URL lists (epsilon = 0.20), and page content (epsilon = 0.35). This allows the system to degrade gracefully as entries age rather than forcing a binary choice between a stale hit and a full pipeline execution. We introduce FreshCache-Bench, a benchmark of 8,072 base queries across five freshness classes with ground truth staleness labels drawn from real web snapshots at 1, 12, 24 hours, and 7 days after a baseline crawl, expanded to 31,201 queries via paraphrase generation. At the 24-hour evaluation window, FreshCache_MLP achieves 97% search API savings at 0.1% hash-based stale error, and an LLM-judge evaluation on 396 confirmed change pairs shows that only 34.3% of detected content changes actually affect answer correctness, placing true answer-affecting stale error at approximately 0.034%. The rule-based FreshCache achieves 98% search savings at 3.3% stale error under a temporal holdout calibration, outperforming SemanticTTL (14.9% stale, 72% saved), vCache (7.2% stale, 47% saved), and SCALM (5.2% stale, 96% saved). Ablations show the temporal risk gate accounts for an 11.6 point reduction in stale error over similarity-only reuse, and the learned MLP reduces stale error a further 3.2 points over the rule-based model.",
+      "authors": [
+        "Muhammad Mansoor",
+        "Tahir Ahmad",
+        "Yeo-Chan Yoon"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-07-05T12:47:36+00:00",
+      "link": "https://arxiv.org/pdf/2607.04281v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "semantic caching for RAG with freshness awareness",
+      "llm_evidence_cn": "考虑新鲜度的语义缓存用于RAG",
+      "llm_evidence": "考虑新鲜度的语义缓存用于RAG",
+      "canonical_evidence": "考虑新鲜度的语义缓存用于RAG",
+      "llm_tldr_en": "FreshCache: a risk-constrained semantic cache that models time-varying freshness of web evidence, enabling graceful latency and cost reduction for open-web RAG.",
+      "llm_tldr_cn": "针对检索增强生成中语义缓存忽略证据时效性的问题，提出FreshCache三层语义缓存，将缓存复用建模为风险约束的时间推理问题。通过指数衰减模型和MLP估计缓存结果过时概率，仅在概率低于误差预算时复用。实验表明该方法在延迟和成本上实现优雅降级，适用于动态开放网络环境。",
+      "llm_tldr": "针对检索增强生成中语义缓存忽略证据时效性的问题，提出FreshCache三层语义缓存，将缓存复用建模为风险约束的时间推理问题。通过指数衰减模型和MLP估计缓存结果过时概率，仅在概率低于误差预算时复用。实验表明该方法在延迟和成本上实现优雅降级，适用于动态开放网络环境。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.03333v1",
+      "source": "arxiv",
+      "title": "SPORK: Self-Speculative Forking to Accelerate Agentic LLM Inference",
+      "abstract": "LLM agents are becoming a common interface for research, coding, and question answering, yet their Thought-Action-Observation loop is often serial: the model reasons, emits a tool call, then idles the GPU until the result returns. This wait consumes 16-37% of wall time in our workloads and 35-61% in prior reports. Speculative tool execution can hide this wait, but existing systems need auxiliary predictors, historical traces, or static workflow graphs, leaving a gap for training-free, day-one deployment. We observe that the model can be its own predictor: a probe forked at the start of generation predicts Qwen3-32B's upcoming tool name with 74.6-99.6% accuracy across five benchmarks. We present SPORK (Self-sPeculative fORKing), a training-free controller that dispatches the speculated tool call early, overlapping its execution with the remaining chain-of-thought decode. A cost model captures when speculation breaks even, and each component improves one of its terms: a prefix-cache fork cuts probe cost, a confidence gate filters mispredictions, and partial-token accept turns rejected probes into speculative-decoding drafts. On acceptance, the tool result is ready when reasoning ends; on rejection, SPORK falls back to serial execution with no correctness penalty. On real-tool benchmarks, SPORK cuts Qwen3-32B's GAIA P95 by 18% (131.9 to 108.1 s); the mechanism holds across model sizes from 4B to 32B and across dense and mixture-of-experts models, with task accuracy within 1 pp of baseline or better wherever measured. SPORK deploys as a thin controller over standard completion APIs (no retraining, no auxiliary models, no offline traces) and is orthogonal to token-level speculative decoding. SPORK is open source at https://github.com/baihuajun24/spork.",
+      "authors": [
+        "Huajun Bai",
+        "Weiwei Lv",
+        "Huichuan Zheng",
+        "Youyou Lu",
+        "Jiwu Shu"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-03T13:51:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.03333v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM inference acceleration via speculation",
+      "llm_evidence_cn": "通过推测加速LLM推理",
+      "llm_evidence": "通过推测加速LLM推理",
+      "canonical_evidence": "通过推测加速LLM推理",
+      "llm_tldr_en": "SPORK proposes training-free self-speculative forking to hide tool-call latency in agentic LLM inference, achieving 74.6-99.6% tool prediction accuracy.",
+      "llm_tldr_cn": "自推测分叉加速智能体LLM推理：SPORK利用模型自身作为预测器，在生成开始时分叉探针预测工具调用，无需额外模型或历史数据。实验表明，该方法可以隐藏工具执行等待时间，显著降低推理延迟。",
+      "llm_tldr": "自推测分叉加速智能体LLM推理：SPORK利用模型自身作为预测器，在生成开始时分叉探针预测工具调用，无需额外模型或历史数据。实验表明，该方法可以隐藏工具执行等待时间，显著降低推理延迟。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.04089v1",
+      "source": "arxiv",
+      "title": "PLACEMEM: Toward a Compute-Aware Memory Plane for Lifelong Agents",
+      "abstract": "Lifelong agents need more than larger context windows and better retrieval. They need memories that can persist, evolve, and be corrected without forcing the serving stack to recompute the same history on every turn or silently reuse stale runtime state. We present PLACEMEM as a systems position on lifelong-agent memory, instantiated by an executable control-plane prototype. The central claim is that agent memory should be represented as versioned capsules that unify semantics, provenance, validity, and reusable runtime state under one correction-aware identity. In the current prototype, capsules drive prompt-level text retrieval, KV-aware routing, and cascading invalidation over live streamed backends; prospective layer-frontier replay is intentionally framed as a deeper integration agenda rather than a claimed engine feature. We describe a vLLM-first prototype with persistent capsule state, concurrency-safe invalidation, an OpenAI-compatible routing sidecar, a typed metadata contract, and a benchmark harness that measures live first-token latency, reuse, and post-correction behavior. The result is both an executable artifact that demonstrates correction-aware control-plane behavior today and a concrete roadmap for replay-aware serving integration in future lifelong-agent systems.",
+      "authors": [
+        "Sukanta Ganguly"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-05T02:55:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.04089v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV-aware routing and reusable runtime state for agent memory",
+      "llm_evidence_cn": "智能体记忆中的KV感知路由和可重用运行时状态",
+      "llm_evidence": "智能体记忆中的KV感知路由和可重用运行时状态",
+      "canonical_evidence": "智能体记忆中的KV感知路由和可重用运行时状态",
+      "llm_tldr_en": "PLACEMEM proposes versioned memory capsules that unify semantics, provenance, and reusable runtime state, including KV-aware routing, for lifelong agents.",
+      "llm_tldr_cn": "终身智能体需要持久、可演化且可修正的记忆，避免每次重计算历史。PLACEMEM提出版本化胶囊表示，统一语义、来源和可重用运行时状态，支持KV感知路由和级联失效。原型系统展示了在流式后端上的应用。",
+      "llm_tldr": "终身智能体需要持久、可演化且可修正的记忆，避免每次重计算历史。PLACEMEM提出版本化胶囊表示，统一语义、来源和可重用运行时状态，支持KV感知路由和级联失效。原型系统展示了在流式后端上的应用。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.04206v1",
+      "source": "arxiv",
+      "title": "Sangam: Efficiently Serving Diffusion LLMs with the AR Stack",
+      "abstract": "Diffusion language models (dLLMs) generate text by iteratively denoising a masked response and can commit multiple output positions per model invocation. Their bidirectional attention prevents exact autoregressive-style KV caching, since committing one position shifts the KV activations of all others. Approximate caching techniques such as Fast-dLLM and dKV-Cache refresh KV activations repeatedly and reuse them across intervening decodes, inducing a repeated prefill/decode structure. This makes AR serving mechanisms relevant to dLLMs, but not directly applicable. dLLM decodes are block-sized rather than token-sized, prefills recur, and bidirectional attention precludes the chunked prefill mechanism used for stall-free colocated serving. We present Sangam, a serving system for cached dLLM inference. Sangam introduces a deficit token-budget scheduler that admits in-flight decodes first, admits whole indivisible prefills only when the accumulated token budget allows, and carries unused budget forward. This achieves amortized stall-free scheduling. Disaggregated serving avoids prefill-decode interference but suffers from prefill/decode resource partitioning problem. Sangam adopts a hybrid serving strategy, overflowing prefills onto decode workers to relieve prefill under-provisioning, and uses the same deficit-budget scheduler to protect those workers' decodes from the overflow. We show that like AR serving, dLLM serving design space is governed by prefill-decode interference and prefill/decode partitioning. Colocated serving is most effective on decode-heavy workloads, cutting mean latency by 9-20% over hybrid execution on LLaDA-8B ShareGPT; while hybrid execution is most effective on prefill-heavy workloads, cutting mean latency by 8-20% over colocated execution on Dream-7B arXiv. Sangam is available at https://github.com/UT-InfraAI/sangam.",
+      "authors": [
+        "Nitin Kedia",
+        "Saurabh Agarwal",
+        "Myungjin Lee",
+        "Aditya Akella"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-07-05T09:55:29+00:00",
+      "link": "https://arxiv.org/pdf/2607.04206v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "approximate KV caching for diffusion LLMs",
+      "llm_evidence_cn": "扩散LLM的近似KV缓存技术",
+      "llm_evidence": "扩散LLM的近似KV缓存技术",
+      "canonical_evidence": "扩散LLM的近似KV缓存技术",
+      "llm_tldr_en": "Sangam addresses the unique challenges of serving diffusion LLMs with bidirectional attention, including approximate caching and block-sized decodes, reusing KV activations across denoising steps.",
+      "llm_tldr_cn": "扩散语言模型（dLLM）采用双向注意力，无法直接使用自回归KV缓存。现有近似缓存方法如dKV-Cache在去噪步骤间重用KV激活。本文提出Sangam服务系统，针对dLLM的块大小解码和重复预填充结构进行优化，实现高效服务。",
+      "llm_tldr": "扩散语言模型（dLLM）采用双向注意力，无法直接使用自回归KV缓存。现有近似缓存方法如dKV-Cache在去噪步骤间重用KV激活。本文提出Sangam服务系统，针对dLLM的块大小解码和重复预填充结构进行优化，实现高效服务。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
