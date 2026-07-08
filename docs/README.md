@@ -6,41 +6,34 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-07
-- 运行时间：2026-07-07 20:56:11 UTC
+- 最新运行日期：2026-07-08
+- 运行时间：2026-07-08 21:41:05 UTC
 - 运行状态：成功
-- 本次总论文数：7
+- 本次总论文数：4
 - 精读区：3
-- 速读区：4
+- 速读区：1
 
 ### 今日简报（AI）
-今日共推荐7篇论文，精读2篇（KV缓存管理9.0分、稀疏注意力8.0分），速读4篇。重点关注KV缓存的分层管理与无限上下文建模方向。建议优先精读《From Tensor Buffer to Distributed Memory Hierarchy》和《Hierarchical Sparse Attention Done Right》。
-- 详情：[/202607/07/README](/202607/07/README)
+今日精读两篇高分长上下文KV缓存压缩论文，分别提出频率引导深度共享与令牌自适应跨层残差分解方法。
+最值得关注FreqDepthKV和DepthWeave-KV，均聚焦于通过创新压缩策略支持高效长上下文LLM推理。
+建议读者优先研读这两篇，其方法可显著提升大模型处理长文档时的内存与速度表现。
+- 详情：[/202607/08/README](/202607/08/README)
 
 ### 精读区论文标签
-1. [From Tensor Buffer to Distributed Memory Hierarchy: A Survey of KV Cache Management for LLM Serving](/202607/07/2607.02574v1-from-tensor-buffer-to-distributed-memory-hierarchy-a-survey-of-kv-cache-management-for-llm-serving)  
+1. [FreqDepthKV: Frequency-Guided Depth Sharing for Robust KV Cache Compression in Long-Context LLM Inference](/202607/08/2607.06519v1-freqdepthkv-frequency-guided-depth-sharing-for-robust-kv-cache-compression-in-long-context-llm-inference)  
    标签：评分：9.0/10、query:pic
-   evidence：LLM服务中KV缓存管理综述
-2. [Hierarchical Sparse Attention Done Right: Toward Infinite Context Modeling](/202607/07/2607.02980v1-hierarchical-sparse-attention-done-right-toward-infinite-context-modeling)  
+   evidence：通过深度共享的频率引导KV缓存压缩
+2. [DepthWeave-KV: Token-Adaptive Cross-Layer Residual Factorization for Long-Context KV Cache Compression](/202607/08/2607.06523v1-depthweave-kv-token-adaptive-cross-layer-residual-factorization-for-long-context-kv-cache-compression)  
+   标签：评分：9.0/10、query:pic
+   evidence：面向长上下文的令牌自适应KV缓存压缩
+3. [Akashic: A Low-Overhead LLM Inference Service with MemAttention](/202607/08/2607.05708v1-akashic-a-low-overhead-llm-inference-service-with-memattention)  
    标签：评分：8.0/10、query:pic
-   evidence：通过稀疏注意力加速长上下文推理
-3. [KVpop -- Key-Value Cache Compression with Predictive Online Pruning](/202607/07/2607.05061v1-kvpop----key-value-cache-compression-with-predictive-online-pruning)  
-   标签：评分：8.0/10、query:pic
-   evidence：基于预测在线修剪的KV缓存压缩
+   evidence：使用MemAttention分块进行上下文缓存以降低预填成本
 
 ### 速读区论文标签
-1. [Risk-Constrained Freshness-Aware Semantic Caching for Open-Web Retrieval-Augmented LLMs](/202607/07/2607.04281v1-risk-constrained-freshness-aware-semantic-caching-for-open-web-retrieval-augmented-llms)  
-   标签：评分：7.0/10、query:pic
-   evidence：考虑新鲜度的语义缓存用于RAG
-2. [SPORK: Self-Speculative Forking to Accelerate Agentic LLM Inference](/202607/07/2607.03333v1-spork-self-speculative-forking-to-accelerate-agentic-llm-inference)  
+1. [MemDefrag: Latent Memory Defragmentation for Large Language Models](/202607/08/2607.05969v1-memdefrag-latent-memory-defragmentation-for-large-language-models)  
    标签：评分：6.0/10、query:pic
-   evidence：通过推测加速LLM推理
-3. [PLACEMEM: Toward a Compute-Aware Memory Plane for Lifelong Agents](/202607/07/2607.04089v1-placemem-toward-a-compute-aware-memory-plane-for-lifelong-agents)  
-   标签：评分：6.0/10、query:pic
-   evidence：智能体记忆中的KV感知路由和可重用运行时状态
-4. [Sangam: Efficiently Serving Diffusion LLMs with the AR Stack](/202607/07/2607.04206v1-sangam-efficiently-serving-diffusion-llms-with-the-ar-stack)  
-   标签：评分：6.0/10、query:pic
-   evidence：扩散LLM的近似KV缓存技术
+   evidence：潜内存碎片整理，解决位置编码错位，与上下文缓存类似
 
 
 <div class="dpr-home-promo-card">
