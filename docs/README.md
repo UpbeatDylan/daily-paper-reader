@@ -6,34 +6,37 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-08
-- 运行时间：2026-07-08 21:41:05 UTC
+- 最新运行日期：2026-07-09
+- 运行时间：2026-07-09 20:31:12 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：3
+- 本次总论文数：5
+- 精读区：4
 - 速读区：1
 
 ### 今日简报（AI）
-今日精读两篇高分长上下文KV缓存压缩论文，分别提出频率引导深度共享与令牌自适应跨层残差分解方法。
-最值得关注FreqDepthKV和DepthWeave-KV，均聚焦于通过创新压缩策略支持高效长上下文LLM推理。
-建议读者优先研读这两篇，其方法可显著提升大模型处理长文档时的内存与速度表现。
-- 详情：[/202607/08/README](/202607/08/README)
+1) 今日聚焦长上下文LLM推理优化，精读两篇高分论文：Fractal KV-Cache Archives提出无损符号存储与就地检索，TriRoute实现自适应注意力、专家与KV缓存联合路由。  
+2) 最值得关注的方向是**无损KV缓存压缩与智能路由**，Fractal方案得分9.0，在长上下文场景下兼顾存储效率与检索速度。  
+3) 建议优先阅读Fractal论文原文，若需低资源部署可参考速读的TF-Engram（SSD-backed无训练记忆）。
+- 详情：[/202607/09/README](/202607/09/README)
 
 ### 精读区论文标签
-1. [FreqDepthKV: Frequency-Guided Depth Sharing for Robust KV Cache Compression in Long-Context LLM Inference](/202607/08/2607.06519v1-freqdepthkv-frequency-guided-depth-sharing-for-robust-kv-cache-compression-in-long-context-llm-inference)  
+1. [Fractal KV-Cache Archives: Lossless Symbolic Storage with In-Place Retrieval for Long-Context LLM Inference](/202607/09/2607.07144v1-fractal-kv-cache-archives-lossless-symbolic-storage-with-in-place-retrieval-for-long-context-llm-inference)  
    标签：评分：9.0/10、query:pic
-   evidence：通过深度共享的频率引导KV缓存压缩
-2. [DepthWeave-KV: Token-Adaptive Cross-Layer Residual Factorization for Long-Context KV Cache Compression](/202607/08/2607.06523v1-depthweave-kv-token-adaptive-cross-layer-residual-factorization-for-long-context-kv-cache-compression)  
-   标签：评分：9.0/10、query:pic
-   evidence：面向长上下文的令牌自适应KV缓存压缩
-3. [Akashic: A Low-Overhead LLM Inference Service with MemAttention](/202607/08/2607.05708v1-akashic-a-low-overhead-llm-inference-service-with-memattention)  
+   evidence：无损符号存储与原地检索KV缓存
+2. [TriRoute: Unified Learned Routing for Joint Adaptive Attention, Experts, and KV-Cache Allocation](/202607/09/2607.06601v1-triroute-unified-learned-routing-for-joint-adaptive-attention-experts-and-kv-cache-allocation)  
    标签：评分：8.0/10、query:pic
-   evidence：使用MemAttention分块进行上下文缓存以降低预填成本
+   evidence：联合自适应KV缓存分配与注意力及专家路由
+3. [Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs](/202607/09/2607.06827v1-compress-the-cache-not-the-speech-embedding-kv-compression-for-efficient-speech-llms)  
+   标签：评分：8.0/10、query:pic
+   evidence：面向语音LLM推理加速的KV缓存压缩
+4. [The Key to Going Linear: Analysis-Driven Transformer Linearization](/202607/09/2607.07706v1-the-key-to-going-linear-analysis-driven-transformer-linearization)  
+   标签：评分：8.0/10、query:pic
+   evidence：固定预算缓存路由用于KV缓存优化
 
 ### 速读区论文标签
-1. [MemDefrag: Latent Memory Defragmentation for Large Language Models](/202607/08/2607.05969v1-memdefrag-latent-memory-defragmentation-for-large-language-models)  
-   标签：评分：6.0/10、query:pic
-   evidence：潜内存碎片整理，解决位置编码错位，与上下文缓存类似
+1. [TF-Engram: A Train-Free Engram with SSD-Backed Memory for Large Language Models](/202607/09/2607.07388v1-tf-engram-a-train-free-engram-with-ssd-backed-memory-for-large-language-models)  
+   标签：评分：7.0/10、query:pic
+   evidence：面向LLM的无训练语义记忆与SSD缓存
 
 
 <div class="dpr-home-promo-card">
