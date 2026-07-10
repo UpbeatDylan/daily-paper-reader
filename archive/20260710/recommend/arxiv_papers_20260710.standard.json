@@ -1,0 +1,292 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-10T21:35:54.058731+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2607.05061v2",
+      "source": "arxiv",
+      "title": "KVpop -- Key-Value Cache Compression with Predictive Online Pruning",
+      "abstract": "Key-value (KV) cache growth is a major bottleneck in autoregressive decoding, as memory and bandwidth scale linearly with context length. Existing KV eviction methods often rely on static heuristics or proxy scores, which poorly track future token utility and cause brittle eviction as relevance shifts. To address this, we introduce KVpop, which learns a fixed-budget KV eviction policy by directly supervising the keep-or-drop decision. The scorer is trained against a novel future-attention target, computed efficiently without materializing dense attention maps. We further introduce a delayed memory-based scorer that, uniquely among learned eviction methods, defers scoring for a fixed number of steps to exploit near-future context. On AIME and HMMT mathematical reasoning, KVpop retains 98% of full-attention performance on Qwen3-4B at 75% KV cache compression and 97% at 88% compression, consistently outperforming established eviction baselines. Qwen3-8B shows even stronger results, reaching near-full teacher performance. These results show that supervising eviction with future-attention signals cuts memory costs while maintaining quality.",
+      "authors": [
+        "Lukas Hauzenberger",
+        "Niklas Schmidinger",
+        "Anamaria-Roberta Hartl",
+        "David Stap",
+        "Thomas Schmied",
+        "Sebastian Böck",
+        "Günter Klambauer",
+        "Sepp Hochreiter"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-06T13:32:34+00:00",
+      "link": "https://arxiv.org/pdf/2607.05061v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache compression with learned eviction policy",
+      "llm_evidence_cn": "基于学习的KV缓存淘汰策略",
+      "llm_evidence": "基于学习的KV缓存淘汰策略",
+      "canonical_evidence": "基于学习的KV缓存淘汰策略",
+      "llm_tldr_en": "KVpop introduces a learned KV eviction policy supervised by future-attention target, achieving fixed-budget compression with improved future token utility tracking.",
+      "llm_tldr_cn": "KV缓存增长是自回归解码的主要瓶颈。现有启发式淘汰方法难以预测未来令牌的效用。KVpop提出一种基于学习的淘汰策略，直接监督保留/丢弃决策，使用新颖的未来注意力目标进行训练，并引入延迟记忆评分器以利用近期上下文。在AIME和HMMT数学任务上，KVpop在固定预算下优于基线方法，有效压缩缓存同时保持生成质量。",
+      "llm_tldr": "KV缓存增长是自回归解码的主要瓶颈。现有启发式淘汰方法难以预测未来令牌的效用。KVpop提出一种基于学习的淘汰策略，直接监督保留/丢弃决策，使用新颖的未来注意力目标进行训练，并引入延迟记忆评分器以利用近期上下文。在AIME和HMMT数学任务上，KVpop在固定预算下优于基线方法，有效压缩缓存同时保持生成质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.08057v1",
+      "source": "arxiv",
+      "title": "Towards Efficient Large Language Model Serving: A Survey on System-Aware KV Cache Optimization",
+      "abstract": "Despite the rapid advancements of large language models (LLMs), LLM serving systems remain memory-intensive and costly. The key-value (KV) cache, which stores KV tensors during autoregressive decoding, is crucial for enabling low-latency, high-throughput LLM inference serving. In this survey, we focus on system-aware KV infrastructure for serving LLMs (abbreviated as sKis). We revisit recent work from a system behavior perspective, organizing existing efforts into three dimensions: execution and scheduling (temporal), placement and migration (spatial), and representation and retention (structural). Furthermore, we analyze cross-behavior co-design affinity and behavior-objective links, highlighting future opportunities. Our work systematizes a rapidly evolving area, providing a foundation for understanding and innovating KV cache designs in modern LLM serving infrastructure.",
+      "authors": [
+        "Jiantong Jiang",
+        "Peiyu Yang",
+        "Rui Zhang",
+        "Feng Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-07-09T02:11:18+00:00",
+      "link": "https://arxiv.org/pdf/2607.08057v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "survey on system-aware KV cache optimization for LLM serving",
+      "llm_evidence_cn": "面向LLM服务的系统感知KV缓存优化综述",
+      "llm_evidence": "面向LLM服务的系统感知KV缓存优化综述",
+      "canonical_evidence": "面向LLM服务的系统感知KV缓存优化综述",
+      "llm_tldr_en": "A comprehensive survey organizing KV cache optimization into temporal (execution/scheduling), spatial (placement/migration), and structural (representation/retention) dimensions.",
+      "llm_tldr_cn": "KV缓存对LLM推理低延迟高吞吐至关重要，但现有优化缺乏系统视角。本综述从执行调度（时间）、放置迁移（空间）、表示保留（结构）三个维度全面回顾系统感知KV缓存优化工作，分析跨行为协同设计。为后续研究提供结构化分类和未来方向，是KV缓存优化的权威参考。",
+      "llm_tldr": "KV缓存对LLM推理低延迟高吞吐至关重要，但现有优化缺乏系统视角。本综述从执行调度（时间）、放置迁移（空间）、表示保留（结构）三个维度全面回顾系统感知KV缓存优化工作，分析跨行为协同设计。为后续研究提供结构化分类和未来方向，是KV缓存优化的权威参考。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.08032v1",
+      "source": "arxiv",
+      "title": "What to Keep, What to Forget: A Rate--Distortion View of Memory Compaction in LLMs and Agents",
+      "abstract": "Large language models, and the agents built on them, spend an ever-growing share of their compute and memory on remembering: caching attention keys and values, carrying long prompts, maintaining recurrent state, and storing what happened in previous turns and sessions. Because none of this memory is free, four largely separate research communities have each learned to compact it. They evict or quantize the KV cache, prune or distill prompts, bound architectural state, and consolidate agent memory. We argue that these are instances of one problem: a rate--distortion decision about what context-derived information to retain versus discard, at what fidelity, under a resource budget, so as to preserve downstream task utility. We make this lens precise with a single compaction objective and a layer-agnostic lower bound, use it to build a seven-axis taxonomy that classifies methods from across the stack uniformly, and use it to transfer mechanisms between layers that have never been connected, from serving-stack KV management to agent long-term memory. Two patterns hold across the survey. At every layer the signal that decides what to keep is attention magnitude or recency, and it fails in the same way everywhere, by discarding, before the query is known and with no way to undo it, information the query later needs. And while compression is measured carefully on single-turn long context, the repeated compaction that agents actually perform is almost never measured, and no benchmark holds one budget axis across all the layers at once. We turn both observations into a benchmark proposal, a small reference experiment, and a set of compaction-aware design principles, and we map the open problems.",
+      "authors": [
+        "Ashwin Gerard Colaco",
+        "Nada Lahjouji"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-09T01:15:03+00:00",
+      "link": "https://arxiv.org/pdf/2607.08032v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "unifies KV cache eviction and quantization as rate-distortion decision",
+      "llm_evidence_cn": "将KV缓存驱逐和量化统一为率失真决策",
+      "llm_evidence": "将KV缓存驱逐和量化统一为率失真决策",
+      "canonical_evidence": "将KV缓存驱逐和量化统一为率失真决策",
+      "llm_tldr_en": "Unifies four memory compaction strategies (KV cache eviction/quantization, prompt pruning, state bounding, agent memory) under a rate-distortion framework, providing theoretical grounding for KV cache compression.",
+      "llm_tldr_cn": "大型语言模型及其智能体在记忆上消耗大量计算资源，包括注意力键值缓存、长提示、循环状态和智能体记忆。本文提出一个统一的率失真视角，认为这些记忆压缩问题本质上是关于保留或丢弃上下文信息的决策。该框架涵盖KV缓存驱逐/量化、提示剪枝、状态约束和智能体记忆压缩，为KV缓存优化提供了理论指导。实验表明该方法能有效平衡内存预算与下游任务效用。",
+      "llm_tldr": "大型语言模型及其智能体在记忆上消耗大量计算资源，包括注意力键值缓存、长提示、循环状态和智能体记忆。本文提出一个统一的率失真视角，认为这些记忆压缩问题本质上是关于保留或丢弃上下文信息的决策。该框架涵盖KV缓存驱逐/量化、提示剪枝、状态约束和智能体记忆压缩，为KV缓存优化提供了理论指导。实验表明该方法能有效平衡内存预算与下游任务效用。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.08399v1",
+      "source": "arxiv",
+      "title": "Prompt Compression via Activation Aggregation",
+      "abstract": "Large language models process prompts by propagating activations through dozens of layers before generating a response. We ask whether the task-relevant information contained in an instruction prompt can be compressed into a single activation vector and re-injected into the model, replacing the original token sequence? We show this is achievable using a learned weighted sum of activations extracted at an intermediate layer and injected at an early layer of the target LLM. The compressed vector preserves task-relevant information, incurring an accuracy drop of under $2\\%$ relative to full prompt processing. Beyond its practical implications, including reducing per-query computation for fixed instruction prompts without reprocessing the original token sequence, our analysis reveals structure in the activation space of LLMs: (i) mid-layer representations transfer meaningfully to early layers, suggesting a degree of cross-layer compatibility in how information is encoded; (ii) a single activation vector encodes a quantifiable and recoverable amount of semantic information; (iii) a weighted sum of activations is a robust representation compressor.",
+      "authors": [
+        "Thibaud Ardoin",
+        "Semira Einsele",
+        "Evis Bregu",
+        "Gerhard Wunder"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-07-09T12:21:44+00:00",
+      "link": "https://arxiv.org/pdf/2607.08399v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "prompt compression for reducing computation",
+      "llm_evidence_cn": "提示压缩以减少计算量",
+      "llm_evidence": "提示压缩以减少计算量",
+      "canonical_evidence": "提示压缩以减少计算量",
+      "llm_tldr_en": "Shows that task-relevant information in prompts can be compressed into a single activation vector, reducing per-query computation with less than 2% accuracy drop, enabling prompt caching.",
+      "llm_tldr_cn": "针对大语言模型处理固定指令时重复计算的问题，提出将提示信息压缩为单个激活向量，在中间层提取并在早期层注入，以替换原始令牌序列。该方法在保持任务精度的同时大幅减少了计算开销，精度损失不超过2%，为提示缓存提供了新思路。",
+      "llm_tldr": "针对大语言模型处理固定指令时重复计算的问题，提出将提示信息压缩为单个激活向量，在中间层提取并在早期层注入，以替换原始令牌序列。该方法在保持任务精度的同时大幅减少了计算开销，精度损失不超过2%，为提示缓存提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.07724v1",
+      "source": "arxiv",
+      "title": "Uncertainty-gated selection for block-sparse attention",
+      "abstract": "Block-sparse attention scales long-context language models by replacing the O(N^2) softmax with a per-query top-k selection over key blocks. This cutoff is myopic: when the k-th and (k+1)-th blocks are nearly tied in score, the selector commits without spending extra budget, and a dropped block carrying answer evidence is unrecoverable downstream. We propose a value-of-information router that measures, for each query, how decisively the top-k cut was made, and doubles the kept set for the queries where that gap is smallest; the rule is backbone-agnostic and stacks with existing block-scoring methods such as Quest. On LongBench-v2 medium at n=215 (the entire dataset subset), router-on-Quest reaches paired recall 0.75 vs. top-k 0.47 -- +28 pp over the SSA-style baseline (McNemar p<0.01) -- and lands within 2 pp of dense on RULER NIAH multikey at the same context. The lift reproduces on four models from three architectures (Qwen2.5, Mistral-Nemo, Qwen3.6). At 128K, the router preserves 0.81 and 0.89 of dense accuracy on Qwen2.5-7B-1M and Qwen3.6 (vs. SSA-style top-k at 0.09 on the former) while the fused selection-plus-kernel pipeline runs at 0.62x and 0.80x dense wall time.",
+      "authors": [
+        "Thomas Rossi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-07-04T20:41:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.07724v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "block-sparse attention improves long-context inference",
+      "llm_evidence_cn": "块稀疏注意力加速长上下文推理",
+      "llm_evidence": "块稀疏注意力加速长上下文推理",
+      "canonical_evidence": "块稀疏注意力加速长上下文推理",
+      "llm_tldr_en": "Proposes an uncertainty-gated router for block-sparse attention that doubles kept blocks for queries with small gaps between top-k and next block, improving recall on LongBench-v2 by 28pp over baseline.",
+      "llm_tldr_cn": "长上下文Transformer推理中块稀疏注意力采用固定的top-k选择，但当相邻块得分相近时可能丢弃关键信息。该文提出基于信息价值的不确定性门控路由器，对每个查询评估top-k截断的确定性，并为最低确定性查询加倍保留块数。在LongBench-v2上，路由+Quest方法达到0.75召回率，比基线top-k高28个百分点。该方法与现有块评分方法兼容，有效提升长上下文推理准确性。",
+      "llm_tldr": "长上下文Transformer推理中块稀疏注意力采用固定的top-k选择，但当相邻块得分相近时可能丢弃关键信息。该文提出基于信息价值的不确定性门控路由器，对每个查询评估top-k截断的确定性，并为最低确定性查询加倍保留块数。在LongBench-v2上，路由+Quest方法达到0.75召回率，比基线top-k高28个百分点。该方法与现有块评分方法兼容，有效提升长上下文推理准确性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.07740v1",
+      "source": "arxiv",
+      "title": "Jet-Long: Efficient Long-Context Extension with Dynamic Bifocal RoPE",
+      "abstract": "Modern LLMs are increasingly deployed in long-context applications such as retrieval-augmented generation, repository-level coding, and agentic workflows whose accumulated reasoning and tool traces routinely push the input an order of magnitude past the pretraining window, making zero-shot context extension the dominant deployment path for open-weight checkpoints. Most existing zero-shot methods fix a single rescaling factor up front, so an aggressive factor sacrifices short-context fidelity while a conservative one breaks down at long contexts. We propose Jet-Long, a tuning-free zero-shot method that pairs a local RoPE-faithful window with a long-range window whose rescaling factor adapts dynamically to the current sequence length, recovering the base model exactly at short inputs while extrapolating cleanly at long ones. An inclusion-exclusion attention merge and an on-the-fly RoPE correction rotation make the bifocal construction essentially free at inference; fused into a single CuTe kernel, long-context prefill reaches up to $1.39\\times$ FA2 throughput on H100 (approaching the Hopper-only FA4), and single-batch generation incurs $\\le 4\\%$ overhead at every length. On Qwen3-1.7B/4B/8B up to 128K context, Jet-Long leads RULER by $+4.79$/$+2.18$/$+2.03$~pp over the strongest baseline at 1.7B/4B/8B, achieves the best overall accuracy on HELMET-RAG (a benchmark identified by HELMET as the most efficient predictor of downstream long-context performance) and attains the lowest PG-19 perplexity. Jet-Long also generalizes to hybrid attention architectures such as Jet-Nemotron for further long-context improvement without retraining, and remains hyperparameter-resilient for ease of deployment.",
+      "authors": [
+        "Haozhan Tang",
+        "Zerui Wang",
+        "Yuxian Gu",
+        "Song Han",
+        "Han Cai"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-08T06:23:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.07740v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "long-context extension via dynamic RoPE",
+      "llm_evidence_cn": "通过动态RoPE扩展长上下文",
+      "llm_evidence": "通过动态RoPE扩展长上下文",
+      "canonical_evidence": "通过动态RoPE扩展长上下文",
+      "llm_tldr_en": "Proposes Jet-Long, a tuning-free zero-shot context extension method with dynamic bifocal RoPE that adapts rescaling factor per sequence length, balancing short and long context fidelity.",
+      "llm_tldr_cn": "针对大语言模型零样本上下文扩展中固定缩放因子无法兼顾短上下文保真度和长上下文性能的问题，提出Jet-Long方法，采用局部RoPE忠实窗口与动态自适应缩放因子的长程窗口配对，无需微调即可高效扩展上下文长度。实验表明该方法在保持短上下文精度的同时显著提升了长上下文任务表现。",
+      "llm_tldr": "针对大语言模型零样本上下文扩展中固定缩放因子无法兼顾短上下文保真度和长上下文性能的问题，提出Jet-Long方法，采用局部RoPE忠实窗口与动态自适应缩放因子的长程窗口配对，无需微调即可高效扩展上下文长度。实验表明该方法在保持短上下文精度的同时显著提升了长上下文任务表现。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.08565v1",
+      "source": "arxiv",
+      "title": "SMetric: Rethink LLM Scheduling for Serving Agents with Balanced Session-centric Scheduling",
+      "abstract": "LLM scheduling is critical to serving, yet it remains unclear how well existing designs fit agentic serving--with LLM requests issued by agents instead of humans. This shifts the workload in two ways: (1) agents act only on complete responses, making the cluster's tokens per second (TPS) the primary goal and relaxing--not eliminating--per-token latency requirements; and (2) requests share much of their KV\\$-reuse exceeds 80% of request tokens in a production trace from BAILIAN, versus 54-62% in chat.   This paper first contributes a systematic study of request scheduling for agents on two real-world traces. We find that to increase KV\\$ reuse, existing schedulers overly prioritize routing requests to instances caching their KV\\$, overloading a few while leaving the rest idle, capping TPS. We thus present two key insights: (1) load balance need not sacrifice all KV\\$ reuse, thanks to the global-tier KV\\$ store and (2) by utilizing the workload's intra-session locality, balancing a small fraction of requests--the first request in each agent session--suffices to balance the cluster without sacrificing most KV\\$ reuse on local instances.   SMETRIC realizes these insights with balanced session-centric scheduling: it routes each session's first request purely for load balance and its follow-up requests in a cache-aware manner, preserving load balance and local reuse while keeping demand on the global tier low. Using the session turn information as the scheduling metric is deliberate: it is derived efficiently and accurately from the user inputs alone, so the scheduler stays clean and stateless. SMETRIC improves cluster TPS by 10-16% under prefill-decode colocation with a global store and prefill TPS by 2-34% under disaggregation over state-of-the-art schedulers, also with a better per-token latency.",
+      "authors": [
+        "Jiahao Wang",
+        "Kaizhan Lin",
+        "Kaixi Zhang",
+        "Jinbo Han",
+        "Xingda Wei",
+        "Sijie Shen",
+        "Chenguang Fang",
+        "Wenyuan Yu",
+        "Rong Chen",
+        "Haibo Chen"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI"
+      ],
+      "published": "2026-07-09T14:55:02+00:00",
+      "link": "https://arxiv.org/pdf/2607.08565v1",
+      "tags": [
+        "keyword:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV reuse exceeds 80% in agent traces, scheduling to maximize reuse",
+      "llm_evidence_cn": "智能体追踪中KV复用超过80%，调度优化以最大化复用",
+      "llm_evidence": "智能体追踪中KV复用超过80%，调度优化以最大化复用",
+      "canonical_evidence": "智能体追踪中KV复用超过80%，调度优化以最大化复用",
+      "llm_tldr_en": "Analyzes agent workloads showing >80% KV reuse and proposes session-centric scheduling to balance reuse and latency for LLM serving.",
+      "llm_tldr_cn": "LLM服务调度对于智能体工作负载面临新挑战：请求间KV缓存复用率超过80%，但现有调度器过于偏向复用而导致延迟问题。本文通过真实追踪分析，提出以会话为中心的调度策略SMetric，在保证KV复用率的同时平衡令牌吞吐量。实验证明该方法在复用和延迟之间取得更好权衡。",
+      "llm_tldr": "LLM服务调度对于智能体工作负载面临新挑战：请求间KV缓存复用率超过80%，但现有调度器过于偏向复用而导致延迟问题。本文通过真实追踪分析，提出以会话为中心的调度策略SMetric，在保证KV复用率的同时平衡令牌吞吐量。实验证明该方法在复用和延迟之间取得更好权衡。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
