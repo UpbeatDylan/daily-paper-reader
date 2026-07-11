@@ -1,0 +1,58 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-11T20:13:34.466788+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.02805v1",
+      "source": "arxiv",
+      "title": "Training Hybrid Block Diffusion Language Models with Partial Bidirectionality",
+      "abstract": "High-throughput long-context generation is one of the central challenges for large language models. Generation is typically memory-bandwidth-bound rather than compute-bound: each decoding step must stream the accumulated key/value (KV) cache from memory, so bandwidth demand grows with context length while only one token is emitted. Two parallel approaches have therefore emerged: reducing memory access with efficient attention variants and linear-time mixers such as Mamba, or increasing parallel computation by generating blocks of tokens at once. However, technical challenges arise when combining these two ideas. Earlier hybrid diffusion models such as DiffuMamba use bidirectional Mamba mixing, including a reverse-direction scan relative to causal generation. This reverse scan needs to scan the entire sequence, so its states are not prefix-only and cannot be precisely reused as a cache even when diffusion is performed block by block. We propose a BDLM Mamba--attention hybrid that addresses this challenge by restricting the reverse Mamba scan to the active denoising block, which enables exact caching across blocks. In an 87M-parameter DCLM sweep, BDLM Mamba-H achieves the best C4-en validation perplexity compared to BDLM attention and full-sequence baselines. At 350M parameters, it remains competitive with BDLM attention. For long-context inference, BDLM Mamba-H reaches 19.7x the throughput of full-sequence DiffuMamba-H at 65K tokens and 3.7x the throughput of BDLM attention at 262K, showing that Mamba hybrids are a potential long-context diffusion architecture.",
+      "authors": [
+        "Pranshu Chaturvedi",
+        "Parth Shroff",
+        "Tarun Suresh",
+        "Hangoo Kang",
+        "Kaiyue Wen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-07-02T22:37:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.02805v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "addresses KV cache bandwidth bottleneck for long-context generation",
+      "llm_evidence_cn": "解决长上下文生成中的KV缓存带宽瓶颈",
+      "llm_evidence": "解决长上下文生成中的KV缓存带宽瓶颈",
+      "canonical_evidence": "解决长上下文生成中的KV缓存带宽瓶颈",
+      "llm_tldr_en": "Proposes hybrid block diffusion language models that combine block generation with efficient attention to reduce KV cache memory access for long-context generation.",
+      "llm_tldr_cn": "针对长上下文生成中KV缓存带宽成为主要瓶颈的问题，本文提出混合块扩散语言模型，将块生成（一次输出多个token）与高效注意力变体（如线性时间混合器）相结合。通过增加并行计算而非单纯减少内存访问，提高了长上下文吞吐量。实验表明，该方法在保持生成质量的同时显著加速了长序列推理。该工作为长上下文生成提供了新的设计思路。",
+      "llm_tldr": "针对长上下文生成中KV缓存带宽成为主要瓶颈的问题，本文提出混合块扩散语言模型，将块生成（一次输出多个token）与高效注意力变体（如线性时间混合器）相结合。通过增加并行计算而非单纯减少内存访问，提高了长上下文吞吐量。实验表明，该方法在保持生成质量的同时显著加速了长序列推理。该工作为长上下文生成提供了新的设计思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

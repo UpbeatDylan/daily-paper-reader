@@ -1,0 +1,24 @@
+{
+  "label": "2026-07-11",
+  "date": "2026-07-11",
+  "generated_at": "2026-07-11T20:14:28",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202607/11/2607.02805v1-training-hybrid-block-diffusion-language-models-with-partial-bidirectionality",
+      "section": "quick",
+      "title_en": "Training Hybrid Block Diffusion Language Models with Partial Bidirectionality",
+      "authors": "Pranshu Chaturvedi, Parth Shroff, Tarun Suresh, Hangoo Kang, Kaiyue Wen",
+      "date": "2026-07-02",
+      "pdf": "https://arxiv.org/pdf/2607.02805v1",
+      "score": "6.0",
+      "evidence": "解决长上下文生成中的KV缓存带宽瓶颈",
+      "tldr": "长上下文LLM生成受内存带宽瓶颈，现有混合扩散模型使用双向Mamba扫描但无法精确缓存。本文提出BDLM Mamba-H，通过将反向Mamba扫描限制在当前去噪块内，实现跨块缓存重用。在87M参数下达到最优验证困惑度，350M下与注意力基线相当。长上下文推理中，65K token时吞吐量达到全序列DiffuMamba-H的19.7倍，262K时达到BDLM注意力的3.7倍，表明Mamba混合是长上下文扩散的有效架构。",
+      "tags": "query:pic",
+      "abstract_en": "High-throughput long-context generation is one of the central challenges for large language models. Generation is typically memory-bandwidth-bound rather than compute-bound: each decoding step must stream the accumulated key/value (KV) cache from memory, so bandwidth demand grows with context length while only one token is emitted. Two parallel approaches have therefore emerged: reducing memory access with efficient attention variants and linear-time mixers such as Mamba, or increasing parallel computation by generating blocks of tokens at once. However, technical challenges arise when combining these two ideas. Earlier hybrid diffusion models such as DiffuMamba use bidirectional Mamba mixing, including a reverse-direction scan relative to causal generation. This reverse scan needs to scan the entire sequence, so its states are not prefix-only and cannot be precisely reused as a cache even when diffusion is performed block by block. We propose a BDLM Mamba--attention hybrid that addresses this challenge by restricting the reverse Mamba scan to the active denoising block, which enables exact caching across blocks. In an 87M-parameter DCLM sweep, BDLM Mamba-H achieves the best C4-en validation perplexity compared to BDLM attention and full-sequence baselines. At 350M parameters, it remains competitive with BDLM attention. For long-context inference, BDLM Mamba-H reaches 19.7x the throughput of full-sequence DiffuMamba-H at 65K tokens and 3.7x the throughput of BDLM attention at 262K, showing that Mamba hybrids are a potential long-context diffusion architecture.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-11 <!--dpr-date:20260711-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/11/2607.02805v1-training-hybrid-block-diffusion-language-models-with-partial-bidirectionality" data-sidebar-item="{&quot;title&quot;: &quot;Training Hybrid Block Diffusion Language Models with Partial Bidirectionality&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.02805v1-training-hybrid-block-diffusion-language-models-with-partial-bidirectionality&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;解决长上下文生成中的KV缓存带宽瓶颈&quot;}">Training Hybrid Block Diffusion Language Models with Partial Bidirectionality</a>
   * 2026-07-10 <!--dpr-date:20260710-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/10/2607.05061v2-kvpop----key-value-cache-compression-with-predictive-online-pruning" data-sidebar-item="{&quot;title&quot;: &quot;KVpop -- Key-Value Cache Compression with Predictive Online Pruning&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.05061v2-kvpop----key-value-cache-compression-with-predictive-online-pruning&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;基于学习的KV缓存淘汰策略&quot;}">KVpop -- Key-Value Cache Compression with Predictive Online Pruning</a>
