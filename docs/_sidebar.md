@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-12 <!--dpr-date:20260712-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/12/2607.07953v1-linear-attention-architectures-mechanisms-trade-offs-and-cross-layer-routing" data-sidebar-item="{&quot;title&quot;: &quot;Linear Attention Architectures: Mechanisms, Trade-offs, and Cross-Layer Routing&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.07953v1-linear-attention-architectures-mechanisms-trade-offs-and-cross-layer-routing&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;线性注意力用于长上下文推理&quot;}">Linear Attention Architectures: Mechanisms, Trade-offs, and Cross-Layer Routing</a>
   * 2026-07-11 <!--dpr-date:20260711-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/11/2607.02805v1-training-hybrid-block-diffusion-language-models-with-partial-bidirectionality" data-sidebar-item="{&quot;title&quot;: &quot;Training Hybrid Block Diffusion Language Models with Partial Bidirectionality&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.02805v1-training-hybrid-block-diffusion-language-models-with-partial-bidirectionality&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;解决长上下文生成中的KV缓存带宽瓶颈&quot;}">Training Hybrid Block Diffusion Language Models with Partial Bidirectionality</a>

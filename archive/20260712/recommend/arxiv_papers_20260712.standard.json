@@ -1,0 +1,57 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-12T20:03:44.689632+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.07953v1",
+      "source": "arxiv",
+      "title": "Linear Attention Architectures: Mechanisms, Trade-offs, and Cross-Layer Routing",
+      "abstract": "Self-attention lets each token retrieve information from the full context, but its quadratic cost in sequence length limits training and inference at long context. This paper presents a comparative study of softmax attention and four recent recurrent linear-attention architectures: DeltaNet, Gated DeltaNet, Kimi Delta Attention, and Gated DeltaNet-2. We express these mechanisms in a common recurrent-memory notation, making explicit how they differ in expressivity, memory decay, erase and write control, training throughput, and implementation complexity. Our experiments center on 350M-parameter models trained for 15B tokens, and include optimizer and learning-rate comparisons, hybrid-versus-pure stack comparisons, sequence-length runtime measurements, larger DeltaNet runs at 1.3B and 3B parameters, and a small set of downstream evaluations. The reported speed results measure training throughput and iteration time; we do not provide an empirical inference-speed benchmark. Within the reported 350M-parameter, 15B-token sweep, Kimi Delta Attention with Muon reaches the lowest final validation loss, a pure Gated DeltaNet stack trained with AdamW has the highest normalized training throughput, hybrid stacks generally improve loss at a throughput cost, and Muon consistently lowers final validation loss relative to AdamW in the matched architecture settings we evaluate. We introduce and evaluate lightweight cross-layer routing mechanisms for DeltaNet-style memories. The most natural DeltaNet-inspired formulation, forwarding a lower layer's delta-rule write error into the next layer's value target, does not improve over matched baselines. Routing into the aligned hidden stream and forwarding the write value instead yields a modest improvement in the matched runs we report: Cross-Layer Value Routing (CLVR) lowers final validation loss for both DeltaNet and Gated DeltaNet.",
+      "authors": [
+        "Tommaso Cerruti",
+        "Tim Rieder",
+        "George Rowlands",
+        "Lingfeng Jin",
+        "Imanol Schlag"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-08T22:14:14+00:00",
+      "link": "https://arxiv.org/pdf/2607.07953v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "linear attention for long context inference",
+      "llm_evidence_cn": "线性注意力用于长上下文推理",
+      "llm_evidence": "线性注意力用于长上下文推理",
+      "canonical_evidence": "线性注意力用于长上下文推理",
+      "llm_tldr_en": "Compares softmax attention with four recurrent linear-attention architectures, providing insights into memory decay and compute trade-offs for long-context LLM inference acceleration.",
+      "llm_tldr_cn": "针对自注意力二次复杂度限制长上下文推理的问题，系统比较了几种线性注意力架构（DeltaNet等）的表达能力、内存衰减和计算效率。通过在350M参数模型上的实验，揭示了不同架构在训练吞吐量和推理速度上的权衡。该工作为选择适合长上下文场景的高效注意力机制提供了依据，间接支持了缓存优化的系统设计。",
+      "llm_tldr": "针对自注意力二次复杂度限制长上下文推理的问题，系统比较了几种线性注意力架构（DeltaNet等）的表达能力、内存衰减和计算效率。通过在350M参数模型上的实验，揭示了不同架构在训练吞吐量和推理速度上的权衡。该工作为选择适合长上下文场景的高效注意力机制提供了依据，间接支持了缓存优化的系统设计。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
