@@ -1,0 +1,279 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-13T21:04:29.672244+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2607.09172v1",
+      "source": "arxiv",
+      "title": "Attention to Detail: Evaluating Energy, Performance, and Accuracy Trade-offs Across vLLM Configurations",
+      "abstract": "Large Language Models are reshaping how software is developed and maintained. They are typically deployed in production using inference engines such as vLLM, which can efficiently serve pre-trained, highly configurable models. While prior work has focused on model architectures and hardware acceleration, the impact of inference engine configuration on energy consumption, performance, and output quality remains poorly understood.   In this paper, we present a large-scale controlled study of three selected vLLM configuration options: attention kernel type, prefix caching, and chunked prefill. We evaluate all combinations of these configurations across 5 open-weight LLMs and 5 diverse inference tasks, totaling $9,000$ runs and $93,600$ measures. We analyze energy consumption, latency, and accuracy, and examine both main effects and interaction effects between configuration options and tasks.   Our results show that the studied configuration options significantly impact energy and performance, mainly driven by attention type and prefix caching, while chunked prefill has a limited effect under the default vLLM serving configuration and evaluated workloads. These effects are highly model- and workload-dependent, and no configuration is universally optimal. We further show that model choice dominates global trade-offs, while configuration tuning provides local improvements along the Pareto frontier. Unexpectedly, inference options can also affect model accuracy.",
+      "authors": [
+        "Nada Zine",
+        "Tristan Coignion",
+        "Vincenzo Stoico",
+        "Clément Quinton",
+        "Romain Rouvoy",
+        "Patricia Lago"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.AI",
+        "cs.PF"
+      ],
+      "published": "2026-07-10T08:04:19+00:00",
+      "link": "https://arxiv.org/pdf/2607.09172v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Empirical evaluation of vLLM prefix caching configurations",
+      "llm_evidence_cn": "vLLM前缀缓存配置的实证评估",
+      "llm_evidence": "vLLM前缀缓存配置的实证评估",
+      "canonical_evidence": "vLLM前缀缓存配置的实证评估",
+      "llm_tldr_en": "Large-scale controlled study of vLLM configurations including prefix caching, attention kernel, and chunked prefill across 5 models and 5 tasks (9000 runs).",
+      "llm_tldr_cn": "vLLM等推理引擎的配置对能耗、性能和输出质量的影响尚不明确。本文对vLLM的注意力核类型、前缀缓存和分块预填三种配置选项进行了大规模对照研究，涵盖5种模型和5种推理任务，共9000次运行。结果揭示了不同配置在能量、性能和准确率之间的权衡关系。",
+      "llm_tldr": "vLLM等推理引擎的配置对能耗、性能和输出质量的影响尚不明确。本文对vLLM的注意力核类型、前缀缓存和分块预填三种配置选项进行了大规模对照研究，涵盖5种模型和5种推理任务，共9000次运行。结果揭示了不同配置在能量、性能和准确率之间的权衡关系。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.09052v1",
+      "source": "arxiv",
+      "title": "COBS: Cumulant Order Block Sparse Attention",
+      "abstract": "Block sparse attention is a hardware friendly way to alleviate the key-value (KV) cache read bottleneck in large language models (LLMs). However, it is not prevalent among leading open-weight LLMs, which rely instead on dense attention or fine-grained selection, thereby motivating our analysis. We study DeepSeek's Native Sparse Attention (NSA) as a representative method, whose three-branch design lets us isolate block selection, the most challenging and consequential stage. We formalize selection and reduce it to ranking blocks by a single quantity, the attention mass: the sum of a block's attention scores. We show that if selection retrieves the blocks with the largest attention mass, block sparse attention can match the quality of dense attention. However, computing the exact attention mass requires reading every key, so the problem of block selection ultimately reduces to approximating this mass from a compact summary instead of the full keys. Via a cumulant expansion, we show why existing methods falter: their selection strategies attempt to estimate the attention mass, but are confined to a first-order approximation. Therefore, we propose COBS (Cumulant Order Block Sparse Attention), an attention method that builds on NSA, incorporating a novel selector that stores a compressed second-order statistic per block. On the 32k RULER long-context retrieval benchmark, COBS raises the NSA baseline's mean score from 0.2999 to 0.8195, approaching dense attention at 0.9040 and closing about 86% of the gap, while using only 1.21x the KV cache read traffic of the NSA baseline and 15.15x less read traffic than dense. The same model preserves short-context behavior and attains lower position-wise negative log-likelihood (NLL) than dense attention in our comparison.",
+      "authors": [
+        "Alexander Tian",
+        "Aditya Ghai",
+        "Sanjit Neelam",
+        "Zaal Vasania",
+        "Akshay Mishra"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-10T02:48:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.09052v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "block sparse attention to alleviate KV cache read bottleneck",
+      "llm_evidence_cn": "块稀疏注意力缓解KV缓存读取瓶颈",
+      "llm_evidence": "块稀疏注意力缓解KV缓存读取瓶颈",
+      "canonical_evidence": "块稀疏注意力缓解KV缓存读取瓶颈",
+      "llm_tldr_en": "COBS formalizes block selection in block sparse attention as ranking by attention mass, showing it can match dense attention quality, providing a principled approach to reduce KV cache reads.",
+      "llm_tldr_cn": "块稀疏注意力是缓解大语言模型KV缓存读取瓶颈的硬件友好方式，但当前开源模型多采用密集注意力。COBS以DeepSeek原生稀疏注意力为例，形式化块选择问题并将其简化为按注意力质量（块内注意力分数总和）排序。研究表明，若选择注意力质量最大的块，块稀疏注意力可媲美密集注意力质量。该方法为减少KV缓存读取提供了理论依据，同时保持模型质量。",
+      "llm_tldr": "块稀疏注意力是缓解大语言模型KV缓存读取瓶颈的硬件友好方式，但当前开源模型多采用密集注意力。COBS以DeepSeek原生稀疏注意力为例，形式化块选择问题并将其简化为按注意力质量（块内注意力分数总和）排序。研究表明，若选择注意力质量最大的块，块稀疏注意力可媲美密集注意力质量。该方法为减少KV缓存读取提供了理论依据，同时保持模型质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.09153v1",
+      "source": "arxiv",
+      "title": "KV-PRM: Efficient Process Reward Modeling via KV-Cache Transfer for Multi-Agent Test-Time Scaling",
+      "abstract": "Process Reward Models (PRMs) have been proven to be highly effective in guiding test-time scaling (TTS) methods, which significantly boost the capabilities of LLM-based multi-agent systems. However, existing PRMs are text-based: they re-encode the entire trajectory text from scratch. In long multi-agent rollouts, the scoring cost, growing quadratically with respect to sequence length L, creates a severe computational bottleneck, severely limiting PRMs' application in long-context scenarios. To resolve this, we introduce KV-PRM, a highly efficient process reward model that eliminates the heavy text re-encoding by directly reading the KV cache produced naturally during the LLM's generation phase. By processing a single \"verify token\" against the pre-existing KV cache, KV-PRM reduces the scoring cost from O(L^2) to O(L). We formally prove that the KV cache contains strictly greater information capacity than text, and is more efficient for downstream reward modeling. Empirically, across the MATH, GSM8K, and AIME benchmarks, KV-PRM matches or strictly outperforms text-PRMs under various TTS methods such as Beam Search, MCTS, and Weighted Voting, with up to a 5,000x reduction in scoring FLOPs, a 37x reduction in latency, and a 34x reduction in per-sequence memory footprint compared to text-based PRMs.",
+      "authors": [
+        "Peng Kuang",
+        "Haibo Jin",
+        "Xiaoyu Han",
+        "Yanli Wang",
+        "Xiaopeng Yuan",
+        "Ye Yu",
+        "Kaidi Xu",
+        "Haohan Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-10T07:16:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.09153v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache transfer for efficient process reward modeling in long-context multi-agent settings",
+      "llm_evidence_cn": "通过KV缓存传输实现高效过程奖励建模",
+      "llm_evidence": "通过KV缓存传输实现高效过程奖励建模",
+      "canonical_evidence": "通过KV缓存传输实现高效过程奖励建模",
+      "llm_tldr_en": "Proposes KV-PRM, which uses KV-cache transfer to avoid re-encoding trajectory text in process reward models, significantly reducing computational cost for long-context multi-agent test-time scaling.",
+      "llm_tldr_cn": "现有过程奖励模型需从头重新编码整个轨迹文本，在长多智能体场景下计算成本呈二次增长。KV-PRM直接读取LLM生成阶段产生的KV缓存，避免文本重编码。实验表明该方法大幅加速奖励模型评分，同时保持效果，适用于多智能体测试时扩展。",
+      "llm_tldr": "现有过程奖励模型需从头重新编码整个轨迹文本，在长多智能体场景下计算成本呈二次增长。KV-PRM直接读取LLM生成阶段产生的KV缓存，避免文本重编码。实验表明该方法大幅加速奖励模型评分，同时保持效果，适用于多智能体测试时扩展。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.09248v1",
+      "source": "arxiv",
+      "title": "General Non-Clairvoyant KV-Cache Scheduling via Regime-Aware Routing",
+      "abstract": "We study non-clairvoyant scheduling for batched Large Language Model (LLM) inference under a hard Key-Value (KV) cache memory budget. Each request has a known prompt length but an unknown response length, and its memory footprint comprises a fixed prompt component together with a response component that grows with each decoded token. At each decoding round, the scheduler chooses a feasible batch of active requests; evicting a request discards its accumulated cache states, wasting prior computation. The goal is to minimize total completion time against the optimal clairvoyant schedule that knows all response lengths.   We present the first constant-competitive algorithm for arbitrary prompt lengths and arbitrary response lengths with no additional assumptions. Rather than relying on a single universal scheduling policy, our algorithm is built on a novel regime-aware routing framework. Specialized sub-schedulers handle different memory-growth geometries, while a meta-scheduler time-shares the memory budget across them and dynamically routes each job as its execution progressively reveals its behavior. This framework also yields constant-competitive guarantees for makespan and for total completion time under online arrivals.",
+      "authors": [
+        "Yiding Feng",
+        "Siyu Liu",
+        "Zonghan Yang",
+        "Yuhao Zhang"
+      ],
+      "primary_category": "cs.DS",
+      "categories": [
+        "cs.DS"
+      ],
+      "published": "2026-07-10T09:52:11+00:00",
+      "link": "https://arxiv.org/pdf/2607.09248v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "non-clairvoyant KV-cache scheduling under memory budget",
+      "llm_evidence_cn": "在内存预算下进行非预知KV缓存调度",
+      "llm_evidence": "在内存预算下进行非预知KV缓存调度",
+      "canonical_evidence": "在内存预算下进行非预知KV缓存调度",
+      "llm_tldr_en": "This work presents the first constant-competitive algorithm for non-clairvoyant KV-cache scheduling in batched LLM inference under a hard memory budget.",
+      "llm_tldr_cn": "研究批处理LLM推理中在硬KV缓存内存预算下的非预知调度问题，每个请求已知提示长度但响应长度未知。提出首个常数竞争比算法，不依赖额外假设，最小化总完成时间。该调度器在有限缓存下动态选择活跃请求批，避免浪费已计算的状态，为KV缓存管理提供理论保证。",
+      "llm_tldr": "研究批处理LLM推理中在硬KV缓存内存预算下的非预知调度问题，每个请求已知提示长度但响应长度未知。提出首个常数竞争比算法，不依赖额外假设，最小化总完成时间。该调度器在有限缓存下动态选择活跃请求批，避免浪费已计算的状态，为KV缓存管理提供理论保证。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.04371v1",
+      "source": "arxiv",
+      "title": "Nemotron-Labs-3-Puzzle-75B-A9B: Compressing Hybrid MoE LLMs",
+      "abstract": "We present Nemotron-Labs-3-Puzzle-75B-A9B, a compressed variant of Nemotron-3-Super optimized for interactive deployment. We designed the model to maximize server throughput under high user throughput constraints. In interactive serving workloads on a single 8xB200 node, Puzzle-75B-A9B achieves approximately 2x higher server throughput than Nemotron-3-Super at matched user throughput constraints. In ultra-long-context deployment on a single H100 GPU, the compressed model increases 1M-token concurrency from 1 request to 8 requests. Puzzle-75B-A9B is constructed using a multi-stage pipeline that combines the Iterative Puzzle compression framework with knowledge distillation, reinforcement learning, quantization, and a Multi-Token Prediction head. The compression process jointly optimizes heterogeneous MoE pruning, active parameter budget, and Mamba pruning to improve inference efficiency while preserving model quality. We evaluate Puzzle-75B-A9B on a broad suite of reasoning, coding, multilingual, long-context, and agentic benchmarks. Despite substantial compression, the model retains strong downstream accuracy relative to the parent model across a wide range of tasks. These results demonstrate that large hybrid MoE models can be substantially optimized for deployment efficiency while maintaining strong downstream capability.",
+      "authors": [
+        "Akhiad Bercovich",
+        "Talor Abramovich",
+        "Daniel Afrimi",
+        "Shay Aharon",
+        "Nir Ailon",
+        "Vladimir Anisimov",
+        "Omer Ullman Argov",
+        "Maor Ashkenazi",
+        "Tomer Asida",
+        "Nave Assaf",
+        "Tomer Bar Natan",
+        "Alexander Bukharin",
+        "Grzegorz Chlebus",
+        "Marcin Chochowski",
+        "Eric Chung",
+        "Mohammad Dabbah",
+        "Carlo del Mundo",
+        "Ewa Dobrowolska",
+        "Ido Galil",
+        "Yaniv Galron",
+        "Amnon Geifman",
+        "Yonatan Geifman",
+        "Izik Golan",
+        "Alex Gronskiy",
+        "Tomasz Grzegorzek",
+        "Netanel Haber",
+        "Lior Kadoch",
+        "Grzegorz Karch",
+        "Tomer Keren",
+        "Abhinav Khattar",
+        "Amir Klein",
+        "Tugrul Konuk",
+        "Roi Koren",
+        "Daniel Korzekwa",
+        "Shaun Kotek",
+        "Konstantinos Krommydas",
+        "Itay Levy",
+        "Ofri Masad",
+        "Yoav Miron",
+        "Pavlo Molchanov",
+        "Shahar Mor",
+        "Zach Moshe",
+        "Saurav Muralidharan",
+        "Najeeb Nabwani",
+        "Besmira Nushi",
+        "Mostofa Patwary",
+        "Omri Puny",
+        "Johannes Rausch",
+        "Tomer Ronen",
+        "Sepehr Sameni",
+        "Itamar Schen",
+        "Elad Segal",
+        "Daniel Serebrenik",
+        "Ido Shahaf",
+        "Soumye Singhal",
+        "Daniil Sorokin",
+        "Sharath Turuvekere Sreenivas",
+        "Marta Stepniewska-Dziubinska",
+        "Ali Taghibakhshi",
+        "Nima Tajbakhsh",
+        "Oren Tropp",
+        "Dor Tzur",
+        "Anna Warno",
+        "Yi-Fu Wu",
+        "Michal Zawalski",
+        "Jiaqi Zeng",
+        "Yian Zhang",
+        "Ran Zilberstein",
+        "Amit Zuker",
+        "Ran El-Yaniv"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-05T16:00:29+00:00",
+      "link": "https://arxiv.org/pdf/2607.04371v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Model compression for ultra-long-context deployment, increasing concurrency",
+      "llm_evidence_cn": "面向超长上下文的模型压缩，提升并发能力",
+      "llm_evidence": "面向超长上下文的模型压缩，提升并发能力",
+      "canonical_evidence": "面向超长上下文的模型压缩，提升并发能力",
+      "llm_tldr_en": "Introduces Puzzle-75B-A9B, a compressed MoE LLM achieving ~2x throughput and increasing 1M-token concurrency from 1 to 8 requests on a single H100.",
+      "llm_tldr_cn": "长上下文推理面临高并发需求，模型体积大成为瓶颈。本文通过迭代Puzzle压缩、知识蒸馏、强化学习、量化和多token预测头等多阶段管道，将Nemotron-3-Super压缩为Puzzle-75B-A9B。在单张H100上将1M token并发从1提升到8，并在8xB200上实现约2倍服务器吞吐量。",
+      "llm_tldr": "长上下文推理面临高并发需求，模型体积大成为瓶颈。本文通过迭代Puzzle压缩、知识蒸馏、强化学习、量化和多token预测头等多阶段管道，将Nemotron-3-Super压缩为Puzzle-75B-A9B。在单张H100上将1M token并发从1提升到8，并在8xB200上实现约2倍服务器吞吐量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
