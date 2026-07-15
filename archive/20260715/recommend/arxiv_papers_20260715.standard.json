@@ -1,0 +1,171 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-15T21:22:49.012090+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2607.11942v1",
+      "source": "arxiv",
+      "title": "How Query Visibility Changes KV-Cache Compression Rankings: A Matched-Budget Audit",
+      "abstract": "KV-cache compression methods are predominantly evaluated with the query appended to the context before compression -- a query-aware protocol. Yet the economic case for a compressed KV cache is reuse: compress a document once, answer many future questions against it. In that deployment, compression must happen query-agnostic -- before any question is seen. We present a matched-budget audit of six published compression methods against three trivial baselines on three open 7-9B models (144,300 paired evaluations on RULER-8192; 40,800 on LongBench; 50,000-resample paired bootstrap throughout). Everything is held fixed -- model, compression ratio, instances, decoding -- except the scoring rule. Three findings. (1) Query visibility changes the rankings: under the agnostic protocol, of the five audited methods that share a common attention backend, only KeyDiff beats a best-of-3 trivial baseline consistently (31 of 36 cells), and the most widely deployed method, SnapKV, loses to \"keep the start and the recent window\" on average (-0.066). (2) The per-method drop between the two protocols is ordered consistently with how visible the question is to each method's scoring signal, legible in its source code: from Delta=+0.198 for SnapKV (the question sits inside its 64-token observation window) down to Delta=+0.011 for KeyDiff (its score contains no query term at all).",
+      "authors": [
+        "Daming Luo",
+        "Christy Liang",
+        "Junyu Xuan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-11T09:30:35+00:00",
+      "link": "https://arxiv.org/pdf/2607.11942v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "audits KV cache compression for reuse",
+      "llm_evidence_cn": "审计KV缓存压缩以支持重用",
+      "llm_evidence": "审计KV缓存压缩以支持重用",
+      "canonical_evidence": "审计KV缓存压缩以支持重用",
+      "llm_tldr_en": "Matched-budget audit reveals query visibility changes KV-cache compression rankings, underscoring the importance of query-agnostic compression for reuse.",
+      "llm_tldr_cn": "本文通过匹配预算审计发现，查询可见性会改变KV缓存压缩方法的排名。在重用场景中，压缩必须在查询不可知的情况下进行，这挑战了当前评估协议。研究在三个模型上进行了大量实验，表明压缩方法需要针对复用进行重新评估。",
+      "llm_tldr": "本文通过匹配预算审计发现，查询可见性会改变KV缓存压缩方法的排名。在重用场景中，压缩必须在查询不可知的情况下进行，这挑战了当前评估协议。研究在三个模型上进行了大量实验，表明压缩方法需要针对复用进行重新评估。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.12550v1",
+      "source": "arxiv",
+      "title": "A JoLT for the KV Cache: Near-Lossless KV Cache Compression via Joint Tucker and JL-Residual Allocation for LLMs",
+      "abstract": "The key-value (KV) cache has become the dominant memory cost of transformer inference. It grows with batch size, context length, and depth, and at long context it, rather than the model weights, sets the ceiling on throughput. Two families of methods reduce it. Low-rank methods factor two-dimensional slices of the cache, either per-head matrices or cross-layer feature blocks, and quantization methods lower the bit-width of every entry. Neither family exploits the fact that the cache at a layer is naturally a third-order tensor whose three axes, the heads, the tokens, and the features, carry very different amounts of redundancy. We take this tensor view directly. Our method, JoLT, applies a partial Tucker decomposition that compresses only the token and feature axes while leaving the head and layer axes intact, and then restores the energy that truncation discards with a Johnson-Lindenstrauss (JL) rotated low-bit residual. A single Lagrangian dual allocates the Tucker ranks and the residual bit-widths together, per layer group and separately for keys and values, under one byte budget. The result is a near-lossless 2-3x compression: perplexity, GSM8K accuracy, and RULER needle-in-a-haystack retrieval all stay at or within statistical noise of the uncompressed baseline on both a grouped-query-attention model (Mistral-7B-v0.3) and a multi-head-attention model (LLaMA-2-13B). At 2x, JoLT reconstructs the cache to relative Frobenius error 0.009 (K) and 0.006 (V) on both architectures, roughly an order of magnitude below cross-layer SVD and 4-bit quantization. A randomized-SVD variant, FlashJoLT, delivers a 5-13x compression-time speedup at matched quality.",
+      "authors": [
+        "Rahul Krishnan",
+        "Volker Schulz"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL",
+        "math.OC"
+      ],
+      "published": "2026-07-14T09:23:20+00:00",
+      "link": "https://arxiv.org/pdf/2607.12550v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "near-lossless KV cache compression via Tucker decomposition",
+      "llm_evidence_cn": "基于Tucker分解的近无损KV缓存压缩",
+      "llm_evidence": "基于Tucker分解的近无损KV缓存压缩",
+      "canonical_evidence": "基于Tucker分解的近无损KV缓存压缩",
+      "llm_tldr_en": "JoLT applies partial Tucker decomposition to the 3D KV cache tensor (heads, tokens, features), achieving near-lossless compression at high ratios for long-context LLM inference.",
+      "llm_tldr_cn": "KV缓存是Transformer推理的主要内存瓶颈，现有低秩和量化方法未利用其三维张量结构。JoLT采用部分Tucker分解，分别处理头、 token和特征三个轴上的冗余。实验表明，在长上下文问答和检索任务中，JoLT以高压缩比实现近无损加速，显著降低缓存内存和带宽需求。",
+      "llm_tldr": "KV缓存是Transformer推理的主要内存瓶颈，现有低秩和量化方法未利用其三维张量结构。JoLT采用部分Tucker分解，分别处理头、 token和特征三个轴上的冗余。实验表明，在长上下文问答和检索任务中，JoLT以高压缩比实现近无损加速，显著降低缓存内存和带宽需求。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.11976v1",
+      "source": "arxiv",
+      "title": "LiteTopK: Exploiting the Curse of Dimensionality for a Fused Indexer-TopK Kernel in Long-Context Sparse Attention",
+      "abstract": "Indexer-TopK, the operation to compute the scores and select the top-k candidates, is widely used by sparse attention kernels in large language models and vector retrieval in recommendation systems and vector databases. However, existing GPU-based Indexer-TopK kernels like DeepSeek Sparse Attention (DSA) remain inefficient due to excessive global memory traffic, costly synchronization, and prohibitive memory overhead. In this work, we exploit the curse of dimensionality in high-dimensional spaces, where distances between high-dimensional vectors tend to concentrate within a narrow range, to design LITETOPK, a novel and efficient fused Indexer-TopK kernel. LITETOPK first samples a small subset of data to estimate query-data score ranges, then uses these estimates to partition candidate results into bins online. This organization allows the LITETOPK kernel to maintain a tight approximate threshold, write back only promising candidates, reduce unnecessary I/O, substantially lower memory overhead, and still preserve exact Top-k correctness. Experimental results show that LITETOPK accelerates the prefill stage of GLM 5.2 by 1.2x in real-world deployment scenarios while incurring lower memory overhead.",
+      "authors": [
+        "Ziqi Yin",
+        "Jianyang Gao",
+        "Peiqi Yin",
+        "Jiangneng Li",
+        "Gao Cong"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-13T03:53:56+00:00",
+      "link": "https://arxiv.org/pdf/2607.11976v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "efficient TopK kernel for long-context sparse attention",
+      "llm_evidence_cn": "用于长上下文稀疏注意力的高效TopK核",
+      "llm_evidence": "用于长上下文稀疏注意力的高效TopK核",
+      "canonical_evidence": "用于长上下文稀疏注意力的高效TopK核",
+      "llm_tldr_en": "LiteTopK exploits the curse of dimensionality to design a fused kernel for efficient Indexer-TopK in sparse attention.",
+      "llm_tldr_cn": "LiteTopK利用高维空间的维度诅咒，设计了索引器-TopK的融合核，用于长上下文稀疏注意力。该方法通过采样和近似估计来减少全局内存访问和同步开销，相比DeepSeek Sparse Attention实现了显著的加速。该内核可加速长上下文推理中的注意力计算，与KV缓存技术协同提升效率。",
+      "llm_tldr": "LiteTopK利用高维空间的维度诅咒，设计了索引器-TopK的融合核，用于长上下文稀疏注意力。该方法通过采样和近似估计来减少全局内存访问和同步开销，相比DeepSeek Sparse Attention实现了显著的加速。该内核可加速长上下文推理中的注意力计算，与KV缓存技术协同提升效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.08930v1",
+      "source": "arxiv",
+      "title": "BlockServe: Block-Grained Continuous Batching for High-Throughput Diffusion LLM Serving",
+      "abstract": "Efficient serving of diffusion large language models (dLLMs) is hindered by convergence heterogeneity: when batching multiple requests, different sequences converge at different rates, causing faster requests to stall behind slower stragglers and introducing compute bubbles and tail latency. We present BlockServe, a continuous batching framework that integrates block-grained scheduling -- immediately evicting completed requests at block boundaries -- with mixed-state execution that extends dual cache and parallel decoding to heterogeneous batches via gather-scatter indexing. Furthermore, a compute-aware admission controller expands effective batch capacity through token-budgeted refill. On Dream and LLaDA across five benchmarks, BlockServe achieves 1.9--10.6$\\times$ throughput over Fast-dLLM with comparable generation quality, establishing block-grained scheduling as a foundation for high-throughput offline dLLM inference.",
+      "authors": [
+        "Yuanjie Zhu",
+        "Liangwei Yang",
+        "Ke Xu",
+        "Weizhi Zhang",
+        "Shanghao Li",
+        "Zihe Song",
+        "Philip S. Yu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-09T20:48:08+00:00",
+      "link": "https://arxiv.org/pdf/2607.08930v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "block-grained scheduling with dual cache for diffusion LLM serving",
+      "llm_evidence_cn": "块粒度调度与双缓存机制，提升扩散LLM服务吞吐量，涉及缓存重用",
+      "llm_evidence": "块粒度调度与双缓存机制，提升扩散LLM服务吞吐量，涉及缓存重用",
+      "canonical_evidence": "块粒度调度与双缓存机制，提升扩散LLM服务吞吐量，涉及缓存重用",
+      "llm_tldr_en": "BlockServe integrates block-grained scheduling and mixed-state execution with dual cache for high-throughput diffusion LLM serving.",
+      "llm_tldr_cn": "扩散大语言模型服务受收敛异构性困扰，不同请求收敛速率不同导致计算气泡。本文提出BlockServe，一种连续批处理框架，集成块粒度调度与混合状态执行，扩展双缓存和并行解码到异构批次。实验表明，该方法显著提升吞吐量并降低尾延迟，其中缓存管理策略可启发传统LLM的KV缓存重用。",
+      "llm_tldr": "扩散大语言模型服务受收敛异构性困扰，不同请求收敛速率不同导致计算气泡。本文提出BlockServe，一种连续批处理框架，集成块粒度调度与混合状态执行，扩展双缓存和并行解码到异构批次。实验表明，该方法显著提升吞吐量并降低尾延迟，其中缓存管理策略可启发传统LLM的KV缓存重用。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
