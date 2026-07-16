@@ -6,34 +6,40 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-15
-- 运行时间：2026-07-15 21:25:22 UTC
+- 最新运行日期：2026-07-16
+- 运行时间：2026-07-16 21:28:55 UTC
 - 运行状态：成功
-- 本次总论文数：4
+- 本次总论文数：6
 - 精读区：3
-- 速读区：1
+- 速读区：3
 
 ### 今日简报（AI）
-今日精读两篇高分论文，分别探讨KV缓存压缩中查询可见性的影响和联合张量分解的接近无损压缩方法。  
-最值得关注：查询可见性会改变KV缓存压缩排名，而联合Tucker与JL残差分配可实现近无损压缩。  
-建议普通读者优先精读这两篇论文，了解KV缓存压缩的新视角和高效方法。
-- 详情：[/202607/15/README](/202607/15/README)
+今日重点聚焦MiMo-V2.5全流程推理优化与KV缓存自适应滤波，两项研究均获9分高度评价。  
+最值得关注的是混合SWA极致效率方案及消除LLM推理中结构角色偏差的KV缓存修正方法。  
+建议普通读者优先精读这两篇，再通过LiteTopK和DSSMs拓宽对长上下文与状态空间模型的理解。
+- 详情：[/202607/16/README](/202607/16/README)
 
 ### 精读区论文标签
-1. [How Query Visibility Changes KV-Cache Compression Rankings: A Matched-Budget Audit](/202607/15/2607.11942v1-how-query-visibility-changes-kv-cache-compression-rankings-a-matched-budget-audit)  
+1. [Full-Pipeline Inference Optimization for MiMo-V2.5 Series: Pushing Hybrid SWA Efficiency to the Limit](/202607/16/2607.13095v1-full-pipeline-inference-optimization-for-mimo-v25-series-pushing-hybrid-swa-efficiency-to-the-limit)  
    标签：评分：9.0/10、query:pic
-   evidence：审计KV缓存压缩以支持重用
-2. [A JoLT for the KV Cache: Near-Lossless KV Cache Compression via Joint Tucker and JL-Residual Allocation for LLMs](/202607/15/2607.12550v1-a-jolt-for-the-kv-cache-near-lossless-kv-cache-compression-via-joint-tucker-and-jl-residual-allocation-for-llms)  
+   evidence：全流水线推理优化，包括KV缓存预取和前缀缓存树
+2. [Adaptive Filtering of the KV Cache: Diagnosing and Correcting Structural-Role Bias in LLM Inference](/202607/16/2607.13205v1-adaptive-filtering-of-the-kv-cache-diagnosing-and-correcting-structural-role-bias-in-llm-inference)  
    标签：评分：9.0/10、query:pic
-   evidence：基于Tucker分解的近无损KV缓存压缩
-3. [LiteTopK: Exploiting the Curse of Dimensionality for a Fused Indexer-TopK Kernel in Long-Context Sparse Attention](/202607/15/2607.11976v1-litetopk-exploiting-the-curse-of-dimensionality-for-a-fused-indexer-topk-kernel-in-long-context-sparse-attention)  
+   evidence：KV缓存驱逐偏差修正
+3. [Efficient and Privacy Aware Edge Cloud Collaborative Inference for Large Language Models](/202607/16/2607.13093v1-efficient-and-privacy-aware-edge-cloud-collaborative-inference-for-large-language-models)  
    标签：评分：8.0/10、query:pic
-   evidence：用于长上下文稀疏注意力的高效TopK核
+   evidence：基于终端认证KV缓存的协同LLM推理
 
 ### 速读区论文标签
-1. [BlockServe: Block-Grained Continuous Batching for High-Throughput Diffusion LLM Serving](/202607/15/2607.08930v1-blockserve-block-grained-continuous-batching-for-high-throughput-diffusion-llm-serving)  
+1. [Extending LLM Context via Associative Recurrent Memory](/202607/16/2607.11614v1-extending-llm-context-via-associative-recurrent-memory)  
+   标签：评分：7.0/10、query:pic
+   evidence：关联循环记忆变压器实现长上下文处理，内存常数缩放
+2. [LiteTopK: Exploiting the Curse of Dimensionality for a Fused Indexer-TopK Kernel in Long-Context Sparse Attention](/202607/16/2607.11976v2-litetopk-exploiting-the-curse-of-dimensionality-for-a-fused-indexer-topk-kernel-in-long-context-sparse-attention)  
+   标签：评分：7.0/10、query:pic
+   evidence：针对长上下文稀疏注意力，提出高效的融合索引器-TopK核，减少全局内存流量
+3. [DSSMs: State Space Models with Explicit Memory via Delay Differential Equations](/202607/16/2607.10244v1-dssms-state-space-models-with-explicit-memory-via-delay-differential-equations)  
    标签：评分：6.0/10、query:pic
-   evidence：块粒度调度与双缓存机制，提升扩散LLM服务吞吐量，涉及缓存重用
+   evidence：具有显式记忆的状态空间模型用于长上下文建模
 
 
 <div class="dpr-home-promo-card">
