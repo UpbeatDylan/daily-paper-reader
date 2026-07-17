@@ -1,0 +1,174 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-17T20:14:09.801209+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2607.14327v1",
+      "source": "arxiv",
+      "title": "PReM: Learning What to Preserve and When to Refresh for Context Compression",
+      "abstract": "Efficient long-context inference is not only about reducing memory cost, but also about keeping useful contextual evidence accessible as generation proceeds. However, existing compression-oriented approaches, such as key-value (KV) cache compression and context compression, often either make an early decision about which contextual information to keep or rely on an external compressor. Such designs make it difficult to adapt the compressed context to the evidence needed by later reasoning steps. This paper introduces PReM (Preserve and Refresh Memory), a context-compression framework that maintains the long context as the model's internal layer-wise KV memory and learns what to preserve and when to refresh it. Specifically, PReM uses a dedicated memory layer to make memory-selection decisions, and a special memory token <m> to trigger refreshes during generation. To train this behavior, PReM introduces Phase-Separated Refresh Training, aligning memory selection with memory-conditioned generation while preserving continuity across refreshes. Experiments with 32K-token contexts show that PReM outperforms strong baselines under both 16x and 32x compression, while maintaining a favorable balance between answer quality and inference efficiency.",
+      "authors": [
+        "Bohan Yu",
+        "Lei Shen",
+        "Chenxi Zhou",
+        "Chen Han",
+        "Junlin Liu",
+        "Wenbo Su",
+        "Yu Cheng",
+        "Bo Zheng"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-07-15T19:46:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.14327v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes learning-based KV cache compression and context refresh for long-context inference",
+      "llm_evidence_cn": "提出基于学习的KV缓存压缩和上下文刷新用于长上下文推理",
+      "llm_evidence": "提出基于学习的KV缓存压缩和上下文刷新用于长上下文推理",
+      "canonical_evidence": "提出基于学习的KV缓存压缩和上下文刷新用于长上下文推理",
+      "llm_tldr_en": "PReM learns to preserve and refresh internal KV memory for dynamic context compression, improving long-context inference efficiency while retaining relevant evidence.",
+      "llm_tldr_cn": "PReM提出一种上下文压缩框架，针对长上下文推理中KV缓存压缩过早固定保留信息的问题。该方法维护模型内部层级的KV记忆，并通过专用记忆模块学习保留策略和刷新时机，动态适应推理过程中的证据需求。实验表明，PReM在降低内存占用同时保持推理质量，为高效长上下文推理提供了自适应压缩方案。",
+      "llm_tldr": "PReM提出一种上下文压缩框架，针对长上下文推理中KV缓存压缩过早固定保留信息的问题。该方法维护模型内部层级的KV记忆，并通过专用记忆模块学习保留策略和刷新时机，动态适应推理过程中的证据需求。实验表明，PReM在降低内存占用同时保持推理质量，为高效长上下文推理提供了自适应压缩方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.12829v1",
+      "source": "arxiv",
+      "title": "Accelerating Masked Diffusion Large Language Models: A Survey of Efficient Inference Techniques",
+      "abstract": "Diffusion large language models (dLLMs) offer a theoretical advantage in parallel generation over standard autoregressive models. However, parallel generation alone does not guarantee practical speedups. Realizing this efficiency requires specialized inference mechanisms, such as diffusion-aware caching and reuse. Consequently, as inference efficiency becomes a prerequisite for practical deployment, recent research has actively explored acceleration techniques across algorithms, architectures, and systems. However, rigorous comparisons remain difficult, as end-to-end latency stems from intricate trade-offs between algorithmic, architectural, and system-level factors that are often conflated in existing benchmarks. In this survey, we introduce a unified latency decomposition framework for dLLMs to disentangle these factors and analyze their impact on inference speed in real deployments. Guided by this framework, we categorize acceleration techniques along three axes covering algorithmic innovations, architectural and system optimizations, and inference-time scaling. Finally, we provide guidelines for reproducible benchmarking and highlight open challenges for realizing the full potential of parallel generation.",
+      "authors": [
+        "Daehoon Gwak",
+        "Minhyung Lee",
+        "Junwoo Park",
+        "Jaegul Choo"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-07-14T14:48:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.12829v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "survey covers diffusion-aware caching and reuse techniques for efficient inference",
+      "llm_evidence_cn": "调查涵盖扩散感知缓存和重用技术，用于高效推理",
+      "llm_evidence": "调查涵盖扩散感知缓存和重用技术，用于高效推理",
+      "canonical_evidence": "调查涵盖扩散感知缓存和重用技术，用于高效推理",
+      "llm_tldr_en": "A survey of efficient inference techniques for masked diffusion LLMs, focusing on diffusion-aware caching, reuse, and system-level acceleration.",
+      "llm_tldr_cn": "本文综述了加速掩码扩散大语言模型的高效推理技术。虽然扩散模型具有并行生成的理论优势，但实际加速需要专门的推理机制，如扩散感知缓存和重用。文章从算法、架构和系统三个层面分类梳理现有方法，并讨论了评估难点。该综述为理解扩散LLM推理加速的关键技术提供了全面视角。",
+      "llm_tldr": "本文综述了加速掩码扩散大语言模型的高效推理技术。虽然扩散模型具有并行生成的理论优势，但实际加速需要专门的推理机制，如扩散感知缓存和重用。文章从算法、架构和系统三个层面分类梳理现有方法，并讨论了评估难点。该综述为理解扩散LLM推理加速的关键技术提供了全面视角。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.14695v1",
+      "source": "arxiv",
+      "title": "Reflex: Real-Time VLA Control through Streaming Inference",
+      "abstract": "Flow matching Vision-Language-Action (VLA) models promise precise continuous control, but their iterative denoising nature introduces fundamental incompatibilities with real-time robotics: global timestep injection invalidates KV-caching, forcing a choice between slow $O(N^2)$ re-computation or mathematically incorrect cache reuse. We present \\textbf{Reflex}, a framework that enables \\textit{real-time streaming inference} for flow matching policies by exploiting the \\textit{Timestep-Invariance Property} -- that perception encoders are functionally independent of the denoising loop. Reflex partitions the attention context into static, sliding, and dynamic regions, enabling $O(1)$ incremental cache updates while preserving full-batch-equivalent attention outputs for fixed inputs. To ensure stability under continuous high-frequency inference, we introduce \\textit{AdaRMSNorm}, an adaptive normalization layer that prevents BFloat16 numerical collapse by gating on flow phase. We further maximize throughput through an \\textit{async pipeline} that decouples visual encoding from action generation, combined with \\textit{operator fusion} that reduces kernel overhead. On LIBERO and Kinetix benchmarks, Reflex achieves a 2.58$\\times$ inference speedup and 50Hz stable streaming, reducing reaction latency by up to 54\\% and enabling efficient deployment without performance degradation.",
+      "authors": [
+        "Yuanchun Guo",
+        "Bingyan Liu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-16T07:56:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.14695v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV-cache reuse in streaming VLA inference using timestep-invariance",
+      "llm_evidence_cn": "利用时间步不变性实现VLA推理中的KV缓存重用",
+      "llm_evidence": "利用时间步不变性实现VLA推理中的KV缓存重用",
+      "canonical_evidence": "利用时间步不变性实现VLA推理中的KV缓存重用",
+      "llm_tldr_en": "Proposes Reflex for real-time VLA control, enabling O(1) incremental KV-cache updates via timestep-invariance property, achieving mathematically correct cache reuse.",
+      "llm_tldr_cn": "该论文提出Reflex框架，利用时间步不变性将VLA模型的注意力上下文划分为静态、滑动和动态区域，实现O(1)增量式KV缓存更新。该方法在不牺牲全批量等效注意力的前提下，解决了流匹配VLA模型迭代去噪与实时推理的不兼容问题，在机器人控制任务上展示了实时性能。",
+      "llm_tldr": "该论文提出Reflex框架，利用时间步不变性将VLA模型的注意力上下文划分为静态、滑动和动态区域，实现O(1)增量式KV缓存更新。该方法在不牺牲全批量等效注意力的前提下，解决了流匹配VLA模型迭代去噪与实时推理的不兼容问题，在机器人控制任务上展示了实时性能。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.15105v1",
+      "source": "arxiv",
+      "title": "Long-Context Fine-Tuning with Limited VRAM",
+      "abstract": "Parameter-efficient fine-tuning reduces model and optimizer memory, but dense attention still makes long training sequences expensive. We combine Hierarchical Global Attention (HGA) with segment-wise backpropagation and tiered KV storage. Only the active segment remains differentiable in VRAM; older KV is detached into RAM or NVMe, and HGA loads a bounded set of exact historical tokens for each query block. On Qwen3-8B with 4-bit QLoRA and PG19, dense training on a 16 GB Quadro RTX 5000 fits 2,048 tokens but fails at 4,096, whereas HGA reaches 16,384 tokens with 15.28 GB peak VRAM. Under evaluation the same adapter runs through 131,072 tokens on this card; VRAM is not constant but grows gently with the resident chunk summaries, so RAM and NVMe capacity set the practical limit beyond these lengths. At the shared 2K training length, HGA-trained and dense-trained adapters obtain 2.7405 and 2.7383 nat under the same dense-attention readout, while the stock model obtains 2.9541. At this boundary HGA training is already marginally faster (217.75 vs. 207.02 tokens/s), and the HGA-to-dense throughput ratio improves from 1K to 2K; because HGA keeps the attended historical set per token approximately constant while dense work per token grows, we expect this lead to widen as context grows. Dense attention is used for the main quality and retrieval comparisons so that they measure the learned weights and remain compatible with standard generation frameworks. HGA can also be used for retrieval and generation; an optimized production-grade serving implementation is under development.",
+      "authors": [
+        "Vladimir Fedosov",
+        "Aleksandr Sazhin",
+        "Artemiy Grinenko",
+        "Frank Woernle"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-16T15:16:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.15105v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "long-context fine-tuning with tiered KV storage enabling extended reach",
+      "llm_evidence_cn": "分层KV存储实现长上下文微调，同技术可推广至推理",
+      "llm_evidence": "分层KV存储实现长上下文微调，同技术可推广至推理",
+      "canonical_evidence": "分层KV存储实现长上下文微调，同技术可推广至推理",
+      "llm_tldr_en": "HGA combines hierarchical global attention and tiered KV storage to fine-tune LLMs on long contexts with limited VRAM, enabling 131k tokens on a 16GB GPU.",
+      "llm_tldr_cn": "长上下文微调受限于GPU显存，密集注意力无法处理长序列。本文提出层次化全局注意力（HGA）与分片KV存储：仅活动段保留在显存，历史KV卸载至RAM或NVMe，并在反向传播中按需加载。在16GB Quadro RTX 5000上实现16k训练和131k评估，峰值显存仅15.28GB。该技术可扩展至推理场景，实现极长上下文LLM推断。",
+      "llm_tldr": "长上下文微调受限于GPU显存，密集注意力无法处理长序列。本文提出层次化全局注意力（HGA）与分片KV存储：仅活动段保留在显存，历史KV卸载至RAM或NVMe，并在反向传播中按需加载。在16GB Quadro RTX 5000上实现16k训练和131k评估，峰值显存仅15.28GB。该技术可扩展至推理场景，实现极长上下文LLM推断。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

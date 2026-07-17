@@ -1,0 +1,69 @@
+{
+  "label": "2026-07-17",
+  "date": "2026-07-17",
+  "generated_at": "2026-07-17T20:17:30",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202607/17/2607.14327v1-prem-learning-what-to-preserve-and-when-to-refresh-for-context-compression",
+      "section": "deep",
+      "title_en": "PReM: Learning What to Preserve and When to Refresh for Context Compression",
+      "authors": "Bohan Yu, Lei Shen, Chenxi Zhou, Chen Han, Junlin Liu, Wenbo Su, Yu Cheng, Bo Zheng",
+      "date": "2026-07-15",
+      "pdf": "https://arxiv.org/pdf/2607.14327v1",
+      "score": "9.0",
+      "evidence": "提出基于学习的KV缓存压缩和上下文刷新用于长上下文推理",
+      "tldr": "长上下文推理中，现有压缩方法（如KV缓存压缩）过早决定保留哪些上下文，难以适应后续推理需求。PReM框架将上下文作为模型内部逐层KV记忆，通过学习机制自主决定保留内容与刷新时机。在32K上下文上，16倍和32倍压缩下均优于现有基线，平衡了答案质量与推理效率。该方法显著提升了长上下文推理的灵活性和实用性。",
+      "tags": "query:pic",
+      "abstract_en": "Efficient long-context inference is not only about reducing memory cost, but also about keeping useful contextual evidence accessible as generation proceeds. However, existing compression-oriented approaches, such as key-value (KV) cache compression and context compression, often either make an early decision about which contextual information to keep or rely on an external compressor. Such designs make it difficult to adapt the compressed context to the evidence needed by later reasoning steps. This paper introduces PReM (Preserve and Refresh Memory), a context-compression framework that maintains the long context as the model's internal layer-wise KV memory and learns what to preserve and when to refresh it. Specifically, PReM uses a dedicated memory layer to make memory-selection decisions, and a special memory token <m> to trigger refreshes during generation. To train this behavior, PReM introduces Phase-Separated Refresh Training, aligning memory selection with memory-conditioned generation while preserving continuity across refreshes. Experiments with 32K-token contexts show that PReM outperforms strong baselines under both 16x and 32x compression, while maintaining a favorable balance between answer quality and inference efficiency.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/17/2607.12829v1-accelerating-masked-diffusion-large-language-models-a-survey-of-efficient-inference-techniques",
+      "section": "quick",
+      "title_en": "Accelerating Masked Diffusion Large Language Models: A Survey of Efficient Inference Techniques",
+      "authors": "Daehoon Gwak, Minhyung Lee, Junwoo Park, Jaegul Choo",
+      "date": "2026-07-14",
+      "pdf": "https://arxiv.org/pdf/2607.12829v1",
+      "score": "7.0",
+      "evidence": "调查涵盖扩散感知缓存和重用技术，用于高效推理",
+      "tldr": "扩散大语言模型(dLLM)虽具并行生成优势，但实际加速需依赖扩散感知缓存等专用推理机制。现有研究在算法、架构与系统层面探索了多种加速技术，但端到端延迟受多因素交织影响，难以公平比较。本文提出统一延迟分解框架，从算法创新、架构与系统优化、推理时扩展三个维度系统分类加速方法，并分析各因素对实际推理速度的影响。最后给出可重复基准测试指南，指出开放挑战以推动并行生成潜力充分释放。",
+      "tags": "query:pic",
+      "abstract_en": "Diffusion large language models (dLLMs) offer a theoretical advantage in parallel generation over standard autoregressive models. However, parallel generation alone does not guarantee practical speedups. Realizing this efficiency requires specialized inference mechanisms, such as diffusion-aware caching and reuse. Consequently, as inference efficiency becomes a prerequisite for practical deployment, recent research has actively explored acceleration techniques across algorithms, architectures, and systems. However, rigorous comparisons remain difficult, as end-to-end latency stems from intricate trade-offs between algorithmic, architectural, and system-level factors that are often conflated in existing benchmarks. In this survey, we introduce a unified latency decomposition framework for dLLMs to disentangle these factors and analyze their impact on inference speed in real deployments. Guided by this framework, we categorize acceleration techniques along three axes covering algorithmic innovations, architectural and system optimizations, and inference-time scaling. Finally, we provide guidelines for reproducible benchmarking and highlight open challenges for realizing the full potential of parallel generation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/17/2607.14695v1-reflex-real-time-vla-control-through-streaming-inference",
+      "section": "quick",
+      "title_en": "Reflex: Real-Time VLA Control through Streaming Inference",
+      "authors": "Yuanchun Guo, Bingyan Liu",
+      "date": "2026-07-16",
+      "pdf": "https://arxiv.org/pdf/2607.14695v1",
+      "score": "7.0",
+      "evidence": "利用时间步不变性实现VLA推理中的KV缓存重用",
+      "tldr": "流匹配VLA模型因全局时间步注入导致KV缓存失效，带来高计算开销。Reflex利用时间步不变性将注意力上下文分为静态、滑动和动态区域，实现O(1)增量缓存更新；引入AdaRMSNorm防止BF16数值崩溃，并通过异步流水线和算子融合提升吞吐量。在LIBERO和Kinetix上实现2.58倍推理加速和50Hz稳定流，反应延迟降低54%，为实时机器人控制提供高效部署方案。",
+      "tags": "query:pic",
+      "abstract_en": "Flow matching Vision-Language-Action (VLA) models promise precise continuous control, but their iterative denoising nature introduces fundamental incompatibilities with real-time robotics: global timestep injection invalidates KV-caching, forcing a choice between slow $O(N^2)$ re-computation or mathematically incorrect cache reuse. We present \\textbf{Reflex}, a framework that enables \\textit{real-time streaming inference} for flow matching policies by exploiting the \\textit{Timestep-Invariance Property} -- that perception encoders are functionally independent of the denoising loop. Reflex partitions the attention context into static, sliding, and dynamic regions, enabling $O(1)$ incremental cache updates while preserving full-batch-equivalent attention outputs for fixed inputs. To ensure stability under continuous high-frequency inference, we introduce \\textit{AdaRMSNorm}, an adaptive normalization layer that prevents BFloat16 numerical collapse by gating on flow phase. We further maximize throughput through an \\textit{async pipeline} that decouples visual encoding from action generation, combined with \\textit{operator fusion} that reduces kernel overhead. On LIBERO and Kinetix benchmarks, Reflex achieves a 2.58$\\times$ inference speedup and 50Hz stable streaming, reducing reaction latency by up to 54\\% and enabling efficient deployment without performance degradation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/17/2607.15105v1-long-context-fine-tuning-with-limited-vram",
+      "section": "quick",
+      "title_en": "Long-Context Fine-Tuning with Limited VRAM",
+      "authors": "Vladimir Fedosov, Aleksandr Sazhin, Artemiy Grinenko, Frank Woernle",
+      "date": "2026-07-16",
+      "pdf": "https://arxiv.org/pdf/2607.15105v1",
+      "score": "7.0",
+      "evidence": "分层KV存储实现长上下文微调，同技术可推广至推理",
+      "tldr": "有限VRAM下长上下文微调面临内存瓶颈，密集注意力导致训练序列长度受限。本文提出Hierarchical Global Attention (HGA)，通过分段反向传播和层级KV存储，仅活跃段在VRAM中保持可微分，历史KV卸载至RAM或NVMe，从而突破内存限制。在16 GB GPU上，HGA实现16K训练（密集仅2K）和131K推理，2K训练时性能与密集相当且速度更快（217.75 vs 207.02 tokens/s），且随着上下文增长优势扩大。该方法使得在消费级显卡上高效微调极长上下文成为可能。",
+      "tags": "query:pic",
+      "abstract_en": "Parameter-efficient fine-tuning reduces model and optimizer memory, but dense attention still makes long training sequences expensive. We combine Hierarchical Global Attention (HGA) with segment-wise backpropagation and tiered KV storage. Only the active segment remains differentiable in VRAM; older KV is detached into RAM or NVMe, and HGA loads a bounded set of exact historical tokens for each query block. On Qwen3-8B with 4-bit QLoRA and PG19, dense training on a 16 GB Quadro RTX 5000 fits 2,048 tokens but fails at 4,096, whereas HGA reaches 16,384 tokens with 15.28 GB peak VRAM. Under evaluation the same adapter runs through 131,072 tokens on this card; VRAM is not constant but grows gently with the resident chunk summaries, so RAM and NVMe capacity set the practical limit beyond these lengths. At the shared 2K training length, HGA-trained and dense-trained adapters obtain 2.7405 and 2.7383 nat under the same dense-attention readout, while the stock model obtains 2.9541. At this boundary HGA training is already marginally faster (217.75 vs. 207.02 tokens/s), and the HGA-to-dense throughput ratio improves from 1K to 2K; because HGA keeps the attended historical set per token approximately constant while dense work per token grows, we expect this lead to widen as context grows. Dense attention is used for the main quality and retrieval comparisons so that they measure the learned weights and remain compatible with standard generation frameworks. HGA can also be used for retrieval and generation; an optimized production-grade serving implementation is under development.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
