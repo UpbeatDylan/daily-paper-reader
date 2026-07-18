@@ -6,34 +6,24 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-17
-- 运行时间：2026-07-17 20:17:22 UTC
+- 最新运行日期：2026-07-18
+- 运行时间：2026-07-18 21:16:13 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：1
-- 速读区：3
+- 本次总论文数：1
+- 精读区：0
+- 速读区：1
 
 ### 今日简报（AI）
-今日推荐4篇论文，重点精读《PReM》以9.0高分聚焦上下文压缩新方法。  
-最值关注方向：上下文压缩（PReM）与高效推理（掩码扩散LLM加速、实时VLA控制）。  
-建议读者优先精读PReM，理解“何时保留与刷新”的压缩策略；速读后三篇可掌握大模型推理加速与长上下文微调的实用方案。
-- 详情：[/202607/17/README](/202607/17/README)
+今日速读1篇论文，聚焦智能LLM系统的共享持久内存方案。最值得关注的是《Shared Selective Persistent Memory》提出的多智能体协作效率提升架构。建议关注LLM系统架构优化的读者优先精读该论文。
+- 详情：[/202607/18/README](/202607/18/README)
 
 ### 精读区论文标签
-1. [PReM: Learning What to Preserve and When to Refresh for Context Compression](/202607/17/2607.14327v1-prem-learning-what-to-preserve-and-when-to-refresh-for-context-compression)  
-   标签：评分：9.0/10、query:pic
-   evidence：提出基于学习的KV缓存压缩和上下文刷新用于长上下文推理
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Accelerating Masked Diffusion Large Language Models: A Survey of Efficient Inference Techniques](/202607/17/2607.12829v1-accelerating-masked-diffusion-large-language-models-a-survey-of-efficient-inference-techniques)  
+1. [Shared Selective Persistent Memory for Agentic LLM Systems](/202607/18/2607.09493v1-shared-selective-persistent-memory-for-agentic-llm-systems)  
    标签：评分：7.0/10、query:pic
-   evidence：调查涵盖扩散感知缓存和重用技术，用于高效推理
-2. [Reflex: Real-Time VLA Control through Streaming Inference](/202607/17/2607.14695v1-reflex-real-time-vla-control-through-streaming-inference)  
-   标签：评分：7.0/10、query:pic
-   evidence：利用时间步不变性实现VLA推理中的KV缓存重用
-3. [Long-Context Fine-Tuning with Limited VRAM](/202607/17/2607.15105v1-long-context-fine-tuning-with-limited-vram)  
-   标签：评分：7.0/10、query:pic
-   evidence：分层KV存储实现长上下文微调，同技术可推广至推理
+   evidence：面向智能体LLM系统的共享选择性持久内存，用于复用上下文
 
 
 <div class="dpr-home-promo-card">

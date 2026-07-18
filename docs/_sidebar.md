@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-18 <!--dpr-date:20260718-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/18/2607.09493v1-shared-selective-persistent-memory-for-agentic-llm-systems" data-sidebar-item="{&quot;title&quot;: &quot;Shared Selective Persistent Memory for Agentic LLM Systems&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.09493v1-shared-selective-persistent-memory-for-agentic-llm-systems&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;面向智能体LLM系统的共享选择性持久内存，用于复用上下文&quot;}">Shared Selective Persistent Memory for Agentic LLM Systems</a>
   * 2026-07-17 <!--dpr-date:20260717-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/17/2607.14327v1-prem-learning-what-to-preserve-and-when-to-refresh-for-context-compression" data-sidebar-item="{&quot;title&quot;: &quot;PReM: Learning What to Preserve and When to Refresh for Context Compression&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.14327v1-prem-learning-what-to-preserve-and-when-to-refresh-for-context-compression&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;提出基于学习的KV缓存压缩和上下文刷新用于长上下文推理&quot;}">PReM: Learning What to Preserve and When to Refresh for Context Compression</a>
