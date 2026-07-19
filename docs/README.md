@@ -6,24 +6,22 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-18
-- 运行时间：2026-07-18 21:16:13 UTC
+- 最新运行日期：2026-07-19
+- 运行时间：2026-07-19 21:03:35 UTC
 - 运行状态：成功
-- 本次总论文数：1
+- 本次总论文数：0
 - 精读区：0
-- 速读区：1
+- 速读区：0
 
 ### 今日简报（AI）
-今日速读1篇论文，聚焦智能LLM系统的共享持久内存方案。最值得关注的是《Shared Selective Persistent Memory》提出的多智能体协作效率提升架构。建议关注LLM系统架构优化的读者优先精读该论文。
-- 详情：[/202607/18/README](/202607/18/README)
+> 今日无新推荐，系统未产出可展示论文。
+- 详情：[/202607/19/README](/202607/19/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Shared Selective Persistent Memory for Agentic LLM Systems](/202607/18/2607.09493v1-shared-selective-persistent-memory-for-agentic-llm-systems)  
-   标签：评分：7.0/10、query:pic
-   evidence：面向智能体LLM系统的共享选择性持久内存，用于复用上下文
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">
