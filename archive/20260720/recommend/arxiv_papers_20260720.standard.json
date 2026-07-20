@@ -1,0 +1,322 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-20T20:50:14.415456+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 6,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2607.12550v2",
+      "source": "arxiv",
+      "title": "A JoLT for the KV Cache: Near-Lossless KV Cache Compression via Joint Tucker and JL-Residual Allocation for LLMs",
+      "abstract": "The key-value (KV) cache has become the dominant memory cost of transformer inference: it grows with batch size, context length, and depth, and at long context it, rather than the model weights, sets the throughput ceiling. Existing reductions fall into two families. Low-rank methods factor two-dimensional slices of the cache, either per-head matrices or cross-layer feature blocks, and quantization methods lower the bit-width of every entry. Neither exploits the fact that the cache at a layer is naturally a third-order tensor whose three axes, the heads, the tokens, and the features, carry very different amounts of redundancy. We take this tensor view directly. Our method, JoLT (Joint Lagrangian Tucker), applies a partial Tucker decomposition that compresses only the token and feature axes while leaving the head and layer axes intact, then restores the energy that truncation discards with a rotated low-bit residual: a random orthogonal rotation followed by low-bit quantization. A single Lagrangian dual allocates the Tucker ranks and the residual bit-widths together, per layer group and separately for keys and values, under one byte budget. The result is a near-lossless 2-3x compression. Perplexity stays near-lossless on both a grouped-query-attention model (Mistral-7B-v0.3) and a multi-head-attention model (LLaMA-2-13B), and GSM8K accuracy and needle-in-a-haystack retrieval hold at the uncompressed baseline at 2x on both architectures and through 3x on the GQA model. At 2x, JoLT reconstructs the cache to relative Frobenius error 0.009 (K) and 0.006 (V) on both architectures. A randomized-SVD variant, FlashJoLT, delivers a 5-13x compression-time speedup at 1024-token context and matched quality.",
+      "authors": [
+        "Rahul Krishnan",
+        "Volker Schulz"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL",
+        "math.OC"
+      ],
+      "published": "2026-07-14T09:23:20+00:00",
+      "link": "https://arxiv.org/pdf/2607.12550v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Joint Tucker and JL-residual allocation for KV cache compression",
+      "llm_evidence_cn": "联合张量分解与JL残差分配的KV缓存压缩",
+      "llm_evidence": "联合张量分解与JL残差分配的KV缓存压缩",
+      "canonical_evidence": "联合张量分解与JL残差分配的KV缓存压缩",
+      "llm_tldr_en": "Proposes JoLT, a near-lossless KV cache compression method using joint Tucker decomposition and JL-residual allocation, significantly reducing memory while preserving quality.",
+      "llm_tldr_cn": "大型语言模型推理中KV缓存占用了大量内存。现有方法要么使用低秩分解，要么使用量化，但忽略了缓存的三阶张量结构。本文提出JoLT方法，通过联合Tucker分解和JL残差分配，对KV缓存进行近无损压缩。实验表明，该方法在保持生成质量的同时大幅降低缓存内存占用，使长上下文推理更高效。",
+      "llm_tldr": "大型语言模型推理中KV缓存占用了大量内存。现有方法要么使用低秩分解，要么使用量化，但忽略了缓存的三阶张量结构。本文提出JoLT方法，通过联合Tucker分解和JL残差分配，对KV缓存进行近无损压缩。实验表明，该方法在保持生成质量的同时大幅降低缓存内存占用，使长上下文推理更高效。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.13093v2",
+      "source": "arxiv",
+      "title": "Efficient and Privacy Aware Edge Cloud Collaborative Inference for Large Language Models",
+      "abstract": "On-device LLM inference faces a trilemma of response latency, limited hardware resources and user privacy. Full cloud inference delivers strong computing power but exposes user prompts and dialogue data, while standalone on-device inference is unfeasible for most consumer and embedded edge devices. This paper presents a privacy-centric edge-cloud collaborative LLM inference framework built on endpoint-authenticated KV cache. Local endpoints handle input preprocessing, embedding computation, adaptive feature optimization, KV cache authentication, speculative decoding and low-dimensional model head calculation, while the cloud conducts authenticated decoder inference, KV cache management, token verification and high-dimensional vocabulary projection. Endpoints fuse partial outputs, apply language-adaptive masking and sample target tokens. All transmitted data and truncated logits are quantized and AES-GCM encrypted for privacy, with core lightweight modules, draft parameters and cache access policies kept local to avoid leakage. The framework supports heterogeneous devices including CPU-only, GPU-equipped and embedded devices via optimized streaming, batching and quantized ONNX deployment. Evaluations demonstrate that the framework reduces per-token latency by up to 46.1\\% and downlink payloads by up to 67.4\\% over baseline split inference, retaining comparable performance to full cloud inference.",
+      "authors": [
+        "Chen Li",
+        "Jiexiong Liu",
+        "Yi Li"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR",
+        "cs.AI"
+      ],
+      "published": "2026-07-14T01:17:17+00:00",
+      "link": "https://arxiv.org/pdf/2607.13093v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache reuse via endpoint-authenticated KV cache in edge-cloud collaborative inference",
+      "llm_evidence_cn": "通过端点认证KV缓存在边缘-云协同推理中重用KV缓存",
+      "llm_evidence": "通过端点认证KV缓存在边缘-云协同推理中重用KV缓存",
+      "canonical_evidence": "通过端点认证KV缓存在边缘-云协同推理中重用KV缓存",
+      "llm_tldr_en": "Proposes privacy-aware edge-cloud LLM inference framework using endpoint-authenticated KV cache management and reuse, balancing latency, privacy, and compute.",
+      "llm_tldr_cn": "该论文针对设备端LLM推理在延迟、资源和隐私上的三重困境，提出基于端点认证KV缓存的边缘-云协同推理框架。本地端点负责预处理、嵌入和KV缓存认证等轻量任务，云端执行带认证的解码器和KV缓存管理。方法通过KV缓存重用显著降低推理延迟，同时保护用户隐私。在多种场景下验证了延迟和隐私的平衡优势。",
+      "llm_tldr": "该论文针对设备端LLM推理在延迟、资源和隐私上的三重困境，提出基于端点认证KV缓存的边缘-云协同推理框架。本地端点负责预处理、嵌入和KV缓存认证等轻量任务，云端执行带认证的解码器和KV缓存管理。方法通过KV缓存重用显著降低推理延迟，同时保护用户隐私。在多种场景下验证了延迟和隐私的平衡优势。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.15105v2",
+      "source": "arxiv",
+      "title": "Long-Context Fine-Tuning with Limited VRAM",
+      "abstract": "Parameter-efficient fine-tuning reduces model and optimizer memory, but dense attention still makes long training sequences expensive. We combine Hierarchical Global Attention (HGA) with segment-wise backpropagation and tiered KV storage. Only the active segment remains differentiable in VRAM; older KV is detached into RAM or NVMe, and HGA loads a bounded set of exact historical tokens for each query block. On Qwen3-8B with 4-bit QLoRA and PG19, dense training on a 16 GB Quadro RTX 5000 fits 2,048 tokens but fails at 4,096, whereas HGA reaches 16,384 tokens with 15.28 GB peak VRAM. Under evaluation the same adapter runs through 131,072 tokens on this card; VRAM is not constant but grows gently with the resident chunk summaries, so RAM and NVMe capacity set the practical limit beyond these lengths. At the shared 2K training length, HGA-trained and dense-trained adapters obtain 2.7405 and 2.7383 nat under the same dense-attention readout, while the stock model obtains 2.9541. At this boundary HGA training is already marginally faster (217.75 vs. 207.02 tokens/s), and the HGA-to-dense throughput ratio improves from 1K to 2K; because HGA keeps the attended historical set per token approximately constant while dense work per token grows, we expect this lead to widen as context grows. Dense attention is used for the main quality and retrieval comparisons so that they measure the learned weights and remain compatible with standard generation frameworks. HGA can also be used for retrieval and generation; an optimized production-grade serving implementation is under development.",
+      "authors": [
+        "Vladimir Fedosov",
+        "Aleksandr Sazhin",
+        "Artemiy Grinenko",
+        "Frank Woernle"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-16T15:16:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.15105v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "hierarchical global attention with tiered KV storage for long-context inference",
+      "llm_evidence_cn": "分层全局注意力与分层KV存储用于长上下文推理",
+      "llm_evidence": "分层全局注意力与分层KV存储用于长上下文推理",
+      "canonical_evidence": "分层全局注意力与分层KV存储用于长上下文推理",
+      "llm_tldr_en": "Combines hierarchical global attention with segment-wise backprop and tiered KV storage (RAM/NVMe), enabling fine-tuning and inference of very long sequences on limited VRAM.",
+      "llm_tldr_cn": "针对长上下文微调中显存不足的问题，本文提出分层全局注意力（HGA）与分段反向传播及分层KV存储。训练时仅活跃段保留在显存，历史KV卸载至RAM或NVMe；推理时利用HGA加载有限历史令牌。在Qwen3-8B上，4-bit QLoRA将训练长度从2K扩展到16K，推理可达131K令牌。该方法使长上下文推理在消费级显卡上成为可能，显著降低硬件门槛。",
+      "llm_tldr": "针对长上下文微调中显存不足的问题，本文提出分层全局注意力（HGA）与分段反向传播及分层KV存储。训练时仅活跃段保留在显存，历史KV卸载至RAM或NVMe；推理时利用HGA加载有限历史令牌。在Qwen3-8B上，4-bit QLoRA将训练长度从2K扩展到16K，推理可达131K令牌。该方法使长上下文推理在消费级显卡上成为可能，显著降低硬件门槛。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.15498v1",
+      "source": "arxiv",
+      "title": "VarRate: Training-Free Variable-Rate KV Cache Compression for Long-Context LLMs",
+      "abstract": "The key-value (KV) cache is the main memory bottleneck in long-context large language model (LLM) inference. Two leading training-free families are both structurally limited: token-selection methods (SnapKV, Ada-KV) score importance from an observation window and evict low-scoring tokens, but eviction is irreversible -- so when the importance signal degrades under query-agnostic reuse, accuracy collapses by 11-15 points; uniform low-rank coding keeps every token but spends equal rank everywhere, wasting budget. We observe that both failures share one cure: rank should be allocated, not evicted. We present VarRate, a training-free KV codec that assigns each token a variable low-rank budget by its query salience, keeping every token at a nonzero rank. Comparable adaptive-rank codecs reach this allocation only through training; VarRate requires none. Because no token is dropped, it degrades by only 3.5-5.5 points where query-aware selection collapses. At a matched 20% budget on LongBench (16 tasks), VarRate stays within 0.8 points of the uncompressed model on both Llama-3.1-8B and Qwen2.5-7B. Averaged over the two, it is the strongest matched-memory compressor. It significantly beats its uniform-rank ablation on both models. Against KVzip, a method purpose-built for query-agnostic reuse, it is accuracy-equivalent in three of four settings and within a point overall, at about one-eighth the prefill overhead.",
+      "authors": [
+        "Shahrzad Esmat",
+        "Dhawal Shah",
+        "Ali Jannesari"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-07-16T23:03:14+00:00",
+      "link": "https://arxiv.org/pdf/2607.15498v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache compression for long-context LLMs",
+      "llm_evidence_cn": "长上下文LLM的KV缓存压缩",
+      "llm_evidence": "长上下文LLM的KV缓存压缩",
+      "canonical_evidence": "长上下文LLM的KV缓存压缩",
+      "llm_tldr_en": "VarRate presents a training-free variable-rate KV codec that allocates low-rank budget per token by query salience, avoiding irreversible eviction and outperforming fixed-rate methods.",
+      "llm_tldr_cn": "针对长上下文LLM推理中KV缓存内存瓶颈，现有方法存在不可逆驱逐或固定分配浪费预算的问题。本文提出VarRate，一种训练无关的可变速率KV编解码器，根据查询显著性为每个token分配不同低秩预算，保留所有token，实验证明在精度和压缩率上均显著优于现有方法。",
+      "llm_tldr": "针对长上下文LLM推理中KV缓存内存瓶颈，现有方法存在不可逆驱逐或固定分配浪费预算的问题。本文提出VarRate，一种训练无关的可变速率KV编解码器，根据查询显著性为每个token分配不同低秩预算，保留所有token，实验证明在精度和压缩率上均显著优于现有方法。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.15456v1",
+      "source": "arxiv",
+      "title": "Looped Latent Attention: Cross-Loop KV Compression for Looped Transformers",
+      "abstract": "Looped, weight-tied Transformers reduce parameters by reusing a block, but decoding still stores a separate K/V cache for every recurrence step. We show that this loop-indexed cache is highly structured. For a fixed token, layer and head, K/V vectors trace a short low-rank trajectory across loops, while the head and layer axes remain much flatter. We introduce Looped Latent Attention (LLA), a post-training cache codec that stores compact K and V latents and reconstructs loop-specific K/V vectors only when attention reads them. The default per-head codec compresses recurrence, while LLA-2D also folds heads into one latent for the extreme-compression regime. The codec is initialized from SVD of teacher activations and refined with KL and attention-output distillation. At matched cache budget, per-head LLA outperforms head-axis MLA, cross-layer sharing, KV quantization and final-loop reuse, showing that the recurrent cache is low-rank but not safely collapsible to a single state. The same axis advantage holds on Ouro-2.6B-Thinking and transfers to Huginn-3.5B, where an SVD codec remains near-lossless to 32x in decoder-independent evaluation. The cache reduction is exact. On one H200, the latent-store path increases measured Ouro-1.4B batch capacity at 4k context from 32 to 768 sequences at 21.3x compression. For long math rollouts, on-policy refinement on student-generated prefixes raises MATH-500 at 4x from 0.43 to 0.66 and reduces no-answer generations.",
+      "authors": [
+        "James O' Neill",
+        "Fergal Reid"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-07-16T20:58:16+00:00",
+      "link": "https://arxiv.org/pdf/2607.15456v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Cross-loop KV compression for looped transformers via latent attention",
+      "llm_evidence_cn": "通过潜在注意力实现循环Transformer的跨循环KV压缩",
+      "llm_evidence": "通过潜在注意力实现循环Transformer的跨循环KV压缩",
+      "canonical_evidence": "通过潜在注意力实现循环Transformer的跨循环KV压缩",
+      "llm_tldr_en": "Looped Latent Attention compresses per-step KV caches across loops by learning low-rank latents, enabling efficient decoding in weight-tied transformers.",
+      "llm_tldr_cn": "权重共享的循环Transformer虽然减少了参数，但每一步仍需存储独立KV缓存。本文发现循环间KV向量具有低秩结构，提出循环潜在注意力（LLA），一种后训练缓存编解码器，存储紧凑的潜在变量并在需要时重建。实验显示，该方法有效压缩循环缓存，支持长序列生成。",
+      "llm_tldr": "权重共享的循环Transformer虽然减少了参数，但每一步仍需存储独立KV缓存。本文发现循环间KV向量具有低秩结构，提出循环潜在注意力（LLA），一种后训练缓存编解码器，存储紧凑的潜在变量并在需要时重建。实验显示，该方法有效压缩循环缓存，支持长序列生成。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.15516v1",
+      "source": "arxiv",
+      "title": "Cache-Aware Prompt Compression:A Two-Tier Cost Model for LLM API Caching",
+      "abstract": "Production LLM deployments combine two cost-reduction primitives: prompt caching (a discounted rate for re-used token prefixes) and prompt compression (fewer tokens sent). The compression literature has standardized on query-aware methods that produce a different compressed prefix per query, mechanically invalidating the prefix-strict cache on every call. We characterize this cost empirically on Anthropic's Sonnet 4.6 API and find caching is far from the rho=1.0 ideal the literature assumes: Sonnet's cache has a two-tier architecture with a sharp threshold near 3,500 tokens, below which the hit rate plateaus at rho~0.83 across 30-call sessions. Our cost model predicts, and experiments confirm, that under realistic rho, query-aware compression beats naive caching at high compression ratios (r>=6). We propose Cache-Aware Prompt Compression (CAPC), pairing query-agnostic compression with explicit cache_control plus a tier-preserving ratio bound that prevents over-compression from pushing the cached prefix into the hot tier. CAPC is the cheapest strategy in 16/16 configurations on LongBench-v2, with mean savings of 49% over cache-only, 64% over query-aware compression, and 90% over vanilla, at quality within 0.05 of the uncompressed baseline. We validate CAPC on three production workloads: an enterprise tool-using assistant with a 94k-token schema prefix (51.7% cost reduction at r=3); a graphify knowledge-graph RAG pipeline across two codebases (9.3x vs cache-all on FastAPI, 2.4x on httpx); and the public tau-bench retail benchmark (50 tasks), where CAPC is the cheapest of four strategies with reward exactly equal to vanilla (both 36/50, p=1.00) while query-aware compression is the most expensive at +40.1% over vanilla -- the first production confirmation of the crossover model's negative-ROI prediction on a public benchmark.",
+      "authors": [
+        "Yan Song"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-17T00:03:47+00:00",
+      "link": "https://arxiv.org/pdf/2607.15516v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "prompt caching and compression cost model",
+      "llm_evidence_cn": "提示缓存与压缩成本模型",
+      "llm_evidence": "提示缓存与压缩成本模型",
+      "canonical_evidence": "提示缓存与压缩成本模型",
+      "llm_tldr_en": "Cache-Aware Prompt Compression proposes a two-tier cost model for LLM API caching, showing that query-aware compression can be beneficial under realistic cache hit rates.",
+      "llm_tldr_cn": "针对生产环境LLM部署中提示缓存与压缩的成本权衡问题，本文提出了一个双层成本模型，通过实证分析揭示了缓存命中率并非理想值，并证明在真实命中率下，查询感知的压缩方法可以优于缓存优先策略。",
+      "llm_tldr": "针对生产环境LLM部署中提示缓存与压缩的成本权衡问题，本文提出了一个双层成本模型，通过实证分析揭示了缓存命中率并非理想值，并证明在真实命中率下，查询感知的压缩方法可以优于缓存优先策略。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.16184v1",
+      "source": "arxiv",
+      "title": "PagedWeight: Efficient MoE LLM Serving with Dynamic Quality-Aware Weight Quantization",
+      "abstract": "Mixture-of-Experts (MoE) is a popular class of large language models (LLMs), offering high efficiency and accuracy. However, in KV-cache-intensive serving scenarios, MoEs often exhibit a tension between the GPU memory requirements of the model weights and the growing KV cache. We propose PagedWeight, a novel management method for MoE LLM serving that dynamically quantizes MoE model's weights at runtime and balances expert-weight precision with the KV cache sizes. PagedWeight exposes and effectively navigates the complex tradeoff between the model's task accuracy, memory consumption, and throughput/latency. Across several memory-sensitive MoE serving scenarios, PagedWeight improves the quality-memory tradeoff over several existing quantization baselines. PagedWeight achieves FP16-equivalent accuracy with up to 72.0% GPU memory savings and 1.94$\\times$ throughput improvement, and improves quality over quantization methods by up to 39.3% at a similar memory budget with at most 4.1% throughput loss.",
+      "authors": [
+        "Yuchen Yang",
+        "Yifan Zhao",
+        "Anisha Dasgupta",
+        "Sasa Misailovic"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-17T17:58:29+00:00",
+      "link": "https://arxiv.org/pdf/2607.16184v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache-aware weight quantization for MoE LLM serving to balance memory and accuracy",
+      "llm_evidence_cn": "针对MoE LLM服务的KV缓存感知权重量化，以平衡内存和精度",
+      "llm_evidence": "针对MoE LLM服务的KV缓存感知权重量化，以平衡内存和精度",
+      "canonical_evidence": "针对MoE LLM服务的KV缓存感知权重量化，以平衡内存和精度",
+      "llm_tldr_en": "PagedWeight dynamically quantizes MoE weights at runtime to manage KV cache memory, improving serving throughput and latency.",
+      "llm_tldr_cn": "该论文针对MoE模型推理中权重与KV缓存争夺GPU内存的冲突，提出PagedWeight动态运行时量化方法。在KV缓存密集型场景中，根据实时内存压力动态调整专家权重精度，在模型精度、内存消耗和吞吐/延迟之间折中。实验表明，PagedWeight在多个内存敏感场景中优于现有量化方案，有效优化了KV缓存友好型的模型服务。",
+      "llm_tldr": "该论文针对MoE模型推理中权重与KV缓存争夺GPU内存的冲突，提出PagedWeight动态运行时量化方法。在KV缓存密集型场景中，根据实时内存压力动态调整专家权重精度，在模型精度、内存消耗和吞吐/延迟之间折中。实验表明，PagedWeight在多个内存敏感场景中优于现有量化方案，有效优化了KV缓存友好型的模型服务。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.16100v1",
+      "source": "arxiv",
+      "title": "Every Microsecond Matters: Achieving Near Speed-of-Light Latency in GPU Collectives",
+      "abstract": "GPU collective communication is typically optimized for bandwidth, yet many emerging workloads are increasingly limited by latency. Long-context decode-heavy large language model (LLM) inference is a prime example, where serving large models requires multiple GPUs, and many small collectives lie directly on the critical path of token generation. Therefore, even microsecond of overhead can impact performance and cost. In this work, we study how to approach the hardware Speed-of-Light (SoL) lower bound for GPU collectives within a scale-up network. We identify key principles for near-optimal designs, including barrier-free synchronization and efficient use of symmetric memory and multicast. Building on NCCL's device-side API, we develop low-latency interfaces for constructing custom collective kernels and use them to implement new symmetric collectives in NCCL. Microbenchmarks show substantial latency reductions for small and medium messages, reducing overhead to within 7% of the absolute SoL lower bound. When integrated into real applications, these kernels improve inter-token latency and throughput in LLM inference and accelerate cuSOLVERMp, demonstrating benefits for both AI inference and traditional HPC workloads.",
+      "authors": [
+        "Siyuan Shen",
+        "Anton Korzh",
+        "John Bachan",
+        "Tiancheng Chen",
+        "Arnav Goel",
+        "Ludwig Schneider",
+        "Pouya Kousha",
+        "Zhenhao He",
+        "Sylvain Jeaugey",
+        "Kamil Iskra",
+        "Nishank Chandawala",
+        "Jeff R. Hammond",
+        "Torsten Hoefler"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-07-17T16:36:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.16100v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "focuses on minimizing GPU collective latency for long-context decode-heavy LLM inference, directly addressing inference acceleration",
+      "llm_evidence_cn": "聚焦最小化长上下文解码密集型LLM推理的GPU集合通信延迟，直接解决推理加速",
+      "llm_evidence": "聚焦最小化长上下文解码密集型LLM推理的GPU集合通信延迟，直接解决推理加速",
+      "canonical_evidence": "聚焦最小化长上下文解码密集型LLM推理的GPU集合通信延迟，直接解决推理加速",
+      "llm_tldr_en": "Achieving near speed-of-light latency in GPU collectives for long-context LLM inference, using barrier-free synchronization and multicast to reduce microsecond overheads.",
+      "llm_tldr_cn": "针对长上下文解码密集型LLM推理中GPU集合通信延迟敏感问题，论文通过无屏障同步、对称内存和组播等原理，在NCCL设备端API上实现接近硬件光速的延迟。该工作虽非缓存技术，但属于长上下文推理加速的基础设施方法，对降低整体推理延迟有直接贡献。",
+      "llm_tldr": "针对长上下文解码密集型LLM推理中GPU集合通信延迟敏感问题，论文通过无屏障同步、对称内存和组播等原理，在NCCL设备端API上实现接近硬件光速的延迟。该工作虽非缓存技术，但属于长上下文推理加速的基础设施方法，对降低整体推理延迟有直接贡献。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
