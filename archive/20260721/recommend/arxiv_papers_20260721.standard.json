@@ -1,0 +1,295 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-21T21:09:42.562474+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2607.16892v1",
+      "source": "arxiv",
+      "title": "Robust KV Cache Management for LLM Serving under Output Token Length Uncertainty",
+      "abstract": "KV cache memory is a primary bottleneck in modern LLM serving systems deployed on GPU clusters. A fundamental challenge is that the KV cache must be reserved upon request arrival, while the output token length remains unknown until generation completes. Under-reservation triggers preemption -- forcing termination and recomputation of requests and incurring significant overhead -- whereas over-reservation wastes memory and reduces throughput. This creates a central trade-off between memory efficiency and preemption risk. We present a robust KV cache management framework for LLM serving that jointly optimizes GPU parallelism configuration, KV cache reservation per request class, request routing across heterogeneous serving groups, and prefix caching for shared prompts. The framework incorporates latency SLO constraints and captures the interaction between memory allocation, throughput, and queueing delay. To address output token length uncertainty and workload distribution shift, we develop a Wasserstein distributionally robust optimization (DRO) formulation together with a scalable block coordinate descent algorithm for the resulting mixed-integer problem. Our analysis reveals a critical fractile structure that automatically adapts reservation quantiles to different preemption and memory cost regimes without manual tuning. Trace-driven evaluation on production LLM workloads, including BurstGPT, Azure, and ShareGPT traces, demonstrates up to 56\\% lower cost than fixed-quantile reservation baselines while maintaining competitive P99 latency, goodput, and SLO violation rates across diverse operating regimes.",
+      "authors": [
+        "Jiaming Cheng",
+        "Duong The Do",
+        "Duong Tung Nguyen"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI"
+      ],
+      "published": "2026-07-18T17:23:33+00:00",
+      "link": "https://arxiv.org/pdf/2607.16892v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "robust KV cache management, joint optimization of reservation and prefix caching under output length uncertainty",
+      "llm_evidence_cn": "鲁棒KV缓存管理，在输出长度不确定下联合优化预留和前缀缓存",
+      "llm_evidence": "鲁棒KV缓存管理，在输出长度不确定下联合优化预留和前缀缓存",
+      "canonical_evidence": "鲁棒KV缓存管理，在输出长度不确定下联合优化预留和前缀缓存",
+      "llm_tldr_en": "Presents a robust KV cache management framework that addresses output length uncertainty by jointly optimizing GPU parallelism, cache reservation, request routing, and prefix caching, directly targeting KV cache reuse in LLM serving.",
+      "llm_tldr_cn": "该论文针对LLM服务中KV缓存因输出长度未知导致预留过度或不足的挑战，提出了一种鲁棒的KV缓存管理框架。框架联合优化GPU并行配置、每请求类KV缓存预留、异构服务组间的请求路由以及前缀缓存。通过鲁棒优化方法平衡内存效率和抢占风险。实验表明该方法在多种负载下显著减少预占并提高吞吐量，是KV缓存重用与管理领域的最新进展。",
+      "llm_tldr": "该论文针对LLM服务中KV缓存因输出长度未知导致预留过度或不足的挑战，提出了一种鲁棒的KV缓存管理框架。框架联合优化GPU并行配置、每请求类KV缓存预留、异构服务组间的请求路由以及前缀缓存。通过鲁棒优化方法平衡内存效率和抢占风险。实验表明该方法在多种负载下显著减少预占并提高吞吐量，是KV缓存重用与管理领域的最新进展。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17715v1",
+      "source": "arxiv",
+      "title": "C$^2$KV: Compressed and Composable KV Cache Reuse for Efficient LLM Inference",
+      "abstract": "Long-context inference is central to modern large language model (LLM) applications such as retrieval-augmented generation and multi-document reasoning. To mitigate the growing inference cost, recent work has explored key-value (KV) cache reuse to reduce redundant prefill computation. However, existing reuse methods primarily focus on computation savings and overlook a critical bottleneck in long-context LLM serving: the cost of storing and accessing large KV caches. While KV compression appears to be a natural complement, naively combining compression with non-prefix KV reuse often leads to severe accuracy degradation. In this work, we propose C$^2$KV, a unified framework for non-prefix KV reuse that jointly optimizes KV extraction and inference-time concatenation. C$^2$KV learns a composable and compressed KV cache manifold that is explicitly designed to be position-agnostic. Our approach introduces a lightweight sidecar Extractor with learnable compression tokens and a structured attention flow, enabling modular KV representations that can be flexibly reused and concatenated without modifying the frozen base model. We further employ a compression-concatenation co-training strategy to align extraction-time representations with their downstream reuse behavior. Extensive experiments across multiple long-context benchmarks and model families demonstrate that C$^2$KV significantly reduces KV cache storage and transfer costs, achieving up to 17$\\times$ inference speedup under long contexts, while preserving generation quality.",
+      "authors": [
+        "Chuheng Du",
+        "Junyi Chen",
+        "Hanlin Tang",
+        "Kan Liu",
+        "Tao Lan",
+        "Lin Qu",
+        "Chaoyue Niu",
+        "Shengzhong Liu",
+        "Guihai Chen",
+        "Fan Wu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-07-20T09:09:23+00:00",
+      "link": "https://arxiv.org/pdf/2607.17715v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes C2KV framework for non-prefix KV cache reuse and compression",
+      "llm_evidence_cn": "提出C2KV框架实现非前缀KV缓存重用与压缩",
+      "llm_evidence": "提出C2KV框架实现非前缀KV缓存重用与压缩",
+      "canonical_evidence": "提出C2KV框架实现非前缀KV缓存重用与压缩",
+      "llm_tldr_en": "C2KV jointly optimizes KV extraction and inference for non-prefix reuse, addressing the storage bottleneck of long-context LLM serving while maintaining accuracy.",
+      "llm_tldr_cn": "长上下文LLM推理中，现有KV缓存重用方法忽视存储成本，且简单结合压缩会导致精度下降。本文提出统一框架C2KV，联合优化KV提取与推理，实现非前缀重用，在保持精度的同时显著降低存储开销。实验表明该方法在多种长上下文任务上有效。",
+      "llm_tldr": "长上下文LLM推理中，现有KV缓存重用方法忽视存储成本，且简单结合压缩会导致精度下降。本文提出统一框架C2KV，联合优化KV提取与推理，实现非前缀重用，在保持精度的同时显著降低存储开销。实验表明该方法在多种长上下文任务上有效。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.18141v1",
+      "source": "arxiv",
+      "title": "HyMCache: A KV Cache Framework for Multi-Turn LLM Serving with CXL-Hybrid Memory",
+      "abstract": "Long-context, multi-turn, and agentic LLM workloads increasingly reuse previously processed context, making KV-cache reuse essential for reducing redundant computation. However, this reuse shifts the bottleneck to the memory tier that stores and serves reusable KV states at cluster scale. GPU HBM and host DRAM are too costly to scale to TB-scale shared context capacity, motivating remote tiers built from lower-cost, higher-capacity media. This paper presents HyMCache, a KV-cache framework that integrates CXL-hybrid memory (CXL-HM) for multi-turn LLM serving. CXL-HM combines a small amount of in-device DRAM with large SSD-backed capacity behind a CXL interface. By exploiting the read-dominant, predictable, and append-only nature of multi-turn KV-cache access, HyMCache rethinks DRAM management within CXL-HM to efficiently support TB-scale SSD-backed KV reuse. It uses request-level prefix prefetching and opportunistic write buffering to stage latency-critical reads in device DRAM, enabling DRAM-scale KV-cache efficiency at SSD-level cost. We evaluate HyMCache on a real CXL-HM prototype under both single-aggregator and PD-disaggregated serving configurations. Under the same DRAM budget, HyMCache outperforms local LMCache by 3.0x in single-node serving and 1.45x in PD-disaggregated serving. Compared with 1 TB distributed-DRAM Mooncake, HyMCache incurs about 30% lower performance but uses 16x less DRAM.",
+      "authors": [
+        "Hakbeom Jang",
+        "Inho Song",
+        "Sam H. Noh",
+        "Jongryool Kim"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-07-20T16:35:47+00:00",
+      "link": "https://arxiv.org/pdf/2607.18141v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache framework for multi-turn LLM serving with CXL-hybrid memory",
+      "llm_evidence_cn": "面向多轮LLM服务的KV缓存框架，采用CXL混合内存",
+      "llm_evidence": "面向多轮LLM服务的KV缓存框架，采用CXL混合内存",
+      "canonical_evidence": "面向多轮LLM服务的KV缓存框架，采用CXL混合内存",
+      "llm_tldr_en": "HyMCache integrates CXL-hybrid memory for multi-turn LLM serving, exploiting read-dominant, append-only KV cache patterns to scale to TB-level shared context capacity.",
+      "llm_tldr_cn": "长上下文、多轮LLM工作负载中KV缓存复用日益重要，但GPU HBM和主机DRAM成本高昂，难以扩展至TB级共享上下文。HyMCache提出将CXL混合内存（小容量DRAM+大容量SSD）集成到KV缓存框架中，利用多轮场景中KV缓存的读主导、可预测和追加写入特性，设计高效存储和访问策略。实验表明HyMCache在降低硬件成本的同时支持更大容量的KV缓存复用，显著提升多轮推理吞吐量。",
+      "llm_tldr": "长上下文、多轮LLM工作负载中KV缓存复用日益重要，但GPU HBM和主机DRAM成本高昂，难以扩展至TB级共享上下文。HyMCache提出将CXL混合内存（小容量DRAM+大容量SSD）集成到KV缓存框架中，利用多轮场景中KV缓存的读主导、可预测和追加写入特性，设计高效存储和访问策略。实验表明HyMCache在降低硬件成本的同时支持更大容量的KV缓存复用，显著提升多轮推理吞吐量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17019v1",
+      "source": "arxiv",
+      "title": "Regularize or Localize: When Training-Time KV-Cache Geometry Pays Under Quantization",
+      "abstract": "We study whether \\sigreg -- LeJEPA's anti-collapse objective -- can reshape representations during standard autoregressive language-model pretraining, and when the resulting geometry helps \\kv-cache quantization. We train 110M-parameter models on 10B FineWeb tokens and report three findings. \\textbf{(1)} At $λ{=}0.01$, \\sigreg reduces hidden-state pairwise-cosine anisotropy by $38\\%$ across three paired seeds. Perplexity increases by less than $0.35\\%$ in every pair, with no consistent zero-shot loss. \\textbf{(2)} This change does not propagate from hidden states to the \\kv cache. Applying \\sigreg directly to K and V during continued training, however, reduces mean cache anisotropy by $94\\%$ across four checkpoints. A matched continuation without the \\kv term leaves cache geometry nearly unchanged, and the frozen-trunk retrofits we tested do not reproduce the effect. \\textbf{(3)} Under untransformed symmetric group-free quantization, direct \\kv regularization is the only training condition that prefers per-channel scaling in all three seeds, and under that same 3-bit per-channel scheme the baseline incurs $4.3$--$7.9\\times$ the directly regularized model's \\dnll. Under the full simulated KIVI-style configuration (mixed arrangement, zero-points, grouped scales), however, all models reach near-parity, including when storage overhead is approximately matched. In this 110M regime, the training intervention helps when quantizer scales are coarse; the advantage vanishes under the tested combination of token-local grouping, mixed \\kv scaling, and zero-points. To our knowledge this is the first training-time \\emph{distributional} regularization of standard \\kv-cache geometry evaluated against post-hoc cache quantization.",
+      "authors": [
+        "Libo Sun",
+        "Po-Wei Harn",
+        "Zewei Zhang",
+        "Peixiong He",
+        "Xiao Qin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-19T01:13:09+00:00",
+      "link": "https://arxiv.org/pdf/2607.17019v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV-cache geometry reshaping for quantization",
+      "llm_evidence_cn": "通过正则化改变KV缓存几何结构以利于量化",
+      "llm_evidence": "通过正则化改变KV缓存几何结构以利于量化",
+      "canonical_evidence": "通过正则化改变KV缓存几何结构以利于量化",
+      "llm_tldr_en": "Shows that applying sigreg regularization directly to K and V during continued training reduces KV cache anisotropy by 94% and improves quantization efficiency for LLM inference.",
+      "llm_tldr_cn": "标准预训练中隐藏状态的正则化不影响KV缓存。本文提出在持续训练中直接对K和V施加sigreg正则化，将KV缓存的各向异性降低94%，且几乎不损失困惑度，有效提升量化后缓存质量，降低推理内存。",
+      "llm_tldr": "标准预训练中隐藏状态的正则化不影响KV缓存。本文提出在持续训练中直接对K和V施加sigreg正则化，将KV缓存的各向异性降低94%，且几乎不损失困惑度，有效提升量化后缓存质量，降低推理内存。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17486v1",
+      "source": "arxiv",
+      "title": "SALT: Salience-Aware Lexical Trie for Long-Context Compression",
+      "abstract": "As large language models (LLMs) process increasingly longer prompts, computation and KV-cache memory costs have emerged as major bottlenecks in inference systems. Existing input-level prompt compression methods address this, but rank each sentence by a scalar relevance score, treating the document as an unstructured pool of words and sentences. Under tight budgets, this causes theme collapse, where the dominant theme(s) of a document consumes the budget, discarding less-frequent yet task-relevant themes. Preserving thematic coverage instead requires allocating the budget across recurring themes rather than scoring sentences in isolation. To this end, we propose SALT, a model-agnostic extractive framework that organizes per-sentence keywords into a trie ordered by sentence frequency (SF), a lightweight, reusable proxy for document thematic structure. This trie-based organization smooths memory allocation and prevents dominant themes from monopolizing the budget. Multi-anchor retrieval activates trie nodes labeled by query keywords at any depth, and the trie persists across dialogue turns, supporting multi-turn use without re-encoding the document. By preserving document themes, SALT reduces the prefill computation and memory cost of long-context prompts while remaining composable with KV-cache methods that target decoding-time latency and memory.",
+      "authors": [
+        "Oteo Mamo",
+        "Hyunjin Yi",
+        "Joydhriti Choudhury",
+        "Shangqian Gao",
+        "Weikuan Yu"
+      ],
+      "primary_category": "cs.PF",
+      "categories": [
+        "cs.PF",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-20T02:20:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.17486v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Long-context compression via salience-aware lexical trie",
+      "llm_evidence_cn": "通过显著感知词汇树实现长上下文压缩",
+      "llm_evidence": "通过显著感知词汇树实现长上下文压缩",
+      "canonical_evidence": "通过显著感知词汇树实现长上下文压缩",
+      "llm_tldr_en": "Proposes SALT, a model-agnostic extractive framework that organizes keywords into a trie to preserve thematic coverage under budget, reducing KV-cache memory for long-context LLM inference.",
+      "llm_tldr_cn": "长上下文推理中KV缓存内存大，现有压缩方法按句子打分导致主题坍缩。SALT将句子关键词组织成词汇树，按主题分配预算，在压缩比高时仍保留多样主题。作为输入级压缩，可减少KV缓存内存，加速LLM长上下文推理。",
+      "llm_tldr": "长上下文推理中KV缓存内存大，现有压缩方法按句子打分导致主题坍缩。SALT将句子关键词组织成词汇树，按主题分配预算，在压缩比高时仍保留多样主题。作为输入级压缩，可减少KV缓存内存，加速LLM长上下文推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.16339v1",
+      "source": "arxiv",
+      "title": "LaCache: Exact Caching and Precision-Adaptive Inference for Diffusion Large Language Models",
+      "abstract": "Diffusion-based Large Language Models(DLLMs) enable parallel generation via Semi-Autoregressive (SAR) decoding in text generation. However, current methods suffer from severe operator-level redundancy: they recompute the entire sequence during denoising steps, ignoring that the prefix and masked suffix remain invariant within a block. We propose LaCache, a training-free acceleration framework that alleviates this redundancy through lossless caching and mixed precision. Specifically, LaCache employs Lossless State Memoization (LSM) by caching three types of intermediate results: (i) EmbedCache for embedding outputs, (ii) RoPECache for token-wise pre-attention states, and (iii) FACache for the online softmax statistics within FlashAttention. These caches allow the model to skip redundant computation on unchanged tokens without altering the output. To further alleviate memory-bandwidth bottlenecks, LaCache inegrates a per-group FP8 quantization strategy for FFN layers, tailored to step-dependent activation distributions across the diffusion process. Experiments demonstrate that LaCache alone achieves approximately 1.3X end-to-end speedup over vanilla DLLM. When combined with existing acceleration methods, LaCache reaches up to 40.2X end-to-end speedup while maintaining comparable task accuracy.",
+      "authors": [
+        "Xingru Chen",
+        "Zelang Liang",
+        "Yongjia Ma",
+        "Jiqing Zhan",
+        "Shuling Yang",
+        "Lian Wen",
+        "Kun Zhan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-16T10:49:15+00:00",
+      "link": "https://arxiv.org/pdf/2607.16339v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "caches intermediate states to avoid recomputation",
+      "llm_evidence_cn": "缓存中间状态避免重计算",
+      "llm_evidence": "缓存中间状态避免重计算",
+      "canonical_evidence": "缓存中间状态避免重计算",
+      "llm_tldr_en": "LaCache caches embedding, RoPE, and FA softmax states during diffusion LLM denoising, reducing operator-level redundancy and achieving lossless acceleration without training.",
+      "llm_tldr_cn": "扩散大语言模型在去噪步骤中存在算子级冗余，前缀和掩码后缀在块内保持不变但被重复计算。LaCache提出无需训练的无损缓存框架，通过缓存嵌入输出、旋转位置编码预注意力状态和FlashAttention在线softmax统计量，消除冗余计算并支持混合精度推理。实验表明该方法在保持精度的同时显著加速SAR解码，为扩散LLM高效部署提供了轻量级方案。",
+      "llm_tldr": "扩散大语言模型在去噪步骤中存在算子级冗余，前缀和掩码后缀在块内保持不变但被重复计算。LaCache提出无需训练的无损缓存框架，通过缓存嵌入输出、旋转位置编码预注意力状态和FlashAttention在线softmax统计量，消除冗余计算并支持混合精度推理。实验表明该方法在保持精度的同时显著加速SAR解码，为扩散LLM高效部署提供了轻量级方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.17652v1",
+      "source": "arxiv",
+      "title": "FlowBlock: Wavefront-Parallel Decoding for Self-Correcting Diffusion Language Models",
+      "abstract": "Block-wise diffusion large language models (dLLMs) decode sequentially at the block level, enabling effective KV-cache reuse across blocks but making inter-block decoding strictly serial. Prior work has attempted to unlock inter-block parallelism through post-training methods, but achieves only modest speedups and often degrades accuracy. We observe that self-correcting dLLMs offer a training-free alternative: token-to-token (T2T) editing can repair tokens drafted with a slightly stale upstream context, so a downstream block requires only an informative draft rather than a finalized predecessor. This turns block finality from a hard dependency into a scheduling resource. We propose \\textbf{\\flowblock{}}, a training-free parallel decoding framework built on two mechanisms. (i) \\emph{Gated Wavefront Decoding} admits blocks into a bounded wavefront only when a readiness gate is satisfied, jointly refines active blocks via T2T editing, and commits blocks in order under a windowed block-causal mask that preserves exact frozen-prefix KV caches reuse. (ii) \\emph{Heterogeneous Wavefront Packing} assigns each request an independent wavefront while packing asynchronous windows into dense, shape-stable batched forwards. Across different benchmarks, \\flowblock{} improves tokens per second (TPS) over LLaDA-2.1 and LLaDA-2.0, two serial block-wise dLLMs, by up to 2.95$\\times$ and 4.01$\\times$, while reducing latency by up to 53.6\\% and 77.1\\%, respectively. It also improves average accuracy by 1.3 points. Compared with D2F, a training-based inter-block-parallel baseline, \\flowblock{} achieves higher accuracy and up to 16$\\times$ higher batched serving throughput.",
+      "authors": [
+        "Bing Tian",
+        "Haikun Liu",
+        "Xiaocheng Zhong",
+        "Zhuohui Duan",
+        "Zhaokai Luo",
+        "Huayi Jin",
+        "Zhiyong Wang",
+        "Xiaofei Liao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-20T08:05:03+00:00",
+      "link": "https://arxiv.org/pdf/2607.17652v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV-cache reuse across blocks in dLLMs",
+      "llm_evidence_cn": "在扩散LLM中跨块重用KV缓存",
+      "llm_evidence": "在扩散LLM中跨块重用KV缓存",
+      "canonical_evidence": "在扩散LLM中跨块重用KV缓存",
+      "llm_tldr_en": "Proposes FlowBlock for wavefront-parallel decoding in self-correcting diffusion LLMs, enabling training-free inter-block parallelism while reusing KV caches across blocks.",
+      "llm_tldr_cn": "扩散语言模型（dLLM）的块级解码虽可重用KV缓存，但块间解码串行。本工作利用自纠正dLLM的token编辑能力，将块最终性从硬依赖变为调度资源，提出训练无关的FlowBlock并行解码方法，实现块间并行且不降低精度。",
+      "llm_tldr": "扩散语言模型（dLLM）的块级解码虽可重用KV缓存，但块间解码串行。本工作利用自纠正dLLM的token编辑能力，将块最终性从硬依赖变为调度资源，提出训练无关的FlowBlock并行解码方法，实现块间并行且不降低精度。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
