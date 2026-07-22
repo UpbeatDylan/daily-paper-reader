@@ -1,0 +1,106 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-22T20:05:26.466752+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2607.19214v1",
+      "source": "arxiv",
+      "title": "Keeping the Cache Warm Pays: Keepalive Economics for Agentic Workloads",
+      "abstract": "Frontier LLM providers cache a prompt's processed prefix so that a follow-up request sharing it pays ~10% of the input price and skips most of the prefill latency. Agentic workloads systematically destroy this benefit: the agent sends a request, runs a tool or waits for approval for minutes, and by the time the follow-up is sent the cached prefix has been evicted, so the agent pays the full prefill again. A client-side keepalive, replaying the prefix on a timer during the pause, prevents this, and it is individually rational: across Anthropic, OpenAI, Google, and DeepSeek we show that a keepalive holds the prefix warm through gaps where idle baselines are evicted, cutting the post-pause request cost by up to 12.5x. The strategic question is the ping frequency, and it has a clean answer: keepalive cost falls monotonically in the interval, so the economical choice is the largest interval safely under the provider's TTL, about 4 minutes at Anthropic's 5-minute TTL rather than the 30-second convention, and the strategy breaks even against a re-prefill at idle ~tau(w/r - 1) (~46 min for Anthropic, ~36 min for OpenAI and DeepSeek). Because the benefit is real and bounded only by each user's own bill, rational adoption is universal adoption; and since cache residency is priced per read rather than per token-hour, a keepalive-saturated tier gives LRU eviction nothing to rank. We argue this externality will push providers to meter cache residency directly, and one already does. We derive the operator's policy until then.",
+      "authors": [
+        "Maxim Khailo"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-07-21T15:45:47+00:00",
+      "link": "https://arxiv.org/pdf/2607.19214v1",
+      "tags": [
+        "keyword:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "keepalive for prompt prefix cache to reduce latency",
+      "llm_evidence_cn": "通过保活机制保持提示前缀缓存以减少延迟",
+      "llm_evidence": "通过保活机制保持提示前缀缓存以减少延迟",
+      "canonical_evidence": "通过保活机制保持提示前缀缓存以减少延迟",
+      "llm_tldr_en": "Keeping the Cache Warm Pays analyzes the economics of client-side keepalive pings to prevent eviction of cached prompt prefixes, reducing post-pause request costs by up to 12.5x for agentic workloads.",
+      "llm_tldr_cn": "代理工作负载中，由于工具调用间隔，缓存的前缀常被驱逐导致重复预填充，成本高昂。本文提出客户端保活机制，在空闲期重放前缀以保持缓存有效。在主流LLM API上验证，后暂停请求成本降低至1/12.5，并为最优保活频率提供了策略指导。",
+      "llm_tldr": "代理工作负载中，由于工具调用间隔，缓存的前缀常被驱逐导致重复预填充，成本高昂。本文提出客户端保活机制，在空闲期重放前缀以保持缓存有效。在主流LLM API上验证，后暂停请求成本降低至1/12.5，并为最优保活频率提供了策略指导。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.14952v1",
+      "source": "arxiv",
+      "title": "LongStraw: Long-Context RL Beyond 2M Tokens under a Fixed GPU Budget",
+      "abstract": "A growing gap separates inference context lengths from RL post-training: inference systems are approaching million-token contexts, while post-training workloads often remain at 256K tokens or below and rely on length generalization at deployment. The gap is especially important for AI agents, whose observations, tool outputs, documents, and prior decisions accumulate over long trajectories. LongStraw is an architecture-aware execution stack for million-token RL post-training under a fixed GPU budget, instantiated with Group Relative Policy Optimization (GRPO). It evaluates the shared prompt without autograd, retains only model-specific state needed by later tokens, and replays short response branches one at a time, reducing the live training graph at the cost of additional replay time. We implement it for the hybrid recurrent and full-attention Qwen3.6-27B and the compressed-attention mixture-of-experts GLM-5.2. On eight H20 GPUs, LongStraw completes grouped Qwen scoring and response backward at 2.1M positions for groups of 2 and 8; increasing the group size adds only 0.21 GB of peak allocated memory, while a separate stress test reaches 4.46M positions. On 32 H20 GPUs, we validate the end-to-end LongStraw execution path for a 2.1M-token prompt across all 78 layers of GLM-5.2. These experiments establish execution capacity rather than complete training correctness because the captured prompt state is detached and some distributed forward and gradient composition paths remain incomplete.",
+      "authors": [
+        "Changhai Zhou",
+        "Kieran Liu",
+        "Yuhua Zhou",
+        "Qian Qiao",
+        "Jun Gao",
+        "Harry Zhang",
+        "Irvine Lu",
+        "Nolan Ho",
+        "Lucian Li",
+        "Andrew Lei",
+        "Cleon Cheng",
+        "Steven Chiang",
+        "Yihang Zeng",
+        "Di Zhang",
+        "Rio Yang",
+        "Kaijie Chen",
+        "Andrew Chen",
+        "Pony Ma",
+        "Weizhong Zhang",
+        "Cheng Jin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-07-16T13:00:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.14952v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "long-context RL post-training with efficient memory management",
+      "llm_evidence_cn": "长上下文强化学习后训练的高效内存管理",
+      "llm_evidence": "长上下文强化学习后训练的高效内存管理",
+      "canonical_evidence": "长上下文强化学习后训练的高效内存管理",
+      "llm_tldr_en": "Introduces LongStraw, an architecture-aware execution stack for million-token RL post-training under fixed GPU budget, enabling efficient long-context inference by sharing prompts and replaying response branches.",
+      "llm_tldr_cn": "针对长上下文RL后训练内存不足的问题，提出LongStraw：一种架构感知的执行栈，在固定GPU预算下实现百万token训练。通过无需梯度的共享提示和短响应分支回放，大幅减少训练图大小。该方法支持AI智能体等长轨迹场景的推理加速。",
+      "llm_tldr": "针对长上下文RL后训练内存不足的问题，提出LongStraw：一种架构感知的执行栈，在固定GPU预算下实现百万token训练。通过无需梯度的共享提示和短响应分支回放，大幅减少训练图大小。该方法支持AI智能体等长轨迹场景的推理加速。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
