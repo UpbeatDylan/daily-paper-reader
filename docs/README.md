@@ -6,28 +6,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-22
-- 运行时间：2026-07-22 20:08:16 UTC
+- 最新运行日期：2026-07-23
+- 运行时间：2026-07-23 20:03:10 UTC
 - 运行状态：成功
-- 本次总论文数：2
-- 精读区：1
+- 本次总论文数：3
+- 精读区：2
 - 速读区：1
 
 ### 今日简报（AI）
-今日精读Agent工作负载缓存预热的经济性研究，速读长上下文RL扩展到2M tokens的固定GPU预算方法。  
-最值得关注的是缓存预热对Agent推理成本效益显著（9分），以及固定GPU预算下长上下文RL突破2M tokens的技术路径。  
-建议优先阅读精读文章优化Agent部署成本，并结合LongStraw思路探索长上下文训练。
-- 详情：[/202607/22/README](/202607/22/README)
+今日聚焦3篇论文，涵盖KV cache复用安全威胁、长时序视觉推理及扩散模型精准缓存。最值得关注的是HijackKV揭示的KV cache位置无关复用漏洞与ChronoStitch提出的免训练长时序视觉组合方法。建议优先阅读HijackKV以了解KV cache安全问题，ChronoStitch可为视频理解任务提供新思路。
+- 详情：[/202607/23/README](/202607/23/README)
 
 ### 精读区论文标签
-1. [Keeping the Cache Warm Pays: Keepalive Economics for Agentic Workloads](/202607/22/2607.19214v1-keeping-the-cache-warm-pays-keepalive-economics-for-agentic-workloads)  
+1. [HijackKV: New Threat in Position-Independent KV Cache Reuse](/202607/23/2607.19957v1-hijackkv-new-threat-in-position-independent-kv-cache-reuse)  
    标签：评分：9.0/10、query:pic
-   evidence：通过保活机制保持提示前缀缓存以减少延迟
+   evidence：直接研究位置无关KV缓存重用并提出劫持威胁
+2. [ChronoStitch: Training-Free Composition of Visual KV Memories for Long-Horizon Temporal Reasoning](/202607/23/2607.19547v1-chronostitch-training-free-composition-of-visual-kv-memories-for-long-horizon-temporal-reasoning)  
+   标签：评分：8.0/10、query:pic
+   evidence：无训练方法重新基准KV位置以组合视觉缓存块
 
 ### 速读区论文标签
-1. [LongStraw: Long-Context RL Beyond 2M Tokens under a Fixed GPU Budget](/202607/22/2607.14952v1-longstraw-long-context-rl-beyond-2m-tokens-under-a-fixed-gpu-budget)  
+1. [LaCache: Exact Caching and Precision-Adaptive Inference for Diffusion Large Language Models](/202607/23/2607.16339v2-lacache-exact-caching-and-precision-adaptive-inference-for-diffusion-large-language-models)  
    标签：评分：7.0/10、query:pic
-   evidence：长上下文强化学习后训练的高效内存管理
+   evidence：在扩散大语言模型中缓存前缀和遮蔽后缀状态
 
 
 <div class="dpr-home-promo-card">
