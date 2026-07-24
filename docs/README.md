@@ -6,29 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-23
-- 运行时间：2026-07-23 20:03:10 UTC
+- 最新运行日期：2026-07-24
+- 运行时间：2026-07-24 21:38:46 UTC
 - 运行状态：成功
-- 本次总论文数：3
-- 精读区：2
-- 速读区：1
+- 本次总论文数：1
+- 精读区：1
+- 速读区：0
 
 ### 今日简报（AI）
-今日聚焦3篇论文，涵盖KV cache复用安全威胁、长时序视觉推理及扩散模型精准缓存。最值得关注的是HijackKV揭示的KV cache位置无关复用漏洞与ChronoStitch提出的免训练长时序视觉组合方法。建议优先阅读HijackKV以了解KV cache安全问题，ChronoStitch可为视频理解任务提供新思路。
-- 详情：[/202607/23/README](/202607/23/README)
+今天精读了一篇满分论文《Windowed-MTP》，聚焦百万token上下文下的推理效率优化。  
+论文提出窗口化多token预测方法，有效消除全上下文草稿KV缓存开销，显著降低长文本推理延迟。  
+后续可关注该技术如何用于加速大模型处理超长文档或对话场景。
+- 详情：[/202607/24/README](/202607/24/README)
 
 ### 精读区论文标签
-1. [HijackKV: New Threat in Position-Independent KV Cache Reuse](/202607/23/2607.19957v1-hijackkv-new-threat-in-position-independent-kv-cache-reuse)  
-   标签：评分：9.0/10、query:pic
-   evidence：直接研究位置无关KV缓存重用并提出劫持威胁
-2. [ChronoStitch: Training-Free Composition of Visual KV Memories for Long-Horizon Temporal Reasoning](/202607/23/2607.19547v1-chronostitch-training-free-composition-of-visual-kv-memories-for-long-horizon-temporal-reasoning)  
-   标签：评分：8.0/10、query:pic
-   evidence：无训练方法重新基准KV位置以组合视觉缓存块
+1. [Windowed-MTP: Removing the Full-Context Draft-KV Tax at Million-Token Context](/202607/24/2607.21535v1-windowed-mtp-removing-the-full-context-draft-kv-tax-at-million-token-context)  
+   标签：评分：10.0/10、query:pic
+   evidence：消除百万token上下文投机解码中的全上下文草稿KV开销
 
 ### 速读区论文标签
-1. [LaCache: Exact Caching and Precision-Adaptive Inference for Diffusion Large Language Models](/202607/23/2607.16339v2-lacache-exact-caching-and-precision-adaptive-inference-for-diffusion-large-language-models)  
-   标签：评分：7.0/10、query:pic
-   evidence：在扩散大语言模型中缓存前缀和遮蔽后缀状态
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">

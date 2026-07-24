@@ -1,0 +1,53 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-24T21:37:03.039182+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2607.21535v1",
+      "source": "arxiv",
+      "title": "Windowed-MTP: Removing the Full-Context Draft-KV Tax at Million-Token Context",
+      "abstract": "Speculative decoding accelerates autoregressive generation by having a cheap draft propose tokens that a target verifies in parallel. Frontier models increasingly ship a built-in Multi-Token-Prediction (MTP/NEXTN) draft head under the assumption that the draft is negligibly cheap. At million-token context this breaks: an MTP draft head typically runs full attention over the entire KV cache at every draft step, so its read grows linearly with context and comes to dominate the draft cost -- precisely where speculation is most valuable. The effect compounds with draft length (a deep native draft can turn net-negative, slower than no speculation) and sharpens under hybrid/linear-attention targets, where cheaper verification leaves the draft's full-attention read exposed. We apply a StreamingLLM-style sliding window plus attention sink to the draft's attention only (Windowed-MTP), leaving full-attention verification intact. It is training-free, drop-in, and lossless by construction: the full-attention target still decides every accepted token, so windowing changes only which tokens are proposed, never which are accepted. It bounds the draft's KV working set to a constant, dropping ~99% of KV entries at 1M. Across three architecture families (Qwen GDN-MoE 35B/122B and a Mamba2-hybrid NoPE 120B) at 1M context on a single GPU in SGLang, windowing cuts the per-decode-step cost over the shipping native MTP draft by +28% to +44%, an input-invariant margin that widens with context. Since per-token latency is this cost divided by acceptance length, at matched acceptance end-to-end decode latency improves by the same amount, and more where windowing also lifts acceptance, while preserving the target's verified output distribution. Finally, the unread draft KV -- 7.7-11% of total KV at 1M -- is reclaimed via a compact ring buffer at no acceptance or quality cost.",
+      "authors": [
+        "Alagappan Valliappan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL",
+        "cs.PF"
+      ],
+      "published": "2026-07-23T17:21:44+00:00",
+      "link": "https://arxiv.org/pdf/2607.21535v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Removes full-context draft-KV tax for million-token context speculative decoding",
+      "llm_evidence_cn": "消除百万token上下文投机解码中的全上下文草稿KV开销",
+      "llm_evidence": "消除百万token上下文投机解码中的全上下文草稿KV开销",
+      "canonical_evidence": "消除百万token上下文投机解码中的全上下文草稿KV开销",
+      "llm_tldr_en": "Windowed-MTP removes the full-context draft-KV tax in speculative decoding at million-token context, preventing net-negative slowdown from deep draft heads.",
+      "llm_tldr_cn": "本文指出在百万级长上下文下，多token预测草稿头因需对完整KV缓存做注意力计算而成为开销主导，甚至导致投机解码比非投机更慢。为此提出Windowed-MTP，通过窗口化限制草稿注意力范围，消除全上下文KV税，在长上下文场景下加速生成并防止深度草稿带来的负收益。",
+      "llm_tldr": "本文指出在百万级长上下文下，多token预测草稿头因需对完整KV缓存做注意力计算而成为开销主导，甚至导致投机解码比非投机更慢。为此提出Windowed-MTP，通过窗口化限制草稿注意力范围，消除全上下文KV税，在长上下文场景下加速生成并防止深度草稿带来的负收益。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

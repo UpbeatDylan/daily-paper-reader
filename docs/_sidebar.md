@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-24 <!--dpr-date:20260724-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/24/2607.21535v1-windowed-mtp-removing-the-full-context-draft-kv-tax-at-million-token-context" data-sidebar-item="{&quot;title&quot;: &quot;Windowed-MTP: Removing the Full-Context Draft-KV Tax at Million-Token Context&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.21535v1-windowed-mtp-removing-the-full-context-draft-kv-tax-at-million-token-context&quot;, &quot;score&quot;: &quot;10.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;消除百万token上下文投机解码中的全上下文草稿KV开销&quot;}">Windowed-MTP: Removing the Full-Context Draft-KV Tax at Million-Token Context</a>
   * 2026-07-23 <!--dpr-date:20260723-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/23/2607.19957v1-hijackkv-new-threat-in-position-independent-kv-cache-reuse" data-sidebar-item="{&quot;title&quot;: &quot;HijackKV: New Threat in Position-Independent KV Cache Reuse&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.19957v1-hijackkv-new-threat-in-position-independent-kv-cache-reuse&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;直接研究位置无关KV缓存重用并提出劫持威胁&quot;}">HijackKV: New Threat in Position-Independent KV Cache Reuse</a>
