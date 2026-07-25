@@ -6,23 +6,19 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-24
-- 运行时间：2026-07-24 21:38:46 UTC
+- 最新运行日期：2026-07-25
+- 运行时间：2026-07-25 21:20:13 UTC
 - 运行状态：成功
-- 本次总论文数：1
-- 精读区：1
+- 本次总论文数：0
+- 精读区：0
 - 速读区：0
 
 ### 今日简报（AI）
-今天精读了一篇满分论文《Windowed-MTP》，聚焦百万token上下文下的推理效率优化。  
-论文提出窗口化多token预测方法，有效消除全上下文草稿KV缓存开销，显著降低长文本推理延迟。  
-后续可关注该技术如何用于加速大模型处理超长文档或对话场景。
-- 详情：[/202607/24/README](/202607/24/README)
+> 今日无新推荐，系统未产出可展示论文。
+- 详情：[/202607/25/README](/202607/25/README)
 
 ### 精读区论文标签
-1. [Windowed-MTP: Removing the Full-Context Draft-KV Tax at Million-Token Context](/202607/24/2607.21535v1-windowed-mtp-removing-the-full-context-draft-kv-tax-at-million-token-context)  
-   标签：评分：10.0/10、query:pic
-   evidence：消除百万token上下文投机解码中的全上下文草稿KV开销
+- 本次无精读推荐。
 
 ### 速读区论文标签
 - 本次无速读推荐。
