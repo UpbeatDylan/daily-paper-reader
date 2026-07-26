@@ -1,0 +1,92 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-26T20:50:44.244847+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2607.19456v1",
+      "source": "arxiv",
+      "title": "MoA-Structured Decode Attention DNF Derivation, KV-Cache Accumulation, GQA/MQA, and OpenACC Kernel",
+      "abstract": "We derive four memory-optimal inference artifacts for transformer attention using the Mathematics of Arrays (MoA), each following directly from the forward-pass Denotational Normal Form (DNF) of with the query-row index fixed to the current decode step. The artifacts are: (1)~a single-query decode DNF in which the $ψ$-reduction eliminates the $K^\\top$ buffer algebraically, achieving $(d_k + nd_k+ nd_v+ d_v)\\times4\\,{B}$ Dynamic Random Access Memory (DRAM) traffic result numerically verified to $\\|{err}\\|_\\leq2\\times10^{-7}$; (2)~a C/OpenACC Graphics Processing Unit (GPU) kernel with Operational Normal Form (ONF) stride arithmetic and hardware-coalesced memory access, verified to $\\|\\mathrm{err}\\|_\\infty=0$ (exact IEEE-754 floating-point arithmetic); (3)~a multi-step KV-cache with $O(d_k+d_v)$ per-step append via MoA concatenation $\\#$; and (4)~Grouped-Query Attention (GQA) and Multi-Query Attention (MQA) derived via $ψ$-selection, achieving a proven $\\frac {h_q} { h_{kv} }$ reduction in KV traffic. All programs are verified against PyTorch scaled_dot_product_attention.",
+      "authors": [
+        "Lenore Mulin",
+        "Gaetan Hains"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-21T15:50:28+00:00",
+      "link": "https://arxiv.org/pdf/2607.19456v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "directly targets KV-cache accumulation and memory-optimal attention artifacts",
+      "llm_evidence_cn": "直接推导KV缓存累积的最优内存注意力工件",
+      "llm_evidence": "直接推导KV缓存累积的最优内存注意力工件",
+      "canonical_evidence": "直接推导KV缓存累积的最优内存注意力工件",
+      "llm_tldr_en": "This paper derives memory-optimal attention artifacts for transformer decode using MoA, eliminating K^T buffer algebraically and achieving reduced DRAM traffic with KV-cache accumulation.",
+      "llm_tldr_cn": "针对Transformer解码时KV缓存带来的内存开销问题，本文利用数组数学（MoA）推导出四个内存最优的注意力推理工件。通过数学变换消除K^T缓冲区，减少DRAM访问量，并提出OpenACC GPU内核实现硬件合并内存访问。数值验证误差极小，理论上可显著降低KV缓存流量。",
+      "llm_tldr": "针对Transformer解码时KV缓存带来的内存开销问题，本文利用数组数学（MoA）推导出四个内存最优的注意力推理工件。通过数学变换消除K^T缓冲区，减少DRAM访问量，并提出OpenACC GPU内核实现硬件合并内存访问。数值验证误差极小，理论上可显著降低KV缓存流量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.20129v1",
+      "source": "arxiv",
+      "title": "CUSUM-Shaped Inference-Time Monitoring and Targeted Re-Decoding for Quantized Small Language Model Reasoning",
+      "abstract": "Quantized small autoregressive reasoning models can enter long, repetitive, or unproductive trajectories, yet inference-time compute is usually allocated without observing how a trajectory develops. Building on an earlier token-level e-CUSUM controller, we develop MGT-B (Monitoring-Guided Test-time Backtracking), a revised external controller that maps overlapping windows of pre-sampling uncertainty and degeneration features to position-conditional empirical tail probabilities, accumulates mixture betting factors with a CUSUM-shaped reset, and responds to an alarm by estimating a rollback point, restoring token and key-value-cache state, and performing constrained re-decoding. To audit whether the effect persists on problem identities first observed after the manual choice of log threshold h = 10, we retrospectively exclude 260 IDs present in pre-threshold artifacts and retain the chronologically first post-threshold pair for each remaining ID, yielding a 240-pair chronology-audit set. On this set, accuracy changes from 82/240 to 88/240 (+2.50 percentage points; 13 corrections, 7 regressions; exact McNemar p = 0.2632; paired bootstrap 95% interval [-1.25, +6.25]). A broader 467-pair historical-coverage set of seed-matched pairs changes accuracy from 146/467 to 167/467 (+4.50 points; McNemar p = 0.000753), but includes 200 seed-1 IDs available before or during threshold selection and is reported only as an exploratory estimate. All 316 no-alarm outputs in the 467-pair set are identical to vanilla, while the 151 alarmed trajectories contain 29 corrections and 8 regressions. Neither analysis is confirmatory, and the empirical factors are not established as a valid e-process or e-detector. The results support a selective monitoring-and-repair mechanism for the studied MATH-500 setting, rather than a general or theoretically certified reasoning improvement.",
+      "authors": [
+        "El Hassane Ettifouri",
+        "Ayoub Belfatmi",
+        "Mahaman Sanoussi Yahaya Alassan",
+        "Walid Dahhane"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-22T13:34:17+00:00",
+      "link": "https://arxiv.org/pdf/2607.20129v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "restores KV cache state during re-decoding",
+      "llm_evidence_cn": "在重解码过程中恢复键值缓存状态",
+      "llm_evidence": "在重解码过程中恢复键值缓存状态",
+      "canonical_evidence": "在重解码过程中恢复键值缓存状态",
+      "llm_tldr_en": "This paper proposes MGT-B, an external controller that monitors inference trajectories of quantized small language models and triggers re-decoding by restoring key-value cache state, enabling more efficient use of inference compute.",
+      "llm_tldr_cn": "本文针对量化小语言模型推理中可能出现的长重复或低效轨迹问题，提出了MGT-B（监控引导的测试时回溯）外部控制器。该方法通过CUSUM形重置积累混合投注因子，在检测到退化时估计回滚点并恢复令牌和键值缓存状态，执行约束性重解码。实验表明，该方法能有效改善推理质量，同时控制额外计算开销。该工作为推理时缓存管理提供了新思路，直接涉及键值缓存的重用。",
+      "llm_tldr": "本文针对量化小语言模型推理中可能出现的长重复或低效轨迹问题，提出了MGT-B（监控引导的测试时回溯）外部控制器。该方法通过CUSUM形重置积累混合投注因子，在检测到退化时估计回滚点并恢复令牌和键值缓存状态，执行约束性重解码。实验表明，该方法能有效改善推理质量，同时控制额外计算开销。该工作为推理时缓存管理提供了新思路，直接涉及键值缓存的重用。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

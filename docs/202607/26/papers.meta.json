@@ -1,0 +1,39 @@
+{
+  "label": "2026-07-26",
+  "date": "2026-07-26",
+  "generated_at": "2026-07-26T20:52:56",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202607/26/2607.19456v1-moa-structured-decode-attention-dnf-derivation-kv-cache-accumulation-gqamqa-and-openacc-kernel",
+      "section": "deep",
+      "title_en": "MoA-Structured Decode Attention DNF Derivation, KV-Cache Accumulation, GQA/MQA, and OpenACC Kernel",
+      "authors": "Lenore Mulin, Gaetan Hains",
+      "date": "2026-07-21",
+      "pdf": "https://arxiv.org/pdf/2607.19456v1",
+      "score": "9.0",
+      "evidence": "直接推导KV缓存累积的最优内存注意力工件",
+      "tldr": "Transformer自回归解码中注意力计算的内存访问是性能瓶颈。基于数组数学(MoA)，从注意力前向传递的指称范式(DNF)推导出四种内存最优的推理构件：单查询解码DNF通过ψ-归约代数消除K^T缓冲区，实现理论最小DRAM流量；C/OpenACC GPU内核采用ONF步幅算术和合并访问，达到精确IEEE-754浮点；多步KV缓存通过MoA连接实现每步O(d_k+d_v)追加；分组查询注意力(GQA)和多查询注意力(MQA)经ψ-选择推导，KV流量降低h_q/h_kv倍。所有方案均与PyTorch验证一致，为高效推理部署提供了理论保证。",
+      "tags": "query:pic",
+      "abstract_en": "We derive four memory-optimal inference artifacts for transformer attention using the Mathematics of Arrays (MoA), each following directly from the forward-pass Denotational Normal Form (DNF) of with the query-row index fixed to the current decode step. The artifacts are: (1)~a single-query decode DNF in which the $ψ$-reduction eliminates the $K^\\top$ buffer algebraically, achieving $(d_k + nd_k+ nd_v+ d_v)\\times4\\,{B}$ Dynamic Random Access Memory (DRAM) traffic result numerically verified to $\\|{err}\\|_\\leq2\\times10^{-7}$; (2)~a C/OpenACC Graphics Processing Unit (GPU) kernel with Operational Normal Form (ONF) stride arithmetic and hardware-coalesced memory access, verified to $\\|\\mathrm{err}\\|_\\infty=0$ (exact IEEE-754 floating-point arithmetic); (3)~a multi-step KV-cache with $O(d_k+d_v)$ per-step append via MoA concatenation $\\#$; and (4)~Grouped-Query Attention (GQA) and Multi-Query Attention (MQA) derived via $ψ$-selection, achieving a proven $\\frac {h_q} { h_{kv} }$ reduction in KV traffic. All programs are verified against PyTorch scaled_dot_product_attention.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/26/2607.20129v1-cusum-shaped-inference-time-monitoring-and-targeted-re-decoding-for-quantized-small-language-model-reasoning",
+      "section": "quick",
+      "title_en": "CUSUM-Shaped Inference-Time Monitoring and Targeted Re-Decoding for Quantized Small Language Model Reasoning",
+      "authors": "El Hassane Ettifouri, Ayoub Belfatmi, Mahaman Sanoussi Yahaya Alassan, Walid Dahhane",
+      "date": "2026-07-22",
+      "pdf": "https://arxiv.org/pdf/2607.20129v1",
+      "score": "7.0",
+      "evidence": "在重解码过程中恢复键值缓存状态",
+      "tldr": "量化小自回归推理模型在推理时易陷入长重复或低效轨迹，但传统方法缺乏过程监控。本文提出MGT-B，一种基于CUSUM形状的推理时监控与定向重解码外部控制器，通过滑动窗口特征映射和混合赌注累积触发警报，并回滚至关键点执行约束重解码。在MATH-500的240对审计集上，准确率从82/240提升至88/240（+2.5%，p=0.2632不显著）；467对历史集上从146/467升至167/467（+4.5%，p=0.000753显著但含偏差）。结果表明该机制在特定场景下有效，但需谨慎推广。",
+      "tags": "query:pic",
+      "abstract_en": "Quantized small autoregressive reasoning models can enter long, repetitive, or unproductive trajectories, yet inference-time compute is usually allocated without observing how a trajectory develops. Building on an earlier token-level e-CUSUM controller, we develop MGT-B (Monitoring-Guided Test-time Backtracking), a revised external controller that maps overlapping windows of pre-sampling uncertainty and degeneration features to position-conditional empirical tail probabilities, accumulates mixture betting factors with a CUSUM-shaped reset, and responds to an alarm by estimating a rollback point, restoring token and key-value-cache state, and performing constrained re-decoding. To audit whether the effect persists on problem identities first observed after the manual choice of log threshold h = 10, we retrospectively exclude 260 IDs present in pre-threshold artifacts and retain the chronologically first post-threshold pair for each remaining ID, yielding a 240-pair chronology-audit set. On this set, accuracy changes from 82/240 to 88/240 (+2.50 percentage points; 13 corrections, 7 regressions; exact McNemar p = 0.2632; paired bootstrap 95% interval [-1.25, +6.25]). A broader 467-pair historical-coverage set of seed-matched pairs changes accuracy from 146/467 to 167/467 (+4.50 points; McNemar p = 0.000753), but includes 200 seed-1 IDs available before or during threshold selection and is reported only as an exploratory estimate. All 316 no-alarm outputs in the 467-pair set are identical to vanilla, while the 151 alarmed trajectories contain 29 corrections and 8 regressions. Neither analysis is confirmatory, and the empirical factors are not established as a valid e-process or e-detector. The results support a selective monitoring-and-repair mechanism for the studied MATH-500 setting, rather than a general or theoretically certified reasoning improvement.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
