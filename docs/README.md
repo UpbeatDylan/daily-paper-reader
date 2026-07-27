@@ -6,26 +6,27 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-26
-- 运行时间：2026-07-26 20:52:49 UTC
+- 最新运行日期：2026-07-27
+- 运行时间：2026-07-27 21:38:40 UTC
 - 运行状态：成功
 - 本次总论文数：2
-- 精读区：1
-- 速读区：1
+- 精读区：2
+- 速读区：0
 
 ### 今日简报（AI）
-今日精读高分论文探讨MoA结构下注意力DNF推导与KV-Cache优化，速读关注量化小语言模型的推理时监控与重解码。值得关注MoA架构对GQA/MQA的优化及推理时自适应解码策略。建议优先精读MoA相关论文以深入理解显存与计算效率的平衡，再结合量化模型监控技术提升部署稳定性。
-- 详情：[/202607/26/README](/202607/26/README)
+今日精读两篇论文，聚焦大模型解码与长上下文推理加速。重点推荐《HiKV》的层级重要性感知KV缓存硬件加速方案（9.0分）与《RIS-Kernel》的模型无关稀疏注意力架构（8.0分）。建议关注硬件感知的稀疏化方法，并在长上下文场景中验证KV缓存优化效果。
+- 详情：[/202607/27/README](/202607/27/README)
 
 ### 精读区论文标签
-1. [MoA-Structured Decode Attention DNF Derivation, KV-Cache Accumulation, GQA/MQA, and OpenACC Kernel](/202607/26/2607.19456v1-moa-structured-decode-attention-dnf-derivation-kv-cache-accumulation-gqamqa-and-openacc-kernel)  
+1. [HiKV: Hierarchical Importance-Aware KV Cache with Hardware Acceleration for LLM Decoding](/202607/27/2607.22389v1-hikv-hierarchical-importance-aware-kv-cache-with-hardware-acceleration-for-llm-decoding)  
    标签：评分：9.0/10、query:pic
-   evidence：直接推导KV缓存累积的最优内存注意力工件
+   evidence：通过层次重要性压缩KV缓存
+2. [RIS-Kernel: A Model-Agnostic Architecture for Long-Context LLM Inference via Sparse Attention](/202607/27/2607.21927v1-ris-kernel-a-model-agnostic-architecture-for-long-context-llm-inference-via-sparse-attention)  
+   标签：评分：8.0/10、query:pic
+   evidence：提出模型无关的稀疏注意力加速长上下文LLM推理
 
 ### 速读区论文标签
-1. [CUSUM-Shaped Inference-Time Monitoring and Targeted Re-Decoding for Quantized Small Language Model Reasoning](/202607/26/2607.20129v1-cusum-shaped-inference-time-monitoring-and-targeted-re-decoding-for-quantized-small-language-model-reasoning)  
-   标签：评分：7.0/10、query:pic
-   evidence：在重解码过程中恢复键值缓存状态
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">

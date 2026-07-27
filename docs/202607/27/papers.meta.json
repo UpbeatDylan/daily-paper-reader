@@ -1,0 +1,39 @@
+{
+  "label": "2026-07-27",
+  "date": "2026-07-27",
+  "generated_at": "2026-07-27T21:38:45",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202607/27/2607.22389v1-hikv-hierarchical-importance-aware-kv-cache-with-hardware-acceleration-for-llm-decoding",
+      "section": "deep",
+      "title_en": "HiKV: Hierarchical Importance-Aware KV Cache with Hardware Acceleration for LLM Decoding",
+      "authors": "Chao Fang, Jun Yin, Man Shi, Marian Verhelst",
+      "date": "2026-07-24",
+      "pdf": "https://arxiv.org/pdf/2607.22389v1",
+      "score": "9.0",
+      "evidence": "通过层次重要性压缩KV缓存",
+      "tldr": "长上下文LLM解码中，KV缓存持续增长成为内存瓶颈。提出HiKV算法-硬件协同设计，通过两阶段层次重要性压缩：先逐出非重要token，再仅保留每个token的重要元素。专用硬件加速器中可重配置重要性排序器统一两级处理。评测显示注意力计算加速7.95倍，能耗降低90%，精度损失仅1%；外部内存访问减少1.82~4.87倍。整体仅增加8%芯片面积，有效缓解缓存压力。",
+      "tags": "query:pic",
+      "abstract_en": "With the rapid adoption of long-context large language models (LLMs), the continuously growing KV cache during decoding has become the critical memory bottleneck. To tackle this challenge, we propose HiKV, a novel algorithm-hardware co-design that exploits KV cache redundancy through hierarchical importance awareness. Algorithmically, HiKV compresses the KV cache at two granularities: Stage I evicts unimportant tokens within a fixed budget, and Stage II further loads only the significant elements of each retained token, reaching compression ratios unattainable at a single granularity. Architecturally, we develop a dedicated accelerator centered on a reconfigurable importance sorter that switches between the distinct sorting datapaths each stage requires, unifying the two-stage acceleration in one circuit with minimal overhead. Evaluated on representative LLMs, HiKV achieves up to 7.95x speedup and 90% energy reduction in the attention computation over the vanilla KV cache baseline within negligible 1% accuracy loss. Under iso-accuracy constraints, HiKV outperforms state-of-the-art importance-based methods by achieving an additional 1.82~4.87x reduction in external memory accesses. These benefits are enabled by specialized hardware components that add only 8% to the system area.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/27/2607.21927v1-ris-kernel-a-model-agnostic-architecture-for-long-context-llm-inference-via-sparse-attention",
+      "section": "deep",
+      "title_en": "RIS-Kernel: A Model-Agnostic Architecture for Long-Context LLM Inference via Sparse Attention",
+      "authors": "Anderson R. Santos",
+      "date": "2026-07-24",
+      "pdf": "https://arxiv.org/pdf/2607.21927v1",
+      "score": "8.0",
+      "evidence": "提出模型无关的稀疏注意力加速长上下文LLM推理",
+      "tldr": "全自注意力二次复杂度限制了大模型长上下文推理至65K tokens且需昂贵GPU。RIS通过稀疏随机几何将复杂度降至O(N log N)，无需修改权重。在32K tokens上1%密度70种子准确率75%超越原生基线，65K tokens下在普通CPU上实现无OOM推理，验证了稀疏注意力的正则化效应。",
+      "tags": "query:pic",
+      "abstract_en": "Full self-attention in large language models scales as O(N^2), which limits long-context document analysis to 65,536 tokens and requires costly GPU clusters. The Reduced Interaction Sampling (RIS) inference engine addresses this constraint as a model-agnostic architecture. Without modifying weights, RIS reduces self-attention complexity to O(N log N) using sparse stochastic geometry that fits within commodity memory limits. We validate RIS on Qwen2-1.5B-Instruct across two regimes. In controlled evaluations at 32,768 tokens (where native dense attention serves as the upper bound), RIS-Stochastic at 1% density and 70 ensemble seeds achieves 75.00% accuracy, outperforming the native dense baseline (71.88%), while RIS-Stochastic at 5% density and 10 seeds matches it (71.88%). This demonstrates that sparse attention acts as a regularizer: low density (1%) over multiple seeds filters out sequence-level noise, whereas higher density (5%) reintroduces distractor noise. Under the tightest budget, RIS-Structural reaches 68.75% accuracy at 1% density with just 10 seeds, recovering 75% of the contextual gap relative to the zero-context floor (59.38%). At 65,536 tokens, where dense attention triggers out-of-memory faults, RIS yields retrieval gains of up to 14.06 percentage points over the zero-context floor (51.56%), which is confirmed as marginally significant under McNemar's paired test (p = 0.078 < 0.10). All evaluations run on commodity, unaccelerated CPU servers (16-128 GB of RAM), demonstrating that long-context LLM inference is feasible on standard academic hardware without GPU acceleration.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,90 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-27T21:37:01.502108+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2607.22389v1",
+      "source": "arxiv",
+      "title": "HiKV: Hierarchical Importance-Aware KV Cache with Hardware Acceleration for LLM Decoding",
+      "abstract": "With the rapid adoption of long-context large language models (LLMs), the continuously growing KV cache during decoding has become the critical memory bottleneck. To tackle this challenge, we propose HiKV, a novel algorithm-hardware co-design that exploits KV cache redundancy through hierarchical importance awareness. Algorithmically, HiKV compresses the KV cache at two granularities: Stage I evicts unimportant tokens within a fixed budget, and Stage II further loads only the significant elements of each retained token, reaching compression ratios unattainable at a single granularity. Architecturally, we develop a dedicated accelerator centered on a reconfigurable importance sorter that switches between the distinct sorting datapaths each stage requires, unifying the two-stage acceleration in one circuit with minimal overhead. Evaluated on representative LLMs, HiKV achieves up to 7.95x speedup and 90% energy reduction in the attention computation over the vanilla KV cache baseline within negligible 1% accuracy loss. Under iso-accuracy constraints, HiKV outperforms state-of-the-art importance-based methods by achieving an additional 1.82~4.87x reduction in external memory accesses. These benefits are enabled by specialized hardware components that add only 8% to the system area.",
+      "authors": [
+        "Chao Fang",
+        "Jun Yin",
+        "Man Shi",
+        "Marian Verhelst"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-24T15:15:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.22389v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache compression via hierarchical importance",
+      "llm_evidence_cn": "通过层次重要性压缩KV缓存",
+      "llm_evidence": "通过层次重要性压缩KV缓存",
+      "canonical_evidence": "通过层次重要性压缩KV缓存",
+      "llm_tldr_en": "HiKV is an algorithm-hardware co-design that compresses KV cache hierarchically, evicting unimportant tokens and loading only significant elements, with a dedicated accelerator.",
+      "llm_tldr_cn": "HiKV是一种算法-硬件协同设计，通过层次重要性感知压缩KV缓存：第一阶段淘汰不重要的token，第二阶段仅加载每个保留token的重要元素，实现高压缩比设计专用加速器。",
+      "llm_tldr": "HiKV是一种算法-硬件协同设计，通过层次重要性感知压缩KV缓存：第一阶段淘汰不重要的token，第二阶段仅加载每个保留token的重要元素，实现高压缩比设计专用加速器。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21927v1",
+      "source": "arxiv",
+      "title": "RIS-Kernel: A Model-Agnostic Architecture for Long-Context LLM Inference via Sparse Attention",
+      "abstract": "Full self-attention in large language models scales as O(N^2), which limits long-context document analysis to 65,536 tokens and requires costly GPU clusters. The Reduced Interaction Sampling (RIS) inference engine addresses this constraint as a model-agnostic architecture. Without modifying weights, RIS reduces self-attention complexity to O(N log N) using sparse stochastic geometry that fits within commodity memory limits. We validate RIS on Qwen2-1.5B-Instruct across two regimes. In controlled evaluations at 32,768 tokens (where native dense attention serves as the upper bound), RIS-Stochastic at 1% density and 70 ensemble seeds achieves 75.00% accuracy, outperforming the native dense baseline (71.88%), while RIS-Stochastic at 5% density and 10 seeds matches it (71.88%). This demonstrates that sparse attention acts as a regularizer: low density (1%) over multiple seeds filters out sequence-level noise, whereas higher density (5%) reintroduces distractor noise. Under the tightest budget, RIS-Structural reaches 68.75% accuracy at 1% density with just 10 seeds, recovering 75% of the contextual gap relative to the zero-context floor (59.38%). At 65,536 tokens, where dense attention triggers out-of-memory faults, RIS yields retrieval gains of up to 14.06 percentage points over the zero-context floor (51.56%), which is confirmed as marginally significant under McNemar's paired test (p = 0.078 < 0.10). All evaluations run on commodity, unaccelerated CPU servers (16-128 GB of RAM), demonstrating that long-context LLM inference is feasible on standard academic hardware without GPU acceleration.",
+      "authors": [
+        "Anderson R. Santos"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-07-24T03:00:02+00:00",
+      "link": "https://arxiv.org/pdf/2607.21927v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "proposes model-agnostic sparse attention for long-context LLM inference acceleration",
+      "llm_evidence_cn": "提出模型无关的稀疏注意力加速长上下文LLM推理",
+      "llm_evidence": "提出模型无关的稀疏注意力加速长上下文LLM推理",
+      "canonical_evidence": "提出模型无关的稀疏注意力加速长上下文LLM推理",
+      "llm_tldr_en": "RIS-Kernel reduces self-attention complexity to O(N log N) using sparse stochastic geometry, enabling long-context inference on commodity hardware.",
+      "llm_tldr_cn": "针对长上下文LLM推理中全自注意力O(N^2)复杂度导致内存和计算瓶颈的问题，提出RIS-Kernel模型无关架构。通过稀疏随机几何将复杂度降至O(N log N)，在32K tokens上以1%密度达到75% accuracy，超过原生密集注意力。无需修改权重即可在有限资源下处理长上下文。",
+      "llm_tldr": "针对长上下文LLM推理中全自注意力O(N^2)复杂度导致内存和计算瓶颈的问题，提出RIS-Kernel模型无关架构。通过稀疏随机几何将复杂度降至O(N log N)，在32K tokens上以1%密度达到75% accuracy，超过原生密集注意力。无需修改权重即可在有限资源下处理长上下文。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}
