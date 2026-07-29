@@ -1,0 +1,54 @@
+{
+  "label": "2026-07-29",
+  "date": "2026-07-29",
+  "generated_at": "2026-07-29T21:25:13",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202607/29/2607.25357v1-raven-high-recall-sequence-modeling-with-sparse-memory-routing",
+      "section": "deep",
+      "title_en": "Raven: High-Recall Sequence Modeling with Sparse Memory Routing",
+      "authors": "Arshia Afzal, Aviv Bick, Eric P. Xing, Volkan Cevher, Albert Gu",
+      "date": "2026-07-28",
+      "pdf": "https://arxiv.org/pdf/2607.25357v1",
+      "score": "8.0",
+      "evidence": "提出稀疏记忆路由实现线性时间长上下文推理加速",
+      "tldr": "长上下文回忆中，状态空间模型因密集更新导致干扰，滑动窗口注意力因固定窗口导致硬驱逐。Raven通过稀疏内存路由，维护固定内存槽并依输入仅更新子集，缓解了上述问题。在回忆密集型基准上，Raven优于线性时间基线，且能外推至16倍训练长度。这项工作平衡了密集更新与硬驱逐，显著提升了线性时间模型的长程回忆能力。",
+      "tags": "query:pic",
+      "abstract_en": "Long-context recall in linear-time sequence models highlights a tradeoff in how they write to memory. State-based linear models, such as state-space models (SSMs) and linear Transformers, write densely, updating the entire state for each newly arrived token, which leads to interference and makes specific past tokens hard to recover. Sliding-window attention (SWA) exhibits the opposite behavior: it writes sparsely by storing explicit token representations, but only within a fixed window, so recall drops once the relevant token is evicted. Interpolating between these models, we introduce Raven, a linear-time sequence model that maintains a fixed set of memory slots and, at each step, decays and updates only a selected subset via learned, input-dependent routing. This lets Raven mitigate SWA's position-based overwriting and hard eviction while reducing interference from dense state updates in SSMs, thereby preserving long-range content much more effectively. Across recall-intensive benchmarks, Raven is competitive with or outperforms prior linear-time baselines, achieving strong long-context recall where both SWA and SSMs sharply degrade. It remains effective when extrapolating to context lengths as large as 16x its training length, with similar gains in hybrid architectures.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/29/2607.25066v1-addressable-recall-compaction-for-long-context-window-control-in-ai-agents",
+      "section": "quick",
+      "title_en": "Addressable Recall Compaction for Long Context-Window Control in AI Agents",
+      "authors": "Thang Dang, Yuma Ichikawa, Sakina Fatima, Koichi Shirahata",
+      "date": "2026-07-27",
+      "pdf": "https://arxiv.org/pdf/2607.25066v1",
+      "score": "7.0",
+      "evidence": "通过可寻址日志和压缩引用实现上下文缓存",
+      "tldr": "长时LLM代理因累积推理轨迹、动作和工具观测易超出固定上下文窗口。现有压缩方法通过丢弃、总结或检索处理，但常丢失关键细节或恢复不可靠。本文提出ARC，分离归档存储与活跃上下文，将工具观测存入ID可寻址日志并用紧凑引用替换旧内容，代理可通过标识符精确召回。实验表明，ARC在Needle-in-a-Haystack上达99.40%精确准确率，远超基线88.12%，同时降低服务时间与HBM流量。",
+      "tags": "query:pic",
+      "abstract_en": "Long-horizon LLM agents accumulate reasoning traces, actions, and tool observations that can eventually exceed a model's fixed context window. Existing compaction methods address this limitation by discarding, summarizing, or retrieving earlier information, but they may remove task-critical details or fail to recover them reliably. We propose ARC (Addressable Recall Compaction), a context-management framework that separates archival storage from active-context presentation. ARC stores tool observations in an append-only, ID-addressable log and replaces older observations with compact citations when compaction is required. The agent can subsequently use these identifiers to request stored content without re-executing the corresponding tools or depending solely on similarity-based retrieval. We evaluate ARC using Qwen3-8B with a 16k context window and Qwen3-32B with a 32k context window. On the Needle-in-a-Haystack evaluation, ARC achieves an average exact-answer accuracy of 99.40%, compared with 88.12% for the best-performing baseline in our evaluation. ARC also reduces estimated serving time and HBM traffic under our hardware-cost model. On the LongBench-v2 Hard subset, ARC obtains an average accuracy of 29.97%, compared with 28.25% for the best-performing baseline. These results indicate that explicit, address-based recall can improve information retention and serving efficiency relative to the evaluated context-management baselines under the tested settings.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/29/2607.25291v1-cosa-accelerating-long-context-inference-via-proxy-kernel-co-designed-sparse-attention",
+      "section": "quick",
+      "title_en": "CoSA: Accelerating Long-Context Inference via Proxy-Kernel Co-Designed Sparse Attention",
+      "authors": "Yufei Xue, Lin Niu, Hong Liu, Siran Liu, Hanyong Shao, Wei Liu, Guanghua Yu, Jianchen Zhu, Jun Zhang",
+      "date": "2026-07-28",
+      "pdf": "https://arxiv.org/pdf/2607.25291v1",
+      "score": "6.0",
+      "evidence": "针对长上下文推理加速的稀疏注意力方法",
+      "tldr": "长上下文推理中自注意力二次复杂度高，现有代理稀疏方法在预算紧张时丢失重要块导致精度下降。CoSA提出代理-内核协同稀疏注意力，第一阶段KAP生成有序掩码，第二阶段OSK根据在线softmax跳过更多块。在128K上下文下实现4.93倍注意力加速和2.53倍TTFT加速，性能损失可忽略。该协同设计思想为高效长上下文推理提供了新范式。",
+      "tags": "query:pic",
+      "abstract_en": "The quadratic cost of self-attention makes long-context inference prohibitively expensive, and proxy-based block-sparse attention has become a practical remedy. Existing methods typically rely on a proxy to predict a binary sparse mask and a kernel to consume this mask and perform sparse attention computation. Such an approach is effective under moderate budgets. However, as the budget tightens, the estimated proxy inevitably drops some salient blocks, while the kernel can only apply the sparse mask mechanically, leading to an evident drop in model accuracy. We propose CoSA, a two-stage training-free Sparse Attention under proxy-kernel CO-design, which couples a Kernel-Aware Proxy (KAP) with an Ordered-Skipping Kernel (OSK). In the first stage, the KAP selects blocks under a moderate budget and produces an ordered mask that prescribes the order in which KV pages are visited in the kernel inner loop. In the second stage, the OSK applies this mask and skips more blocks under a tightened budget given online-softmax statistics. Across mainstream LLM backbones and long-context benchmarks, CoSA attains higher accuracy at lower budgets. Impressively, CoSA achieves a 4.93$\\times$ attention speedup and reduces end-to-end Time-to-First-Token by 2.53$\\times$ under a context length of 128K with negligible performance degradation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
