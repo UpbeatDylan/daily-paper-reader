@@ -1,0 +1,133 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-30T21:09:36.372163+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2607.27090v1",
+      "source": "arxiv",
+      "title": "InferScale: GPU-Native KV Injection for Personalized LLM Serving",
+      "abstract": "Large language models are increasingly deployed with persistent personalized context, such as accumulated memory profiles or long conversation histories, that is shared across a user's many requests. Production memory systems (e.g., Mem0, MemGPT, and Zep) retrieve a relevant subset of this memory and inject it into the prompt, forcing the serving engine to repeatedly prefill the same content. As the retrieval budget grows, time-to-first-token (TTFT) increases even though the underlying memory is reused across requests.   We present InferScale, a GPU-native LLM memory system that replaces repeated prompt prefilling with reusable KV state. InferScale precomputes each memory fact's KV representation, stores it alongside a semantic embedding on the GPU, retrieves relevant facts at serving time, and injects their KV directly into vLLM's paged cache. To support dynamically assembled memories under rotary position embeddings, we introduce Chunked RoPE, which stores keys before rotation and applies their serving-time positions during injection. However, encoding memory facts independently omits the cross-fact context available during joint prefilling. We mitigate this with Context-Window Encoding, which encodes each memory fact together with a small window of preceding conversation context while caching only the target fact's KV.   InferScale is implemented through vLLM's KV-connector interface, requiring neither engine modifications nor model fine-tuning. Across three open-weight models on LoCoMo, InferScale keeps TTFT nearly constant as the retrieval budget increases: at k=50 it reduces TTFT by 72-79% (3.6-4.8x), achieves 60.3% accuracy versus 63.3% for Mem0 without serving-time recomputation, and delivers 3.7-4.5x the throughput under concurrent load. Reusable KV state thus decouples memory-conditioned serving latency from retrieved-context size while preserving application quality.",
+      "authors": [
+        "Peter Li",
+        "Prashant Pandey"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-07-29T16:18:22+00:00",
+      "link": "https://arxiv.org/pdf/2607.27090v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "KV cache reuse via GPU-native KV injection",
+      "llm_evidence_cn": "通过GPU原生KV注入实现KV缓存复用",
+      "llm_evidence": "通过GPU原生KV注入实现KV缓存复用",
+      "canonical_evidence": "通过GPU原生KV注入实现KV缓存复用",
+      "llm_tldr_en": "InferScale proposes a GPU-native memory system that stores precomputed KV representations of memory facts, avoiding repeated prefilling for personalized LLM serving, reducing TTFT.",
+      "llm_tldr_cn": "针对个性化LLM服务中重复预填充相同记忆内容导致TTFT增加的问题，InferScale提出GPU原生的KV注入系统。它预计算每个记忆事实的KV表示，与语义嵌入一同存储在GPU上，通过检索直接注入KV状态代替重复预填充。实验表明该方法能显著降低时间到首令牌延迟，提升服务效率，为长期上下文推理中的缓存重用提供了高效方案。",
+      "llm_tldr": "针对个性化LLM服务中重复预填充相同记忆内容导致TTFT增加的问题，InferScale提出GPU原生的KV注入系统。它预计算每个记忆事实的KV表示，与语义嵌入一同存储在GPU上，通过检索直接注入KV状态代替重复预填充。实验表明该方法能显著降低时间到首令牌延迟，提升服务效率，为长期上下文推理中的缓存重用提供了高效方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.26475v1",
+      "source": "arxiv",
+      "title": "DualDecoder: Accelerate Long Context LLM Inference by Predictive Prefetch",
+      "abstract": "Long-context inference is becoming a fundamental capability for modern LLM serving, especially driven by emerging agentic applications. Yet it faces a severe memory wall that the KV cache scales proportionally with increasing context length and request concurrency. Existing sparse KV cache methods offload most KV entries to host memory and retrieve only the critical KV entries needed by each decoding step. However, they commonly introduce substantial auxiliary states in GPU memory for KV retrieval management. Our measurements show that these often-overlooked auxiliary states introduce significant memory overhead and become a new bottleneck under high-concurrency workloads.   In this paper, we present DualDecoder, a lightweight serving system for long-context LLM inference that enables efficient sparse KV cache retrieval from host memory. Our key insight is that the critical KV entries required for decoding the next token can be accurately predicted from the preceding speculated token. This predictability enables KV retrieval to be proactively prefetched and overlapped with decoding computation, effectively eliminating the GPU memory overhead of auxiliary states. To achieve this prefetching efficiently, DualDecoder leverages a novel dual-token decoding pipeline that accurately identifies critical KV entries with negligible computational overhead, and designs a layer-aware transfer schedule to overlap KV prefetching with model computation and a layer-scoped memory manager to reduce the GPU runtime buffer. Experimental results show that DualDecoder improves decoding throughput by up to 2.62$\\times$ over state-of-the-art systems while preserving decoding latency and model quality.",
+      "authors": [
+        "Zuning Liang",
+        "Zhiyi Yao",
+        "Qi Chen",
+        "Yuedong Xu",
+        "Hao Dai",
+        "Zhiqiang Ding",
+        "Tongkai Yang",
+        "Jinlong Hou",
+        "Yuan Cheng"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-07-29T05:01:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.26475v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Predictive prefetch to accelerate long-context LLM inference, addressing KV cache memory wall",
+      "llm_evidence_cn": "通过预测性预取加速长上下文LLM推理，解决KV缓存内存墙问题",
+      "llm_evidence": "通过预测性预取加速长上下文LLM推理，解决KV缓存内存墙问题",
+      "canonical_evidence": "通过预测性预取加速长上下文LLM推理，解决KV缓存内存墙问题",
+      "llm_tldr_en": "DualDecoder uses predictive prefetch to reduce KV cache overhead for long-context inference, achieving lower latency and higher throughput.",
+      "llm_tldr_cn": "长上下文推理面临严重的KV缓存内存墙问题，现有稀疏缓存方法引入大量辅助状态成为新瓶颈。DualDecoder提出一种轻量级服务系统，通过预测性预取技术，在解码前预取所需的KV条目，从而减少内存流量和延迟。实验表明，DualDecoder在高并发长上下文场景下显著提升了吞吐量和延迟表现。",
+      "llm_tldr": "长上下文推理面临严重的KV缓存内存墙问题，现有稀疏缓存方法引入大量辅助状态成为新瓶颈。DualDecoder提出一种轻量级服务系统，通过预测性预取技术，在解码前预取所需的KV条目，从而减少内存流量和延迟。实验表明，DualDecoder在高并发长上下文场景下显著提升了吞吐量和延迟表现。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.27187v1",
+      "source": "arxiv",
+      "title": "A Photonic-CXL Memory Appliance for Scalable KV Cache Management in LLM Inference",
+      "abstract": "LLM inference at scale faces a memory wall. The KV cache demands tens of terabytes at hundreds of gigabytes per second, yet no current memory tier delivers both at once. Characterization across multi-generation GPU systems with various LLaMA models shows host memory retrieval achieves up to 100x speedup over re-computation but supports only tens of concurrent long-context users. Electrical CXL pooling theoretically bridges this gap, but switch latency, cable reach limits, and power-scaling issues prevent practical TB-scale deployments. We present the Marvell Photonic Fabric Memory Appliance, a photonic-CXL hybrid architecture replacing electrical switches with a passive fiber shuffle to deliver 32 TB shared memory across 16 hosts via a switch-free full- crossbar topology. Emulation results demonstrate over 50 percent latency reduction versus electrical CXL pools. Simulation results show that the PF Memory Appliance eliminates cache eviction cliffs by improving time-to-first-token by 6.6x for multi-turn conversations workloads.",
+      "authors": [
+        "Jing Ding",
+        "Yash Nishant",
+        "Chandrish Ambati",
+        "Jyothsna Kamati",
+        "Trung Diep"
+      ],
+      "primary_category": "cs.PF",
+      "categories": [
+        "cs.PF"
+      ],
+      "published": "2026-07-29T17:55:38+00:00",
+      "link": "https://arxiv.org/pdf/2607.27187v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "scalable KV cache management",
+      "llm_evidence_cn": "可扩展KV缓存管理",
+      "llm_evidence": "可扩展KV缓存管理",
+      "canonical_evidence": "可扩展KV缓存管理",
+      "llm_tldr_en": "Proposes a photonic-CXL hybrid memory appliance that provides 32TB shared memory for KV cache scaling, enabling efficient long-context LLM inference with up to 100x speedup over recomputation.",
+      "llm_tldr_cn": "大语言模型推理面临内存墙问题，KV缓存需要数十TB容量和数百GB/s带宽。该论文提出基于光子互连的CXL内存设备Marvell Photonic Fabric Memory Appliance，以被动光纤交换代替电交换，实现16主机共享32TB内存，显著降低长上下文推理的延迟。实验表明，主机内存检索相比重计算可达100倍加速，并支持更多并发用户。该架构有效解决了当前存储层级无法同时满足容量和带宽的难题。",
+      "llm_tldr": "大语言模型推理面临内存墙问题，KV缓存需要数十TB容量和数百GB/s带宽。该论文提出基于光子互连的CXL内存设备Marvell Photonic Fabric Memory Appliance，以被动光纤交换代替电交换，实现16主机共享32TB内存，显著降低长上下文推理的延迟。实验表明，主机内存检索相比重计算可达100倍加速，并支持更多并发用户。该架构有效解决了当前存储层级无法同时满足容量和带宽的难题。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

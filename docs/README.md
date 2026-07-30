@@ -6,31 +6,30 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-29
-- 运行时间：2026-07-29 21:25:07 UTC
+- 最新运行日期：2026-07-30
+- 运行时间：2026-07-30 21:11:44 UTC
 - 运行状态：成功
 - 本次总论文数：3
-- 精读区：1
-- 速读区：2
+- 精读区：3
+- 速读区：0
 
 ### 今日简报（AI）
-1) 今日聚焦长上下文与稀疏记忆优化，精读高分论文《Raven》实现高召回序列建模，速读两项相关控制与加速技术。
-2) 最值得关注Raven的稀疏内存路由设计（8.0分），以及地址召回压缩对长上下文窗口控制的有效性（7.0分）。
-3) 建议深入Raven的稀疏路由机制，并尝试将稀疏注意力加速方法应用于长序列推理任务。
-- 详情：[/202607/29/README](/202607/29/README)
+今日精读两篇大模型推理优化论文，聚焦个性化KV注入与长上下文加速。值得关注InferScale的GPU原生KV注入方法及DualDecoder的预测预取技术。建议深入理解KV缓存管理与预测机制以优化部署。
+- 详情：[/202607/30/README](/202607/30/README)
 
 ### 精读区论文标签
-1. [Raven: High-Recall Sequence Modeling with Sparse Memory Routing](/202607/29/2607.25357v1-raven-high-recall-sequence-modeling-with-sparse-memory-routing)  
-   标签：评分：8.0/10、query:pic
-   evidence：提出稀疏记忆路由实现线性时间长上下文推理加速
+1. [InferScale: GPU-Native KV Injection for Personalized LLM Serving](/202607/30/2607.27090v1-inferscale-gpu-native-kv-injection-for-personalized-llm-serving)  
+   标签：评分：10.0/10、query:pic
+   evidence：通过GPU原生KV注入实现KV缓存复用
+2. [DualDecoder: Accelerate Long Context LLM Inference by Predictive Prefetch](/202607/30/2607.26475v1-dualdecoder-accelerate-long-context-llm-inference-by-predictive-prefetch)  
+   标签：评分：9.0/10、query:pic
+   evidence：通过预测性预取加速长上下文LLM推理，解决KV缓存内存墙问题
+3. [A Photonic-CXL Memory Appliance for Scalable KV Cache Management in LLM Inference](/202607/30/2607.27187v1-a-photonic-cxl-memory-appliance-for-scalable-kv-cache-management-in-llm-inference)  
+   标签：评分：9.0/10、query:pic
+   evidence：可扩展KV缓存管理
 
 ### 速读区论文标签
-1. [Addressable Recall Compaction for Long Context-Window Control in AI Agents](/202607/29/2607.25066v1-addressable-recall-compaction-for-long-context-window-control-in-ai-agents)  
-   标签：评分：7.0/10、query:pic
-   evidence：通过可寻址日志和压缩引用实现上下文缓存
-2. [CoSA: Accelerating Long-Context Inference via Proxy-Kernel Co-Designed Sparse Attention](/202607/29/2607.25291v1-cosa-accelerating-long-context-inference-via-proxy-kernel-co-designed-sparse-attention)  
-   标签：评分：6.0/10、query:pic
-   evidence：针对长上下文推理加速的稀疏注意力方法
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">
