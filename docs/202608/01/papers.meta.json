@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-01",
+  "date": "2026-08-01",
+  "generated_at": "2026-08-01T20:41:48",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/01/2607.25335v2-every-time-i-hire-a-linguist-inference-costs-go-down-on-linguistic-rules-as-effective-prompt-compressors",
+      "section": "quick",
+      "title_en": "Every Time I Hire a Linguist, Inference Costs Go Down: On Linguistic Rules as Effective Prompt Compressors",
+      "authors": "Jianfei Ma, Zhaoxin Feng, Emmanuele Chersoni, Si Chen",
+      "date": "2026-07-28",
+      "pdf": "https://arxiv.org/pdf/2607.25335v2",
+      "score": "6.0",
+      "evidence": "通过压缩提示词缩短LLM输入以降低推理开销，与提示缓存降低时延的目标互补",
+      "tldr": "针对现有提示压缩依赖LM前向传递评估词元重要性、成本高昂的问题，本文探索纯语言学规则作为压缩器的可行性。通过离线进化搜索组合词汇、句法、语义和话语层面的种子规则，得到的压缩器部署时无需LM前向传递，仅需CPU处理，在短文、多文档推理和对话记忆QA上性能媲美先进方法。轻中度压缩下表现最佳，激进压缩时性能下降，且直接与重建路径呈现不同模式。分析表明有效压缩融合多层面信号，随着压缩率增加规则从词元剪枝转向句子提取。",
+      "tags": "query:pic",
+      "abstract_en": "Prompt compression shortens LLM input to reduce inference cost, yet existing methods score token importance through LM forward passes. It remains questionable whether such nuanced, costly token selection is necessary. Compression requires identifying informative content, a problem that linguistic research has long addressed through cues that can be operationalized as deterministic rules. We therefore ask: can \\textbf{linguistic rules alone} serve as effective prompt compressors, without LM-based scoring at compression time?   To address this, we conduct offline evolutionary search over lexical, syntactic, semantic, and discourse seeds to find competitive rule combinations. The resulting linguistic compressor requires no LM forward pass at deployment and uses only CPU-side processing for compression. We evaluate it with a dual-path protocol to balance compression quality and reconstruction fidelity.   Across short passages, multi-document reasoning, and dialogue-memory QA datasets, evolved compressors achieve performance similar to that of recent advanced prompt-compression strategies. Performance is strongest under light-to-moderate compression and degrades as compression becomes more aggressive, while the Direct and Reconstruction paths exhibit distinct patterns. Evolutionary analysis reveals that effective compression fuses signals across linguistic levels and, as the compression ratio increases, rules shift from token pruning to sentence extraction.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

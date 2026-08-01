@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-01 <!--dpr-date:20260801-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/01/2607.25335v2-every-time-i-hire-a-linguist-inference-costs-go-down-on-linguistic-rules-as-effective-prompt-compressors" data-sidebar-item="{&quot;title&quot;: &quot;Every Time I Hire a Linguist, Inference Costs Go Down: On Linguistic Rules as Effective Prompt Compressors&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.25335v2-every-time-i-hire-a-linguist-inference-costs-go-down-on-linguistic-rules-as-effective-prompt-compressors&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;通过压缩提示词缩短LLM输入以降低推理开销，与提示缓存降低时延的目标互补&quot;}">Every Time I Hire a Linguist, Inference Costs Go Down: On Linguistic Rules as Effective Prompt Compressors</a>
   * 2026-07-31 <!--dpr-date:20260731-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/31/2607.28069v1-sempic-learning-semantic-position-independent-kv-caches" data-sidebar-item="{&quot;title&quot;: &quot;SemPIC: Learning Semantic Position-Independent KV Caches&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.28069v1-sempic-learning-semantic-position-independent-kv-caches&quot;, &quot;score&quot;: &quot;10.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;直接提出SemPIC学习语义位置无关KV缓存&quot;}">SemPIC: Learning Semantic Position-Independent KV Caches</a>
