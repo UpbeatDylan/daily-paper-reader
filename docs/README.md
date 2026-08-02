@@ -6,26 +6,22 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-01
-- 运行时间：2026-08-01 20:41:42 UTC
+- 最新运行日期：2026-08-02
+- 运行时间：2026-08-02 20:29:01 UTC
 - 运行状态：成功
-- 本次总论文数：1
+- 本次总论文数：0
 - 精读区：0
-- 速读区：1
+- 速读区：0
 
 ### 今日简报（AI）
-今日速读1篇论文，暂无精读，聚焦提示词压缩技术。  
-值得关注：用语言学规则压缩提示词可降低推理成本，效果获6分评价。  
-建议后续可精读该文，或扩展检索提示压缩与推理效率的对比研究。
-- 详情：[/202608/01/README](/202608/01/README)
+> 今日无新推荐，系统未产出可展示论文。
+- 详情：[/202608/02/README](/202608/02/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Every Time I Hire a Linguist, Inference Costs Go Down: On Linguistic Rules as Effective Prompt Compressors](/202608/01/2607.25335v2-every-time-i-hire-a-linguist-inference-costs-go-down-on-linguistic-rules-as-effective-prompt-compressors)  
-   标签：评分：6.0/10、query:pic
-   evidence：通过压缩提示词缩短LLM输入以降低推理开销，与提示缓存降低时延的目标互补
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">
