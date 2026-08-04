@@ -1,17 +1,87 @@
 {
   "mode": "standard",
-  "generated_at": "2026-08-04T03:16:26.019815+00:00",
+  "generated_at": "2026-08-04T10:47:16.038774+00:00",
   "stats": {
     "mode": "standard",
     "tag_count": 1,
-    "deep_divecandidates": 1,
+    "deep_divecandidates": 8,
     "deep_cap": 6,
-    "deep_selected": 1,
-    "quick_candidates": 0,
+    "deep_selected": 6,
+    "quick_candidates": 5,
     "quick_skim_target": 11,
-    "quick_selected": 0
+    "quick_selected": 5
   },
   "deep_dive": [
+    {
+      "id": "2608.01126v1",
+      "source": "arxiv",
+      "title": "Spatial Prefix Caching for Wireless Edge LLM Inference: A Stochastic-Geometry and Queueing Framework",
+      "abstract": "Prefix caching reuses the key--value (KV) states of shared prompt prefixes and can substantially reduce the time to first token (TTFT) of large language model (LLM) inference. In a wireless edge network, however, prefix states are distributed across geographically separated GPU nodes. A nearby node offers a short radio path but may provide little reuse, whereas a more distant node may cache a longer matching prefix but incur additional communication and queueing delay. Moreover, persistent prefixes and active-request KV states compete for the same GPU memory, so aggressive caching can reduce inference concurrency and create queueing hotspots. This paper develops a stochastic-geometry and queueing framework for this spatial communication--caching--computation tradeoff. We represent the prompt workload by a prefix forest and define an ancestor-closed cache profile that may contain multiple reusable prefixes. Edge GPU nodes form a Poisson point process and are independently marked by cache profile, yielding analytically tractable spatial tiers. We derive the profile-association probability, conditional serving-distance distribution, token-level computation-offloading ratio, and TTFT coverage probability under a load-aware association policy. A fixed-point formulation captures the coupling between spatial association and multi-server GPU queues, while an outer optimization selects the cache-profile distribution subject to static-memory and stability constraints. Analytical and Monte Carlo results agree closely. The results show that the latency-optimal node need not be the nearest node, that TTFT can be non-monotonic in cached-prefix depth because of GPU-memory coupling.",
+      "authors": [
+        "Le Yang",
+        "Zhouyong Liu"
+      ],
+      "primary_category": "cs.IT",
+      "categories": [
+        "cs.IT"
+      ],
+      "published": "2026-08-02T09:51:15+00:00",
+      "link": "https://arxiv.org/pdf/2608.01126v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Directly studies prefix caching for LLM inference, reducing TTFT via KV state reuse of shared prompt prefixes",
+      "llm_evidence_cn": "直接研究LLM推理中的前缀缓存，通过复用共享提示前缀的KV状态降低首次响应时间",
+      "llm_evidence": "直接研究LLM推理中的前缀缓存，通过复用共享提示前缀的KV状态降低首次响应时间",
+      "canonical_evidence": "直接研究LLM推理中的前缀缓存，通过复用共享提示前缀的KV状态降低首次响应时间",
+      "llm_tldr_en": "Develops stochastic-geometry and queueing framework for spatial prefix caching in wireless edge LLM inference, balancing radio path length, prefix reuse, communication delay, and queueing hotspots to reduce TTFT.",
+      "llm_tldr_cn": "本文针对无线边缘网络中的LLM前缀缓存问题，建立随机几何与排队论框架。前缀缓存复用共享提示的KV状态可显著降低首字延迟，但在无线边缘中前缀状态分布在异构GPU节点上，近节点复用少、远节点复用多但通信和排队开销大，且持久前缀与活跃请求竞争GPU内存。该框架统一建模传输、排队与缓存竞争，为空间前缀缓存策略提供分析和优化基础。",
+      "llm_tldr": "本文针对无线边缘网络中的LLM前缀缓存问题，建立随机几何与排队论框架。前缀缓存复用共享提示的KV状态可显著降低首字延迟，但在无线边缘中前缀状态分布在异构GPU节点上，近节点复用少、远节点复用多但通信和排队开销大，且持久前缀与活跃请求竞争GPU内存。该框架统一建模传输、排队与缓存竞争，为空间前缀缓存策略提供分析和优化基础。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.01655v1",
+      "source": "arxiv",
+      "title": "PrefixPlace: Provable Prefix Key-Value Placement for Large Language Model Serving under Heterogeneous Compute and Transfer Costs",
+      "abstract": "Prefix Key-Value (KV) reuse avoids repeated prefill in Large Language Model (LLM) inference, but local misses require recomputation or replica fetches. Their relative cost varies with hardware, prefix depth, KV goodput, and replica location, making hit-rate-based placement suboptimal. To address this issue, we propose an epoch-level planner, PrefixPlace, which assigns prefix-complete targets under memory budgets and profiled demand, compute, and transfer costs. The objective decomposes into local-copy value plus first-replica coverage, and source-dependent costs yield a monotone facility-location objective; each worker update is an additive rooted-tree problem solved exactly in O(nk) time for n chunks and capacity k, giving a fixed-order 1/2-approximation that coordinate refinement and order-diverse starts improve without weakening. T4, L4, and A100 measurements reveal distinct regimes. Across 432 instances with exact optima, PrefixPlace averages 99.84% of optimum and never falls below 98.02%. In Retrieval-Augmented Generation (RAG) replays, it improves materialization-cost saving by 40.3% over vLLM Automatic Prefix Caching (vLLM-APC) and 6.3% over the best offline baseline. On WikiQA, gains are 40.4% and 5.3%. Finally, PrefixPlace solves a 50,000-node, 16-worker placement in 12.3 s on one processor, enabling timely replanning.",
+      "authors": [
+        "Zhiyu Wang",
+        "Rajkumar Buyya"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-03T03:44:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.01655v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "provable prefix KV placement optimizing reuse under heterogeneous compute and transfer costs",
+      "llm_evidence_cn": "面向异构计算与传输成本的前缀KV可证明放置，优化复用",
+      "llm_evidence": "面向异构计算与传输成本的前缀KV可证明放置，优化复用",
+      "canonical_evidence": "面向异构计算与传输成本的前缀KV可证明放置，优化复用",
+      "llm_tldr_en": "PrefixPlace is an epoch-level planner that assigns prefix-complete KV targets under memory budgets and profiled demand, compute, and transfer costs. It formalizes placement as a monotone facility-location objective and solves each worker update exactly in O(nk) time, improving prefix reuse in heterogeneous serving.",
+      "llm_tldr_cn": "前缀KV重用能避免重复预填充，但本地缺失时重算或从副本获取的相对成本随硬件、前缀深度、KV吞吐率和副本位置而变化，基于命中率的放置策略并不最优。PrefixPlace提出一个epoch级规划器，在内存预算和剖析的需求、计算、传输成本下为前缀分配合适的缓存目标。其目标函数可分解为本地副本价值加首副本覆盖，并转化为单调设施选址问题，每个worker更新可在O(nk)时间内精确求解，从而提升异构环境下的前缀KV放置效率。",
+      "llm_tldr": "前缀KV重用能避免重复预填充，但本地缺失时重算或从副本获取的相对成本随硬件、前缀深度、KV吞吐率和副本位置而变化，基于命中率的放置策略并不最优。PrefixPlace提出一个epoch级规划器，在内存预算和剖析的需求、计算、传输成本下为前缀分配合适的缓存目标。其目标函数可分解为本地副本价值加首副本覆盖，并转化为单调设施选址问题，每个worker更新可在O(nk)时间内精确求解，从而提升异构环境下的前缀KV放置效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
     {
       "id": "2607.18141v2",
       "source": "arxiv",
@@ -34,21 +104,334 @@
         "query:PIC"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "latest KV cache reuse framework for multi-turn LLM serving",
-      "llm_evidence_cn": "最新的面向多轮LLM服务的KV缓存复用框架",
-      "llm_evidence": "最新的面向多轮LLM服务的KV缓存复用框架",
-      "canonical_evidence": "最新的面向多轮LLM服务的KV缓存复用框架",
-      "llm_tldr_en": "HyMCache is a KV-cache framework integrating CXL-hybrid memory to scale reusable KV states to TB capacity, exploiting read-dominant multi-turn reuse to cut redundant computation.",
-      "llm_tldr_cn": "长上下文、多轮和智能体LLM负载大量复用已处理上下文，KV缓存复用可减少重复计算，但存储可复用KV状态的内存层级成为瓶颈。HyMCache将CXL混合内存（小容量DRAM加SSD）集成到KV缓存框架，利用多轮工作负载读多、可预测、追加写的特性，在集群规模上提供经济可扩展的KV缓存，缓解GPU HBM和主机DRAM的成本限制，支撑KV缓存复用规模化部署。",
-      "llm_tldr": "长上下文、多轮和智能体LLM负载大量复用已处理上下文，KV缓存复用可减少重复计算，但存储可复用KV状态的内存层级成为瓶颈。HyMCache将CXL混合内存（小容量DRAM加SSD）集成到KV缓存框架，利用多轮工作负载读多、可预测、追加写的特性，在集群规模上提供经济可扩展的KV缓存，缓解GPU HBM和主机DRAM的成本限制，支撑KV缓存复用规模化部署。",
+      "llm_evidence_en": "KV cache framework exploiting CXL-hybrid memory for multi-turn context reuse",
+      "llm_evidence_cn": "利用CXL混合内存支持多轮上下文KV缓存复用的框架",
+      "llm_evidence": "利用CXL混合内存支持多轮上下文KV缓存复用的框架",
+      "canonical_evidence": "利用CXL混合内存支持多轮上下文KV缓存复用的框架",
+      "llm_tldr_en": "HyMCache is a KV cache framework using CXL-hybrid memory with DRAM and SSD, exploiting read-dominant, append-only multi-turn patterns to scale reusable shared context to TB capacity.",
+      "llm_tldr_cn": "多轮与智能体工作负载频繁复用已处理上下文，使KV缓存复用成为减少冗余计算的关键，但大容量共享上下文的存储瓶颈转移到内存层级。本文提出HyMCache，集成CXL混合内存（少量设备内DRAM加SSD）为多轮LLM服务提供KV缓存，利用多轮会话读主导、可预测、追加写入的特点设计存储与访问策略，实现TB级共享上下文容量。该框架有效降低了复用KV的存储成本并加速推理。",
+      "llm_tldr": "多轮与智能体工作负载频繁复用已处理上下文，使KV缓存复用成为减少冗余计算的关键，但大容量共享上下文的存储瓶颈转移到内存层级。本文提出HyMCache，集成CXL混合内存（少量设备内DRAM加SSD）为多轮LLM服务提供KV缓存，利用多轮会话读主导、可预测、追加写入的特点设计存储与访问策略，实现TB级共享上下文容量。该框架有效降低了复用KV的存储成本并加速推理。",
       "llm_tags": [
         "query:pic"
       ],
       "matched_query_tag": "query:pic",
-      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
-      "matched_requirement_id": "req-8",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.00528v1",
+      "source": "arxiv",
+      "title": "S$^4$R: Selective Sampling, Subspaces, and Sparse Reconstruction for Compressed Long-Context KV Caching",
+      "abstract": "The growth of context window lengths in Large Language Models (LLMs) significantly enhances their long-context capabilities but incurs prohibitive memory costs due to the Key-Value (KV) cache. Although low-rank compression of KV cache is a promising remedy, existing methods face a dilemma: offline approaches depend on external calibration data, whereas online approaches incur substantial compute for full-prompt decomposition and reconstruction. In this paper, we propose S$^4$R, which builds low-rank subspaces from selectively sampled tokens and computes attention over a sparsely reconstructed KV representation. S$^4$R uses prompt-aware initialization to build initial key/value bases from a representative prompt subset, trading off calibration-data dependence against prefilling cost. Because fully reconstructing the cache at every decoding step is prohibitively expensive and hurts throughput, we further adopt sparse reconstruction to retain only informative positions during decoding. Extensive experiments on LongBench and RULER with Llama and Qwen model families show that S$^4$R achieves up to 5$\\times$ KV compression with near full-cache accuracy, combining the efficiency of fixed compression with the adaptability of prompt-dependent methods.",
+      "authors": [
+        "Jialong Han",
+        "You Wu",
+        "Kewei Tu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-01T08:41:29+00:00",
+      "link": "https://arxiv.org/pdf/2608.00528v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Low-rank subspace and sparse reconstruction for long-context KV cache compression",
+      "llm_evidence_cn": "利用低秩子空间与稀疏重建进行长上下文KV缓存压缩",
+      "llm_evidence": "利用低秩子空间与稀疏重建进行长上下文KV缓存压缩",
+      "canonical_evidence": "利用低秩子空间与稀疏重建进行长上下文KV缓存压缩",
+      "llm_tldr_en": "S4R builds low-rank subspaces from selectively sampled tokens and computes attention over sparsely reconstructed KV, avoiding calibration data and full-prompt decomposition costs.",
+      "llm_tldr_cn": "长上下文KV缓存的高昂内存成本促使研究者采用低秩压缩，但离线方法依赖外部校准数据，在线方法又需要高昂的全提示分解计算。S4R从选择性采样的token构建低秩子空间，并在稀疏重建的KV表示上计算注意力。该方法使用提示感知初始化从代表性提示子集建立键值基，平衡了压缩质量与计算开销。它为长上下文KV缓存压缩提供了一种无需外部校准的高效在线方案。",
+      "llm_tldr": "长上下文KV缓存的高昂内存成本促使研究者采用低秩压缩，但离线方法依赖外部校准数据，在线方法又需要高昂的全提示分解计算。S4R从选择性采样的token构建低秩子空间，并在稀疏重建的KV表示上计算注意力。该方法使用提示感知初始化从代表性提示子集建立键值基，平衡了压缩质量与计算开销。它为长上下文KV缓存压缩提供了一种无需外部校准的高效在线方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.01247v1",
+      "source": "arxiv",
+      "title": "RestoreKV: Recovering Full-Cache Behavior Under Aggressive Query-Agnostic KV Cache Eviction",
+      "abstract": "Query-agnostic KV cache eviction compresses a context once and reuses the resulting cache for arbitrary future queries, but performance can collapse under tight budgets. Existing methods primarily improve which original KV pairs are retained. We introduce RestoreKV, which complements this selection-based formulation with learned restoration under the same total KV budget. Our key insight is that, although the information lost through eviction is context-specific, the mechanism for generating its compact complement can be shared across contexts. After context prefill, a few restore tokens attend to the full KV cache in a single LoRA-adapted pass, generating a compact, context-conditioned restore cache. The base importance scorer and eviction rule remain unchanged, and the adapters are disabled for all subsequent queries and decoding. RestoreKV is trained through parameter-efficient self-distillation from the frozen full-cache model, optimizing only $0.4\\%$ of the parameters and requiring no task-specific tuning. Across four backbones and four long-context benchmarks, RestoreKV substantially reduces compression-induced degradation. On Qwen3-4B, it improves 59 of 60 paired, budget-matched settings across five base eviction methods; at a $5\\%$ budget, it raises KVzip from $38.2$ to $73.2$ on RULER-4K. Applied to KVzip+, RestoreKV reaches $86.4$ RULER accuracy at $16\\times$ compression on the KVPress Benchmark, while adding less than $0.5\\%$ one-time cache-construction overhead in a 32K-context evaluation. Our project page is available at https://paper.pnu-cvsp.com/RestoreKV/",
+      "authors": [
+        "Changwoo Baek",
+        "Seungjun Shin",
+        "Kyeongbo Kong"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-02T13:58:42+00:00",
+      "link": "https://arxiv.org/pdf/2608.01247v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Reuses query-agnostic KV cache across arbitrary queries and learns restoration",
+      "llm_evidence_cn": "跨任意查询复用查询无关KV缓存并学习恢复信息",
+      "llm_evidence": "跨任意查询复用查询无关KV缓存并学习恢复信息",
+      "canonical_evidence": "跨任意查询复用查询无关KV缓存并学习恢复信息",
+      "llm_tldr_en": "RestoreKV complements query-agnostic KV cache eviction with learned restoration under the same budget, enabling robust cache reuse for arbitrary future queries.",
+      "llm_tldr_cn": "针对查询无关的KV缓存逐出在紧凑预算下性能下降的问题，现有工作只改进入选KV对，而RestoreKV在同一总预算下引入可学习的恢复机制：在预填充后，用少量恢复标记以LoRA方式关注完整KV缓存，生成紧凑的上下文相关恢复缓存。实验表明该设计能显著恢复被逐出信息，提升任意查询场景下的缓存复用效果。这项工作为KV缓存复用提供了新的恢复型路线。",
+      "llm_tldr": "针对查询无关的KV缓存逐出在紧凑预算下性能下降的问题，现有工作只改进入选KV对，而RestoreKV在同一总预算下引入可学习的恢复机制：在预填充后，用少量恢复标记以LoRA方式关注完整KV缓存，生成紧凑的上下文相关恢复缓存。实验表明该设计能显著恢复被逐出信息，提升任意查询场景下的缓存复用效果。这项工作为KV缓存复用提供了新的恢复型路线。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.01526v1",
+      "source": "arxiv",
+      "title": "An Internet for the KV Cache: Rethinking Classical Infrastructure Boundaries in the LLM Inference Age",
+      "abstract": "LLM inference has become a global-scale, heterogeneous workload spanning agents, retrieval, tool-use, code execution and multi-modal reasoning. These workloads naturally enable context reuse from overlapping inputs, creating a major opportunity to store and reuse the contexts' KV Caches instead of recomputing them. However, model-side advances that shrink the KV Cache and system-side advances that reduce compute, storage, and transfer costs are evolve independently within legacy cloud boundaries. We argue that future inference infrastructure should allow decoupling of compute and KV Cache storage across cloud and datacenters. The network becomes an active distribution channel; bandwidth, latency and pricing directly determines how the KV Cache should be managed. We propose a vision for an Internet for the KV Cache, with KV Cache management working as a content-distribution system. In this view, KV Cache storage and recompute decisions are driven by model, infrastructure, and application metrics, to enable adaptive, content-driven decisions for minimizing latency and cost.",
+      "authors": [
+        "Siddhant Ray",
+        "Nick Feamster",
+        "Junchen Jiang"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI"
+      ],
+      "published": "2026-08-02T22:31:22+00:00",
+      "link": "https://arxiv.org/pdf/2608.01526v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Argues for storing and reusing KV caches across infrastructure to enable context reuse, directly aligned with KV cache reuse in LLM inference",
+      "llm_evidence_cn": "主张跨基础设施存储和复用KV缓存，直接契合LLM推理中的KV缓存复用",
+      "llm_evidence": "主张跨基础设施存储和复用KV缓存，直接契合LLM推理中的KV缓存复用",
+      "canonical_evidence": "主张跨基础设施存储和复用KV缓存，直接契合LLM推理中的KV缓存复用",
+      "llm_tldr_en": "Position paper arguing that future LLM inference infrastructure should decouple compute and KV cache storage across cloud/datacenters, treating network as an active distribution channel for context reuse and KV cache reuse.",
+      "llm_tldr_cn": "本文提出对未来LLM推理基础设施的重新构想：应将计算与KV缓存存储解耦，允许跨云计算与数据中心分布。多类工作负载（代理、检索、工具调用、多模态）天然具有上下文复用机会，存储和复用KV缓存而非重算可以显著降低成本。作者主张网络应成为主动分发通道，带宽、延迟和定价直接决定KV缓存分发策略，从而推动基础设施边界的重构。这一观点为KV缓存复用的大规模部署提供了方向性指引。",
+      "llm_tldr": "本文提出对未来LLM推理基础设施的重新构想：应将计算与KV缓存存储解耦，允许跨云计算与数据中心分布。多类工作负载（代理、检索、工具调用、多模态）天然具有上下文复用机会，存储和复用KV缓存而非重算可以显著降低成本。作者主张网络应成为主动分发通道，带宽、延迟和定价直接决定KV缓存分发策略，从而推动基础设施边界的重构。这一观点为KV缓存复用的大规模部署提供了方向性指引。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
       "selection_source": "fresh_fetch"
     }
   ],
-  "quick_skim": []
+  "quick_skim": [
+    {
+      "id": "2608.01651v1",
+      "source": "arxiv",
+      "title": "Bole: Efficient Tree Speculation for Hybrid-Attention Language Models",
+      "abstract": "Hybrid-attention large language models combine full attention with recurrent linear attention to reduce long-context inference costs, yet their autoregressive decoding remains memory-bound. Tree speculative decoding offers an attractive acceleration path, but existing tree-speculation systems are designed around the key--value caches of full-attention models. On hybrid models, they traverse recurrent layers branch by branch and materialize a full state for every proposal node, causing verification latency and transient memory to scale poorly with tree and batch sizes. We present Bole, a kernel--runtime co-design that enables efficient tree speculation for hybrid-attention LLMs. Bole transforms the linear-attention recurrence into a tree-structured closed form and realizes it with a resource-efficient GPU kernel, verifying all proposal nodes in parallel and accelerating linear-attention tree verification by 3.4--7.7$\\times$. It losslessly encodes speculative state updates as token-level factors and reconstructs only the state selected after sampling, reducing transient state memory by 82--99$\\times$ and freeing GPU capacity for KV caches. Its integration into SGLang, a widely deployed production LLM serving engine, couples efficient state management with a batch-wide verification budget calibrated to the complete hybrid forward. Across four models, two GPU platforms, and diverse datasets, Bole delivers up to $4.72\\times$ the offline decode throughput of autoregressive decoding and up to $2.03\\times$ that of the strongest tree-speculative baseline. Under online agent workloads, it reduces TTFT and TPOT by up to $67.6%$ and $49.9%$, respectively, over the strongest tree-speculative baseline.",
+      "authors": [
+        "Li Wang",
+        "Yi Su",
+        "Xiabao Wu",
+        "Chiran You",
+        "Yongchao Liu",
+        "Zhan Qiu",
+        "Juelu Zhang",
+        "Jiajun Zheng",
+        "Fangxin Liu",
+        "Jie Zhang",
+        "Chen Tian",
+        "Chengying Huan"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-03T03:43:14+00:00",
+      "link": "https://arxiv.org/pdf/2608.01651v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Tree speculative decoding designed to accelerate long-context inference for hybrid-attention LLMs",
+      "llm_evidence_cn": "面向混合注意力大模型的树推测解码，加速长上下文推理",
+      "llm_evidence": "面向混合注意力大模型的树推测解码，加速长上下文推理",
+      "canonical_evidence": "面向混合注意力大模型的树推测解码，加速长上下文推理",
+      "llm_tldr_en": "Presents Bole, a kernel-runtime co-design enabling efficient tree speculative decoding for hybrid-attention LLMs by transforming linear-attention recurrence into tree-structured computation, reducing verification latency and transient memory.",
+      "llm_tldr_cn": "本文针对混合注意力大模型（结合全注意力与循环线性注意力）在长上下文推理中的解码瓶颈，提出Bole系统。现有树推测解码系统面向全注意力KV缓存设计，在混合模型上会逐分支遍历并物化完整状态，导致验证延迟和内存开销大。Bole通过内核与运行时协同设计，将线性注意力递归转化为树结构计算，显著提升树推测在混合注意力模型上的效率与可扩展性。",
+      "llm_tldr": "本文针对混合注意力大模型（结合全注意力与循环线性注意力）在长上下文推理中的解码瓶颈，提出Bole系统。现有树推测解码系统面向全注意力KV缓存设计，在混合模型上会逐分支遍历并物化完整状态，导致验证延迟和内存开销大。Bole通过内核与运行时协同设计，将线性注意力递归转化为树结构计算，显著提升树推测在混合注意力模型上的效率与可扩展性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.00902v1",
+      "source": "arxiv",
+      "title": "Practical Online KV Cache Compaction for LLM Agents: An Empirical Study",
+      "abstract": "LLM agents accumulate long trajectories of reasoning steps, tool calls, and environment feedback, making the KV cache a major inference bottleneck. KV cache compaction can reduce this cost, but most prior methods assume a static context where future queries are known or can be approximated offline. Agents instead require online compaction: new information must be compressed before future relevance is known, using proxy queries cheap enough for the inference path. We study online compaction across token eviction (TE) and attention matching (AM), adapting both to compact agent turns and comparing cheap proxy sources such as boundary, repeat-prefill, and delayed future-generation queries. Experiments on BrowseComp-Plus and WideSearch show that immediate compaction often hurts performance, whereas delaying compaction to use the agent's future queries recovers much of the gap. Moreover, TE is often more robust than AM under imperfect proxies. Across models at different scales, TE preserves most of the accuracy while reducing KV cache by 80%, and can improve throughput over the no compaction baseline. These results position proxy-query selection as a core design choice for practical online KV compaction.",
+      "authors": [
+        "Yujian Liu",
+        "Jiabao Ji",
+        "Li An",
+        "Rohit Jain",
+        "Gungor Polatkan",
+        "Siyu Zhu",
+        "Shiyu Chang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-02T00:08:44+00:00",
+      "link": "https://arxiv.org/pdf/2608.00902v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Online KV cache compaction reduces long-trajectory LLM agent inference cost, a long-context inference acceleration method",
+      "llm_evidence_cn": "通过在线KV缓存压缩降低长轨迹LLM代理推理开销，属于长上下文推理加速方法",
+      "llm_evidence": "通过在线KV缓存压缩降低长轨迹LLM代理推理开销，属于长上下文推理加速方法",
+      "canonical_evidence": "通过在线KV缓存压缩降低长轨迹LLM代理推理开销，属于长上下文推理加速方法",
+      "llm_tldr_en": "Empirical study of online KV cache compaction for LLM agents, comparing token eviction and attention matching with proxy queries; shows immediate compaction methods effectively reduce long-context inference cost.",
+      "llm_tldr_cn": "本文针对LLM代理长轨迹导致的KV缓存瓶颈，研究了在线KV缓存压缩方法。不同于静态场景，代理需要在未来查询未知时实时压缩信息。作者将token驱逐与注意力匹配两种方法适配到代理场景，并比较了多种廉价代理查询来源。在BrowseComp-Plus和WideSearch上的实验表明，即时压缩能有效降低长上下文推理开销。该研究为动态代理上下文中的缓存压缩提供了实用经验与评估基准，对降低LLM代理服务成本具有重要意义。",
+      "llm_tldr": "本文针对LLM代理长轨迹导致的KV缓存瓶颈，研究了在线KV缓存压缩方法。不同于静态场景，代理需要在未来查询未知时实时压缩信息。作者将token驱逐与注意力匹配两种方法适配到代理场景，并比较了多种廉价代理查询来源。在BrowseComp-Plus和WideSearch上的实验表明，即时压缩能有效降低长上下文推理开销。该研究为动态代理上下文中的缓存压缩提供了实用经验与评估基准，对降低LLM代理服务成本具有重要意义。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.00311v1",
+      "source": "arxiv",
+      "title": "SeDeM: Selective Decompression of Hidden-State Memories for Long-Context Question Answering",
+      "abstract": "Long-context inference with large language models (LLMs) is costly: self-attention during prefill scales quadratically with sequence length, and the key-value (KV) cache grows with the number of processed tokens. Larger context windows also do not ensure reliable evidence use. Context compression reduces this cost, but many soft-compression methods use LLMs as compressors and rely on compact memory tokens both to preserve information and to condition the decoder. We propose SeDeM, a selective decompression framework that decouples compact memory storage from decoder conditioning. An LLM extracts hidden states from a chosen intermediate Transformer layer, a lightweight compressor stores them as memory blocks, a query-conditioned selector selects relevant blocks, and a decompressor expands only the selected blocks into hidden states compatible with an intermediate decoder layer. Thus, the decoder avoids both full-context processing and direct generation from highly compressed memory slots. On four long-context QA benchmarks, SeDeM achieves higher QA scores than the evaluated compression baselines in both 1B and 3B same-backbone settings, and with the 3B backbone exceeds full-context fine-tuning on three datasets. The learned selector uses block-level evidence supervision during training. SeDeM also reduces online time-to-first-token and improves autoregressive decoding throughput relative to ICAE.",
+      "authors": [
+        "Maryam Haghifam",
+        "Jason Cong",
+        "Yizhou Sun"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-07-31T21:44:03+00:00",
+      "link": "https://arxiv.org/pdf/2608.00311v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "selective decompression of hidden-state memories to reduce long-context inference cost",
+      "llm_evidence_cn": "选择性解压隐藏状态记忆以降低长上下文推理成本",
+      "llm_evidence": "选择性解压隐藏状态记忆以降低长上下文推理成本",
+      "canonical_evidence": "选择性解压隐藏状态记忆以降低长上下文推理成本",
+      "llm_tldr_en": "SeDeM decouples compact memory storage from decoder conditioning and selectively decompresses hidden states, reducing prefill cost and KV cache growth for long-context QA.",
+      "llm_tldr_cn": "长上下文推理中自注意力与KV缓存开销随序列长度增大而飙升，且大上下文窗口不能保证可靠用证。本文提出SeDeM，将紧凑记忆存储与解码器条件解耦，通过查询条件的选择性解压机制按需恢复隐藏状态，从而减少预填充成本和缓存占用。实验表明它在长上下文问答中降低了推理开销并保持答案质量。",
+      "llm_tldr": "长上下文推理中自注意力与KV缓存开销随序列长度增大而飙升，且大上下文窗口不能保证可靠用证。本文提出SeDeM，将紧凑记忆存储与解码器条件解耦，通过查询条件的选择性解压机制按需恢复隐藏状态，从而减少预填充成本和缓存占用。实验表明它在长上下文问答中降低了推理开销并保持答案质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.01657v1",
+      "source": "arxiv",
+      "title": "Preserving Admission Responsibility in Multi-Tenant Large Language Model Prefix Caches",
+      "abstract": "Shared prefix caching turns Graphics Processing Unit (GPU) memory into persistent state shared across Large Language Model (LLM) tenants. A group that materializes new Key-Value (KV) blocks can force another to lose reusable state, yet request-time schedulers account for transient service, replacement policies primarily rank object value, and static partitioning strands idle capacity. We call this mismatch the admission-responsibility gap. To close it, we propose PrefixShield, which meters newly materialized full KV blocks, carries responsibility across requests, gates reuse promotion while debt remains, and uses projected debt to select the group supplying eviction candidates. We implement PrefixShield in vLLM. In paired runs under one-touch pollution, PrefixShield improves victim cache hit ratio by 9.39 percentage points over the Least Recently Used (LRU) policy and 8.64 points over S3-FIFO, restoring the victim from 4.92% to 84.87% at 4096-block scale, and gains 2.00 points over S3-FIFO under two-pass replay. It preserves benign ShareGPT behavior and work-conserving access to idle capacity. Delayed replay yields a 35.16-point advantage while debt remains. These results show that object-value signals rank what to retain, while persistent responsibility determines which group bears reclamation pressure.",
+      "authors": [
+        "Zhiyu Wang",
+        "Rajkumar Buyya"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-03T03:47:14+00:00",
+      "link": "https://arxiv.org/pdf/2608.01657v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "prefix cache admission control and KV block reuse in multi-tenant LLM serving",
+      "llm_evidence_cn": "多租户LLM服务中的前缀缓存准入控制与KV块复用",
+      "llm_evidence": "多租户LLM服务中的前缀缓存准入控制与KV块复用",
+      "canonical_evidence": "多租户LLM服务中的前缀缓存准入控制与KV块复用",
+      "llm_tldr_en": "PrefixShield meters newly materialized KV blocks in shared prefix caches, carries admission responsibility across requests, and gates reuse promotion under debt. Implemented in vLLM, it prevents one tenant from evicting reusable state of another.",
+      "llm_tldr_cn": "共享前缀缓存使GPU内存成为跨租户的持久状态，但一组物化的KV块可能迫使其他组丢失可复用状态。本文提出PrefixShield，通过计量新物化的KV块、跨请求承担债务、在债务未清时限制复用提升，并用预测债务选择被驱逐组，从而弥合准入责任缺口。在vLLM中实现，配对实验显示其可改善缓存公平性与效率。",
+      "llm_tldr": "共享前缀缓存使GPU内存成为跨租户的持久状态，但一组物化的KV块可能迫使其他组丢失可复用状态。本文提出PrefixShield，通过计量新物化的KV块、跨请求承担债务、在债务未清时限制复用提升，并用预测债务选择被驱逐组，从而弥合准入责任缺口。在vLLM中实现，配对实验显示其可改善缓存公平性与效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.02560v1",
+      "source": "arxiv",
+      "title": "Structured Memory for Edge Language Models: Persistent Context and Corpus Retrieval via O(1) SSM State Injection",
+      "abstract": "Retrieval-augmented generation (RAG) imposes a prefill cost proportional to retrieved context length, and -- with Transformer backbones -- a KV-cache that grows with each generated token. State-Space Models (SSMs) avoid the second cost by construction; we eliminate the first, collapsing prefill from $O(L_{context})$ to $O(1)$ per query. We introduce PRECOG (Pre-Computed Context Injection), a retrieval mechanism that exploits a property unique to SSMs: the fixed-size, position-agnostic recurrent hidden state is a complete summary of everything the model has read. PRECOG pre-encodes document corpora offline as SSM hidden states and injects the best-matching state directly at query time, bypassing in-context re-ingestion entirely. The same state-injection mechanism enables SMC (Structured Memory Consolidation): a hierarchical persistent memory with cognitive-domain clustering, an adjustable fidelity-vs-storage dial, and $O(1)$ session initialization, which consolidates short-term episodic states into long-term semantic memory and fuses both with retrieved corpus states at query time. We demonstrate the system on TENNs-LLM, a 1.2B-parameter gated-SSM language model with a 192 KB hidden state. PRECOG matches in-context RAG answer quality, reducing prefill latency from $\\sim$27 s to $<$6 ms on edge hardware -- a $\\sim$4500$\\times$ speedup that crosses the threshold from unusable to interactive. The mechanism is architecturally impossible for Transformer KV-caches, which are position-entangled and grow linearly with context length.",
+      "authors": [
+        "Anusha Madan Gopal",
+        "Aras Pirbadian",
+        "Kristofor D. Carlson",
+        "M Anthony Lewis",
+        "Jonathan Tapson"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.IR"
+      ],
+      "published": "2026-08-03T17:43:36+00:00",
+      "link": "https://arxiv.org/pdf/2608.02560v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Position-agnostic SSM state injection enables constant-time context reuse, analogous to position-independent caching for long-context inference",
+      "llm_evidence_cn": "利用与位置无关的SSM状态注入实现恒定时间上下文复用，类似面向长上下文的位置无关缓存",
+      "llm_evidence": "利用与位置无关的SSM状态注入实现恒定时间上下文复用，类似面向长上下文的位置无关缓存",
+      "canonical_evidence": "利用与位置无关的SSM状态注入实现恒定时间上下文复用，类似面向长上下文的位置无关缓存",
+      "llm_tldr_en": "PRECOG pre-encodes corpora as SSM hidden states and injects best-match state at query time, collapsing RAG prefill to O(1) and eliminating KV-cache growth, using position-agnostic recurrent state as context summary.",
+      "llm_tldr_cn": "本文针对检索增强生成中预填充开销随检索上下文长度增长、以及Transformer的KV缓存随生成增长的问题，提出PRECOG机制。该机制利用状态空间模型（SSM）固定大小且与位置无关的循环隐状态可完整总结已读内容的特性，将文档语料离线预编码为SSM隐状态，查询时直接注入最匹配状态，从而将预填充从O(L_context)降至O(1)并绕开上下文重注入。这一方法为边缘侧语言模型提供了高效的持久上下文与语料检索能力。",
+      "llm_tldr": "本文针对检索增强生成中预填充开销随检索上下文长度增长、以及Transformer的KV缓存随生成增长的问题，提出PRECOG机制。该机制利用状态空间模型（SSM）固定大小且与位置无关的循环隐状态可完整总结已读内容的特性，将文档语料离线预编码为SSM隐状态，查询时直接注入最匹配状态，从而将预填充从O(L_context)降至O(1)并绕开上下文重注入。这一方法为边缘侧语言模型提供了高效的持久上下文与语料检索能力。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "How does position independent caching improve long context inference?",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
 }
