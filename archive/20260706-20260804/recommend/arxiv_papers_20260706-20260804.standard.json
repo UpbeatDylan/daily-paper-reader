@@ -1,0 +1,54 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-04T03:16:26.019815+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2607.18141v2",
+      "source": "arxiv",
+      "title": "HyMCache: A KV Cache Framework for Multi-Turn LLM Serving with CXL-Hybrid Memory",
+      "abstract": "Long-context, multi-turn, and agentic LLM workloads increasingly reuse previously processed context, making KV-cache reuse essential for reducing redundant computation. However, this reuse shifts the bottleneck to the memory tier that stores and serves reusable KV states at cluster scale. GPU HBM and host DRAM are too costly to scale to TB-scale shared context capacity, motivating remote tiers built from lower-cost, higher-capacity media. This paper presents HyMCache, a KV-cache framework that integrates CXL-hybrid memory (CXL-HM) for multi-turn LLM serving. CXL-HM combines a small amount of in-device DRAM with large SSD-backed capacity behind a CXL interface. By exploiting the read-dominant, predictable, and append-only nature of multi-turn KV-cache access, HyMCache rethinks DRAM management within CXL-HM to efficiently support TB-scale SSD-backed KV reuse. It uses request-level prefix prefetching and opportunistic write buffering to stage latency-critical reads in device DRAM, enabling DRAM-scale KV-cache efficiency at SSD-level cost. We evaluate HyMCache on a real CXL-HM prototype under both single-aggregator and PD-disaggregated serving configurations. Under the same DRAM budget, HyMCache outperforms local LMCache by 3.0x in single-node serving and 1.45x in PD-disaggregated serving. Compared with 1 TB distributed-DRAM Mooncake, HyMCache incurs about 30% lower performance but uses 16x less DRAM.",
+      "authors": [
+        "Hakbeom Jang",
+        "Inho Song",
+        "Sam H. Noh",
+        "Jongryool Kim"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-07-20T16:35:47+00:00",
+      "link": "https://arxiv.org/pdf/2607.18141v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "latest KV cache reuse framework for multi-turn LLM serving",
+      "llm_evidence_cn": "最新的面向多轮LLM服务的KV缓存复用框架",
+      "llm_evidence": "最新的面向多轮LLM服务的KV缓存复用框架",
+      "canonical_evidence": "最新的面向多轮LLM服务的KV缓存复用框架",
+      "llm_tldr_en": "HyMCache is a KV-cache framework integrating CXL-hybrid memory to scale reusable KV states to TB capacity, exploiting read-dominant multi-turn reuse to cut redundant computation.",
+      "llm_tldr_cn": "长上下文、多轮和智能体LLM负载大量复用已处理上下文，KV缓存复用可减少重复计算，但存储可复用KV状态的内存层级成为瓶颈。HyMCache将CXL混合内存（小容量DRAM加SSD）集成到KV缓存框架，利用多轮工作负载读多、可预测、追加写的特性，在集群规模上提供经济可扩展的KV缓存，缓解GPU HBM和主机DRAM的成本限制，支撑KV缓存复用规模化部署。",
+      "llm_tldr": "长上下文、多轮和智能体LLM负载大量复用已处理上下文，KV缓存复用可减少重复计算，但存储可复用KV状态的内存层级成为瓶颈。HyMCache将CXL混合内存（小容量DRAM加SSD）集成到KV缓存框架，利用多轮工作负载读多、可预测、追加写的特性，在集群规模上提供经济可扩展的KV缓存，缓解GPU HBM和主机DRAM的成本限制，支撑KV缓存复用规模化部署。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

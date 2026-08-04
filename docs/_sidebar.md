@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-06 ~ 2026-08-04 <!--dpr-date:20260706-20260804-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/20260706-20260804/2607.18141v2-hymcache-a-kv-cache-framework-for-multi-turn-llm-serving-with-cxl-hybrid-memory" data-sidebar-item="{&quot;title&quot;: &quot;HyMCache: A KV Cache Framework for Multi-Turn LLM Serving with CXL-Hybrid Memory&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.18141v2-hymcache-a-kv-cache-framework-for-multi-turn-llm-serving-with-cxl-hybrid-memory&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;最新的面向多轮LLM服务的KV缓存复用框架&quot;}">HyMCache: A KV Cache Framework for Multi-Turn LLM Serving with CXL-Hybrid Memory</a>
   * 2026-08-03 <!--dpr-date:20260803-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/03/2607.28979v1-mixture-of-translators-translating-kv-caches-across-heterogeneous-large-language-models" data-sidebar-item="{&quot;title&quot;: &quot;Mixture-of-Translators: Translating KV Caches Across Heterogeneous Large Language Models&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.28979v1-mixture-of-translators-translating-kv-caches-across-heterogeneous-large-language-models&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;跨异构LLM复用KV缓存&quot;}">Mixture-of-Translators: Translating KV Caches Across Heterogeneous Large Language Models</a>
