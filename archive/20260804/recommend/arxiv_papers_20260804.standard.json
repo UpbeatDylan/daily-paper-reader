@@ -1,0 +1,262 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-04T21:29:04.644771+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.01034v1",
+      "source": "arxiv",
+      "title": "Opt.Gear Technical Report",
+      "abstract": "We introduce Opt.Gear, a foundation model designed for efficient on-device deployment, real-tim inference, and strong task capability. It includes a dense model (1M, 270M, and 1B) with a context length of 64K. We designed a new hybrid architecture that combines a convolutional key-value gated mixer with local-global attention to reduce the KV-cache memory that tends to increase exponentially with long context. This architecture delivers up to X4.9 faster prefill and decoding speeds on the NPUs compared to models of a similar scale models. From a 2T tokens candidate corpus, Opt.Gear is trained on a curated 0.5T tokens subset without knowledge distillation. This is the most data-efficient of the existing foundation models. All models are released with open weights and deployment binaries for ONNX, Qualcomm NPU, and Apple ANE making Opt.Gear a practical base for edge applications that need fast, memory-efficient inference and strong task capabilities. Furthermore, to expand the ecosystem of on-device generative language models, we are introducing the Opt.Gear-1M that can be deployed on Micro-Controller Units (MCUs), a Tiny Language Model (TLM). Opt.Gear-1M is the first generative language model to achieve 20 TPS with W4A32 quantization on the ARM Cortex-M7 CPU of the STM32H747I-DISCO.",
+      "authors": [
+        "Juneyoung Park",
+        "Youngwook Kwon"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-02T06:43:25+00:00",
+      "link": "https://arxiv.org/pdf/2608.01034v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Proposes hybrid architecture with convolutional KV gated mixer and local-global attention to reduce KV-cache memory and speed up long-context inference",
+      "llm_evidence_cn": "提出结合卷积KV门控混合器与局部-全局注意力的混合架构，减少长上下文KV缓存内存并加速推理",
+      "llm_evidence": "提出结合卷积KV门控混合器与局部-全局注意力的混合架构，减少长上下文KV缓存内存并加速推理",
+      "canonical_evidence": "提出结合卷积KV门控混合器与局部-全局注意力的混合架构，减少长上下文KV缓存内存并加速推理",
+      "llm_tldr_en": "Opt.Gear introduces a hybrid architecture combining a convolutional key-value gated mixer with local-global attention, reducing KV-cache memory and achieving up to 4.9x faster prefill and decoding at 64K context on NPUs.",
+      "llm_tldr_cn": "针对长上下文大模型部署中KV缓存内存随序列长度快速膨胀的问题，Opt.Gear设计了结合卷积KV门控混合器与局部-全局注意力的混合架构，显著压缩KV缓存占用。该模型支持1M/270M/1B稠密模型和64K上下文长度，在NPU上较同规模模型实现最高4.9倍的预填充和解码加速。凭借40%的精选数据训练，Opt.Gear在保持高性能的同时实现了更高的数据效率，为端侧实时推理提供了轻量高效的基座模型方案。",
+      "llm_tldr": "针对长上下文大模型部署中KV缓存内存随序列长度快速膨胀的问题，Opt.Gear设计了结合卷积KV门控混合器与局部-全局注意力的混合架构，显著压缩KV缓存占用。该模型支持1M/270M/1B稠密模型和64K上下文长度，在NPU上较同规模模型实现最高4.9倍的预填充和解码加速。凭借40%的精选数据训练，Opt.Gear在保持高性能的同时实现了更高的数据效率，为端侧实时推理提供了轻量高效的基座模型方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.02515v1",
+      "source": "arxiv",
+      "title": "LiveMem: Maintaining Memory State Continuity in Long-Running LLM Inference",
+      "abstract": "Long-running assistants and agents consume interaction streams that eventually outgrow the context. Existing context retention, summarization, and retrieval preserve access to selected history, but do not provide a persistent state over the full lifecycle when working context changes. We formulate this missing inference capability as \\emph{state continuity under context turnover}: carrying computation forward through a fixed-capacity memory state whose lifetime is independent of the active context. We introduce an intrinsic memory method, \\textbf{LiveMem}, which augments a pretrained full-attention LLM with a memory state that preserves the historical information over the whole lifecycle while the main attention path retains a bounded KV window. Context turnover and memory state maintaining, memory-oriented post-training, and state-aware serving jointly make this memory state load bearing after its originating tokens are released. Our experiments show that LiveMem achieves leading overall performance among evaluated systems and other intrinsic memory methods. Experiments on LongMemEval show that LiveMem is able to answer the question based on the memory state, even when the supporting evidence has been removed from the current context, and evidence-distance analysis shows that useful information persists beyond the active window. LiveMem thus establishes state continuity as a distinct and complementary abstraction for continual LLM inference.",
+      "authors": [
+        "Zhichen Liu",
+        "Ruihan Sun",
+        "Hengjie Yang",
+        "Zipeng Wu",
+        "Zhaohan Chen",
+        "Xiaofan Zhang",
+        "Yang Xu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-03T17:12:05+00:00",
+      "link": "https://arxiv.org/pdf/2608.02515v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "persistent memory state with bounded KV window for long-running inference",
+      "llm_evidence_cn": "有界KV窗口下的持久记忆状态，支撑长期推理",
+      "llm_evidence": "有界KV窗口下的持久记忆状态，支撑长期推理",
+      "canonical_evidence": "有界KV窗口下的持久记忆状态，支撑长期推理",
+      "llm_tldr_en": "LiveMem introduces an intrinsic memory state for full-attention LLMs that stays independent of the active context, preserving historical information over the whole lifecycle while the main attention path retains a bounded KV window, addressing state continuity under context turnover in long-running inference.",
+      "llm_tldr_cn": "LiveMem针对长期运行LLM推理中上下文翻转导致历史信息丢失的问题，提出内在记忆方法，为全注意力LLM增加一个独立于活动上下文的记忆状态，在主注意力路径保持有界KV窗口的同时，跨生命周期保留历史信息，实现状态连续性，支撑长期助手与智能体应用。",
+      "llm_tldr": "LiveMem针对长期运行LLM推理中上下文翻转导致历史信息丢失的问题，提出内在记忆方法，为全注意力LLM增加一个独立于活动上下文的记忆状态，在主注意力路径保持有界KV窗口的同时，跨生命周期保留历史信息，实现状态连续性，支撑长期助手与智能体应用。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.01662v1",
+      "source": "arxiv",
+      "title": "LongCat Sparse Attention: Taming the Lightning via Streaming-aware Hierarchical Cross-Layer Indexing",
+      "abstract": "DeepSeek Sparse Attention (DSA) enables efficient long-context modeling through its Lightning Indexer. However, practical deployment remains constrained by the indexer's expensive $O(L^2)$ scoring overhead and the hardware-inefficient, discontinuous memory-access patterns induced by its outputs. To address these system-level bottlenecks, we introduce LongCat Sparse Attention (LSA), a hardware-algorithm co-designed framework comprising three complementary and orthogonal strategies: (1) Streaming-Aware Indexing, which selectively converts scattered KV entries into hardware-aligned contiguous layouts to enable coalesced HBM access; (2) Cross-Layer Indexing, which amortizes indexing overhead by reusing the results produced by a single layer across consecutive layers, supported by cross-layer distillation; and (3) Hierarchical Indexing, which adopts a coarse-to-fine scoring scheme to progressively narrow the candidate set for each query, thereby substantially reducing indexing computation. Extensive scaling experiments, ranging from 69B-A3B to 560B-A27B models, demonstrate that LSA consistently achieves performance on par with full attention across both general-purpose and long-context benchmarks. Moreover, LSA supports native training with context lengths of up to one million tokens and underpins the development of LongCat-2.0 (1.6T-A48B). To facilitate further research, we also introduce and open-source LongCat-Flash-Lite-Sparse (69B-A3B), which integrates LSA into LongCat-Flash-Lite and incorporates an updated long-context training corpus.",
+      "authors": [
+        "Wen Zan",
+        "Jiaqi Zhang",
+        "Jianchao Tan",
+        "Hong Liu",
+        "Cunguang Wang",
+        "Xiang Li",
+        "Duyue Ma",
+        "Guanyu Wu",
+        "Yifan Lu",
+        "Fengcun Li",
+        "Yerui Sun",
+        "Peng Pei",
+        "Yuchen Xie",
+        "Xunliang Cai"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-08-03T03:51:21+00:00",
+      "link": "https://arxiv.org/pdf/2608.01662v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Hardware-aligned indexing improves KV access patterns and reduces sparse attention overhead",
+      "llm_evidence_cn": "硬件对齐索引优化 KV 访存模式，降低稀疏注意力开销",
+      "llm_evidence": "硬件对齐索引优化 KV 访存模式，降低稀疏注意力开销",
+      "canonical_evidence": "硬件对齐索引优化 KV 访存模式，降低稀疏注意力开销",
+      "llm_tldr_en": "LongCat Sparse Attention co-designs hardware and algorithm with streaming-aware indexing, cross-layer indexing, and hierarchical indexing to eliminate expensive O(L^2) scoring and discontinuous HBM access in DeepSeek Sparse Attention, accelerating long-context inference.",
+      "llm_tldr_cn": "DeepSeek 稀疏注意力（DSA）的高效长上下文建模受限于 Lightning Indexer 的 O(L^2) 评分开销和不连续内存访问。LongCat 提出硬件-算法协同设计，包括流感知索引（将分散 KV 转为连续布局）、跨层索引（复用索引结果摊销开销）等策略，在不损失质量的前提下显著降低索引成本并提高 HBM 访问效率，加速长上下文推理。",
+      "llm_tldr": "DeepSeek 稀疏注意力（DSA）的高效长上下文建模受限于 Lightning Indexer 的 O(L^2) 评分开销和不连续内存访问。LongCat 提出硬件-算法协同设计，包括流感知索引（将分散 KV 转为连续布局）、跨层索引（复用索引结果摊销开销）等策略，在不损失质量的前提下显著降低索引成本并提高 HBM 访问效率，加速长上下文推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.01718v1",
+      "source": "arxiv",
+      "title": "LaCache: Robust Semantic Caching for LLM Serving",
+      "abstract": "Semantic caching, which reuses responses to semantically similar requests via their embeddings, has seen growing adoption in LLM serving, offering faster responses and reduced costs. Yet existing schemes are fundamentally vulnerable to cache-collision attacks, wherein an adversary pollutes the cache by injecting crafted queries, corrupting responses to subsequent legitimate requests. We present LaCache, a novel semantic caching scheme that addresses this vulnerability through a conceptually simple yet principled redesign. The key insight is that while the adversary has full control over the adversarial query, it has far less control over its response, which must simultaneously satisfy multiple semantic constraints. Rather than checking only the cache hit of a query, LaCache additionally checks the cache hit of its first k (speculatively) decoded tokens. This design yields two concrete benefits. First, it provides formally guaranteed resilience against cache-collision attacks: we prove that it is impossible to craft adversarial queries that simultaneously elicit malicious responses and collide with benign queries. Second, the enriched index supplies additional semantic context for cache retrieval, improving response relevance. Empirical evaluation across diverse LLMs and benchmarks validates both LaCache's security guarantees and efficiency gains, pointing to a promising direction for robust semantic caching.",
+      "authors": [
+        "Jiacheng Liang",
+        "Yuhui Wang",
+        "Tanqiu Jiang",
+        "Ting Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-03T05:31:24+00:00",
+      "link": "https://arxiv.org/pdf/2608.01718v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Semantic caching with robustness against collisions for LLM serving latency reduction",
+      "llm_evidence_cn": "面向 LLM 服务延迟降低的鲁棒语义缓存方案",
+      "llm_evidence": "面向 LLM 服务延迟降低的鲁棒语义缓存方案",
+      "canonical_evidence": "面向 LLM 服务延迟降低的鲁棒语义缓存方案",
+      "llm_tldr_en": "LaCache is a robust semantic caching scheme for LLM serving that defends against cache-collision attacks by checking both query similarity and whether candidate responses satisfy multiple semantic constraints, preserving latency benefits while improving security.",
+      "llm_tldr_cn": "语义缓存通过复用语义相近请求的响应来降低 LLM 服务延迟和成本，但现有方案易受缓存碰撞攻击。LaCache 提出一种概念简单但原则性强的改进：由于攻击者对查询的控制强但对响应控制弱，缓存判定不仅检查查询命中，同时验证响应是否满足多重语义约束。该方案在不牺牲缓存收益的情况下显著提升鲁棒性，为 LLM 语义缓存提供了更安全的设计。",
+      "llm_tldr": "语义缓存通过复用语义相近请求的响应来降低 LLM 服务延迟和成本，但现有方案易受缓存碰撞攻击。LaCache 提出一种概念简单但原则性强的改进：由于攻击者对查询的控制强但对响应控制弱，缓存判定不仅检查查询命中，同时验证响应是否满足多重语义约束。该方案在不牺牲缓存收益的情况下显著提升鲁棒性，为 LLM 语义缓存提供了更安全的设计。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.02134v1",
+      "source": "arxiv",
+      "title": "Messages, Not Tokens: Grounded Coresets for Faithful VLM Compression",
+      "abstract": "Modern vision language models (VLMs) turn high-resolution images into long sequences of visual tokens. Every token traverses the language decoder and persists in its prompt KV cache, inflating inference cost and motivating aggressive visual compression. Existing score-based methods assign each token an independent importance score and retain the Top-K. However, text queries consume collective, signed attention messages from the visual population, not isolated patches. Consequently, equally sized Top-K sets can repeatedly cover one salient region, omit sparse but complementary evidence and discard information carried by the removed population. We therefore formulate faithful visual compression as constructing a compact coreset for decoder messages, and introduce our training-free Grounded Message Coreset Pruning (GMC) which jointly allocates support across query-grounded, appearance, and coordinate-aware evidence, then transports discarded states into selected representatives at their original multimodal positions before physical compaction and native attention resume. This decomposes faithful compression into two coupled components, including selecting carriers that cover the required message modes and realizing the signed population message on those carriers. We further derive bounds connecting their errors to signed-message distortion, visual innovation, and candidate-margin stability. Experiments across multiple VLM families and diverse benchmarks demonstrate strong performance, with GMC-H2 retaining 97.78% Full-relative mean capability on Qwen2.5-VL-7B using 80.2% fewer visual tokens, while GMC-L16 reaches 100.36%. Controlled interventions verify that collective support and population realization jointly drive these gains.",
+      "authors": [
+        "Long Qian",
+        "Jiaqi Wei",
+        "Bingke Zhu",
+        "Yingying Chen",
+        "Jinqiao Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-03T12:23:06+00:00",
+      "link": "https://arxiv.org/pdf/2608.02134v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "coreset-based VLM prompt KV cache compression via collective attention messages",
+      "llm_evidence_cn": "基于核集的VLM提示KV缓存压缩，利用集体注意力消息",
+      "llm_evidence": "基于核集的VLM提示KV缓存压缩，利用集体注意力消息",
+      "canonical_evidence": "基于核集的VLM提示KV缓存压缩，利用集体注意力消息",
+      "llm_tldr_en": "The paper proposes grounded coreset construction for faithful VLM visual compression, selecting tokens by their collective attention messages to reduce prompt KV cache without sacrificing evidence.",
+      "llm_tldr_cn": "VLM将高分辨率图像转成冗长视觉token，每个token都驻留在提示KV缓存中，导致推理成本高涨。现有基于独立重要性分数的Top-K压缩会重复覆盖显著区域而遗漏互补证据。论文将忠实视觉压缩形式化为构造解码器消息的紧凑核集，保留群体性的带符号注意力信息。该方法在压缩视觉token、降低KV缓存的同时，更好地维持了多模态推理的忠实性。",
+      "llm_tldr": "VLM将高分辨率图像转成冗长视觉token，每个token都驻留在提示KV缓存中，导致推理成本高涨。现有基于独立重要性分数的Top-K压缩会重复覆盖显著区域而遗漏互补证据。论文将忠实视觉压缩形式化为构造解码器消息的紧凑核集，保留群体性的带符号注意力信息。该方法在压缩视觉token、降低KV缓存的同时，更好地维持了多模态推理的忠实性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.02032v1",
+      "source": "arxiv",
+      "title": "DART: Decoded Attention over Recurrent States for Efficient Long-Context Sequence Modeling",
+      "abstract": "Modern language models are built primarily from Transformers, recurrent models, and their hybrid architectures. Transformers rely on token-level attention memories, while recurrent models such as state space models (SSMs) and linear attention maintain compact recurrent states. These architectures are typically instantiated separately or interleaved at the layer level, leaving open whether a shared memory representation can support both recurrent compression and attention-style retrieval. We study this question through the state space duality (SSD) view of Mamba-2, where the SSM state can be interpreted as a compressed associative key--value (KV) cache. We observe that Mamba-2 decodes token-conditioned values from this state but does not decode token-conditioned keys. Based on this observation, we propose DART (Decoded Attention over Recurrent sTates), which retains the chunk state contributions produced by the Mamba-2 chunked scan as chunk state memories, decodes token-conditioned keys and values from these memories, and performs state-memory attention (SMA) over the resulting KV pairs. The retrieved output is then combined with the native Mamba-2 output through a gated residual connection. DART supports practical training by reusing the Mamba-2 chunked scan and implementing SMA as a FlashAttention-style computation. Our analysis and experiments show that DART substantially reduces the length-dependent inference cache compared with a matched attention baseline (e.g., $75\\%$ savings when the chunk size is $S=256$ and the state size is $N=128$). Compared with Mamba-2, DART substantially improves associative recall and retrieval while preserving general language-modeling quality.",
+      "authors": [
+        "Yixiao Qian",
+        "Song Chen",
+        "Pengkai Wang",
+        "Jiaxu Liu",
+        "Shengze Cai",
+        "Chao Xu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-03T10:30:27+00:00",
+      "link": "https://arxiv.org/pdf/2608.02032v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "New architecture for efficient long-context sequence modeling using recurrent states as compressed KV cache, relevant to acceleration.",
+      "llm_evidence_cn": "提出利用循环状态作为压缩KV缓存的高效长上下文建模架构，与加速方法相关。",
+      "llm_evidence": "提出利用循环状态作为压缩KV缓存的高效长上下文建模架构，与加速方法相关。",
+      "canonical_evidence": "提出利用循环状态作为压缩KV缓存的高效长上下文建模架构，与加速方法相关。",
+      "llm_tldr_en": "This paper proposes DART, a method to decode attention over recurrent states, combining the compression of SSMs and the retrieval of attention for efficient long-context sequence modeling.",
+      "llm_tldr_cn": "针对Transformer的注意力记忆和循环模型的紧凑状态之间的割裂，提出DART将Mamba-2的SSM状态视为压缩的KV缓存，并在其上实现解码式注意力，以共享记忆表示同时支持循环压缩和注意式检索。这种方法为高效长上下文序列建模提供了新的架构思路，并在相关评测中展示了效率与性能优势。",
+      "llm_tldr": "针对Transformer的注意力记忆和循环模型的紧凑状态之间的割裂，提出DART将Mamba-2的SSM状态视为压缩的KV缓存，并在其上实现解码式注意力，以共享记忆表示同时支持循环压缩和注意式检索。这种方法为高效长上下文序列建模提供了新的架构思路，并在相关评测中展示了效率与性能优势。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
