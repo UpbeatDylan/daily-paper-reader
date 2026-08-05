@@ -1,0 +1,309 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-05T20:29:23.866559+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.02901v1",
+      "source": "arxiv",
+      "title": "AnchorKV: Anchor-Residual KV Cache Compression",
+      "abstract": "The key-value (KV) cache is the primary memory bottleneck in long-context LLM inference. Existing approaches attack it from opposite ends: eviction methods permanently discard tokens, degrading performance whenever a discarded token later proves essential, while quantization methods retain all tokens at low precision but offer limited compression. We propose AnchorKV, a compression scheme that shrinks the cache by $20\\times$ without discarding a single token. AnchorKV represents the cache using a small set of anchors stored exactly, expresses every other token through its most similar anchor, and refines only those whose approximation most affects the model's output. AnchorKV consistently preserves accuracy across models and datasets, retaining 99% of the full-cache score at the 70B scale, while keeping the entire context at a fraction of its cost.",
+      "authors": [
+        "Malik Khalaf",
+        "Yara Shamshoum",
+        "Nitzan Hodos",
+        "Yuval Sieradzki",
+        "Assaf Schuster"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-08-03T21:38:30+00:00",
+      "link": "https://arxiv.org/pdf/2608.02901v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache compression using anchors and residuals, retaining all tokens; directly improves long-context inference efficiency",
+      "llm_evidence_cn": "基于锚点和残差的KV缓存压缩，不丢弃任何token，直接提升长上下文推理效率",
+      "llm_evidence": "基于锚点和残差的KV缓存压缩，不丢弃任何token，直接提升长上下文推理效率",
+      "canonical_evidence": "基于锚点和残差的KV缓存压缩，不丢弃任何token，直接提升长上下文推理效率",
+      "llm_tldr_en": "AnchorKV compresses the KV cache by 20x without discarding tokens, using exact anchors plus residual approximations, retaining 99% of full-cache accuracy across models and datasets.",
+      "llm_tldr_cn": "长上下文推理中KV缓存是主要内存瓶颈，现有驱逐法和量化法各有缺陷。AnchorKV提出锚点残差压缩方案：用少量精确锚点表示每个token与其最相似锚点的残差，只精化影响最大的部分，从而在20倍压缩下不丢弃任何token。实验表明该方法在多个模型和数据集上保持全缓存99%的准确率，为长上下文推理提供高效缓存管理方案。",
+      "llm_tldr": "长上下文推理中KV缓存是主要内存瓶颈，现有驱逐法和量化法各有缺陷。AnchorKV提出锚点残差压缩方案：用少量精确锚点表示每个token与其最相似锚点的残差，只精化影响最大的部分，从而在20倍压缩下不丢弃任何token。实验表明该方法在多个模型和数据集上保持全缓存99%的准确率，为长上下文推理提供高效缓存管理方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.03276v1",
+      "source": "arxiv",
+      "title": "TaskPress: Query-Agnostic KV Cache Compression via Task-Guided Pruning",
+      "abstract": "Long-context inference with large language models is constrained by the linear growth of the key-value cache to sequence length. While pruning offers mitigation, prevailing methods determine query-specific token importance that cannot be reused across unseen queries. In contrast, we introduce TaskPress, a framework for task-guided, query-agnostic KV cache eviction. Instead of optimizing the cache for a single query, TaskPress constructs a reusable memory representation conditioned on a high-level task guide. The guide functions as a meta-query during prefill to filter irrelevant tokens before downstream queries are issued. In addition, TaskPress leverages quantization scale factors as a zero-cost signal for detecting influential representation outliers, providing an efficient proxy for token importance. Experiments on conducted on various tasks with long context input demonstrate that TaskPress efficiently creates a compact, reusable cache across diverse queries.",
+      "authors": [
+        "Wonpyo Park",
+        "Seung-won Hwang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-04T07:51:37+00:00",
+      "link": "https://arxiv.org/pdf/2608.03276v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Constructs a reusable task-guided memory representation for query-agnostic KV cache eviction, enabling cache reuse across unseen queries",
+      "llm_evidence_cn": "通过任务引导构建可复用的KV缓存表示，面向不可见查询实现缓存复用",
+      "llm_evidence": "通过任务引导构建可复用的KV缓存表示，面向不可见查询实现缓存复用",
+      "canonical_evidence": "通过任务引导构建可复用的KV缓存表示，面向不可见查询实现缓存复用",
+      "llm_tldr_en": "TaskPress performs query-agnostic KV cache compression by building a reusable task-guided memory representation during prefill, so eviction decisions and pruned caches can be reused across unseen queries.",
+      "llm_tldr_cn": "长上下文推理中KV缓存随序列长度线性增长，现有剪枝方法根据单个查询决定token重要性，无法在未见查询间复用。TaskPress提出任务引导的查询无关KV缓存裁剪框架，在预填充阶段用高层任务指南作为元查询过滤无关token，构造可复用的记忆表示。该方法还利用量化尺度因子作为零成本信号检测显著离群值，使裁剪后的缓存无需针对每个查询重新计算，显著提升跨查询的KV缓存复利用效率。",
+      "llm_tldr": "长上下文推理中KV缓存随序列长度线性增长，现有剪枝方法根据单个查询决定token重要性，无法在未见查询间复用。TaskPress提出任务引导的查询无关KV缓存裁剪框架，在预填充阶段用高层任务指南作为元查询过滤无关token，构造可复用的记忆表示。该方法还利用量化尺度因子作为零成本信号检测显著离群值，使裁剪后的缓存无需针对每个查询重新计算，显著提升跨查询的KV缓存复利用效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.03555v1",
+      "source": "arxiv",
+      "title": "Heterogeneous LLM Serving with General-Purpose Processing-Near-Memory for Retrieval-Based Sparse Attention",
+      "abstract": "This paper presents a heterogeneous decode-phase serving system that relocates the KV cache out of GPU memory, motivated by the retrieval-based sparse attention that recent frontier LLMs adopt to serve million-token contexts. It partitions a decode step by operation type: GPU nodes hold the model weights and execute the projections and MoE layers, while processing-near-memory (PNM) nodes hold the KV cache and index keys and execute every operation that reads them. We first show that the assumptions behind prior PIM and PNM designs no longer hold for these operations, and derive four design requirements for such a node. From these requirements, we propose KARAT (KV-cache-resident Accelerator for Retrieval-based ATtention), a general-purpose PNM design that is the design point meeting all four. A KARAT device combines large LPDDR capacity with general-purpose compute sized for the retrieval indexer, serving an operational intensity beyond what PIM/PNM designs built for low-intensity GEMV target while accommodating diverse sparse attention algorithms that fixed-function units cannot support as they evolve. To reduce pipeline bubbles as the two device types alternate between micro-batches, we further propose opportunistic, fine-grained micro-batch scheduling (OFMS), which hides expert all-to-all behind the other micro-batch's GEMMs, and context-length-aware micro-batch rebalancing (CMR), which equalizes their token counts despite the variance in context length. Across three state-of-the-art models and real agentic traces, our proposed system improves throughput per TDP under a service-level objective by 2.09-6.13x over a GPU-only baseline and runs training-free sparse attention methods with 1.36-3.21x improvements.",
+      "authors": [
+        "Hyungkyu Ham",
+        "Junhyeong Bae",
+        "Seungheon Lee",
+        "Myeongjae Jeon",
+        "Gwangsun Kim"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-08-04T12:25:45+00:00",
+      "link": "https://arxiv.org/pdf/2608.03555v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "heterogeneous serving system that moves KV cache to processing-near-memory for retrieval-based sparse attention on million-token contexts",
+      "llm_evidence_cn": "异构服务系统将KV缓存移入近内存处理单元，支持百万token上下文的检索式稀疏注意力",
+      "llm_evidence": "异构服务系统将KV缓存移入近内存处理单元，支持百万token上下文的检索式稀疏注意力",
+      "canonical_evidence": "异构服务系统将KV缓存移入近内存处理单元，支持百万token上下文的检索式稀疏注意力",
+      "llm_tldr_en": "KARAT is a heterogeneous decode-phase serving system that places KV cache in processing-near-memory nodes, enabling efficient retrieval-based sparse attention for million-token contexts.",
+      "llm_tldr_cn": "面向百万token上下文的检索式稀疏注意力，该论文提出异构解码阶段服务系统。它将KV缓存从GPU内存迁移到近内存处理(PNM)节点，由GPU负责权重投影和MoE层，PNM持有KV缓存并执行所有读取操作。通过分析既有PIM/PNM设计的失效假设，推导出四个设计需求，并提出KARAT加速器。该系统能显著降低KV缓存搬运开销，提升长上下文解码吞吐。",
+      "llm_tldr": "面向百万token上下文的检索式稀疏注意力，该论文提出异构解码阶段服务系统。它将KV缓存从GPU内存迁移到近内存处理(PNM)节点，由GPU负责权重投影和MoE层，PNM持有KV缓存并执行所有读取操作。通过分析既有PIM/PNM设计的失效假设，推导出四个设计需求，并提出KARAT加速器。该系统能显著降低KV缓存搬运开销，提升长上下文解码吞吐。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.01662v2",
+      "source": "arxiv",
+      "title": "LongCat Sparse Attention: Taming the Lightning via Streaming-aware Hierarchical Cross-Layer Indexing",
+      "abstract": "DeepSeek Sparse Attention (DSA) enables efficient long-context modeling through its Lightning Indexer. However, practical deployment remains constrained by the indexer's expensive $O(L^2)$ scoring overhead and the hardware-inefficient, discontinuous memory-access patterns induced by its outputs. To address these system-level bottlenecks, we introduce LongCat Sparse Attention (LSA), a hardware-algorithm co-designed framework comprising three complementary and orthogonal strategies: (1) Streaming-Aware Indexing, which selectively converts scattered KV entries into hardware-aligned contiguous layouts to enable coalesced HBM access; (2) Cross-Layer Indexing, which amortizes indexing overhead by reusing the results produced by a single layer across consecutive layers, supported by cross-layer distillation; and (3) Hierarchical Indexing, which adopts a coarse-to-fine scoring scheme to progressively narrow the candidate set for each query, thereby substantially reducing indexing computation. Extensive scaling experiments, ranging from 69B-A3B to 560B-A27B models, demonstrate that LSA consistently achieves performance on par with full attention across both general-purpose and long-context benchmarks. Moreover, LSA supports native training with context lengths of up to one million tokens and underpins the development of LongCat-2.0 (1.6T-A48B). To facilitate further research, we also introduce and open-source LongCat-Flash-Lite-Sparse (69B-A3B), which integrates LSA into LongCat-Flash-Lite and incorporates an updated long-context training corpus.",
+      "authors": [
+        "Wen Zan",
+        "Jiaqi Zhang",
+        "Jianchao Tan",
+        "Hong Liu",
+        "Cunguang Wang",
+        "Xiang Li",
+        "Duyue Ma",
+        "Guanyu Wu",
+        "Yifan Lu",
+        "Fengcun Li",
+        "Yerui Sun",
+        "Peng Pei",
+        "Yuchen Xie",
+        "Xunliang Cai"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-08-03T03:51:21+00:00",
+      "link": "https://arxiv.org/pdf/2608.01662v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Hardware-algorithm co-design for efficient long-context sparse attention, reducing KV indexing overhead with streaming-aware and cross-layer indexing",
+      "llm_evidence_cn": "面向长上下文稀疏注意力的软硬件协同设计，通过流感知和跨层索引降低KV索引开销",
+      "llm_evidence": "面向长上下文稀疏注意力的软硬件协同设计，通过流感知和跨层索引降低KV索引开销",
+      "canonical_evidence": "面向长上下文稀疏注意力的软硬件协同设计，通过流感知和跨层索引降低KV索引开销",
+      "llm_tldr_en": "LongCat Sparse Attention co-designs hardware and algorithm to overcome DSA's O(L^2) indexing overhead and discontinuous memory access via streaming-aware indexing and cross-layer indexing reuse.",
+      "llm_tldr_cn": "DeepSeek稀疏注意力通过Lightning索引器支持高效长上下文建模，但索引打分开销高且内存访问不连续。LongCat稀疏注意力提出软硬件协同框架，包含三个正交策略：流感知索引将散乱KV转换为硬件对齐连续布局以利用合并HBM访问；跨层索引复用已有索引结果摊薄索引开销。该设计缓解了长上下文稀疏注意力部署中的系统瓶颈，提升了长序列推理效率。",
+      "llm_tldr": "DeepSeek稀疏注意力通过Lightning索引器支持高效长上下文建模，但索引打分开销高且内存访问不连续。LongCat稀疏注意力提出软硬件协同框架，包含三个正交策略：流感知索引将散乱KV转换为硬件对齐连续布局以利用合并HBM访问；跨层索引复用已有索引结果摊薄索引开销。该设计缓解了长上下文稀疏注意力部署中的系统瓶颈，提升了长序列推理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.02947v1",
+      "source": "arxiv",
+      "title": "ATFlash: Per-RoPE-Wavelength Attention Windows for Compute/Memory-Efficient LLM Inference",
+      "abstract": "The attention score with rotary position embeddings (RoPE) decomposes exactly into a sum over its 2D-rotation frequency pairs, and each pair's wavelength limits how far it can discriminate position. Aligned with this structure, we propose the per-RoPE-wavelength distance window: it prunes the query--key inner-product terms beyond a wavelength-proportional distance. Unlike a sliding window, every key remains reachable, at least through the low-frequency pairs. The reduction rate is input-independent, with a closed form logarithmic in the sequence length $N$, in contrast to dynamic-sparse methods like MInference. Such token-level selection is orthogonal to our frequency-level pruning. The window can therefore be applied on top of those methods. On Qwen2.5-0.5B and Llama-3.2-3B, the window prunes 37--48\\% of the query--key inner-product terms within each model's native context length. Relative to full attention, the top-1 match rate stays at 96--98\\% and the mean output-distribution KL at the $10^{-3}$-nat level on LongBench-v2 contexts. We examine absolute scores on long-context benchmarks such as RULER, OpenAI-MRCR, LongCodeQA, and $\\infty$Bench: they are broadly preserved. We implement the window as a slice of the query--key contraction axis, leaving the online-softmax recurrences untouched, and port it with minimal diffs into the released FlashAttention-4 prefill and FlashInfer decode. On RTX PRO 6000 with Llama, both ports outpace stock with gains growing with context length, up to $1.29\\times$ at 128K. End to end on Qwen2.5-7B-1M, with 57\\% of the inner-product terms pruned, the speedup reaches $1.31\\times$ at a 1M-token context.",
+      "authors": [
+        "Shun-ichiro Hayashi",
+        "Daichi Mukunoki",
+        "Tetsuya Hoshino",
+        "Takahiro Katagiri"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-08-03T23:23:38+00:00",
+      "link": "https://arxiv.org/pdf/2608.02947v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "RoPE wavelength attention windows reduce compute and memory for long-sequence inference",
+      "llm_evidence_cn": "RoPE波长注意力窗口降低长序列推理的计算和内存开销",
+      "llm_evidence": "RoPE波长注意力窗口降低长序列推理的计算和内存开销",
+      "canonical_evidence": "RoPE波长注意力窗口降低长序列推理的计算和内存开销",
+      "llm_tldr_en": "ATFlash prunes attention terms beyond wavelength-proportional distances, reducing compute and memory with a closed-form logarithmic reduction rate, orthogonal to dynamic sparsity.",
+      "llm_tldr_cn": "长序列推理中，注意力计算与KV缓存开销巨大。ATFlash根据RoPE各频率分量的波长特性，剪除超出波长比例距离的注意力项，每个键仍可通过低频分量被访问。该方法获得输入无关、关于序列长度对数级别的缩减率，可与动态稀疏方法正交叠加。实验表明其在保持质量的同时显著降低计算和内存开销。",
+      "llm_tldr": "长序列推理中，注意力计算与KV缓存开销巨大。ATFlash根据RoPE各频率分量的波长特性，剪除超出波长比例距离的注意力项，每个键仍可通过低频分量被访问。该方法获得输入无关、关于序列长度对数级别的缩减率，可与动态稀疏方法正交叠加。实验表明其在保持质量的同时显著降低计算和内存开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.02691v1",
+      "source": "arxiv",
+      "title": "Output-Aware Rotation for INT2 KV-Cache Quantization",
+      "abstract": "The key-value (KV) cache has become a major memory and bandwidth bottleneck in long-context large language model inference, making ultra-low-bit quantization increasingly important. However, existing rotation-based INT2 methods optimize cache statistics or proxy errors before the complete attention readout, even though the model is ultimately affected by the error propagated through attention and the output projection $W_O$. To address this mismatch, we propose \\textit{OptR}, an output-aware rotation method that minimizes post-$W_O$ attention-output error. OptR decomposes the post-$W_O$ attention-output error into key- and value-induced terms and learns per-head orthogonal corrections through the full INT2 quantization and attention path. OptR further applies an attention-equivalent key reparameterization to reduce large channel-wise offsets without changing the softmax distribution. Across three models and five reasoning and coding benchmarks, OptR consistently improves both QuaRot and OSCAR and strengthens long-context retrieval, while preserving the paged KV-cache format with negligible inference overhead.",
+      "authors": [
+        "Vincent-Daniel Yun",
+        "Woosang Lim",
+        "Minsoo Cheong",
+        "Sunwoo Lee",
+        "Murali Annavaram",
+        "Sai Praneeth Karimireddy",
+        "Sungjoo Yoo"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-08-03T09:24:23+00:00",
+      "link": "https://arxiv.org/pdf/2608.02691v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "INT2 KV cache quantization with output-aware rotation to reduce memory and bandwidth in long-context inference",
+      "llm_evidence_cn": "输出感知旋转的INT2 KV缓存量化，降低长上下文推理的内存与带宽瓶颈",
+      "llm_evidence": "输出感知旋转的INT2 KV缓存量化，降低长上下文推理的内存与带宽瓶颈",
+      "canonical_evidence": "输出感知旋转的INT2 KV缓存量化，降低长上下文推理的内存与带宽瓶颈",
+      "llm_tldr_en": "OptR applies output-aware rotation for INT2 KV cache quantization, minimizing post-attention output error by learning per-head orthogonal corrections through the full quantization and attention path.",
+      "llm_tldr_cn": "KV缓存已成为长上下文大模型推理的主要内存与带宽瓶颈，超低位量化愈发重要。现有基于旋转的INT2方法只优化缓存统计量或代理误差，未考虑最终输出投影后的误差。OptR提出输出感知旋转方法，将注意力输出误差分解为键相关和值相关项，并通过完整INT2量化与注意力路径学习每头正交校正。该方法进一步结合注意力模式，有效降低量化对输出的影响，提升量化后模型性能。",
+      "llm_tldr": "KV缓存已成为长上下文大模型推理的主要内存与带宽瓶颈，超低位量化愈发重要。现有基于旋转的INT2方法只优化缓存统计量或代理误差，未考虑最终输出投影后的误差。OptR提出输出感知旋转方法，将注意力输出误差分解为键相关和值相关项，并通过完整INT2量化与注意力路径学习每头正交校正。该方法进一步结合注意力模式，有效降低量化对输出的影响，提升量化后模型性能。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.03048v1",
+      "source": "arxiv",
+      "title": "PI-Mem: Pushing Long-Context Reasoning to 3.6M Tokens with Parallel-Iterative Memory",
+      "abstract": "Long-context reasoning remains a critical bottleneck for large language models, as recent recurrent-memory approaches face two inherent challenges: sequential chunk-wise updates can overwrite early critical evidence with later irrelevant content, and serial inter-chunk dependencies limit parallelism and cause latency to increase with context length. To address these issues, we propose PI-Mem (Parallel-Iterative Memory), a mechanism that processes all chunks in parallel and iteratively refines a shared memory over a bounded number of turns. In each turn, PI-Mem reads all chunks in parallel conditioned on the current memory, selects new or complementary evidence from each chunk, and merges the selected evidence into a compact shared memory for the next turn. To discourage redundant turns, we optimize the workflow through reinforcement learning with an auxiliary turn-efficiency reward, enabling the model to adaptively exit once sufficient evidence has been accumulated. We evaluate PI-Mem with Qwen3.5-35B-A3B and Qwen2.5-7B on the HotpotQA benchmark across context lengths up to 3.6 million tokens and find that it outperforms the recurrent-memory baseline by +6.25 and +7.81 absolute points while achieving 6.1$\\times$ and 2.1$\\times$ inference speedups, respectively. These results demonstrate that PI-Mem breaks the accuracy--efficiency trade-off in long-context reasoning and provides a scalable approach to complex multi-hop question answering over extremely long documents.",
+      "authors": [
+        "Dawei Liu",
+        "Haixu Song",
+        "Shuang Cheng",
+        "Shijie Wang",
+        "Haozheng Hou",
+        "Kaifeng Liu",
+        "Ermo Hua",
+        "Zhonghang Yuan",
+        "Zhijie Zhong",
+        "Yuchen Fan",
+        "Biqing Qi",
+        "Bowen Zhou"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-08-04T02:59:16+00:00",
+      "link": "https://arxiv.org/pdf/2608.03048v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Parallel-iterative memory reduces latency for ultra-long context reasoning",
+      "llm_evidence_cn": "并行-迭代记忆降低超长上下文推理延迟",
+      "llm_evidence": "并行-迭代记忆降低超长上下文推理延迟",
+      "canonical_evidence": "并行-迭代记忆降低超长上下文推理延迟",
+      "llm_tldr_en": "PI-Mem processes all chunks in parallel and iteratively refines a shared memory, avoiding serial chunk dependencies and evidence overwriting, enabling 3.6M-token reasoning.",
+      "llm_tldr_cn": "长上下文推理中的循环记忆方法存在串行更新和证据覆盖问题。PI-Mem在有限轮次内并行读取所有分块并迭代精炼共享记忆，避免早期关键证据被后期内容覆盖，同时打破块间串行依赖。这使得上下文长度扩展到360万token并显著降低推理延迟。实验显示PI-Mem在长上下文推理任务上兼具高吞吐与高质量。",
+      "llm_tldr": "长上下文推理中的循环记忆方法存在串行更新和证据覆盖问题。PI-Mem在有限轮次内并行读取所有分块并迭代精炼共享记忆，避免早期关键证据被后期内容覆盖，同时打破块间串行依赖。这使得上下文长度扩展到360万token并显著降低推理延迟。实验显示PI-Mem在长上下文推理任务上兼具高吞吐与高质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

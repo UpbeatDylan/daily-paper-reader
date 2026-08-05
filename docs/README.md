@@ -6,40 +6,41 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-04
-- 运行时间：2026-08-04 21:34:44 UTC
+- 最新运行日期：2026-08-05
+- 运行时间：2026-08-05 20:35:29 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：2
+- 本次总论文数：7
+- 精读区：3
 - 速读区：4
 
 ### 今日简报（AI）
-今日共读6篇论文，精读2篇、速读4篇，覆盖光器件、长时LLM推理、稀疏注意力与缓存优化。  
-最值得精读的是《Opt.Gear Technical Report》与《LiveMem》，分数均为8.0/10，前者聚焦光器件技术，后者解决长运行LLM的内存状态连续性。  
-若想跟进效率方向，可速读《LongCat Sparse Attention》与《Messages, Not Tokens》，分别涉及跨层稀疏索引和VLM压缩。
-- 详情：[/202608/04/README](/202608/04/README)
+今日7篇论文聚焦KV Cache压缩与高效推理，精读2篇高分工作。重点看《AnchorKV》与《TaskPress》的压缩方案，分别从锚点残差和任务引导剪枝提升效率。可优先跟进KV量化与稀疏注意力方向，适合关注LLM推理优化者。
+- 详情：[/202608/05/README](/202608/05/README)
 
 ### 精读区论文标签
-1. [Opt.Gear Technical Report](/202608/04/2608.01034v1-optgear-technical-report)  
+1. [AnchorKV: Anchor-Residual KV Cache Compression](/202608/05/2608.02901v1-anchorkv-anchor-residual-kv-cache-compression)  
    标签：评分：8.0/10、query:pic
-   evidence：提出结合卷积KV门控混合器与局部-全局注意力的混合架构，减少长上下文KV缓存内存并加速推理
-2. [LiveMem: Maintaining Memory State Continuity in Long-Running LLM Inference](/202608/04/2608.02515v1-livemem-maintaining-memory-state-continuity-in-long-running-llm-inference)  
+   evidence：基于锚点和残差的KV缓存压缩，不丢弃任何token，直接提升长上下文推理效率
+2. [TaskPress: Query-Agnostic KV Cache Compression via Task-Guided Pruning](/202608/05/2608.03276v1-taskpress-query-agnostic-kv-cache-compression-via-task-guided-pruning)  
    标签：评分：8.0/10、query:pic
-   evidence：有界KV窗口下的持久记忆状态，支撑长期推理
+   evidence：通过任务引导构建可复用的KV缓存表示，面向不可见查询实现缓存复用
+3. [Heterogeneous LLM Serving with General-Purpose Processing-Near-Memory for Retrieval-Based Sparse Attention](/202608/05/2608.03555v1-heterogeneous-llm-serving-with-general-purpose-processing-near-memory-for-retrieval-based-sparse-attention)  
+   标签：评分：8.0/10、query:pic
+   evidence：异构服务系统将KV缓存移入近内存处理单元，支持百万token上下文的检索式稀疏注意力
 
 ### 速读区论文标签
-1. [LongCat Sparse Attention: Taming the Lightning via Streaming-aware Hierarchical Cross-Layer Indexing](/202608/04/2608.01662v1-longcat-sparse-attention-taming-the-lightning-via-streaming-aware-hierarchical-cross-layer-indexing)  
+1. [LongCat Sparse Attention: Taming the Lightning via Streaming-aware Hierarchical Cross-Layer Indexing](/202608/05/2608.01662v2-longcat-sparse-attention-taming-the-lightning-via-streaming-aware-hierarchical-cross-layer-indexing)  
    标签：评分：7.0/10、query:pic
-   evidence：硬件对齐索引优化 KV 访存模式，降低稀疏注意力开销
-2. [Messages, Not Tokens: Grounded Coresets for Faithful VLM Compression](/202608/04/2608.02134v1-messages-not-tokens-grounded-coresets-for-faithful-vlm-compression)  
+   evidence：面向长上下文稀疏注意力的软硬件协同设计，通过流感知和跨层索引降低KV索引开销
+2. [Output-Aware Rotation for INT2 KV-Cache Quantization](/202608/05/2608.02691v1-output-aware-rotation-for-int2-kv-cache-quantization)  
    标签：评分：7.0/10、query:pic
-   evidence：基于核集的VLM提示KV缓存压缩，利用集体注意力消息
-3. [LaCache: Robust Semantic Caching for LLM Serving](/202608/04/2608.01718v1-lacache-robust-semantic-caching-for-llm-serving)  
+   evidence：输出感知旋转的INT2 KV缓存量化，降低长上下文推理的内存与带宽瓶颈
+3. [ATFlash: Per-RoPE-Wavelength Attention Windows for Compute/Memory-Efficient LLM Inference](/202608/05/2608.02947v1-atflash-per-rope-wavelength-attention-windows-for-computememory-efficient-llm-inference)  
    标签：评分：6.0/10、query:pic
-   evidence：面向 LLM 服务延迟降低的鲁棒语义缓存方案
-4. [DART: Decoded Attention over Recurrent States for Efficient Long-Context Sequence Modeling](/202608/04/2608.02032v1-dart-decoded-attention-over-recurrent-states-for-efficient-long-context-sequence-modeling)  
+   evidence：RoPE波长注意力窗口降低长序列推理的计算和内存开销
+4. [PI-Mem: Pushing Long-Context Reasoning to 3.6M Tokens with Parallel-Iterative Memory](/202608/05/2608.03048v1-pi-mem-pushing-long-context-reasoning-to-36m-tokens-with-parallel-iterative-memory)  
    标签：评分：6.0/10、query:pic
-   evidence：提出利用循环状态作为压缩KV缓存的高效长上下文建模架构，与加速方法相关。
+   evidence：并行-迭代记忆降低超长上下文推理延迟
 
 
 <div class="dpr-home-promo-card">
