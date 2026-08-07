@@ -1,15 +1,15 @@
 {
   "mode": "standard",
-  "generated_at": "2026-08-07T02:09:46.907720+00:00",
+  "generated_at": "2026-08-07T20:52:21.831542+00:00",
   "stats": {
     "mode": "standard",
     "tag_count": 1,
     "deep_divecandidates": 1,
     "deep_cap": 6,
     "deep_selected": 1,
-    "quick_candidates": 4,
+    "quick_candidates": 6,
     "quick_skim_target": 11,
-    "quick_selected": 4
+    "quick_selected": 6
   },
   "deep_dive": [
     {
@@ -38,23 +38,110 @@
         "query:PIC"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "KV cache vector quantization with attention-preserving transforms to reduce cache size and boost decoding speed",
-      "llm_evidence_cn": "通过注意力保持变换进行KV缓存向量量化，减小缓存大小并提高解码速度",
-      "llm_evidence": "通过注意力保持变换进行KV缓存向量量化，减小缓存大小并提高解码速度",
-      "canonical_evidence": "通过注意力保持变换进行KV缓存向量量化，减小缓存大小并提高解码速度",
-      "llm_tldr_en": "This paper introduces a KV cache vector quantization method that uses attention-preserving transforms to reduce cache size at fixed bit-per-token counts. It derives transforms from a distortion criterion, preserving attention products while keeping reconstruction cheap and decoding bandwidth-bound.",
-      "llm_tldr_cn": "针对长上下文解码时KV缓存读取成为带宽瓶颈的问题，论文提出基于注意力保持变换的向量量化方法，在固定每元素比特数下减小缓存大小同时保持注意力乘积。与依赖随机或Hadamard旋转的方法不同，该方法从失真准则推导变换，从而更好地保留注意力信息，提升解码速度与服务容量。",
-      "llm_tldr": "针对长上下文解码时KV缓存读取成为带宽瓶颈的问题，论文提出基于注意力保持变换的向量量化方法，在固定每元素比特数下减小缓存大小同时保持注意力乘积。与依赖随机或Hadamard旋转的方法不同，该方法从失真准则推导变换，从而更好地保留注意力信息，提升解码速度与服务容量。",
+      "llm_evidence_en": "KV cache vector quantization reduces cache size for bandwidth-bound long-context decoding, accelerating LLM inference",
+      "llm_evidence_cn": "KV缓存向量量化压缩缓存体积，缓解带宽瓶颈，加速长上下文LLM解码",
+      "llm_evidence": "KV缓存向量量化压缩缓存体积，缓解带宽瓶颈，加速长上下文LLM解码",
+      "canonical_evidence": "KV缓存向量量化压缩缓存体积，缓解带宽瓶颈，加速长上下文LLM解码",
+      "llm_tldr_en": "Introduces attention-preserving vector quantization for KV caches at two bits per element, shrinking cache to accelerate bandwidth-bound long-context decoding and raise serving capacity.",
+      "llm_tldr_cn": "长上下文LLM解码受限于KV缓存的读取带宽，为此提出注意力保持的向量量化方法，在每元素2比特下压缩缓存大小，同时保持注意力乘积并降低重建代价。实验表明该方法能显著提升解码吞吐与服务容量，为长上下文推理的缓存压缩提供了新方案。",
+      "llm_tldr": "长上下文LLM解码受限于KV缓存的读取带宽，为此提出注意力保持的向量量化方法，在每元素2比特下压缩缓存大小，同时保持注意力乘积并降低重建代价。实验表明该方法能显著提升解码吞吐与服务容量，为长上下文推理的缓存压缩提供了新方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.02691v2",
+      "source": "arxiv",
+      "title": "Output-Aware Rotation for INT2 KV-Cache Quantization",
+      "abstract": "The key-value (KV) cache has become a major memory and bandwidth bottleneck in long-context large language model inference, making ultra-low-bit quantization increasingly important. However, existing rotation-based INT2 methods optimize cache statistics or proxy errors before the complete attention readout, even though the model is ultimately affected by the error propagated through attention and the output projection $W_O$. To address this mismatch, we propose \\textit{OptR}, an output-aware rotation method that minimizes post-$W_O$ attention-output error. OptR decomposes the post-$W_O$ attention-output error into key- and value-induced terms and learns per-head orthogonal corrections through the full INT2 quantization and attention path. OptR further applies an attention-equivalent key reparameterization to reduce large channel-wise offsets without changing the softmax distribution. Across three models and five reasoning and coding benchmarks, OptR consistently improves both QuaRot and OSCAR and strengthens long-context retrieval, while preserving the paged KV-cache format with negligible inference overhead.",
+      "authors": [
+        "Vincent-Daniel Yun",
+        "Woosang Lim",
+        "Minsoo Cheong",
+        "Sunwoo Lee",
+        "Murali Annavaram",
+        "Sai Praneeth Karimireddy",
+        "Sungjoo Yoo"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-08-03T09:24:23+00:00",
+      "link": "https://arxiv.org/pdf/2608.02691v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "INT2 KV-cache quantization reduces memory and bandwidth in long-context inference; relevant to long-context inference acceleration",
+      "llm_evidence_cn": "INT2 KV缓存量化降低长上下文推理的内存与带宽，属于长上下文推理加速",
+      "llm_evidence": "INT2 KV缓存量化降低长上下文推理的内存与带宽，属于长上下文推理加速",
+      "canonical_evidence": "INT2 KV缓存量化降低长上下文推理的内存与带宽，属于长上下文推理加速",
+      "llm_tldr_en": "OptR is an output-aware rotation method for INT2 KV-cache quantization that minimizes post-output-projection attention error, decomposing it into key- and value-induced terms and learning per-head orthogonal corrections through the full quantization and attention path.",
+      "llm_tldr_cn": "长上下文LLM推理中KV缓存成为内存和带宽瓶颈，极低比特量化日益重要，但现有旋转式INT2方法未考虑经过注意力后输出投影的完整误差。OptR提出输出感知旋转，将后输出投影的注意力误差拆分为键相关和值相关项，并通过完整INT2量化与注意力路径学习每头正交修正。该方法在超低比特量化下大幅减少KV缓存占用，加速长上下文推理。",
+      "llm_tldr": "长上下文LLM推理中KV缓存成为内存和带宽瓶颈，极低比特量化日益重要，但现有旋转式INT2方法未考虑经过注意力后输出投影的完整误差。OptR提出输出感知旋转，将后输出投影的注意力误差拆分为键相关和值相关项，并通过完整INT2量化与注意力路径学习每头正交修正。该方法在超低比特量化下大幅减少KV缓存占用，加速长上下文推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.03229v1",
+      "source": "arxiv",
+      "title": "Unified Lookup-Table Inference with Signed-Digit K/V Caches for Ternary LLMs",
+      "abstract": "Ternary LLMs make their weight-dominated projections compact and efficient, but attention remains a mismatch: its K/V cache is created online and is typically processed by a separate higher-precision engine. Compressing this cache alone does not resolve the mismatch. To execute attention with the same lookup-table machinery as ternary projections, values accumulated in one reduction must retain a compatible representation and scale. This requirement also differs for keys and values during causal decoding, because newly generated values may belong to an unfinished cache block. This work develops a unified lookup-table inference approach for ternary LLMs. It stores runtime K/V states as scaled multi-plane signed digits organized around the reduction structure of attention. The resulting digit planes are consumed directly by activation-derived tables, avoiding dense K/V materialization between cache storage and attention computation. The design combines online K/V formation, bounded handling of incomplete value blocks, and a shared multi-stream datapath for Linear projections and attention. A constraint-guided search selects the representation and execution policy for a target quality--efficiency trade-off. Experiments on native and post-training ternary models validate the approach across cache capacity, model quality, and hardware efficiency.",
+      "authors": [
+        "Ziang Duan",
+        "Jiajun Wu",
+        "Zetian Chen",
+        "Hao Song",
+        "Yanwen Deng",
+        "Zixuan Shen",
+        "Nuobei Xie",
+        "Simo Wu",
+        "Bolun Wang",
+        "Peng Zhou",
+        "Chao Wang"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-08-04T07:00:20+00:00",
+      "link": "https://arxiv.org/pdf/2608.03229v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Signed-digit representation of K/V caches for unified lookup-table inference in ternary LLMs",
+      "llm_evidence_cn": "三元LLM中面向统一查找表推理的有符号数字K/V缓存表示",
+      "llm_evidence": "三元LLM中面向统一查找表推理的有符号数字K/V缓存表示",
+      "canonical_evidence": "三元LLM中面向统一查找表推理的有符号数字K/V缓存表示",
+      "llm_tldr_en": "Develops a unified lookup-table inference approach for ternary LLMs that stores runtime K/V states as scaled multi-plane signed digits, making attention compatible with the same efficient machinery as ternary projections.",
+      "llm_tldr_cn": "三元LLM在权重投影上高效紧凑，但注意力仍不匹配：其K/V缓存在线产生且需用更高精度引擎处理。为用与三元投影相同的查找表机制执行注意力，本文提出将运行时K/V状态存储为缩放多平面有符号数字，并围绕归约组织表示。该方法统一了三元LLM的推理过程，同时兼容因果解码中未完成缓存块的新生成值。",
+      "llm_tldr": "三元LLM在权重投影上高效紧凑，但注意力仍不匹配：其K/V缓存在线产生且需用更高精度引擎处理。为用与三元投影相同的查找表机制执行注意力，本文提出将运行时K/V状态存储为缩放多平面有符号数字，并围绕归约组织表示。该方法统一了三元LLM的推理过程，同时兼容因果解码中未完成缓存块的新生成值。",
       "llm_tags": [
         "query:pic"
       ],
       "matched_query_tag": "query:pic",
       "matched_query_text": "KV cache reuse in large language model inference",
       "matched_requirement_id": "req-2",
-      "selection_source": "fresh_fetch"
-    }
-  ],
-  "quick_skim": [
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
     {
       "id": "2608.04405v1",
       "source": "arxiv",
@@ -84,13 +171,13 @@
         "query:PIC"
       ],
       "llm_score": 7.0,
-      "llm_evidence_en": "Training-free hashing-based sparse attention for long-context LLM inference acceleration",
-      "llm_evidence_cn": "面向长上下文LLM推理加速的无训练哈希稀疏注意力",
-      "llm_evidence": "面向长上下文LLM推理加速的无训练哈希稀疏注意力",
-      "canonical_evidence": "面向长上下文LLM推理加速的无训练哈希稀疏注意力",
-      "llm_tldr_en": "BinaryPC is a training-free, data-aware hashing-based sparse attention method that constructs binary hash codes via binary principal components to reduce attention computation over KV caches in long-context LLMs.",
-      "llm_tldr_cn": "长上下文LLM的自注意力在解码时需反复处理增长的KV缓存，成为效率瓶颈。现有稀疏注意力方法精度下降或依赖昂贵哈希。本文提出BinaryPC，通过二进制主成分构造紧凑哈希码与哈希函数，实现无训练、数据感知的稀疏注意力。它既避免训练又能高效筛选重要KV对，缓解长上下文推理的计算开销。该方法为长序列注意力加速提供了新的轻量方案。",
-      "llm_tldr": "长上下文LLM的自注意力在解码时需反复处理增长的KV缓存，成为效率瓶颈。现有稀疏注意力方法精度下降或依赖昂贵哈希。本文提出BinaryPC，通过二进制主成分构造紧凑哈希码与哈希函数，实现无训练、数据感知的稀疏注意力。它既避免训练又能高效筛选重要KV对，缓解长上下文推理的计算开销。该方法为长序列注意力加速提供了新的轻量方案。",
+      "llm_evidence_en": "hashing-based sparse attention reduces KV processing cost for long-context LLMs, training-free",
+      "llm_evidence_cn": "基于哈希的稀疏注意力降低长上下文LLM的KV处理开销，免训练",
+      "llm_evidence": "基于哈希的稀疏注意力降低长上下文LLM的KV处理开销，免训练",
+      "canonical_evidence": "基于哈希的稀疏注意力降低长上下文LLM的KV处理开销，免训练",
+      "llm_tldr_en": "BinaryPC is a training-free data-aware hashing-based sparse attention that constructs binary hash codes via binary principal components, reducing KV computation for long-context LLMs without expensive data-independent hashing or extra training.",
+      "llm_tldr_cn": "BinaryPC 针对长上下文LLM自注意力因不断增长的KV缓存而成为解码效率瓶颈的问题，提出一种免训练、数据感知的哈希稀疏注意力方法。它通过计算数据的二进制主成分构造紧凑的二进制哈希码和哈希函数，取代依赖昂贵随机投影的数据无关局部敏感哈希。与需要额外训练的稀疏注意力相比，BinaryPC 在无需训练的情况下降低KV计算量并减轻精度损失，为长上下文LLM的高效解码提供了简单实用的方案。",
+      "llm_tldr": "BinaryPC 针对长上下文LLM自注意力因不断增长的KV缓存而成为解码效率瓶颈的问题，提出一种免训练、数据感知的哈希稀疏注意力方法。它通过计算数据的二进制主成分构造紧凑的二进制哈希码和哈希函数，取代依赖昂贵随机投影的数据无关局部敏感哈希。与需要额外训练的稀疏注意力相比，BinaryPC 在无需训练的情况下降低KV计算量并减轻精度损失，为长上下文LLM的高效解码提供了简单实用的方案。",
       "llm_tags": [
         "query:pic"
       ],
@@ -99,43 +186,6 @@
       "matched_requirement_id": "req-6",
       "selection_source": "fresh_fetch",
       "quick_tier": "7"
-    },
-    {
-      "id": "2608.01631v1",
-      "source": "arxiv",
-      "title": "Does Accuracy Equal Evidence? Reasoning Faithfulness under KV Cache Compression",
-      "abstract": "KV cache compression is commonly evaluated by final-answer accuracy, implicitly assuming that preserving the answer also preserves the reasoning that supports it. We test this assumption for large reasoning models and show that it can fail: under compression, correct answers and the validity of their visible supporting rationales can be preserved at different rates. We study this failure with a controlled fixed-trace replay protocol, which holds reasoning content fixed and isolates whether compression preserves usable information from an already available trace. We evaluate ten token-eviction KV compression methods and one quantization method on three models across mathematical reasoning, scientific QA, clinical calculation, and long-context retrieval. We measure final accuracy, answer-chain consistency, and perturbation faithfulness. Across tasks, token-eviction methods can preserve competitive final-answer accuracy while substantially degrading chain support or perturbation faithfulness. We call this the answer-evidence gap. A coverage-preserving quantization control is substantially less affected, suggesting that the failure is tied less to KV memory reduction itself than to losing access to parts of the reasoning trace. Code is available at https://github.com/famous-blue-raincoat/Safe_KV_Compress.",
-      "authors": [
-        "Mengting Ai",
-        "Jingrui He",
-        "Yue Guo"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL"
-      ],
-      "published": "2026-08-03T03:03:53+00:00",
-      "link": "https://arxiv.org/pdf/2608.01631v1",
-      "tags": [
-        "keyword:PIC",
-        "query:PIC"
-      ],
-      "llm_score": 6.0,
-      "llm_evidence_en": "Evaluates reasoning faithfulness of KV cache compression methods, revealing accuracy-evidence gap",
-      "llm_evidence_cn": "评估KV缓存压缩方法下的推理忠实度，揭示准确率与证据保留之间的差距",
-      "llm_evidence": "评估KV缓存压缩方法下的推理忠实度，揭示准确率与证据保留之间的差距",
-      "canonical_evidence": "评估KV缓存压缩方法下的推理忠实度，揭示准确率与证据保留之间的差距",
-      "llm_tldr_en": "This paper questions the assumption that final-answer accuracy reflects preserved reasoning under KV cache compression. Through a fixed-trace replay protocol, it evaluates ten token-eviction methods and one quantization method, showing that correct answers and valid supporting rationales can be preserved at different rates.",
-      "llm_tldr_cn": "针对KV缓存压缩通常只看最终答案准确率而忽略推理证据保留的问题，论文用固定轨迹重放协议检验了多个压缩方法在推理模型上的表现。结果显示压缩后正确答案与可见推理理由的有效性可能以不同速率被保留，意味着准确率并不等于证据。这一发现对KV缓存压缩方法的设计与评测具有重要意义。",
-      "llm_tldr": "针对KV缓存压缩通常只看最终答案准确率而忽略推理证据保留的问题，论文用固定轨迹重放协议检验了多个压缩方法在推理模型上的表现。结果显示压缩后正确答案与可见推理理由的有效性可能以不同速率被保留，意味着准确率并不等于证据。这一发现对KV缓存压缩方法的设计与评测具有重要意义。",
-      "llm_tags": [
-        "query:pic"
-      ],
-      "matched_query_tag": "query:pic",
-      "matched_query_text": "KV cache reuse in large language model inference",
-      "matched_requirement_id": "req-2",
-      "selection_source": "fresh_fetch",
-      "quick_tier": "6"
     },
     {
       "id": "2608.04771v1",
@@ -165,14 +215,55 @@
         "keyword:PIC",
         "query:PIC"
       ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reward-coordinated KV cache compression reduces reasoning inference cost",
+      "llm_evidence_cn": "用奖励协调KV缓存压缩，降低推理模型长思维链推理成本",
+      "llm_evidence": "用奖励协调KV缓存压缩，降低推理模型长思维链推理成本",
+      "canonical_evidence": "用奖励协调KV缓存压缩，降低推理模型长思维链推理成本",
+      "llm_tldr_en": "This paper shows reasoning states tolerate context loss differently and process reward tracks this: deleting tokens at high-reward steps preserves accuracy far better than random, and compression is not free because a smaller cache can lengthen generation, motivating reward-coordinated KV compression.",
+      "llm_tldr_cn": "大型推理模型靠长思维链求解复杂任务，但中间步骤过长会造成过度思考、抬高推理开销。现有针对推理的KV压缩对整条轨迹施加统一策略，只看删除了哪些缓存，忽略推理状态对丢失上下文的容忍度差异。本文观察发现高奖励推理步删除token能显著优于随机删除相同预算，且小缓存会让模型生成更多token、抵消收益。据此提出奖励协调的压缩方法，让压缩位置与过程奖励对齐，并考虑生成侧反馈，为推理场景的高效KV缓存压缩提供更准确的策略。",
+      "llm_tldr": "大型推理模型靠长思维链求解复杂任务，但中间步骤过长会造成过度思考、抬高推理开销。现有针对推理的KV压缩对整条轨迹施加统一策略，只看删除了哪些缓存，忽略推理状态对丢失上下文的容忍度差异。本文观察发现高奖励推理步删除token能显著优于随机删除相同预算，且小缓存会让模型生成更多token、抵消收益。据此提出奖励协调的压缩方法，让压缩位置与过程奖励对齐，并考虑生成侧反馈，为推理场景的高效KV缓存压缩提供更准确的策略。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.05326v1",
+      "source": "arxiv",
+      "title": "QEvict: Recoverable Quantized KV Eviction for Attention-Drift-Robust Long-Context Decoding",
+      "abstract": "Autoregressive large language model inference is increasingly constrained by the memory footprint of the Key-Value (KV) cache. A dominant line of work reduces this footprint by evicting tokens that appear unimportant under attention-derived scores. However, such policies make an implicit irreversible decision: once a token is evicted, it cannot become useful again. We show that this assumption is brittle during decoding. Token and window importance drift as generated queries evolve, causing standard eviction policies to permanently discard states that later receive substantial attention under the full-cache model. To characterize this behaviour, we introduce Future Missed Mass and Global LIR, two diagnostics that measure future attention assigned to discarded states and the reactivation of historically inactive regions. We propose QEvict, a three-tier KV-cache management scheme that replaces binary retain-or-delete eviction with recoverable eviction. QEvict maintains high-confidence windows in full precision, stores intermediate windows in a quantized recoverable tier, and deletes only the lowest-confidence windows. During decoding, cumulative attention scores update window importance and when a quantized window becomes important again, it is dequantized and promoted to the full-precision. Under a fixed memory budget, this design preserves broader historical context while retaining exact full precision for the most important regions. Across long-context understanding, retrieval, and reasoning benchmarks, QEvict consistently improves over representative eviction and quantization baselines, reducing missed attention and improving information retention",
+      "authors": [
+        "Ayushman Garg",
+        "Akshita Gupta",
+        "Shaswata Bhattacharya",
+        "Abhishek Gupta",
+        "Sandeep Kumar",
+        "Manoj Kumar"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-08-05T18:29:47+00:00",
+      "link": "https://arxiv.org/pdf/2608.05326v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
       "llm_score": 7.0,
-      "llm_evidence_en": "Reward-coordinated KV cache compression along reasoning trajectory, reducing memory and generation cost",
-      "llm_evidence_cn": "利用过程奖励沿推理轨迹协调KV缓存压缩，降低显存与生成开销",
-      "llm_evidence": "利用过程奖励沿推理轨迹协调KV缓存压缩，降低显存与生成开销",
-      "canonical_evidence": "利用过程奖励沿推理轨迹协调KV缓存压缩，降低显存与生成开销",
-      "llm_tldr_en": "Proposes a reward-coordinated KV-cache compression method for large reasoning models, deleting tokens at high process-reward steps and accounting for generation-side effects, yielding better accuracy and lower cost.",
-      "llm_tldr_cn": "大型推理模型（LRM）的长思维链导致过度思考和推理成本膨胀，现有推理导向的KV缓存压缩采用统一策略且只关注删除内容。本文发现推理状态的上下文损失容限随轨迹变化，过程奖励可刻画这一变化，在高奖励步删除token能更好地保持准确率。同时压缩会影响后续生成长度。据此提出奖励协调的KV缓存压缩，在保持准确率的同时减少缓存和生成开销。",
-      "llm_tldr": "大型推理模型（LRM）的长思维链导致过度思考和推理成本膨胀，现有推理导向的KV缓存压缩采用统一策略且只关注删除内容。本文发现推理状态的上下文损失容限随轨迹变化，过程奖励可刻画这一变化，在高奖励步删除token能更好地保持准确率。同时压缩会影响后续生成长度。据此提出奖励协调的KV缓存压缩，在保持准确率的同时减少缓存和生成开销。",
+      "llm_evidence_en": "recoverable quantized KV eviction robust to attention drift in long-context decoding",
+      "llm_evidence_cn": "可恢复量化KV驱逐，针对长上下文解码中的注意力漂移更鲁棒",
+      "llm_evidence": "可恢复量化KV驱逐，针对长上下文解码中的注意力漂移更鲁棒",
+      "canonical_evidence": "可恢复量化KV驱逐，针对长上下文解码中的注意力漂移更鲁棒",
+      "llm_tldr_en": "QEvict proposes recoverable quantized KV eviction for long-context decoding, using Future Missed Mass and Global LIR diagnostics to sense attention drift and avoid permanent dismissal of tokens that later become important, improving accuracy and memory efficiency.",
+      "llm_tldr_cn": "基于注意力分数驱逐KV token的做法会不可逆地丢状态，但在解码过程中token和窗口的重要性会随着生成查询变化，先驱逐的token稍后可能又获得大量注意力。为此QEvict引入未来遗漏质量和全局LIR两个诊断指标刻画注意力漂移，并设计可恢复的量化KV驱逐机制。实验显示这种方法相比传统驱逐策略更能抵抗解码期间的注意力漂移，在降低KV缓存内存的同时保持长上下文精度。这项研究为长上下文解码提供了更稳健、可恢复的KV缓存管理思路。",
+      "llm_tldr": "基于注意力分数驱逐KV token的做法会不可逆地丢状态，但在解码过程中token和窗口的重要性会随着生成查询变化，先驱逐的token稍后可能又获得大量注意力。为此QEvict引入未来遗漏质量和全局LIR两个诊断指标刻画注意力漂移，并设计可恢复的量化KV驱逐机制。实验显示这种方法相比传统驱逐策略更能抵抗解码期间的注意力漂移，在降低KV缓存内存的同时保持长上下文精度。这项研究为长上下文解码提供了更稳健、可恢复的KV缓存管理思路。",
       "llm_tags": [
         "query:pic"
       ],
@@ -206,22 +297,22 @@
         "keyword:PIC",
         "query:PIC"
       ],
-      "llm_score": 7.0,
-      "llm_evidence_en": "reuses historical activation spans for context caching in split LLM inference to reduce communication and accelerate long context processing",
-      "llm_evidence_cn": "在拆分式LLM推理中复用历史激活跨度作为上下文缓存，以减少通信并加速长上下文处理",
-      "llm_evidence": "在拆分式LLM推理中复用历史激活跨度作为上下文缓存，以减少通信并加速长上下文处理",
-      "canonical_evidence": "在拆分式LLM推理中复用历史激活跨度作为上下文缓存，以减少通信并加速长上下文处理",
-      "llm_tldr_en": "RAC is a reference-aware codec that retrieves and reuses previous token spans during split LLM inference, reducing communication for long contexts.",
-      "llm_tldr_cn": "拆分式推理在本地与云端之间传输边界状态成为长上下文场景的通信瓶颈。RAC提出参考感知编解码器，检索精确的历史token片段来压缩预填充上行数据，并复用重建状态避免重复传输，同时为解码阶段生成边界特定的参考。该方法通过历史数据重用显著降低长上下文推理的通信开销，为分布式推理提供了高效压缩思路。",
-      "llm_tldr": "拆分式推理在本地与云端之间传输边界状态成为长上下文场景的通信瓶颈。RAC提出参考感知编解码器，检索精确的历史token片段来压缩预填充上行数据，并复用重建状态避免重复传输，同时为解码阶段生成边界特定的参考。该方法通过历史数据重用显著降低长上下文推理的通信开销，为分布式推理提供了高效压缩思路。",
+      "llm_score": 6.0,
+      "llm_evidence_en": "Reference-aware codec reuses exact-token historical spans for split LLM inference, reducing communication; conceptually links to KV/context reuse and inference acceleration",
+      "llm_evidence_cn": "参考感知编码器在拆分LLM推理中复用精确词元历史片段，降低通信开销，与KV/上下文复用及推理加速相关",
+      "llm_evidence": "参考感知编码器在拆分LLM推理中复用精确词元历史片段，降低通信开销，与KV/上下文复用及推理加速相关",
+      "canonical_evidence": "参考感知编码器在拆分LLM推理中复用精确词元历史片段，降低通信开销，与KV/上下文复用及推理加速相关",
+      "llm_tldr_en": "RAC is a reference-aware activation codec for split LLM inference that retrieves exact-token historical spans to compress prefill uplinks, reuses reconstructed states for downlinks, and generates lightweight causal references for decode, reducing communication while keeping privacy benefits.",
+      "llm_tldr_cn": "拆分推理在本地与云端之间传输边界隐状态造成通信瓶颈，尤其当LLM代理反复处理长且隐私敏感上下文时。RAC提出参考感知编码器，为预填充上行链路检索精确词元历史片段，并复用重建的上行状态用于同轮下行链路，同时生成边界特定解码参考与轻量级因果预测。该方法显著降低每次调用的通信开销，同时保持拆分推理的隐私优势。",
+      "llm_tldr": "拆分推理在本地与云端之间传输边界隐状态造成通信瓶颈，尤其当LLM代理反复处理长且隐私敏感上下文时。RAC提出参考感知编码器，为预填充上行链路检索精确词元历史片段，并复用重建的上行状态用于同轮下行链路，同时生成边界特定解码参考与轻量级因果预测。该方法显著降低每次调用的通信开销，同时保持拆分推理的隐私优势。",
       "llm_tags": [
-        "query:pic"
+        "query:pic:composite"
       ],
-      "matched_query_tag": "query:pic",
-      "matched_query_text": "context caching for long context LLM inference",
-      "matched_requirement_id": "req-5",
+      "matched_query_tag": "query:pic:composite",
+      "matched_query_text": "Papers central to 每日检索与PIC/position-independent KV cache优化相关的最新论文, especially work that connects or combines: position independent caching for LLM inference acceleration; KV cache reuse in large language model inference; prefix caching techniques for LLM inference; prompt caching for reducing inference latency; context caching for long context LLM inference; long context inference acceleration methods; How does position independent caching improve long context inference?; What are the latest methods for KV cache reuse in LLM inference?.",
+      "matched_requirement_id": "req-composite-pic",
       "selection_source": "fresh_fetch",
-      "quick_tier": "7"
+      "quick_tier": "6"
     }
   ]
 }

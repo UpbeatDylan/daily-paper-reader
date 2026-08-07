@@ -1,8 +1,8 @@
 {
   "label": "2026-08-07",
   "date": "2026-08-07",
-  "generated_at": "2026-08-07T02:14:54",
-  "count": 5,
+  "generated_at": "2026-08-07T20:54:56",
+  "count": 7,
   "papers": [
     {
       "paper_id": "202608/07/2608.04074v1-spend-bits-where-queries-look-kv-cache-vector-quantization-with-attention-preserving-transforms",
@@ -20,6 +20,21 @@
       "selection_source": "fresh_fetch"
     },
     {
+      "paper_id": "202608/07/2608.02691v2-output-aware-rotation-for-int2-kv-cache-quantization",
+      "section": "quick",
+      "title_en": "Output-Aware Rotation for INT2 KV-Cache Quantization",
+      "authors": "Vincent-Daniel Yun, Woosang Lim, Minsoo Cheong, Sunwoo Lee, Murali Annavaram, Sai Praneeth Karimireddy, Sungjoo Yoo",
+      "date": "2026-08-03",
+      "pdf": "https://arxiv.org/pdf/2608.02691v2",
+      "score": "7.0",
+      "evidence": "INT2 KV缓存量化降低长上下文推理的内存与带宽，属于长上下文推理加速",
+      "tldr": "长上下文LLM推理中，KV缓存是主要瓶颈，现有INT2旋转量化方法只优化缓存统计或代理误差，未考虑经attention和W_O传播后的最终输出误差。为此提出OptR，一种输出感知旋转方法，将W_O后的误差分解为key和value诱导项，学习逐头正交校正，并采用attention等价key重参数化减少通道偏移。在三个模型五个推理和编码基准上，OptR一致改进QuaRot和OSCAR，增强长上下文检索，同时保持paged KV-cache格式，推理开销可忽略。",
+      "tags": "query:pic",
+      "abstract_en": "The key-value (KV) cache has become a major memory and bandwidth bottleneck in long-context large language model inference, making ultra-low-bit quantization increasingly important. However, existing rotation-based INT2 methods optimize cache statistics or proxy errors before the complete attention readout, even though the model is ultimately affected by the error propagated through attention and the output projection $W_O$. To address this mismatch, we propose \\textit{OptR}, an output-aware rotation method that minimizes post-$W_O$ attention-output error. OptR decomposes the post-$W_O$ attention-output error into key- and value-induced terms and learns per-head orthogonal corrections through the full INT2 quantization and attention path. OptR further applies an attention-equivalent key reparameterization to reduce large channel-wise offsets without changing the softmax distribution. Across three models and five reasoning and coding benchmarks, OptR consistently improves both QuaRot and OSCAR and strengthens long-context retrieval, while preserving the paged KV-cache format with negligible inference overhead.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
       "paper_id": "202608/07/2608.04405v1-training-free-hashing-based-attention-via-binary-principal-components",
       "section": "quick",
       "title_en": "Training-Free Hashing-Based Attention via Binary Principal Components",
@@ -31,6 +46,36 @@
       "tldr": "长上下文大语言模型在解码时需反复处理不断增长的KV缓存，自注意力成为效率瓶颈。现有稀疏注意力方法或精度下降、或需训练、或依赖昂贵哈希。BinaryPC提出免训练、数据感知的哈希稀疏注意力，通过二进制主成分构建紧凑哈希码，显式保留数据结构信息。实验表明其精度接近全注意力，优于多种基线，端到端解码吞吐提升3.56倍。",
       "tags": "query:pic",
       "abstract_en": "Long-context large language models (LLMs) are increasingly deployed in real-world applications, yet self-attention remains a major efficiency bottleneck -- especially during decoding -- due to the necessity of repeatedly processing ever-growing key-value (KV) caches. Existing sparse attention reduce computation by attending to fewer KV pairs, but often suffer from substantial accuracy degradation, require additional training, or rely on expensive hashing. In this work, we present BinaryPC, a training-free, data-aware hashing-based sparse attention for long-context LLMs. BinaryPC constructs compact binary hash codes and corresponding hash function by computing binary principal components of data. Unlike Locality-Sensitive Hashing (LSH) with data-independent random projections or learned non-linear hashing methods, BinaryPC constructs binary codes that explicitly preserve the structural information of data without requiring gradient-based training. Comprehensive experiments across multiple model families and long-context benchmarks show that BinaryPC preserves accuracy relative to full attention while achieving superior performance among sparse and hashing-based baselines. On modern GPUs, BinaryPC improves end-to-end decoding throughput by 3.56$\\times$ over the FlashAttention kernel. Our code is available at https://github.com/yudaohai666/BPC.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/07/2608.05326v1-qevict-recoverable-quantized-kv-eviction-for-attention-drift-robust-long-context-decoding",
+      "section": "quick",
+      "title_en": "QEvict: Recoverable Quantized KV Eviction for Attention-Drift-Robust Long-Context Decoding",
+      "authors": "Ayushman Garg, Akshita Gupta, Shaswata Bhattacharya, Abhishek Gupta, Sandeep Kumar, Manoj Kumar",
+      "date": "2026-08-05",
+      "pdf": "https://arxiv.org/pdf/2608.05326v1",
+      "score": "7.0",
+      "evidence": "可恢复量化KV驱逐，针对长上下文解码中的注意力漂移更鲁棒",
+      "tldr": "长上下文解码中，基于注意力分数驱逐KV缓存token的策略假设被驱逐token永不重要，但实际中token和窗口重要性随查询演化而漂移，导致永久丢失后续可能被大量关注的state。本文提出QEvict，采用三层KV缓存管理：高置信窗口全精度保留，中间窗口存入可恢复的量化层，仅删除最低置信窗口。当量化窗口重新变重要时，可反量化并提升回全精度。在固定内存预算下，QEvict保留更广历史上下文且对关键区域保持精确，在长上下文理解、检索和推理基准上优于现有驱逐和量化基线。",
+      "tags": "query:pic",
+      "abstract_en": "Autoregressive large language model inference is increasingly constrained by the memory footprint of the Key-Value (KV) cache. A dominant line of work reduces this footprint by evicting tokens that appear unimportant under attention-derived scores. However, such policies make an implicit irreversible decision: once a token is evicted, it cannot become useful again. We show that this assumption is brittle during decoding. Token and window importance drift as generated queries evolve, causing standard eviction policies to permanently discard states that later receive substantial attention under the full-cache model. To characterize this behaviour, we introduce Future Missed Mass and Global LIR, two diagnostics that measure future attention assigned to discarded states and the reactivation of historically inactive regions. We propose QEvict, a three-tier KV-cache management scheme that replaces binary retain-or-delete eviction with recoverable eviction. QEvict maintains high-confidence windows in full precision, stores intermediate windows in a quantized recoverable tier, and deletes only the lowest-confidence windows. During decoding, cumulative attention scores update window importance and when a quantized window becomes important again, it is dequantized and promoted to the full-precision. Under a fixed memory budget, this design preserves broader historical context while retaining exact full precision for the most important regions. Across long-context understanding, retrieval, and reasoning benchmarks, QEvict consistently improves over representative eviction and quantization baselines, reducing missed attention and improving information retention",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/07/2608.03229v1-unified-lookup-table-inference-with-signed-digit-kv-caches-for-ternary-llms",
+      "section": "quick",
+      "title_en": "Unified Lookup-Table Inference with Signed-Digit K/V Caches for Ternary LLMs",
+      "authors": "Ziang Duan, Jiajun Wu, Zetian Chen, Hao Song, Yanwen Deng, Zixuan Shen, Nuobei Xie, Simo Wu, Bolun Wang, Peng Zhou, Chao Wang",
+      "date": "2026-08-04",
+      "pdf": "https://arxiv.org/pdf/2608.03229v1",
+      "score": "6.0",
+      "evidence": "三元LLM中面向统一查找表推理的有符号数字K/V缓存表示",
+      "tldr": "三元大语言模型中，权重投影已用查找表加速，但注意力K/V缓存需在线高精度处理，形成引擎不匹配。据此提出统一查找表推理：将K/V状态表示为缩放的多平面有符号数字，由激活派生表直接消费，避免稠密物化，并集成在线缓存形成与未完成值块处理。设计共享多流数据路径，并用约束引导搜索选定表示与执行策略。实验表明在缓存容量、模型质量和硬件效率上均实现提升。",
+      "tags": "query:pic",
+      "abstract_en": "Ternary LLMs make their weight-dominated projections compact and efficient, but attention remains a mismatch: its K/V cache is created online and is typically processed by a separate higher-precision engine. Compressing this cache alone does not resolve the mismatch. To execute attention with the same lookup-table machinery as ternary projections, values accumulated in one reduction must retain a compatible representation and scale. This requirement also differs for keys and values during causal decoding, because newly generated values may belong to an unfinished cache block. This work develops a unified lookup-table inference approach for ternary LLMs. It stores runtime K/V states as scaled multi-plane signed digits organized around the reduction structure of attention. The resulting digit planes are consumed directly by activation-derived tables, avoiding dense K/V materialization between cache storage and attention computation. The design combines online K/V formation, bounded handling of incomplete value blocks, and a shared multi-stream datapath for Linear projections and attention. A constraint-guided search selects the representation and execution policy for a target quality--efficiency trade-off. Experiments on native and post-training ternary models validate the approach across cache capacity, model quality, and hardware efficiency.",
       "source": "arxiv",
       "selection_source": "fresh_fetch"
     },
@@ -61,21 +106,6 @@
       "tldr": "分割推理在本地与云端间反复传输边界隐藏状态，造成严重通信瓶颈，且云部署存在隐私风险。RAC提出参考感知编解码，通过检索精确令牌历史跨度、重用上行状态及轻量因果预测，结合分组仿射对齐与校准残差量化，大幅压缩激活值。在三个模型九组链路下，TTFT和TPOT提升达1.24–2.72倍和1.01–2.79倍，12个任务分数变化仅-0.40至+2.50点。表明RAC以极小质量代价显著加速分割推理，兼顾隐私与效率。",
       "tags": "query:pic",
       "abstract_en": "Large language model (LLM) agents repeatedly process long, privacy-sensitive contexts, while cloud-only deployment exposes user data beyond the trusted endpoint and fully local deployment often requires costly hardware. Split inference offers a middle ground by executing the model head, tail, and tools locally and the middle layers in the cloud, but its local-cloud-local path transfers boundary hidden states at every invocation and creates a critical communication bottleneck. We present \\system, a reference-aware codec that retrieves exact-token historical spans for prefill uplinks, reuses the reconstructed uplink state for same-round prefill downlinks, and generates boundary-specific decode references with lightweight causal predictors. RAC applies grouped affine alignment and calibrated residual quantization with optional prefill outliers, while sender-side wire-format reconstruction synchronizes subsequent references and offline calibration accounts for quality and packed representation costs. Across three models and nine evaluated model-link pairs, Raw-to-RAC mean time to first token (TTFT) and time per output token (TPOT) ratios are 1.24-2.72$\\times$ and 1.01-2.79$\\times$, while the 12 non-perplexity task-score changes range from $-0.40$ to $+2.50$ points.",
-      "source": "arxiv",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "paper_id": "202608/07/2608.01631v1-does-accuracy-equal-evidence-reasoning-faithfulness-under-kv-cache-compression",
-      "section": "quick",
-      "title_en": "Does Accuracy Equal Evidence? Reasoning Faithfulness under KV Cache Compression",
-      "authors": "Mengting Ai, Jingrui He, Yue Guo",
-      "date": "2026-08-03",
-      "pdf": "https://arxiv.org/pdf/2608.01631v1",
-      "score": "6.0",
-      "evidence": "评估KV缓存压缩方法下的推理忠实度，揭示准确率与证据保留之间的差距",
-      "tldr": "KV缓存压缩常用最终答案准确率衡量，隐含假设答案保留即推理保留。但本研究在大型推理模型中发现该假设不成立：压缩下正确答案与可见推理链的有效性可能以不同速率变化。作者提出固定轨迹重放协议，隔离压缩对已有推理轨迹可用信息的影响，并评估十种token驱逐方法与一种量化方法。结果显示token驱逐可在保持答案准确率的同时严重破坏链式支撑或扰动忠实度，形成答案-证据差距，而覆盖保留的量化方法受影响较小。",
-      "tags": "query:pic",
-      "abstract_en": "KV cache compression is commonly evaluated by final-answer accuracy, implicitly assuming that preserving the answer also preserves the reasoning that supports it. We test this assumption for large reasoning models and show that it can fail: under compression, correct answers and the validity of their visible supporting rationales can be preserved at different rates. We study this failure with a controlled fixed-trace replay protocol, which holds reasoning content fixed and isolates whether compression preserves usable information from an already available trace. We evaluate ten token-eviction KV compression methods and one quantization method on three models across mathematical reasoning, scientific QA, clinical calculation, and long-context retrieval. We measure final accuracy, answer-chain consistency, and perturbation faithfulness. Across tasks, token-eviction methods can preserve competitive final-answer accuracy while substantially degrading chain support or perturbation faithfulness. We call this the answer-evidence gap. A coverage-preserving quantization control is substantially less affected, suggesting that the failure is tied less to KV memory reduction itself than to losing access to parts of the reasoning trace. Code is available at https://github.com/famous-blue-raincoat/Safe_KV_Compress.",
       "source": "arxiv",
       "selection_source": "fresh_fetch"
     }
