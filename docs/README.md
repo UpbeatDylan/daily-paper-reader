@@ -6,41 +6,39 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-05
-- 运行时间：2026-08-05 20:35:29 UTC
+- 最新运行日期：2026-08-07
+- 运行时间：2026-08-07 02:14:48 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：3
+- 本次总论文数：5
+- 精读区：1
 - 速读区：4
 
 ### 今日简报（AI）
-今日7篇论文聚焦KV Cache压缩与高效推理，精读2篇高分工作。重点看《AnchorKV》与《TaskPress》的压缩方案，分别从锚点残差和任务引导剪枝提升效率。可优先跟进KV量化与稀疏注意力方向，适合关注LLM推理优化者。
-- 详情：[/202608/05/README](/202608/05/README)
+今日精读1篇、速读4篇，共5篇论文，聚焦KV缓存量化、哈希注意力与高效推理。
+
+最值得关注的是精读论文《Spend Bits Where Queries Look》提出的注意力保持变换下的KV缓存向量量化（8.0分），以及训练无关的哈希注意力方法。
+
+建议普通读者优先从这篇KV缓存量化论文入手，可快速理解如何在不损失注意力质量的前提下压缩缓存。
+- 详情：[/202608/07/README](/202608/07/README)
 
 ### 精读区论文标签
-1. [AnchorKV: Anchor-Residual KV Cache Compression](/202608/05/2608.02901v1-anchorkv-anchor-residual-kv-cache-compression)  
+1. [Spend Bits Where Queries Look: KV Cache Vector Quantization with Attention-Preserving Transforms](/202608/07/2608.04074v1-spend-bits-where-queries-look-kv-cache-vector-quantization-with-attention-preserving-transforms)  
    标签：评分：8.0/10、query:pic
-   evidence：基于锚点和残差的KV缓存压缩，不丢弃任何token，直接提升长上下文推理效率
-2. [TaskPress: Query-Agnostic KV Cache Compression via Task-Guided Pruning](/202608/05/2608.03276v1-taskpress-query-agnostic-kv-cache-compression-via-task-guided-pruning)  
-   标签：评分：8.0/10、query:pic
-   evidence：通过任务引导构建可复用的KV缓存表示，面向不可见查询实现缓存复用
-3. [Heterogeneous LLM Serving with General-Purpose Processing-Near-Memory for Retrieval-Based Sparse Attention](/202608/05/2608.03555v1-heterogeneous-llm-serving-with-general-purpose-processing-near-memory-for-retrieval-based-sparse-attention)  
-   标签：评分：8.0/10、query:pic
-   evidence：异构服务系统将KV缓存移入近内存处理单元，支持百万token上下文的检索式稀疏注意力
+   evidence：通过注意力保持变换进行KV缓存向量量化，减小缓存大小并提高解码速度
 
 ### 速读区论文标签
-1. [LongCat Sparse Attention: Taming the Lightning via Streaming-aware Hierarchical Cross-Layer Indexing](/202608/05/2608.01662v2-longcat-sparse-attention-taming-the-lightning-via-streaming-aware-hierarchical-cross-layer-indexing)  
+1. [Training-Free Hashing-Based Attention via Binary Principal Components](/202608/07/2608.04405v1-training-free-hashing-based-attention-via-binary-principal-components)  
    标签：评分：7.0/10、query:pic
-   evidence：面向长上下文稀疏注意力的软硬件协同设计，通过流感知和跨层索引降低KV索引开销
-2. [Output-Aware Rotation for INT2 KV-Cache Quantization](/202608/05/2608.02691v1-output-aware-rotation-for-int2-kv-cache-quantization)  
+   evidence：面向长上下文LLM推理加速的无训练哈希稀疏注意力
+2. [Fewer Tokens, Smaller Cache: Reward-Coordinated Efficient Reasoning](/202608/07/2608.04771v1-fewer-tokens-smaller-cache-reward-coordinated-efficient-reasoning)  
    标签：评分：7.0/10、query:pic
-   evidence：输出感知旋转的INT2 KV缓存量化，降低长上下文推理的内存与带宽瓶颈
-3. [ATFlash: Per-RoPE-Wavelength Attention Windows for Compute/Memory-Efficient LLM Inference](/202608/05/2608.02947v1-atflash-per-rope-wavelength-attention-windows-for-computememory-efficient-llm-inference)  
+   evidence：利用过程奖励沿推理轨迹协调KV缓存压缩，降低显存与生成开销
+3. [RAC: Reference-Aware Activation Compression for Communication-Efficient Split LLM Inference](/202608/07/2608.04991v1-rac-reference-aware-activation-compression-for-communication-efficient-split-llm-inference)  
+   标签：评分：7.0/10、query:pic
+   evidence：在拆分式LLM推理中复用历史激活跨度作为上下文缓存，以减少通信并加速长上下文处理
+4. [Does Accuracy Equal Evidence? Reasoning Faithfulness under KV Cache Compression](/202608/07/2608.01631v1-does-accuracy-equal-evidence-reasoning-faithfulness-under-kv-cache-compression)  
    标签：评分：6.0/10、query:pic
-   evidence：RoPE波长注意力窗口降低长序列推理的计算和内存开销
-4. [PI-Mem: Pushing Long-Context Reasoning to 3.6M Tokens with Parallel-Iterative Memory](/202608/05/2608.03048v1-pi-mem-pushing-long-context-reasoning-to-36m-tokens-with-parallel-iterative-memory)  
-   标签：评分：6.0/10、query:pic
-   evidence：并行-迭代记忆降低超长上下文推理延迟
+   evidence：评估KV缓存压缩方法下的推理忠实度，揭示准确率与证据保留之间的差距
 
 
 <div class="dpr-home-promo-card">
