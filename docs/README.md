@@ -6,41 +6,38 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-07
-- 运行时间：2026-08-07 20:54:50 UTC
+- 最新运行日期：2026-08-08
+- 运行时间：2026-08-08 20:29:46 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：1
-- 速读区：6
+- 本次总论文数：6
+- 精读区：2
+- 速读区：4
 
 ### 今日简报（AI）
-今日精读1篇、速读6篇，聚焦KV Cache量化与注意力加速优化。最值得关注的是《Spend Bits Where Queries Look》提出的注意力保持变换量化方法（8.0分），以及三篇7.0分工作分别从旋转、哈希、驱逐角度降低长上下文解码开销。建议优先阅读精读文章，再按需选读速读中的INT2量化或免训练哈希方案。
-- 详情：[/202608/07/README](/202608/07/README)
+今日聚焦KV缓存优化，精读跨模型映射与低秩索引两篇高分论文；最值得关注的是LLM家族间KV缓存迁移的闭式映射方法，以及长上下文检索的SAKI索引；建议普通读者留意KV缓存压缩对推理忠实度的潜在影响。
+- 详情：[/202608/08/README](/202608/08/README)
 
 ### 精读区论文标签
-1. [Spend Bits Where Queries Look: KV Cache Vector Quantization with Attention-Preserving Transforms](/202608/07/2608.04074v1-spend-bits-where-queries-look-kv-cache-vector-quantization-with-attention-preserving-transforms)  
+1. [Cross-Model KV Cache Transfer in LLM Families: A Closed-Form Linear Mapping for Prefill Reuse](/202608/08/2608.03893v1-cross-model-kv-cache-transfer-in-llm-families-a-closed-form-linear-mapping-for-prefill-reuse)  
+   标签：评分：9.0/10、query:pic
+   evidence：直接提出跨模型KV缓存复用以跳过预填充，与KV缓存复用加速推理需求匹配。
+2. [SAKI: Score-Aware Low-Rank Key Indexing for Long-Context KV Retrieval](/202608/08/2608.03228v1-saki-score-aware-low-rank-key-indexing-for-long-context-kv-retrieval)  
    标签：评分：8.0/10、query:pic
-   evidence：KV缓存向量量化压缩缓存体积，缓解带宽瓶颈，加速长上下文LLM解码
+   evidence：面向长上下文KV检索的得分感知低秩键索引，直接保留注意力得分
 
 ### 速读区论文标签
-1. [Output-Aware Rotation for INT2 KV-Cache Quantization](/202608/07/2608.02691v2-output-aware-rotation-for-int2-kv-cache-quantization)  
+1. [Relevant but Incomplete: Referential Dangling as a Paradigm-Level Failure Mode in Hard Prompt Compression](/202608/08/2608.04569v1-relevant-but-incomplete-referential-dangling-as-a-paradigm-level-failure-mode-in-hard-prompt-compression)  
    标签：评分：7.0/10、query:pic
-   evidence：INT2 KV缓存量化降低长上下文推理的内存与带宽，属于长上下文推理加速
-2. [Training-Free Hashing-Based Attention via Binary Principal Components](/202608/07/2608.04405v1-training-free-hashing-based-attention-via-binary-principal-components)  
-   标签：评分：7.0/10、query:pic
-   evidence：基于哈希的稀疏注意力降低长上下文LLM的KV处理开销，免训练
-3. [QEvict: Recoverable Quantized KV Eviction for Attention-Drift-Robust Long-Context Decoding](/202608/07/2608.05326v1-qevict-recoverable-quantized-kv-eviction-for-attention-drift-robust-long-context-decoding)  
-   标签：评分：7.0/10、query:pic
-   evidence：可恢复量化KV驱逐，针对长上下文解码中的注意力漂移更鲁棒
-4. [Unified Lookup-Table Inference with Signed-Digit K/V Caches for Ternary LLMs](/202608/07/2608.03229v1-unified-lookup-table-inference-with-signed-digit-kv-caches-for-ternary-llms)  
+   evidence：硬提示压缩在长上下文推理成本中的失效模式
+2. [Opt.Gear Technical Report](/202608/08/2608.01034v2-optgear-technical-report)  
    标签：评分：6.0/10、query:pic
-   evidence：三元LLM中面向统一查找表推理的有符号数字K/V缓存表示
-5. [Fewer Tokens, Smaller Cache: Reward-Coordinated Efficient Reasoning](/202608/07/2608.04771v1-fewer-tokens-smaller-cache-reward-coordinated-efficient-reasoning)  
+   evidence：混合架构结合卷积键值门控混合器与局部-全局注意力以降低KV缓存内存
+3. [Does Accuracy Equal Evidence? Reasoning Faithfulness under KV Cache Compression](/202608/08/2608.01631v1-does-accuracy-equal-evidence-reasoning-faithfulness-under-kv-cache-compression)  
    标签：评分：6.0/10、query:pic
-   evidence：用奖励协调KV缓存压缩，降低推理模型长思维链推理成本
-6. [RAC: Reference-Aware Activation Compression for Communication-Efficient Split LLM Inference](/202608/07/2608.04991v1-rac-reference-aware-activation-compression-for-communication-efficient-split-llm-inference)  
+   evidence：使用固定轨迹重放协议评估KV缓存压缩方法对推理忠实度的影响
+4. [Enhancing Tabular Learners with Context-Aware Semantic Embeddings](/202608/08/2608.03565v1-enhancing-tabular-learners-with-context-aware-semantic-embeddings)  
    标签：评分：6.0/10、query:pic
-   evidence：参考感知编码器在拆分LLM推理中复用精确词元历史片段，降低通信开销，与KV/上下文复用及推理加速相关
+   evidence：通过预填充和复用Gemma表格语言模型的KV缓存来生成上下文感知的行嵌入
 
 
 <div class="dpr-home-promo-card">

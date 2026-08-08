@@ -1,0 +1,249 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-08T20:24:57.676364+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.03893v1",
+      "source": "arxiv",
+      "title": "Cross-Model KV Cache Transfer in LLM Families: A Closed-Form Linear Mapping for Prefill Reuse",
+      "abstract": "Production deployments often swap between different-sized models in a family for cost-quality cascading, mid-conversation switching, and routing, and each swap forces the receiver to repay the prefill from scratch. We propose cross-model KV cache transfer, where the receiver reuses the source's KV cache, skipping prefill. We find that cross-model KV has substantial linear structure across matched-KV pairs, where source and target share KV head count and per-head dimension. On Qwen3 14B->32B, one source layer explains 56% of variance in the target's keys and 32% in values, rising to 79% and 65% with multiple source layers. Building on this, we design a closed-form ridge mapper that operates per head and proceeds in three steps. First, for each target layer we select the top-k most predictive source layers and concatenate their KV as input. Second, we strip RoPE from the keys before mapping, so the fit is position-free and reusable across context lengths. Third, we fit ridge regression on a small calibration set of 500 FineWeb-Edu sequences of 1,024 tokens each. Surprisingly, across six pairs in three families, this linear mapper retains 73-98% of the receiver's standalone-prefill accuracy on four pairs, while two degrade sharply. A nonlinear MLP recovers up to +37 pp HellaSwag retention on the failures. The mapper runs 2.7-25x faster than re-prefill and remains stable across multi-turn handoff, making cross-model KV cache transfer practical.",
+      "authors": [
+        "Taekyung Heo",
+        "Rasoul Shafipour",
+        "Ritchie Zhao",
+        "Maximilian Golub",
+        "Mohammad Mahdi Kamani",
+        "Ritika Borkar",
+        "Makesh Tarun Chandran",
+        "Pantea Zardoshti",
+        "Bita Darvish Rouhani"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-04T16:26:47+00:00",
+      "link": "https://arxiv.org/pdf/2608.03893v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Directly proposes cross-model KV cache reuse to skip prefill, matching KV cache reuse for inference acceleration.",
+      "llm_evidence_cn": "直接提出跨模型KV缓存复用以跳过预填充，与KV缓存复用加速推理需求匹配。",
+      "llm_evidence": "直接提出跨模型KV缓存复用以跳过预填充，与KV缓存复用加速推理需求匹配。",
+      "canonical_evidence": "直接提出跨模型KV缓存复用以跳过预填充，与KV缓存复用加速推理需求匹配。",
+      "llm_tldr_en": "Proposes cross-model KV cache transfer via a closed-form ridge mapper, enabling prefill reuse across model sizes and reducing inference cost. Validated on Qwen3 14B to 32B.",
+      "llm_tldr_cn": "针对生产环境中模型切换导致预填充重复计算的问题，提出跨模型KV缓存迁移方法，通过闭式岭回归映射将源模型KV缓存映射到目标模型，从而跳过预填充。在Qwen3 14B到32B的实验中验证了跨模型KV的线性结构，多层源层可解释目标键和值的大部分方差，显著减少推理延迟。该方法为模型级缓存复用提供了新思路。",
+      "llm_tldr": "针对生产环境中模型切换导致预填充重复计算的问题，提出跨模型KV缓存迁移方法，通过闭式岭回归映射将源模型KV缓存映射到目标模型，从而跳过预填充。在Qwen3 14B到32B的实验中验证了跨模型KV的线性结构，多层源层可解释目标键和值的大部分方差，显著减少推理延迟。该方法为模型级缓存复用提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.03228v1",
+      "source": "arxiv",
+      "title": "SAKI: Score-Aware Low-Rank Key Indexing for Long-Context KV Retrieval",
+      "abstract": "Existing low rank KV cache methods preserve either model weights or key variance, neither of which directly reflects the attention scores used during inference. We derive the expected attention score distortion caused by rank r key compression and show that it yields a covariance weighted low rank objective. Under a margin condition, controlling this distortion also improves top k recall. The optimal rank r solution has a closed form asymmetric factorization obtained from the SVD of the covariance weighted query key operator. This motivates SAKI, a training free KV cache index that directly preserves attention scores rather than key reconstruction quality.   Across LLaMA 3.1 8B, Qwen 2.5 7B, Mistral 7B v0.1, and Llama 3.2 3B, SAKI outperforms key PCA at every tested rank. At rank 32, it removes 13 to 30 percent of PCA's remaining top 64 recall error, including improvements from 0.748 to 0.799 on LLaMA 3.1 8B and from 0.786 to 0.850 on Qwen 2.5 7B. It improves 68 to 89 percent of attention heads per model, with the largest gains in deeper layers. Predicted score MSE reductions closely match empirical measurements, with a Pearson correlation of 0.997, while ablation studies confirm that the gains arise from optimizing the attention score objective rather than covariance weighting alone. Analysis of the scoring operator further explains why weight only, invariant subspace, and key reconstruction methods can be suboptimal.",
+      "authors": [
+        "Lin Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "stat.AP"
+      ],
+      "published": "2026-08-04T06:59:29+00:00",
+      "link": "https://arxiv.org/pdf/2608.03228v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Score-aware low-rank key index for long-context KV retrieval preserving attention scores",
+      "llm_evidence_cn": "面向长上下文KV检索的得分感知低秩键索引，直接保留注意力得分",
+      "llm_evidence": "面向长上下文KV检索的得分感知低秩键索引，直接保留注意力得分",
+      "canonical_evidence": "面向长上下文KV检索的得分感知低秩键索引，直接保留注意力得分",
+      "llm_tldr_en": "SAKI is a training-free low-rank key index derived from a covariance-weighted objective that minimizes expected attention-score distortion, improving top-k recall for long-context KV retrieval across multiple LLMs.",
+      "llm_tldr_cn": "现有低秩KV缓存方法只保留权重或键方差，不能直接反映推理时的注意力得分。该研究推导了ran压缩导致的期望注意力得分失真，并由此得到协方差加权低秩目标。其最优解可由协方差加权查询-键算子的SVD闭式分解获得，形成无需训练的SAKI索引。在LLaMA 3.1 8B、Qwen 2.5 7B、Mistral 7B等模型上，SAKI在长上下文键检索中显著优于键PCA等方法，直接提升了注意力得分保持与检索质量。该方法为长上下文KV缓存压缩提供了新的理论驱动方案。",
+      "llm_tldr": "现有低秩KV缓存方法只保留权重或键方差，不能直接反映推理时的注意力得分。该研究推导了ran压缩导致的期望注意力得分失真，并由此得到协方差加权低秩目标。其最优解可由协方差加权查询-键算子的SVD闭式分解获得，形成无需训练的SAKI索引。在LLaMA 3.1 8B、Qwen 2.5 7B、Mistral 7B等模型上，SAKI在长上下文键检索中显著优于键PCA等方法，直接提升了注意力得分保持与检索质量。该方法为长上下文KV缓存压缩提供了新的理论驱动方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.04569v1",
+      "source": "arxiv",
+      "title": "Relevant but Incomplete: Referential Dangling as a Paradigm-Level Failure Mode in Hard Prompt Compression",
+      "abstract": "Hard prompt compression reduces long-context inference cost by independently scoring tokens, sentences, or chunks and retaining the highest-scoring units under a budget. We identify a structural failure in this procedure: independent selection can split dependent evidence pairs, retaining one member while deleting the other. When retained text contains an answer but deleted text defines the entity needed to interpret it, we call the result referential dangling. At a compression ratio of 0.30, Beaver, which ranks coherent chunks using Qwen3-0.6B embeddings, leaves the answer path incomplete in 34-54% of bridge examples across three multi-hop question answering datasets. On a shared HotpotQA bridge set, all six hard compressors we test exhibit dangling at rates up to 60%, and every document in LongBench-v2 Single-Document QA contains at least one dangling reference. On dangling examples evaluated with Qwen3-8B, reinserting the missing supporting paragraph while removing nonsupporting paragraphs to maintain the token budget improves accuracy by 29-34 percentage points (p < 0.0001), recovering at least 88% of the gap to contexts retaining both supporting paragraphs. Stronger answer models do not absorb the loss: on MuSiQue, GPT-5.5 is 8.8 points less accurate on compressed contexts than on contexts retaining both supporting paragraphs. Finally, we train a compact classifier to rank omitted sentences by whether they are needed to interpret retained text and reinsert the top-ranked candidates without support annotations at inference. On HotpotQA with Qwen3-8B, this automatic restoration improves accuracy by 4.7 points while changing the compression ratio only from 0.30 to 0.31. Hard compressors should optimize both relevance and referential completeness.",
+      "authors": [
+        "Zhengpei Hu",
+        "Kai Li",
+        "Dapeng Fu",
+        "Xuechao Zou",
+        "Yuanhao Tang",
+        "Yue Li",
+        "Tengfei Cao",
+        "Jianqiang Huang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-05T07:58:53+00:00",
+      "link": "https://arxiv.org/pdf/2608.04569v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "failure mode in hard prompt compression for long-context inference cost",
+      "llm_evidence_cn": "硬提示压缩在长上下文推理成本中的失效模式",
+      "llm_evidence": "硬提示压缩在长上下文推理成本中的失效模式",
+      "canonical_evidence": "硬提示压缩在长上下文推理成本中的失效模式",
+      "llm_tldr_en": "Identifies referential dangling in hard prompt compression, where independent selection splits dependent evidence pairs, causing incomplete answer paths in multi-hop QA and undermining compression fidelity.",
+      "llm_tldr_cn": "硬提示压缩通过独立评分并保留高分单元来降低长上下文推理开销，但独立选择可能拆散相互依赖的证据对，保留答案却删除解释答案所需的实体定义，造成“指称悬空”失效模式。在压缩率0.30下，基于Qwen3-0.6B的Beaver在多个多跳问答数据集的桥接样本中留下34-54%的不完整答案路径。这一发现揭示了当前压缩范式忽略证据依赖的系统性缺陷。",
+      "llm_tldr": "硬提示压缩通过独立评分并保留高分单元来降低长上下文推理开销，但独立选择可能拆散相互依赖的证据对，保留答案却删除解释答案所需的实体定义，造成“指称悬空”失效模式。在压缩率0.30下，基于Qwen3-0.6B的Beaver在多个多跳问答数据集的桥接样本中留下34-54%的不完整答案路径。这一发现揭示了当前压缩范式忽略证据依赖的系统性缺陷。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.01034v2",
+      "source": "arxiv",
+      "title": "Opt.Gear Technical Report",
+      "abstract": "We introduce OptGear, a foundation model designed for efficient on-device deployment, real-tim inference, and strong task capability. It includes a dense model (1M, 270M, and 1B) with a context length of 64K. We designed a new hybrid architecture that combines a convolutional key-value gated mixer with local-global attention to reduce the KV-cache memory that tends to increase exponentially with long context. This architecture delivers up to X4.9 faster prefill and decoding speeds on the NPUs compared to models of a similar scale models. From a 2T tokens candidate corpus, OptGear is trained on a curated 0.5T tokens subset without knowledge distillation. This is the most data-efficient of the existing foundation models. All models are released with open weights and deployment binaries for ONNX, Qualcomm NPU, and Apple ANE making OptGear a practical base for edge applications that need fast, memory-efficient inference and strong task capabilities. Furthermore, to expand the ecosystem of on-device generative language models, we are introducing the OptGear-1M that can be deployed on Micro-Controller Units (MCUs), a Tiny Language Model (TLM). OptGear-1M is the first generative language model to achieve 20 TPS with W4A32 quantization on the ARM Cortex-M7 CPU of the STM32H747I-DISCO.",
+      "authors": [
+        "Juneyoung Park",
+        "Youngwook Kwon"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-02T06:43:25+00:00",
+      "link": "https://arxiv.org/pdf/2608.01034v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Hybrid architecture combining convolutional K/V gated mixer and local-global attention to reduce KV-cache memory",
+      "llm_evidence_cn": "混合架构结合卷积键值门控混合器与局部-全局注意力以降低KV缓存内存",
+      "llm_evidence": "混合架构结合卷积键值门控混合器与局部-全局注意力以降低KV缓存内存",
+      "canonical_evidence": "混合架构结合卷积键值门控混合器与局部-全局注意力以降低KV缓存内存",
+      "llm_tldr_en": "OptGear introduces a hybrid LLM architecture with convolutional key-value gated mixer and local-global attention, reducing KV-cache memory and achieving up to 4.9x faster prefill and decoding on NPUs.",
+      "llm_tldr_cn": "端侧部署需要兼顾低内存、低时延和强任务能力，长上下文的KV缓存随长度指数增长成为主要瓶颈。该技术报告提出OptGear基础模型，采用卷积键值门控混合器与局部-全局注意力结合的混合架构。该设计显著降低KV缓存内存，在NPU上预填充和解码速度最高提升4.9倍。模型在仅0.5T token的子集上训练，数据效率高，并开放权重与部署二进制。这为端侧高能效长上下文LLM推理提供了一种新的架构选择。",
+      "llm_tldr": "端侧部署需要兼顾低内存、低时延和强任务能力，长上下文的KV缓存随长度指数增长成为主要瓶颈。该技术报告提出OptGear基础模型，采用卷积键值门控混合器与局部-全局注意力结合的混合架构。该设计显著降低KV缓存内存，在NPU上预填充和解码速度最高提升4.9倍。模型在仅0.5T token的子集上训练，数据效率高，并开放权重与部署二进制。这为端侧高能效长上下文LLM推理提供了一种新的架构选择。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.01631v1",
+      "source": "arxiv",
+      "title": "Does Accuracy Equal Evidence? Reasoning Faithfulness under KV Cache Compression",
+      "abstract": "KV cache compression is commonly evaluated by final-answer accuracy, implicitly assuming that preserving the answer also preserves the reasoning that supports it. We test this assumption for large reasoning models and show that it can fail: under compression, correct answers and the validity of their visible supporting rationales can be preserved at different rates. We study this failure with a controlled fixed-trace replay protocol, which holds reasoning content fixed and isolates whether compression preserves usable information from an already available trace. We evaluate ten token-eviction KV compression methods and one quantization method on three models across mathematical reasoning, scientific QA, clinical calculation, and long-context retrieval. We measure final accuracy, answer-chain consistency, and perturbation faithfulness. Across tasks, token-eviction methods can preserve competitive final-answer accuracy while substantially degrading chain support or perturbation faithfulness. We call this the answer-evidence gap. A coverage-preserving quantization control is substantially less affected, suggesting that the failure is tied less to KV memory reduction itself than to losing access to parts of the reasoning trace. Code is available at https://github.com/famous-blue-raincoat/Safe_KV_Compress.",
+      "authors": [
+        "Mengting Ai",
+        "Jingrui He",
+        "Yue Guo"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-03T03:03:53+00:00",
+      "link": "https://arxiv.org/pdf/2608.01631v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache compression methods evaluated on reasoning faithfulness with a fixed-trace replay protocol",
+      "llm_evidence_cn": "使用固定轨迹重放协议评估KV缓存压缩方法对推理忠实度的影响",
+      "llm_evidence": "使用固定轨迹重放协议评估KV缓存压缩方法对推理忠实度的影响",
+      "canonical_evidence": "使用固定轨迹重放协议评估KV缓存压缩方法对推理忠实度的影响",
+      "llm_tldr_en": "This paper shows that KV cache compression can preserve correct answers while degrading the validity of supporting rationales, evaluating ten token-eviction methods and one quantization method across multiple reasoning benchmarks.",
+      "llm_tldr_cn": "KV缓存压缩通常以最终答案准确率作为评估指标，但该研究质疑此假设，认为保留答案不一定保留推理依据。作者提出固定轨迹重放协议，在推理内容固定时隔离压缩对可用信息的影响。他们在数学推理、科学问答、临床计算和长上下文等任务上评估了十种token淘汰压缩方法及一种量化方法。结果显示正确回答与理由有效性可能以不同速率被保留，提示压缩评估需引入推理忠实度指标，对KV缓存压缩方法的部署具有重要指导意义。",
+      "llm_tldr": "KV缓存压缩通常以最终答案准确率作为评估指标，但该研究质疑此假设，认为保留答案不一定保留推理依据。作者提出固定轨迹重放协议，在推理内容固定时隔离压缩对可用信息的影响。他们在数学推理、科学问答、临床计算和长上下文等任务上评估了十种token淘汰压缩方法及一种量化方法。结果显示正确回答与理由有效性可能以不同速率被保留，提示压缩评估需引入推理忠实度指标，对KV缓存压缩方法的部署具有重要指导意义。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.03565v1",
+      "source": "arxiv",
+      "title": "Enhancing Tabular Learners with Context-Aware Semantic Embeddings",
+      "abstract": "While modern tabular learners excel at capturing statistical patterns, they frequently operate in a semantic vacuum, treating textual features as discrete symbols, ignoring the rich semantics inherent in feature names or cell entries. We propose CASE (Context-Aware Semantic Embeddings), a novel framework that bridges the gap between the semantic understanding of Large Language Models (LLMs) and the statistical capabilities of tabular learners. Unlike existing methods that embed rows in isolation, CASE utilizes a contextualization strategy: we pre-fill the KV cache of a custom-trained Gemma 3-based Tabular Language Model with a representative sample of rows to establish a persistent anchor of the dataset's semantics. This ensures that generated row embeddings are dynamically contextualized, resolving semantic ambiguities and anchoring representations in domain-specific context. Our experiments across several benchmarks (CARTE, TextTab, and TabArena) demonstrate that CASE substantially improves the performance of tabular learners on semantically rich datasets, particularly in low-data regimes.",
+      "authors": [
+        "Günther Schindler",
+        "Maximilian Schambach",
+        "Johannes Höhne"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-04T12:29:37+00:00",
+      "link": "https://arxiv.org/pdf/2608.03565v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "pre-fills and reuses KV cache of a Gemma tabular language model for context-aware row embeddings",
+      "llm_evidence_cn": "通过预填充和复用Gemma表格语言模型的KV缓存来生成上下文感知的行嵌入",
+      "llm_evidence": "通过预填充和复用Gemma表格语言模型的KV缓存来生成上下文感知的行嵌入",
+      "canonical_evidence": "通过预填充和复用Gemma表格语言模型的KV缓存来生成上下文感知的行嵌入",
+      "llm_tldr_en": "CASE pre-fills the KV cache of a Gemma-based tabular language model with representative rows, generating context-aware semantic embeddings that improve tabular learners by leveraging LLM semantics.",
+      "llm_tldr_cn": "现代表格学习器常忽略特征名与单元格的语义，CASE框架利用预填充KV缓存的Gemma语言模型为表格行生成上下文感知的语义嵌入。该方法在缓存中建立数据集语义的持久锚点，使行的嵌入不再是孤立的。实验表明该嵌入能显著提升下游表格学习器的性能，弥合了大模型语义理解与统计学习之间的鸿沟。",
+      "llm_tldr": "现代表格学习器常忽略特征名与单元格的语义，CASE框架利用预填充KV缓存的Gemma语言模型为表格行生成上下文感知的语义嵌入。该方法在缓存中建立数据集语义的持久锚点，使行的嵌入不再是孤立的。实验表明该嵌入能显著提升下游表格学习器的性能，弥合了大模型语义理解与统计学习之间的鸿沟。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
