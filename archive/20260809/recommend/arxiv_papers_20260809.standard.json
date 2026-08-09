@@ -1,0 +1,89 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-09T20:28:34.626539+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.02870v1",
+      "source": "arxiv",
+      "title": "Maglev: Sliding Recurrent Memory",
+      "abstract": "We introduce \\ours{}, a recurrent Transformer architecture with fixed-size memory that generalizes sliding-window attention while remaining parallelizable during training. \\ours{} consists of two coupled models: a prefiller $Q$, which leverages full attention\\footnote{In practice, we use interleaved full and sliding-window attention for $Q$, as this yields stronger performance. The essential requirement is that $Q$ be more expressive than $P$, with access to the full history.} to produce memory targets $m'_t$, and a decoder $P$, which uses only sliding-window attention and recurrent K/V injection to produce decoder memories $m_t$ for next-token prediction. We train \\ours{} with a memory consistency loss that aligns $m_t$ with $m'_t$, allowing inference to use $P$ alone. Empirically, \\ours{} improves validation loss and downstream pretraining benchmarks over sliding-window and latent recurrent transformer baselines. Moreover, sharing parameters between $P$ and $Q$ reduces parameter memory while preserving most of the gains.",
+      "authors": [
+        "Bo Liu",
+        "Qiang Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-03T20:40:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.02870v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Fixed-size recurrent KV memory for long-context Transformers",
+      "llm_evidence_cn": "面向长上下文Transformer的定长循环KV记忆",
+      "llm_evidence": "面向长上下文Transformer的定长循环KV记忆",
+      "canonical_evidence": "面向长上下文Transformer的定长循环KV记忆",
+      "llm_tldr_en": "Maglev is a recurrent Transformer with fixed-size memory and sliding-window attention, trained with a memory consistency loss so inference can use a cheaper decoder alone, enabling efficient long-context modeling.",
+      "llm_tldr_cn": "滑动窗口注意力虽可节省KV缓存，但难以访问完整历史。Maglev提出由全注意力预填充模型Q和滑窗+循环K/V注入的解码器P组成的双模型架构，并训练记忆一致性损失对齐二者记忆。推理时仅用P即可保留完整历史信息，兼顾训练可并行化与长上下文高效解码。实验表明其性能超越仅用滑窗注意力的基线，同时保持固定大小记忆。",
+      "llm_tldr": "滑动窗口注意力虽可节省KV缓存，但难以访问完整历史。Maglev提出由全注意力预填充模型Q和滑窗+循环K/V注入的解码器P组成的双模型架构，并训练记忆一致性损失对齐二者记忆。推理时仅用P即可保留完整历史信息，兼顾训练可并行化与长上下文高效解码。实验表明其性能超越仅用滑窗注意力的基线，同时保持固定大小记忆。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.02870v2",
+      "source": "arxiv",
+      "title": "Maglev: Sliding Recurrent Memory",
+      "abstract": "We introduce \\ours{}, a recurrent Transformer architecture with fixed-size memory that generalizes sliding-window attention while remaining parallelizable during training. \\ours{} consists of two coupled models: a prefiller $Q$, which leverages full attention\\footnote{In practice, we use interleaved full and sliding-window attention for $Q$, as this yields stronger performance. The essential requirement is that $Q$ be more expressive than $P$, with access to the full history.} to produce memory targets $m'_t$, and a decoder $P$, which uses only sliding-window attention and recurrent K/V injection to produce decoder memories $m_t$ for next-token prediction. We train \\ours{} with a memory consistency loss that aligns $m_t$ with $m'_t$, allowing inference to use $P$ alone. Empirically, \\ours{} improves validation loss and downstream pretraining benchmarks over sliding-window and latent recurrent transformer baselines. Moreover, sharing parameters between $P$ and $Q$ reduces parameter memory while preserving most of the gains.",
+      "authors": [
+        "Bo Liu",
+        "Qiang Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-03T20:40:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.02870v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "fixed-size recurrent memory reduces KV cache memory for long-context inference",
+      "llm_evidence_cn": "固定大小循环记忆减少长上下文推理的KV cache内存",
+      "llm_evidence": "固定大小循环记忆减少长上下文推理的KV cache内存",
+      "canonical_evidence": "固定大小循环记忆减少长上下文推理的KV cache内存",
+      "llm_tldr_en": "Presents Maglev, a recurrent Transformer with fixed-size memory that generalizes sliding-window attention, using a prefiller-decoder couple and memory consistency loss for efficient long-context inference.",
+      "llm_tldr_cn": "Transformer推理中KV cache随上下文增长，长上下文成本高。Maglev提出一种固定大小循环记忆的循环Transformer架构，将滑动窗口注意力推广为可并行训练的模型。它由预填充器Q和仅用滑窗注意力与循环K/V注入的解码器P构成，并通过记忆一致性损失使P对齐Q的目标。推理时仅使用P即可保持固定KV内存，兼顾训练并行性与推理效率。",
+      "llm_tldr": "Transformer推理中KV cache随上下文增长，长上下文成本高。Maglev提出一种固定大小循环记忆的循环Transformer架构，将滑动窗口注意力推广为可并行训练的模型。它由预填充器Q和仅用滑窗注意力与循环K/V注入的解码器P构成，并通过记忆一致性损失使P对齐Q的目标。推理时仅使用P即可保持固定KV内存，兼顾训练并行性与推理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
