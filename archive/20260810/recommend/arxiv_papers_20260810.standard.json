@@ -1,0 +1,214 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-10T20:36:11.111694+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2608.07458v1",
+      "source": "arxiv",
+      "title": "CoinRAG: Contextualized Information Nugget KV Cache Reuse for Long-Context RAG",
+      "abstract": "Recent optimization studies on Retrieval-Augmented Generation (RAG) have exploited chunk-level KV cache reuse to avoid processing long retrieved contexts for higher efficiency, while significant information redundancy and noise still remain in the coarse-grained chunks. This paper optimizes the Pareto frontier under low prefill latency constraints while maximizing accuracy by proposing CoinRAG (Contextualized Information Nugget KV Cache Reuse for Long-Context RAG). The name metaphorically reflects our core mechanism: much like assembling small tokens (or \"coins\") to accumulate a larger value, CoinRAG compositionally reuses offline-computed, fine-grained nugget caches to form a learned contextual representation efficiently in a more semantically relevant but compact manner. Specifically, instead of full-chunk encoding, CoinRAG identifies query-relevant semantic units within retrieved chunks through two-stage retrieval and seamlessly assembles their sliced KV representations with a chunk-level context. Extensive evaluations on LongBench multi-hop question answering tasks demonstrate that CoinRAG significantly reduces operational costs and outperforms the other baselines with a new Pareto frontier and an average 5.3% relative improvement in answer quality (F1) under a standard fast prefill latency budget.",
+      "authors": [
+        "Gyuwan Kim",
+        "Cheoneum Park",
+        "Tao Yang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.IR",
+        "cs.LG"
+      ],
+      "published": "2026-08-07T17:51:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.07458v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Fine-grained KV cache reuse for long-context RAG to reduce prefill latency and improve accuracy",
+      "llm_evidence_cn": "细粒度KV缓存复用用于长上下文RAG，降低prefill延迟并提升精度",
+      "llm_evidence": "细粒度KV缓存复用用于长上下文RAG，降低prefill延迟并提升精度",
+      "canonical_evidence": "细粒度KV缓存复用用于长上下文RAG，降低prefill延迟并提升精度",
+      "llm_tldr_en": "Presents CoinRAG, which compositionally reuses offline-computed fine-grained nugget KV caches to construct contextual representations, optimizing the Pareto frontier between prefill latency and accuracy in long-context RAG.",
+      "llm_tldr_cn": "现有RAG优化方法使用chunk级KV缓存复用，但粒度较粗、信息冗余和噪声多。CoinRAG提出了信息片段级别的KV缓存复用机制，通过组合式复用离线计算好的细粒度缓存，构建学习到的上下文表示，在低prefill延迟约束下最大化答案精度。该工作显著提升了长上下文RAG的效率与质量。",
+      "llm_tldr": "现有RAG优化方法使用chunk级KV缓存复用，但粒度较粗、信息冗余和噪声多。CoinRAG提出了信息片段级别的KV缓存复用机制，通过组合式复用离线计算好的细粒度缓存，构建学习到的上下文表示，在低prefill延迟约束下最大化答案精度。该工作显著提升了长上下文RAG的效率与质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.07001v1",
+      "source": "arxiv",
+      "title": "Every Cache Entry Earns Its Place: Global Allocation of Resolution and Coverage for KV Cache Compression",
+      "abstract": "As large language models (LLMs) process increasingly long contexts, KV cache storage and repeated access have become a major bottleneck. Existing KV cache compression methods rely on predefined, fixed compression rules and are typically developed around either token eviction or merging. As a result, cache resources can neither flow freely across layers, heads, and context slots, nor be jointly allocated to balance local resolution and information coverage. Therefore, we propose GraceKV, a global approach for the allocation of resolution and coverage in KV cache compression, and formulate the compression process as a global resource allocation problem under a fixed cache budget. GraceKV treats each layer-KV head-slot combination as an atomic unit and builds a prototype tree. Leaf nodes correspond to token-level KV entries, while each internal node uses a single prototype to compress the KV space covered by its children. A set of non-overlapping nodes in the tree forms the representation of an atomic unit. Adding the root of a new tree expands information coverage, whereas splitting a selected node improves local resolution. All candidate actions compete globally for a shared cache budget. Finally, the nodes retained across all trees form the compressed KV cache. This process adaptively determines the allocation of cache resources among atomic units globally and the balance between resolution and coverage. GraceKV requires no additional training, and the entire compression and inference process is performed on the GPU. Systematic experiments across diverse long-context tasks and compression ratios show that GraceKV ranks first in 24 of 32 settings and remains robust up to 128-fold compression. These results validate the effectiveness of global budget allocation in coordinating information coverage and local resolution.",
+      "authors": [
+        "Haolin Tian",
+        "Yuzhe Liu",
+        "Tonghan Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-07T09:18:42+00:00",
+      "link": "https://arxiv.org/pdf/2608.07001v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache compression for long-context inference; global resource allocation reduces memory bottleneck",
+      "llm_evidence_cn": "面向长上下文推理的KV缓存压缩，通过全局资源分配降低显存瓶颈",
+      "llm_evidence": "面向长上下文推理的KV缓存压缩，通过全局资源分配降低显存瓶颈",
+      "canonical_evidence": "面向长上下文推理的KV缓存压缩，通过全局资源分配降低显存瓶颈",
+      "llm_tldr_en": "GraceKV formulates KV cache compression as a global resource allocation problem under a fixed cache budget, balancing local resolution and information coverage to reduce the KV cache bottleneck in long-context LLM inference.",
+      "llm_tldr_cn": "长上下文场景下，KV缓存存储和重复访问成为大模型推理的主要瓶颈。现有压缩方法依赖固定规则，无法跨层、跨头、跨槽位流动缓存资源。GraceKV将压缩建模为固定预算下的全局资源分配问题，联合分配分辨率与覆盖率，从而在更小缓存下保持信息完整。该方法为KV缓存压缩提供了全局优化的新思路。",
+      "llm_tldr": "长上下文场景下，KV缓存存储和重复访问成为大模型推理的主要瓶颈。现有压缩方法依赖固定规则，无法跨层、跨头、跨槽位流动缓存资源。GraceKV将压缩建模为固定预算下的全局资源分配问题，联合分配分辨率与覆盖率，从而在更小缓存下保持信息完整。该方法为KV缓存压缩提供了全局优化的新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.07009v1",
+      "source": "arxiv",
+      "title": "HiSparse: Scaling Sparse-Attention Decoding with Hierarchical KV Cache Management",
+      "abstract": "Top-k sparse attention makes long-context LLM decoding cheap to compute: each step reads only a few thousand selected KV entries rather than the full context. Serving systems, however, typically keep the entire KV cache in GPU HBM so that every position stays selectable, so a request's memory bill still grows with its full context length--decoding hits a capacity wall long before it runs out of compute, and a context whose KV cache exceeds HBM cannot be served at all. We present HiSparse, an exact, indexer-agnostic hierarchical KV cache for sparse-attention serving. HiSparse keeps each request's full KV history in host memory and bounds its decode footprint with a small, fixed-size GPU cache; a fused CUDA kernel resolves each layer's selections--hit detection, LRU replacement, and host-to-device fetches--inside the decode CUDA graph; and, for models that share selections across layers, exact layer-wise prefetching hides roughly half of the remaining miss overhead. Because only KV placement changes, model outputs are unchanged. HiSparse is merged into upstream SGLang and evaluated across three sparse-attention families (DSA, NSA, and Quest) on H200, B200, and GH200 platforms: it improves peak generation throughput by up to 4.7x on long-context workloads while preserving comparable per-token latency and reducing time-to-first-token at high load--and a no-IO oracle shows the resolution mechanism itself adds no measurable per-token cost, leaving host-device IO as the only price of bounded residency.",
+      "authors": [
+        "Zhiqiang Xie",
+        "Zhangheng Huang",
+        "Tingwei Huang",
+        "Ziyi Xu",
+        "Ruiyang Ma",
+        "Christos Kozyrakis"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-07T09:22:17+00:00",
+      "link": "https://arxiv.org/pdf/2608.07009v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Hierarchical KV cache management keeps full KV history in host memory and bounds GPU footprint for sparse-attention decoding",
+      "llm_evidence_cn": "分层KV缓存管理将完整KV历史放在主机内存，并限制GPU缓存占用以支持稀疏注意力解码",
+      "llm_evidence": "分层KV缓存管理将完整KV历史放在主机内存，并限制GPU缓存占用以支持稀疏注意力解码",
+      "canonical_evidence": "分层KV缓存管理将完整KV历史放在主机内存，并限制GPU缓存占用以支持稀疏注意力解码",
+      "llm_tldr_en": "HiSparse is an exact, indexer-agnostic hierarchical KV cache that keeps each request's full KV history in host memory and bounds the GPU decode footprint with a small fixed-size cache, enabling long-context sparse-attention serving beyond HBM capacity.",
+      "llm_tldr_cn": "Top-k稀疏注意力虽降低解码计算量，但服务系统通常仍在GPU显存中保留整个KV缓存，导致容量墙。HiSparse提出精确、与索引器无关的分层KV缓存：完整KV历史放在主机内存，GPU只保留小的固定大小缓存，融合CUDA内核按层解析选择。该方法让超过显存容量的上下文也能被服务，扩展了稀疏注意力的可服务长度。",
+      "llm_tldr": "Top-k稀疏注意力虽降低解码计算量，但服务系统通常仍在GPU显存中保留整个KV缓存，导致容量墙。HiSparse提出精确、与索引器无关的分层KV缓存：完整KV历史放在主机内存，GPU只保留小的固定大小缓存，融合CUDA内核按层解析选择。该方法让超过显存容量的上下文也能被服务，扩展了稀疏注意力的可服务长度。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.04991v1",
+      "source": "arxiv",
+      "title": "RAC: Reference-Aware Activation Compression for Communication-Efficient Split LLM Inference",
+      "abstract": "Large language model (LLM) agents repeatedly process long, privacy-sensitive contexts, while cloud-only deployment exposes user data beyond the trusted endpoint and fully local deployment often requires costly hardware. Split inference offers a middle ground by executing the model head, tail, and tools locally and the middle layers in the cloud, but its local-cloud-local path transfers boundary hidden states at every invocation and creates a critical communication bottleneck. We present \\system, a reference-aware codec that retrieves exact-token historical spans for prefill uplinks, reuses the reconstructed uplink state for same-round prefill downlinks, and generates boundary-specific decode references with lightweight causal predictors. RAC applies grouped affine alignment and calibrated residual quantization with optional prefill outliers, while sender-side wire-format reconstruction synchronizes subsequent references and offline calibration accounts for quality and packed representation costs. Across three models and nine evaluated model-link pairs, Raw-to-RAC mean time to first token (TTFT) and time per output token (TPOT) ratios are 1.24-2.72$\\times$ and 1.01-2.79$\\times$, while the 12 non-perplexity task-score changes range from $-0.40$ to $+2.50$ points.",
+      "authors": [
+        "Guotao Yang",
+        "Mingxi Zhao",
+        "Haopeng Li",
+        "Zhengchao Wang",
+        "Sheng Chen",
+        "Yitao Hu",
+        "Keqiu Li"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-05T16:01:23+00:00",
+      "link": "https://arxiv.org/pdf/2608.04991v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Reuses exact-token historical spans for prefill uplinks and reconstructs states, reducing latency in split LLM inference, akin to prompt caching",
+      "llm_evidence_cn": "复用精确token历史片段用于预填充上行，并重建状态以降低拆分推理时延，类似提示缓存",
+      "llm_evidence": "复用精确token历史片段用于预填充上行，并重建状态以降低拆分推理时延，类似提示缓存",
+      "canonical_evidence": "复用精确token历史片段用于预填充上行，并重建状态以降低拆分推理时延，类似提示缓存",
+      "llm_tldr_en": "Presents RAC, a reference-aware activation codec that reuses historical token spans to compress boundary states in split LLM inference, cutting communication and latency.",
+      "llm_tldr_cn": "该论文针对拆分式LLM推理中本地-云-本地的边界隐状态每次调用都要传输、通信开销成为瓶颈的问题，提出参考感知激活压缩编解码器RAC。RAC为预填充上行链路检索精确token历史片段，并复用重建后的上行状态用于同轮预填充下行链路，同时通过轻量因果预测生成边界特定的解码引用。该方法显著减少跨端传输数据量，降低反复处理长上下文时的推理时延与隐私暴露窗口，为多端协同LLM提供了高效的通信压缩方案。",
+      "llm_tldr": "该论文针对拆分式LLM推理中本地-云-本地的边界隐状态每次调用都要传输、通信开销成为瓶颈的问题，提出参考感知激活压缩编解码器RAC。RAC为预填充上行链路检索精确token历史片段，并复用重建后的上行状态用于同轮预填充下行链路，同时通过轻量因果预测生成边界特定的解码引用。该方法显著减少跨端传输数据量，降低反复处理长上下文时的推理时延与隐私暴露窗口，为多端协同LLM提供了高效的通信压缩方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.06849v1",
+      "source": "arxiv",
+      "title": "Autonomy-of-Heads: Data-Free Sparse Attention from Frozen Query-Key Geometry",
+      "abstract": "Long-context LLM inference is bottlenecked by quadratic attention computation and growing KV-cache costs. Existing sparse attention and KV-compression methods typically decide which tokens or heads to preserve from runtime attention scores, observation windows, calibration prompts, or learned gates, making head diagnosis input-dependent and costly to deploy. We propose Autonomy-of-Heads (AoH), a data-free method that identifies retrieval and streaming heads from the spectral geometry of query-key projections. AoH defines the kernel attention operator $M_h = W_K^{h\\top}W_Q^h$ and uses its effective-rank as a weight-space measure of head function: concentrated spectra indicate a small number of dominant query-key matching directions and are associated with retrieval heads, whereas diffuse spectra indicate the absence of a dominant global matching direction and are associated with streaming heads. We further derive an efficient $d_\\text{head}$-dimensional computation that avoids constructing the full $d_\\text{model}\\times d_\\text{model}$ matrix. We conducted extensive experiments across models demonstrating that at 50\\% sparsity, AoH retains 96.5\\% of Full Attention performance on average while reducing prefill and decode latency by up to 41.4\\% and 66.0\\%, respectively, and KV-cache memory by 50.0\\% at 256K tokens.",
+      "authors": [
+        "Yehan Yang",
+        "Junyuan Shang",
+        "Yang Li",
+        "Guanqun Zhao",
+        "Shuohuan Wang",
+        "Dianhai Yu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-08-07T06:18:18+00:00",
+      "link": "https://arxiv.org/pdf/2608.06849v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Data-free head pruning to reduce long-context attention and KV-cache costs",
+      "llm_evidence_cn": "无数据头剪枝，降低长上下文注意力与KV缓存开销",
+      "llm_evidence": "无数据头剪枝，降低长上下文注意力与KV缓存开销",
+      "canonical_evidence": "无数据头剪枝，降低长上下文注意力与KV缓存开销",
+      "llm_tldr_en": "Proposes Autonomy-of-Heads, a data-free method using spectral geometry of query-key projections to identify retrieval/streaming heads, enabling sparse attention without input-dependent head diagnosis.",
+      "llm_tldr_cn": "现有稀疏注意力与KV压缩方法依赖运行时注意力分数或校准提示来判断保留哪些头，部署成本高。AoH从查询-键投影的谱几何定义核注意力算子，利用有效秩判断头功能，实现无数据识别检索头与流式头。该方法能降低长上下文推理的注意力和KV缓存开销，同时保持模型质量。",
+      "llm_tldr": "现有稀疏注意力与KV压缩方法依赖运行时注意力分数或校准提示来判断保留哪些头，部署成本高。AoH从查询-键投影的谱几何定义核注意力算子，利用有效秩判断头功能，实现无数据识别检索头与流式头。该方法能降低长上下文推理的注意力和KV缓存开销，同时保持模型质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
