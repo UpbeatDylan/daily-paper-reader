@@ -1,0 +1,215 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-12T21:15:24.476206+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2608.10824v1",
+      "source": "arxiv",
+      "title": "Neural Introspection Gating for Adaptive KV-Cache Reuse in Vision-Language-Action Models",
+      "abstract": "Vision-Language-Action(VLA) models map camera images and language instructions directly to motor commands through a single autoregressive transformer. In real-time control, they still spend substantial compute recomputing key-value(KV) representations for visual tokens that barely change across neighboring frames. Recent work such as VLA-Cache reduces that cost by reusing KV states for visually static patches, but its policy relies only on observation-space heuristics and does not account for the model's own uncertainty. We propose Gated VLA-Cache, a lightweight, training-free extension that augments visual-similarity caching with neural introspection. The method monitors the logit margin between the top two predicted action tokens, a zero-cost confidence signal available during decoding. When the margin drops below a threshold, the cache is invalidated and a full recompute is triggered. Evaluated on four LIBERO benchmark suites with both OpenVLA and OpenVLA-OFT, Gated VLA-Cache improves reliability when blind caching hurts. On LIBERO-Goal and LIBERO-Long, it recovers over 100% of the lost accuracy while retaining 80% of the compute savings.",
+      "authors": [
+        "Zhijie Wu",
+        "Kento Kawaharazuka",
+        "Kei Okada"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-11T11:53:10+00:00",
+      "link": "https://arxiv.org/pdf/2608.10824v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache reuse in VLA models with introspection gating, directly matching KV cache reuse requirement",
+      "llm_evidence_cn": "在VLA模型中利用内省门控复用KV缓存，直接匹配KV缓存复用需求",
+      "llm_evidence": "在VLA模型中利用内省门控复用KV缓存，直接匹配KV缓存复用需求",
+      "canonical_evidence": "在VLA模型中利用内省门控复用KV缓存，直接匹配KV缓存复用需求",
+      "llm_tldr_en": "VLA models recompute KV representations for visual tokens that barely change. Gated VLA-Cache augments visual-similarity caching with neural introspection, using logit margin to gate KV reuse. This training-free extension improves efficiency with little loss in control quality.",
+      "llm_tldr_cn": "视觉-语言-行动（VLA）模型在实时控制中会对相邻帧中几乎不变的视觉token重复计算KV表示，造成大量浪费。现有VLA-Cache基于观测空间相似性复用KV，但未考虑模型自身的不确定性。本文提出Gated VLA-Cache，一种轻量级免训练扩展，监测动作token对数几率差作为神经内省信号，自适应地门控KV复用。实验表明该方法在保持控制性能的同时显著减少计算开销，为机器人控制中的KV缓存复用提供了新思路。",
+      "llm_tldr": "视觉-语言-行动（VLA）模型在实时控制中会对相邻帧中几乎不变的视觉token重复计算KV表示，造成大量浪费。现有VLA-Cache基于观测空间相似性复用KV，但未考虑模型自身的不确定性。本文提出Gated VLA-Cache，一种轻量级免训练扩展，监测动作token对数几率差作为神经内省信号，自适应地门控KV复用。实验表明该方法在保持控制性能的同时显著减少计算开销，为机器人控制中的KV缓存复用提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08086v2",
+      "source": "arxiv",
+      "title": "Archer: Adaptive Reuse of Cached Hidden States for Efficient Rollback in Diffusion Language Models",
+      "abstract": "Diffusion language models (DLMs) iteratively refine a sequence, allowing earlier predictions to be revised as context evolves. This rollback capability distinguishes them from irreversible autoregressive generation, but makes inference costly. Every denoising update alters the global context, forcing both prompt and response states to be recomputed even though only response tokens are revisable. Key-value (KV) caching could reduce this cost, yet conventional caching assumes immutable historical states and is therefore difficult to reconcile with rollback. In this paper, we introduce Adaptive Reuse of Cached Hidden States for Efficient Rollback (Archer), a training-free KV caching method for rollback-capable DLMs. Archer asymmetrically keeps the mutable response synchronized with the current hypothesis while reusing prompt K/V within a bounded state neighborhood. Although prompt representations also change under bidirectional attention, their token identities remain fixed; bounded reuse therefore amortizes repeated prompt computation without caching mutable response states. It also delays feedback from tentative tokens, reducing premature reinforcement of transient high-confidence errors and giving rollback more opportunity to correct them. Our analysis characterizes prompt reuse as a reversibility-aligned cache boundary, bounds its state-dependent approximation error, and gives a decoder-margin condition for preserving full-refresh decisions. Existing DLM acceleration often trades quality for speed. Archer shifts this frontier, attaining the best mean performance of 33.63% together with a 2.57x mean speedup on the main suite. Across evaluated settings, it improves Pass@1 by up to 3.05 points and reaches up to 2.95x speedup. Controlled analyses connect the quality gain to delayed prompt feedback and validate state-aware refresh. Our code is available at https://github.com/Hxnng/Archer.",
+      "authors": [
+        "Xuning He",
+        "Zinan Sheng",
+        "Yongding Tao",
+        "Huanyu Liu",
+        "Ge Li",
+        "Xue Jiang",
+        "Yihong Dong"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-08T12:13:10+00:00",
+      "link": "https://arxiv.org/pdf/2608.08086v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "training-free KV caching method reuses cached hidden states for diffusion language models",
+      "llm_evidence_cn": "面向扩散语言模型的免训练KV缓存复用方法，复用缓存隐藏状态",
+      "llm_evidence": "面向扩散语言模型的免训练KV缓存复用方法，复用缓存隐藏状态",
+      "canonical_evidence": "面向扩散语言模型的免训练KV缓存复用方法，复用缓存隐藏状态",
+      "llm_tldr_en": "Diffusion LMs cannot use conventional KV caching because rollback invalidates history. Archer introduces training-free asymmetric reuse of cached hidden states, cutting recomputation while preserving rollback and extending KV cache reuse to these models.",
+      "llm_tldr_cn": "扩散语言模型通过迭代去噪允许修正早期预测，但每次更新使全局上下文变化，提示和响应状态都被迫重算，传统KV缓存难以适用。该文提出Archer，一种无需训练的KV缓存方法，针对可回滚扩散模型非对称复用缓存隐藏状态。它在保留回滚能力的前提下大幅减少重复前向计算。结果表明将KV缓存复用与回滚语义相结合，可显著降低扩散语言模型推理代价，是KV缓存复用技术在新兴语言模型上的有力扩展。",
+      "llm_tldr": "扩散语言模型通过迭代去噪允许修正早期预测，但每次更新使全局上下文变化，提示和响应状态都被迫重算，传统KV缓存难以适用。该文提出Archer，一种无需训练的KV缓存方法，针对可回滚扩散模型非对称复用缓存隐藏状态。它在保留回滚能力的前提下大幅减少重复前向计算。结果表明将KV缓存复用与回滚语义相结合，可显著降低扩散语言模型推理代价，是KV缓存复用技术在新兴语言模型上的有力扩展。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.09412v1",
+      "source": "arxiv",
+      "title": "KVDiagnosis: A Diagnostic Benchmark for KV-Cache Compression in Long-Context Language Models",
+      "abstract": "KV-cache compression reduces long-context memory, but aggregate task scores reveal neither which correct executions fail nor why. We present KVDiagnosis, a diagnostic dataset and benchmark with three contributions. First, a 25-method taxonomy groups methods into five mechanism families and links them to eight verified implementations and their valid diagnostic measurements. Second, for every supported method setting, we evaluate all sources in each fixed split against a per-source FullCache control before selecting FullCache-correct/compressed-wrong (C-to-W) rows separately for each method-setting, so no compressor defines another's test set. Third, a common record format links paired outputs and run metadata to cache, likelihood, attention, and decoding measurements with explicit applicability states. On Qwen3-8B, four evidence-aware workloads yield 59 800 supported compressed runs over 2600 sources and 12 520 C-to-W rows. Under fixed diagnostic rules, 63.2% have low or partial measured/projected coverage. Only 19 rows (0.2%) combine high measured/projected coverage with strong likelihood drift; another 2,126 (17.0%) preserve structural position addressability, for which representation fidelity remains unknown, while showing the same drift. Against C-to-C success controls, all ten diagnostics separate failed from successful compression (stratified AUROC 0.684-0.871). Among 96 reproducible low-EAR failures, a controlled 4x evidence-attention boost repairs 29.2%, versus 6.3% under a count-matched sham intervention and 3.3% degradation on matched C-to-C controls. Code and data are available at https://github.com/ChosenQC/KVDiagnosis.",
+      "authors": [
+        "Chen Qiu",
+        "Ziwu Liu",
+        "Chao Fei",
+        "Guozhong Li",
+        "Panos Kalnis"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-10T10:38:05+00:00",
+      "link": "https://arxiv.org/pdf/2608.09412v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Diagnostic benchmark for KV-cache compression methods in long-context LLMs, relevant to evaluating KV cache optimization.",
+      "llm_evidence_cn": "面向长上下文LLM的KV缓存压缩诊断基准，相关于KV缓存优化评测。",
+      "llm_evidence": "面向长上下文LLM的KV缓存压缩诊断基准，相关于KV缓存优化评测。",
+      "canonical_evidence": "面向长上下文LLM的KV缓存压缩诊断基准，相关于KV缓存优化评测。",
+      "llm_tldr_en": "KVDiagnosis provides a taxonomy and diagnostic benchmark to identify why and where KV-cache compression methods fail, supporting fair comparison via per-method FullCache controls.",
+      "llm_tldr_cn": "KV缓存压缩能减少长上下文内存，但聚合分数无法揭示哪些正确执行失败及原因。KVDiagnosis构建了包含25种方法的分类体系，将五种机制族与八个实现及其有效诊断测量关联。它针对每种方法设置，以各自FullCache对照选择C-to-W行，确保测试集不互相定义。该基准可帮助研究人员定位压缩失效场景并公平比较不同KV缓存优化方法。",
+      "llm_tldr": "KV缓存压缩能减少长上下文内存，但聚合分数无法揭示哪些正确执行失败及原因。KVDiagnosis构建了包含25种方法的分类体系，将五种机制族与八个实现及其有效诊断测量关联。它针对每种方法设置，以各自FullCache对照选择C-to-W行，确保测试集不互相定义。该基准可帮助研究人员定位压缩失效场景并公平比较不同KV缓存优化方法。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.07408v1",
+      "source": "arxiv",
+      "title": "Addressable Memory for Video World Models",
+      "abstract": "We study visual persistence in interactive video world models. These models rely on a Key-Value (KV) cache as a growing visual memory to carry forward previously generated frames. However, we find that models can no longer reliably address stored content once rollouts extend beyond the training horizon, because temporal Rotary Positional Embeddings (RoPE) offsets then fall outside the range seen during training and the model struggles to retrieve the relevant visual information through attention. Moreover, naively compressing the cache in the RoPE-rotated space corrupts memory by averaging together incompatible positional phases. To address this, we propose WorldTrace, a training-free memory framework for long-horizon visual persistence. WorldTrace keeps compressed memory addressable by assigning each summary slot a distinct, in-distribution virtual position. Within this addressable cache, we study two memory compression approaches: WorldTrace-Field compresses history for temporal coherence, while WorldTrace-Landmark stores verbatim scene traces at detected transitions for episodic recall. We further introduce LoopBench, a benchmark evaluating whether a compressed cache can reconstruct a previously visited scene after a long detour. WorldTrace-Field improves temporal consistency by +15.5%, and WorldTrace-Landmark improves episodic recall by +19.5% on LoopBench, extending visually persistent generation without retraining.",
+      "authors": [
+        "Xindi Wu",
+        "Sven Elflein",
+        "James Lucas",
+        "Olga Russakovsky",
+        "Laura Leal-Taixé",
+        "Despoina Paschalidou",
+        "Jonathan Lorraine",
+        "Aljoša Ošep"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-08-07T16:55:57+00:00",
+      "link": "https://arxiv.org/pdf/2608.07408v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "position-aware memory with RoPE offsets; training-free caching framework relevant to position independent caching",
+      "llm_evidence_cn": "基于RoPE偏移的可寻址记忆，与位置无关缓存技术相关",
+      "llm_evidence": "基于RoPE偏移的可寻址记忆，与位置无关缓存技术相关",
+      "canonical_evidence": "基于RoPE偏移的可寻址记忆，与位置无关缓存技术相关",
+      "llm_tldr_en": "WorldTrace keeps compressed memory addressable beyond the training horizon by avoiding averaging incompatible RoPE phases, for long-horizon visual persistence.",
+      "llm_tldr_cn": "视频世界模型用KV缓存作为视觉记忆，但超出训练范围后RoPE偏移失配导致寻址失败，且朴素压缩会破坏位置相位；WorldTrace提出免训练记忆框架，通过保持压缩记忆的可寻址性，解决长程生成中的位置外推问题。",
+      "llm_tldr": "视频世界模型用KV缓存作为视觉记忆，但超出训练范围后RoPE偏移失配导致寻址失败，且朴素压缩会破坏位置相位；WorldTrace提出免训练记忆框架，通过保持压缩记忆的可寻址性，解决长程生成中的位置外推问题。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.08081v1",
+      "source": "arxiv",
+      "title": "RotaryQuant: Fitting 120B MoE Models on Consumer Hardware via Fused Compressed-Space Attention",
+      "abstract": "Large mixture-of-experts (MoE) language models with 26--120 billion parameters exceed the memory capacity of consumer devices through three simultaneous pressures: resident weight matrices, key-value (KV) cache state that grows linearly with context, and dozens of expert sublayers that must be paged on demand. We present RotaryQuant, a three-axis compression system that addresses all three. Mixed-precision weight quantization assigns bit-widths by architectural role: 4-bit for dense layers, 2-bit for routed experts, and 8-bit for the shared expert whose high activation kurtosis resists aggressive compression. LRU expert offloading pages non-resident experts to disk under genuine memory pressure. The novel axis is IsoQuant, a KV cache compression method that applies a Walsh--Hadamard transform followed by block-diagonal SO(4) rotations to isotropize activation distributions before 3-bit scalar quantization, requiring $O(d \\log d)$ operations and 256 stored parameters per head versus $O(d^2)$ and 16{,}384 for dense rotation methods. A fused four-kernel Metal GPU pipeline performs attention directly on packed 3-bit tensors without materializing full-precision KV state---a different execution model, not just a quantization scheme. The combined system fits Gemma 4-26B-A4B and Qwen3-30B-A3B within a 16\\,GB budget and Nemotron-H 120B within 32\\,GB, running interactively at 9--19 tok/s with near-zero perplexity degradation ($Δ$PPL $\\leq +0.0012$) and 100\\% retrieval accuracy at 32K context.",
+      "authors": [
+        "Anthony. Lui",
+        "Mohamed. Elsaied",
+        "N. P. Savani"
+      ],
+      "primary_category": "cs.NE",
+      "categories": [
+        "cs.NE",
+        "cs.LG"
+      ],
+      "published": "2026-08-08T11:58:56+00:00",
+      "link": "https://arxiv.org/pdf/2608.08081v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "IsoQuant KV cache compression as part of a three-axis compression system for MoE inference",
+      "llm_evidence_cn": "IsoQuant KV缓存压缩作为MoE推理三轴压缩系统的一部分",
+      "llm_evidence": "IsoQuant KV缓存压缩作为MoE推理三轴压缩系统的一部分",
+      "canonical_evidence": "IsoQuant KV缓存压缩作为MoE推理三轴压缩系统的一部分",
+      "llm_tldr_en": "RotaryQuant fits 120B MoE models on consumer devices via mixed-precision weight quantization, LRU expert offloading, and IsoQuant KV cache compression, addressing memory from weights, KV cache, and expert paging.",
+      "llm_tldr_cn": "大型MoE模型在消费级设备上面临权重、KV缓存和专家子层三方面内存压力。RotaryQuant提出三轴压缩系统：按架构角色分配位宽的混合精度量化、LRU专家卸载以及新型IsoQuant KV缓存压缩。该系统能在消费硬件上运行120B模型，缓解KV缓存随上下文增长的问题，支持长上下文推理。",
+      "llm_tldr": "大型MoE模型在消费级设备上面临权重、KV缓存和专家子层三方面内存压力。RotaryQuant提出三轴压缩系统：按架构角色分配位宽的混合精度量化、LRU专家卸载以及新型IsoQuant KV缓存压缩。该系统能在消费硬件上运行120B模型，缓解KV缓存随上下文增长的问题，支持长上下文推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
