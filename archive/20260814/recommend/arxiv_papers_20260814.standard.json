@@ -1,0 +1,227 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-14T21:04:48.001668+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2608.12121v1",
+      "source": "arxiv",
+      "title": "QV-PIC: Query-Aware Visual Position-Independent Caching for Efficient RAG Serving",
+      "abstract": "Retrieval-Augmented Generation (RAG) repeatedly prefills identical text chunks across queries, incurring redundant computations. Position-Independent Caching (PIC) mitigates it by reusing precomputed Key-Value (KV) across positions, but its efficiency is constrained by the large volume of text tokens. Rendering text chunks as images can compress the text into fewer visual tokens, but the rendered-image PIC suffers more severe quality degradation than the text PIC. This representation-specific gap primarily arises from contextual mismatches across independently compiled caches and the loss of fine-grained textual evidence during visual compression. Existing PIC repair methods mainly address the former through selective recomputation, but they incur online computation and cannot recover lost textual details. We propose QV-PIC, a query-aware dual-resolution PIC reuse framework guided by model-native templates. Offline, QV-PIC compiles visual caches under the model's native chat-template prefix, improving PIC quality without online recomputation. Online, it preserves global context with low resolution and restores fine-grained textual evidence within a high-resolution budget by cumulative query relevance scores, retaining the efficiency benefit of visual compression. Across six tasks, QV-PIC improves average F1 by 21.6 points over vanilla rendered-image PIC, closes the gap to vanilla text PIC, and surpasses optimized text PIC by 2.58 F1 while reducing TTFT by 17.2\\%. Relative to full prefill, it cuts TTFT by 83.8%.",
+      "authors": [
+        "Yilin Liu",
+        "Rui Meng",
+        "Wangze Ni",
+        "Jianxin Yan",
+        "Heng Cao",
+        "Libin Zheng",
+        "Peng Cheng",
+        "Jinfei Liu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-08-12T14:40:43+00:00",
+      "link": "https://arxiv.org/pdf/2608.12121v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Position-Independent Caching (PIC) for KV reuse in RAG serving",
+      "llm_evidence_cn": "面向RAG服务的查询感知视觉位置无关缓存",
+      "llm_evidence": "面向RAG服务的查询感知视觉位置无关缓存",
+      "canonical_evidence": "面向RAG服务的查询感知视觉位置无关缓存",
+      "llm_tldr_en": "Proposes QV-PIC, a query-aware visual position-independent caching method that reuses precomputed KV caches across positions in RAG, improving efficiency by rendering text as images and repairing quality degradation via selective recomputation.",
+      "llm_tldr_cn": "RAG在多次查询中重复预填充相同文本块，产生冗余计算。位置无关缓存（PIC）通过跨位置复用预计算键值对缓解该问题，但受文本token数量限制。本文将文本渲染为图像以压缩token，提出查询感知的视觉位置无关缓存（QV-PIC），并通过选择性重计算等机制修复质量下降。实验表明该方法在保持质量的同时显著提升RAG服务效率，为高效RAG推理提供了新思路。",
+      "llm_tldr": "RAG在多次查询中重复预填充相同文本块，产生冗余计算。位置无关缓存（PIC）通过跨位置复用预计算键值对缓解该问题，但受文本token数量限制。本文将文本渲染为图像以压缩token，提出查询感知的视觉位置无关缓存（QV-PIC），并通过选择性重计算等机制修复质量下降。实验表明该方法在保持质量的同时显著提升RAG服务效率，为高效RAG推理提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.13263v1",
+      "source": "arxiv",
+      "title": "vToken: Token-Level Virtualization for Reclaimable KV Caches",
+      "abstract": "Large language model serving faces a critical memory bottleneck: the KV cache grows with sequence length and batch size. PagedAttention uses fixed-size memory blocks to reduce allocator-level fragmentation, but recent KV eviction algorithms operate at a token granularity finer than block-level management. This mismatch causes intra-block fragmentation, leaving a large fraction of allocated KV memory unreclaimable. We present vToken, a lightweight token-level virtualization layer that decouples logical token liveness from physical block placement. vToken maintains a stable logical token view through token-table indirection and realizes physical reclamation by repacking live tokens asynchronously. The design preserves PagedAttention kernels and CUDA Graph compatibility. We implement vToken in vLLM and evaluate it with H2O, Random, and Scissorhands across models. Compared with a paired Naive-Evict baseline, vToken reduces retained KV blocks per request by 27.2\\%--72.3\\% and improves SLA-constrained throughput by up to 1.37$\\times$. Under a constrained active-KV budget, it extends the maximum feasible concurrency by up to 2$\\times$, while reducing the per-policy integration footprint from 500+ lines to under 50.",
+      "authors": [
+        "Yuanhang Gao",
+        "Xiangrui Yang",
+        "Yuanfeng Chen",
+        "Hongjia Chen",
+        "Qianru Lv",
+        "Wenfei Wu",
+        "Dongsheng Li"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.DC",
+        "cs.OS"
+      ],
+      "published": "2026-08-13T14:01:21+00:00",
+      "link": "https://arxiv.org/pdf/2608.13263v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "token-level virtualization for reclaimable KV caches; directly addresses KV cache memory management and reuse in LLM serving",
+      "llm_evidence_cn": "面向LLM服务的令牌级可回收KV缓存虚拟化，直接针对KV缓存内存碎片与复用问题",
+      "llm_evidence": "面向LLM服务的令牌级可回收KV缓存虚拟化，直接针对KV缓存内存碎片与复用问题",
+      "canonical_evidence": "面向LLM服务的令牌级可回收KV缓存虚拟化，直接针对KV缓存内存碎片与复用问题",
+      "llm_tldr_en": "vToken introduces token-level virtualization that decouples logical liveness from physical KV cache blocks, asynchronously repacking live tokens to reclaim intra-block fragmentation. It preserves PagedAttention kernels and CUDA Graph compatibility, improving LLM serving efficiency and KV cache reuse.",
+      "llm_tldr_cn": "大语言模型服务中KV缓存随序列长度和批大小增长，成为关键内存瓶颈；现有分页与令牌级逐出机制不匹配导致块内碎片无法回收。vToken提出轻量级令牌级虚拟化层，通过令牌表间接映射将逻辑令牌存活状态与物理块放置解耦，并异步重打包存活令牌实现物理回收。该方法保持PagedAttention内核与CUDA Graph兼容，能有效提升KV缓存可回收性和服务吞吐。",
+      "llm_tldr": "大语言模型服务中KV缓存随序列长度和批大小增长，成为关键内存瓶颈；现有分页与令牌级逐出机制不匹配导致块内碎片无法回收。vToken提出轻量级令牌级虚拟化层，通过令牌表间接映射将逻辑令牌存活状态与物理块放置解耦，并异步重打包存活令牌实现物理回收。该方法保持PagedAttention内核与CUDA Graph兼容，能有效提升KV缓存可回收性和服务吞吐。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.10545v1",
+      "source": "arxiv",
+      "title": "ImpactHO: Importance-Aware KV Cache Transfer for Multi-User Edge LLM Handover",
+      "abstract": "Edge LLMs must preserve inference continuity when a user hands over between edge nodes, requiring key-value (KV) cache transfer to the target node. However, simultaneous handovers saturate the backhaul, preventing full cache delivery within the mobility-imposed transfer window. Rather than allocating bandwidth as if all cache entries were equally valuable, we order each user's KV cache by importance and transmit only its most informative fraction, turning token-level sparsity into communication savings. We cast the transfer as a multi-user backhaul allocation problem that maximizes average accuracy across users. Each user's partial-cache accuracy serves as its utility: a sigmoid that fits measurements on the RULER benchmark with $R^2>0.99$ across models and context lengths. Because importance ordering front-loads the high-value entries, the concave region of the accuracy curve spans nearly the entire cache. Our proposed allocator keeps served users within this region, making each per-slot allocation problem convex. The optimum is derived via a closed-form weighted water-filling solution that generalizes information-theoretic water-filling and enables online scheduling. The proposed allocator attains over 93.7% average accuracy in a 500ms transfer window, within 0.5pp of the full-cache ceiling, and reaches 98.2-99.5% of a clairvoyant upper bound.",
+      "authors": [
+        "Minwoo Kim",
+        "Soochang Song",
+        "Namyoon Lee",
+        "Bang Chul Jung",
+        "Yongjune Kim"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI",
+        "cs.AI",
+        "cs.DC"
+      ],
+      "published": "2026-08-11T06:37:10+00:00",
+      "link": "https://arxiv.org/pdf/2608.10545v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Importance-aware KV cache transfer for edge LLM handover",
+      "llm_evidence_cn": "面向边缘LLM切换的重要性感知KV缓存传输",
+      "llm_evidence": "面向边缘LLM切换的重要性感知KV缓存传输",
+      "canonical_evidence": "面向边缘LLM切换的重要性感知KV缓存传输",
+      "llm_tldr_en": "Edge LLMs need KV cache transfer during handover, but backhaul bandwidth is limited. ImpactHO orders cache entries by importance and transmits the most informative fraction, maximizing accuracy under tight constraints.",
+      "llm_tldr_cn": "边缘LLM在用户切换时需将KV缓存传送至目标节点，但并发切换会占满回传带宽。ImpactHO将KV缓存按重要性排序，并利用精度-缓存量曲线建模为多用户分配问题。实验表明，在带宽受限时该机制能最大化用户平均精度，有效保障跨节点缓存复用与推理连续性。",
+      "llm_tldr": "边缘LLM在用户切换时需将KV缓存传送至目标节点，但并发切换会占满回传带宽。ImpactHO将KV缓存按重要性排序，并利用精度-缓存量曲线建模为多用户分配问题。实验表明，在带宽受限时该机制能最大化用户平均精度，有效保障跨节点缓存复用与推理连续性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.08086v1",
+      "source": "arxiv",
+      "title": "Archer: Adaptive Reuse of Cached Hidden States for Efficient Rollback in Diffusion Language Models",
+      "abstract": "Diffusion language models (DLMs) iteratively refine a sequence, allowing earlier predictions to be revised as context evolves. This rollback capability distinguishes them from irreversible autoregressive generation, but makes inference costly. Every denoising update alters the global context, forcing both prompt and response states to be recomputed even though only response tokens are revisable. Key-value (KV) caching could reduce this cost, yet conventional caching assumes immutable historical states and is therefore difficult to reconcile with rollback.In this paper, we introduce Adaptive Reuse of Cached Hidden States for Efficient Rollback (Archer), a training-free KV caching method for rollback-capable DLMs. Archer asymmetrically keeps the mutable response synchronized with the current hypothesis while reusing prompt K/V within a bounded state neighborhood. Although prompt representations also change under bidirectional attention, their token identities remain fixed; bounded reuse therefore amortizes repeated prompt computation without caching mutable response states. It also delays feedback from tentative tokens, reducing premature reinforcement of transient high-confidence errors and giving rollback more opportunity to correct them. Our analysis characterizes prompt reuse as a reversibility-aligned cache boundary, bounds its state-dependent approximation error, and gives a decoder-margin condition for preserving full-refresh decisions.Existing DLM acceleration often trades quality for speed. Archer shifts this frontier, attaining the best mean performance of 33.63% together with a 2.57x mean speedup on the main suite. Across evaluated settings, it improves Pass@1 by up to 3.05 points and reaches up to 2.95x speedup. Controlled analyses connect the quality gain to delayed prompt feedback and validate state-aware refresh. Our code is available at https://github.com/Hxnng/Archer.",
+      "authors": [
+        "Xuning He",
+        "Zinan Sheng",
+        "Yongding Tao",
+        "Huanyu Liu",
+        "Ge Li",
+        "Xue Jiang",
+        "Yihong Dong"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-08T12:13:10+00:00",
+      "link": "https://arxiv.org/pdf/2608.08086v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Training-free KV caching method for rollback-capable diffusion language models",
+      "llm_evidence_cn": "面向支持回滚的扩散语言模型的无训练KV缓存复用方法",
+      "llm_evidence": "面向支持回滚的扩散语言模型的无训练KV缓存复用方法",
+      "canonical_evidence": "面向支持回滚的扩散语言模型的无训练KV缓存复用方法",
+      "llm_tldr_en": "Introduces Archer, a training-free adaptive KV cache reuse method for diffusion language models that supports rollback, asymmetric reuse of prompt and response states, reducing recomputation costs.",
+      "llm_tldr_cn": "扩散语言模型在迭代细化中允许回滚，但每次去噪更新都会改变全局上下文，导致提示与响应状态被迫重算。传统KV缓存假定历史状态不可变，难以适配回滚机制。本文提出Archer，一种无训练的KV缓存复用方法，通过非对称地复用提示与响应状态来减少重复计算。该方法针对回滚能力设计，能够在保持模型能力的同时降低推理开销。",
+      "llm_tldr": "扩散语言模型在迭代细化中允许回滚，但每次去噪更新都会改变全局上下文，导致提示与响应状态被迫重算。传统KV缓存假定历史状态不可变，难以适配回滚机制。本文提出Archer，一种无训练的KV缓存复用方法，通过非对称地复用提示与响应状态来减少重复计算。该方法针对回滚能力设计，能够在保持模型能力的同时降低推理开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.12435v1",
+      "source": "arxiv",
+      "title": "MARCH: Scaling Recurrent Memory with Content-Routed State Anchors",
+      "abstract": "Transformers owe much of their strong long-context retrieval capability to a token-level memory that grows with context length. This flexibility, however, incurs a quadratic computation complexity during training and a key--value cache that grows linearly during autoregressive inference. Recurrent alternatives offer efficient decoding by compressing the entire history into a fixed-size state, but often underperform on recall-intensive tasks since earlier associations usually get overwritten by subsequent updates, and only the most recent contextual information is retained. In this paper, we introduce Memory-Anchor Routing across Context History (MARCH), a network architecture that effectively scales state-space models beyond a fixed-size dimension, while maintaining computational efficiency over long-sequences. MARCH periodically caches cumulative recurrent-state checkpoints as state anchors and associates each anchor with a compact, content-conditioned anchor key. This lets MARCH maintain a memory bank, which can grow as context length increases, providing a controllable trade-off between historical resolution and memory cost. At each token, MARCH produces an anchor query to attend all causally available state anchors, and the output is calculated as an attention-style aggregation over all historical anchors along the current state. We show that after standard pretraining, MARCH consistently outperforms multiple linear attention variants across commonsense reasoning, LongBench, and in-context retrieval. These results demonstrate that content-routed state caching substantially strengthens recurrent long-range memory while preserving its native computation path.",
+      "authors": [
+        "Ming Zhang",
+        "Kaisen Yang",
+        "Shu Yu",
+        "Ermo Hua",
+        "Ning Ding",
+        "Xia Hu",
+        "Bowen Zhou",
+        "Chaochao Lu",
+        "Youbang Sun"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-12T13:45:01+00:00",
+      "link": "https://arxiv.org/pdf/2608.12435v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Addresses growing key-value cache in Transformers with content-routed state anchors to scale recurrent memory for long-context efficiency.",
+      "llm_evidence_cn": "针对Transformer KV缓存线性增长问题，用内容路由状态锚点扩展递归记忆，提升长上下文解码效率",
+      "llm_evidence": "针对Transformer KV缓存线性增长问题，用内容路由状态锚点扩展递归记忆，提升长上下文解码效率",
+      "canonical_evidence": "针对Transformer KV缓存线性增长问题，用内容路由状态锚点扩展递归记忆，提升长上下文解码效率",
+      "llm_tldr_en": "MARCH introduces content-routed state anchors to let state-space models scale beyond fixed-size memory, reducing KV cache growth while improving long-context recall, offering a new architecture for efficient long-context inference.",
+      "llm_tldr_cn": "Transformer依赖随上下文增长的token级记忆，但训练复杂度与KV缓存线性增长制约长上下文推理。MARCH提出内容路由的Memory Anchor机制，使状态空间模型能在固定维度之外扩展记忆，缓解早期关联被覆盖的问题。实验显示其在保留高效解码的同时提升召回密集型任务性能。这为在长上下文推理中降低KV缓存开销提供了新的架构思路。",
+      "llm_tldr": "Transformer依赖随上下文增长的token级记忆，但训练复杂度与KV缓存线性增长制约长上下文推理。MARCH提出内容路由的Memory Anchor机制，使状态空间模型能在固定维度之外扩展记忆，缓解早期关联被覆盖的问题。实验显示其在保留高效解码的同时提升召回密集型任务性能。这为在长上下文推理中降低KV缓存开销提供了新的架构思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

@@ -6,37 +6,35 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-12
-- 运行时间：2026-08-12 21:19:53 UTC
+- 最新运行日期：2026-08-14
+- 运行时间：2026-08-14 21:10:50 UTC
 - 运行状态：成功
 - 本次总论文数：5
 - 精读区：2
 - 速读区：3
 
 ### 今日简报（AI）
-今日精读2篇、速读3篇，焦点集中在KV-Cache复用与压缩优化。
-最值得看：视觉-语言-行动模型中的自适应门控复用（9.0）与扩散语言模型的缓存回滚复用（8.0）。
-下一步可关注长上下文压缩基准KVDiagnosis及消费级硬件适配方案RotaryQuant。
-- 详情：[/202608/12/README](/202608/12/README)
+今日聚焦5篇论文，精读2篇高分工作，重点围绕KV缓存优化与高效推理展开。最值得关注的是《QV-PIC》的查询感知缓存和《vToken》的可回收KV缓存，均属RAG/LLM服务性能提升关键方向。建议普通读者优先浏览这两篇精读论文，把握缓存利用与回收的核心思路。
+- 详情：[/202608/14/README](/202608/14/README)
 
 ### 精读区论文标签
-1. [Neural Introspection Gating for Adaptive KV-Cache Reuse in Vision-Language-Action Models](/202608/12/2608.10824v1-neural-introspection-gating-for-adaptive-kv-cache-reuse-in-vision-language-action-models)  
+1. [QV-PIC: Query-Aware Visual Position-Independent Caching for Efficient RAG Serving](/202608/14/2608.12121v1-qv-pic-query-aware-visual-position-independent-caching-for-efficient-rag-serving)  
+   标签：评分：10.0/10、query:pic
+   evidence：面向RAG服务的查询感知视觉位置无关缓存
+2. [vToken: Token-Level Virtualization for Reclaimable KV Caches](/202608/14/2608.13263v1-vtoken-token-level-virtualization-for-reclaimable-kv-caches)  
    标签：评分：9.0/10、query:pic
-   evidence：在VLA模型中利用内省门控复用KV缓存，直接匹配KV缓存复用需求
-2. [Archer: Adaptive Reuse of Cached Hidden States for Efficient Rollback in Diffusion Language Models](/202608/12/2608.08086v2-archer-adaptive-reuse-of-cached-hidden-states-for-efficient-rollback-in-diffusion-language-models)  
-   标签：评分：8.0/10、query:pic
-   evidence：面向扩散语言模型的免训练KV缓存复用方法，复用缓存隐藏状态
+   evidence：面向LLM服务的令牌级可回收KV缓存虚拟化，直接针对KV缓存内存碎片与复用问题
 
 ### 速读区论文标签
-1. [KVDiagnosis: A Diagnostic Benchmark for KV-Cache Compression in Long-Context Language Models](/202608/12/2608.09412v1-kvdiagnosis-a-diagnostic-benchmark-for-kv-cache-compression-in-long-context-language-models)  
+1. [ImpactHO: Importance-Aware KV Cache Transfer for Multi-User Edge LLM Handover](/202608/14/2608.10545v1-impactho-importance-aware-kv-cache-transfer-for-multi-user-edge-llm-handover)  
    标签：评分：7.0/10、query:pic
-   evidence：面向长上下文LLM的KV缓存压缩诊断基准，相关于KV缓存优化评测。
-2. [Addressable Memory for Video World Models](/202608/12/2608.07408v1-addressable-memory-for-video-world-models)  
+   evidence：面向边缘LLM切换的重要性感知KV缓存传输
+2. [MARCH: Scaling Recurrent Memory with Content-Routed State Anchors](/202608/14/2608.12435v1-march-scaling-recurrent-memory-with-content-routed-state-anchors)  
+   标签：评分：7.0/10、query:pic
+   evidence：针对Transformer KV缓存线性增长问题，用内容路由状态锚点扩展递归记忆，提升长上下文解码效率
+3. [Archer: Adaptive Reuse of Cached Hidden States for Efficient Rollback in Diffusion Language Models](/202608/14/2608.08086v1-archer-adaptive-reuse-of-cached-hidden-states-for-efficient-rollback-in-diffusion-language-models)  
    标签：评分：6.0/10、query:pic
-   evidence：基于RoPE偏移的可寻址记忆，与位置无关缓存技术相关
-3. [RotaryQuant: Fitting 120B MoE Models on Consumer Hardware via Fused Compressed-Space Attention](/202608/12/2608.08081v1-rotaryquant-fitting-120b-moe-models-on-consumer-hardware-via-fused-compressed-space-attention)  
-   标签：评分：6.0/10、query:pic
-   evidence：IsoQuant KV缓存压缩作为MoE推理三轴压缩系统的一部分
+   evidence：面向支持回滚的扩散语言模型的无训练KV缓存复用方法
 
 
 <div class="dpr-home-promo-card">
