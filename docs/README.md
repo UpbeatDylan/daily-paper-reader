@@ -6,35 +6,24 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-14
-- 运行时间：2026-08-14 21:10:50 UTC
+- 最新运行日期：2026-08-15
+- 运行时间：2026-08-15 20:26:10 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：2
-- 速读区：3
+- 本次总论文数：1
+- 精读区：0
+- 速读区：1
 
 ### 今日简报（AI）
-今日聚焦5篇论文，精读2篇高分工作，重点围绕KV缓存优化与高效推理展开。最值得关注的是《QV-PIC》的查询感知缓存和《vToken》的可回收KV缓存，均属RAG/LLM服务性能提升关键方向。建议普通读者优先浏览这两篇精读论文，把握缓存利用与回收的核心思路。
-- 详情：[/202608/14/README](/202608/14/README)
+今日速读1篇论文，聚焦多模态大模型中的视觉令牌剪枝技术。最值得关注的是《RoRA》提出的角色导向区域分配方法，旨在提升MLLM推理效率。建议普通读者关注该方向如何在保持性能的同时减少计算开销。
+- 详情：[/202608/15/README](/202608/15/README)
 
 ### 精读区论文标签
-1. [QV-PIC: Query-Aware Visual Position-Independent Caching for Efficient RAG Serving](/202608/14/2608.12121v1-qv-pic-query-aware-visual-position-independent-caching-for-efficient-rag-serving)  
-   标签：评分：10.0/10、query:pic
-   evidence：面向RAG服务的查询感知视觉位置无关缓存
-2. [vToken: Token-Level Virtualization for Reclaimable KV Caches](/202608/14/2608.13263v1-vtoken-token-level-virtualization-for-reclaimable-kv-caches)  
-   标签：评分：9.0/10、query:pic
-   evidence：面向LLM服务的令牌级可回收KV缓存虚拟化，直接针对KV缓存内存碎片与复用问题
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [ImpactHO: Importance-Aware KV Cache Transfer for Multi-User Edge LLM Handover](/202608/14/2608.10545v1-impactho-importance-aware-kv-cache-transfer-for-multi-user-edge-llm-handover)  
-   标签：评分：7.0/10、query:pic
-   evidence：面向边缘LLM切换的重要性感知KV缓存传输
-2. [MARCH: Scaling Recurrent Memory with Content-Routed State Anchors](/202608/14/2608.12435v1-march-scaling-recurrent-memory-with-content-routed-state-anchors)  
-   标签：评分：7.0/10、query:pic
-   evidence：针对Transformer KV缓存线性增长问题，用内容路由状态锚点扩展递归记忆，提升长上下文解码效率
-3. [Archer: Adaptive Reuse of Cached Hidden States for Efficient Rollback in Diffusion Language Models](/202608/14/2608.08086v1-archer-adaptive-reuse-of-cached-hidden-states-for-efficient-rollback-in-diffusion-language-models)  
+1. [RoRA: Role-Oriented Regional Allocation for Visual Token Pruning in MLLMs](/202608/15/2608.07088v1-rora-role-oriented-regional-allocation-for-visual-token-pruning-in-mllms)  
    标签：评分：6.0/10、query:pic
-   evidence：面向支持回滚的扩散语言模型的无训练KV缓存复用方法
+   evidence：通过视觉Token剪枝减少多模态大模型KV缓存存储
 
 
 <div class="dpr-home-promo-card">

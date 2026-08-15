@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-15 <!--dpr-date:20260815-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/15/2608.07088v1-rora-role-oriented-regional-allocation-for-visual-token-pruning-in-mllms" data-sidebar-item="{&quot;title&quot;: &quot;RoRA: Role-Oriented Regional Allocation for Visual Token Pruning in MLLMs&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.07088v1-rora-role-oriented-regional-allocation-for-visual-token-pruning-in-mllms&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;通过视觉Token剪枝减少多模态大模型KV缓存存储&quot;}">RoRA: Role-Oriented Regional Allocation for Visual Token Pruning in MLLMs</a>
   * 2026-08-14 <!--dpr-date:20260814-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/14/2608.12121v1-qv-pic-query-aware-visual-position-independent-caching-for-efficient-rag-serving" data-sidebar-item="{&quot;title&quot;: &quot;QV-PIC: Query-Aware Visual Position-Independent Caching for Efficient RAG Serving&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.12121v1-qv-pic-query-aware-visual-position-independent-caching-for-efficient-rag-serving&quot;, &quot;score&quot;: &quot;10.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;面向RAG服务的查询感知视觉位置无关缓存&quot;}">QV-PIC: Query-Aware Visual Position-Independent Caching for Efficient RAG Serving</a>

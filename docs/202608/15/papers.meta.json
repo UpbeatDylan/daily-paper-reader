@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-15",
+  "date": "2026-08-15",
+  "generated_at": "2026-08-15T20:26:14",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/15/2608.07088v1-rora-role-oriented-regional-allocation-for-visual-token-pruning-in-mllms",
+      "section": "quick",
+      "title_en": "RoRA: Role-Oriented Regional Allocation for Visual Token Pruning in MLLMs",
+      "authors": "Qiyanhui Lu, Han Wu, Rongjian Xu, Tingzhang Luo, Cheng Fan, Xinghao Chen, Minjing Dong, Jufeng Yang, Jianyuan Guo",
+      "date": "2026-08-07",
+      "pdf": "https://arxiv.org/pdf/2608.07088v1",
+      "score": "6.0",
+      "evidence": "通过视觉Token剪枝减少多模态大模型KV缓存存储",
+      "tldr": "多模态大模型将图像编码为长视觉token序列，导致预填充与KV缓存开销高，现有训练-free剪枝未显式跟踪已覆盖的物体区域。RoRA将剪枝建模为角色导向的区域证据分配，划分语义核心、上下文与细节，通过位置先验和提示校准对象先验构建注意力锚定区域，仅在区域外探索上下文并用小型预算恢复细节。在相同预算下优于强基线，高剪枝率时保持大部分精度，并显著降低推理时延。",
+      "tags": "query:pic",
+      "abstract_en": "Multimodal large language models (MLLMs) encode images as long visual token sequences, making prefilling and KV-cache storage expensive. Existing training-free pruning methods select tokens by importance, diversity, or spatial coverage, but treat retained tokens as interchangeable and do not explicitly track which object-related regions are already covered. We present RoRA, a training-free framework that casts visual token pruning as role-oriented regional evidence allocation. Given a fixed budget, RoRA partitions tokens into a protected semantic core, complementary context, and fine-grained detail. It first calibrates text-conditioned attention with a positional prior and a prompt-calibrated object prior, then builds Attention-Anchored Regions (AARs) from high-confidence anchors as lightweight proxies for covered object support. Context is explored mainly outside AARs, while a small AAR-guided budget restores local detail; pairwise similarity is used only for context-stage redundancy filtering. Under matched budgets, RoRA consistently outperforms strong training-free baselines across LLaVA and Qwen-VL families, retaining most of the unpruned accuracy even at aggressive pruning ratios, e.g., 96.5% of full performance at 88.9% pruning on LLaVA-1.5, and improving over D2Pruner by about 5% on Qwen3-VL at 75-90% pruning. At a 66.7% pruning ratio, RoRA requires only 0.7 ms for token selection and reduces end-to-end inference time by 24.6%, corresponding to a 1.33x speedup over unpruned inference on an NVIDIA H800.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

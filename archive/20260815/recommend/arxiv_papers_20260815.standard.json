@@ -1,0 +1,61 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-15T20:25:25.207338+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.07088v1",
+      "source": "arxiv",
+      "title": "RoRA: Role-Oriented Regional Allocation for Visual Token Pruning in MLLMs",
+      "abstract": "Multimodal large language models (MLLMs) encode images as long visual token sequences, making prefilling and KV-cache storage expensive. Existing training-free pruning methods select tokens by importance, diversity, or spatial coverage, but treat retained tokens as interchangeable and do not explicitly track which object-related regions are already covered. We present RoRA, a training-free framework that casts visual token pruning as role-oriented regional evidence allocation. Given a fixed budget, RoRA partitions tokens into a protected semantic core, complementary context, and fine-grained detail. It first calibrates text-conditioned attention with a positional prior and a prompt-calibrated object prior, then builds Attention-Anchored Regions (AARs) from high-confidence anchors as lightweight proxies for covered object support. Context is explored mainly outside AARs, while a small AAR-guided budget restores local detail; pairwise similarity is used only for context-stage redundancy filtering. Under matched budgets, RoRA consistently outperforms strong training-free baselines across LLaVA and Qwen-VL families, retaining most of the unpruned accuracy even at aggressive pruning ratios, e.g., 96.5% of full performance at 88.9% pruning on LLaVA-1.5, and improving over D2Pruner by about 5% on Qwen3-VL at 75-90% pruning. At a 66.7% pruning ratio, RoRA requires only 0.7 ms for token selection and reduces end-to-end inference time by 24.6%, corresponding to a 1.33x speedup over unpruned inference on an NVIDIA H800.",
+      "authors": [
+        "Qiyanhui Lu",
+        "Han Wu",
+        "Rongjian Xu",
+        "Tingzhang Luo",
+        "Cheng Fan",
+        "Xinghao Chen",
+        "Minjing Dong",
+        "Jufeng Yang",
+        "Jianyuan Guo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-08-07T10:39:47+00:00",
+      "link": "https://arxiv.org/pdf/2608.07088v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache storage reduction via visual token pruning in multimodal LLMs",
+      "llm_evidence_cn": "通过视觉Token剪枝减少多模态大模型KV缓存存储",
+      "llm_evidence": "通过视觉Token剪枝减少多模态大模型KV缓存存储",
+      "canonical_evidence": "通过视觉Token剪枝减少多模态大模型KV缓存存储",
+      "llm_tldr_en": "Presents RoRA, a training-free visual token pruning framework for MLLMs that allocates tokens into role-based regions to reduce KV-cache storage and prefill cost.",
+      "llm_tldr_cn": "多模态大语言模型将图像编码为长视觉token序列，预填充和KV缓存存储开销显著。现有免训练剪枝方法虽基于重要性或空间覆盖，但未显式追踪已覆盖的对象区域。论文提出RoRA，将视觉token剪枝视为角色导向的区域证据分配，在固定预算下将token划分为受保护语义核心、互补上下文和细节区域，并基于注意力锚定区域进行分配。该方法降低了KV缓存存储与预填充成本，为多模态长上下文推理加速提供了免训练方案。",
+      "llm_tldr": "多模态大语言模型将图像编码为长视觉token序列，预填充和KV缓存存储开销显著。现有免训练剪枝方法虽基于重要性或空间覆盖，但未显式追踪已覆盖的对象区域。论文提出RoRA，将视觉token剪枝视为角色导向的区域证据分配，在固定预算下将token划分为受保护语义核心、互补上下文和细节区域，并基于注意力锚定区域进行分配。该方法降低了KV缓存存储与预填充成本，为多模态长上下文推理加速提供了免训练方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
