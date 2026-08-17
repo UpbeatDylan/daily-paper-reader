@@ -1,0 +1,69 @@
+{
+  "label": "2026-08-17",
+  "date": "2026-08-17",
+  "generated_at": "2026-08-17T19:25:34",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202608/17/2608.11152v1-scheduling-mixed-rl-rollouts-beyond-prefix-locality",
+      "section": "deep",
+      "title_en": "Scheduling Mixed RL Rollouts Beyond Prefix Locality",
+      "authors": "Zetao Hong, Song Yuan, Yuanhao Ding, Yibo Zhu, Daxin Jiang, Zhibin Wang, Chen Tian",
+      "date": "2026-08-11",
+      "pdf": "https://arxiv.org/pdf/2608.11152v1",
+      "score": "8.0",
+      "evidence": "改进异构RL rollout推理中的前缀感知缓存复用与KV缓存容量调度",
+      "tldr": "现代RL后训练常混合RLVR、RLHF与agentic等异构rollout，前缀感知路由虽优化缓存，却无法控制KV缓存竞争。本文提出MISA-T，一种路由层准入策略，通过自适应会话准入、工作负载感知KV分配和驻留时间感知记账，在保证训练负载混合不变的前提下调度异构会话。在Step3.7与Qwen3.6-35B-A3B上，相比优化后的vLLM Router，吞吐分别提升53.3%与43.6%；50轮实验中吞吐提升35.6%，迭代时间缩短22.8%，同时保持高缓存命中率和任务分数。这一方法为混合rollout服务提供了有效的调度方案。",
+      "tags": "query:pic",
+      "abstract_en": "Modern reinforcement learning (RL) post-training pipelines for large language models (LLMs) increasingly combine rollout workloads across multiple domains and feedback paradigms. Prefix-aware routing improves inference efficiency through cache reuse and load balancing, but it does not control how heterogeneous rollout sessions compete for KV-cache capacity. When reinforcement learning with verifiable rewards (RLVR), reinforcement learning from human feedback (RLHF), and agentic rollouts share an asynchronous inference service, their distinct sequence structures, interaction patterns, and KV-residency times create substantially different serving demands. Rollout scheduling must account for this heterogeneity without distorting the workload mixture specified by the trainer. We present MISA-T, a routing-layer admission policy for mixed rollout serving. MISA-T combines adaptive session admission, workload-aware KV-capacity allocation, and residency-time-aware KV accounting. In rollout-only ablations on Step3.7 and Qwen3.6-35B-A3B, MISA-T improves rollout throughput over a sweep-tuned cache-aware vLLM Router by 53.3% and 43.6%, respectively, while maintaining high prefix-cache hit rates. In a matched 50-iteration Step3.7 experiment, it increases rollout throughput by 35.6% and reduces mean iteration time by 22.8%, while keeping the consumed workload mixture close to the trainer target and achieving comparable task scores.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/17/2608.14191v1-kv-cache-compression-through-the-lens-of-transform-coding",
+      "section": "deep",
+      "title_en": "KV Cache Compression Through the Lens of Transform Coding",
+      "authors": "Hannah Laus, Claudio Mayrink Verdun, Hao Wang, Flavio du Pin Calmon, Felix Krahmer",
+      "date": "2026-08-14",
+      "pdf": "https://arxiv.org/pdf/2608.14191v1",
+      "score": "8.0",
+      "evidence": "压缩KV缓存以缓解长上下文推理的显存瓶颈",
+      "tldr": "键值缓存是长上下文推理的主要内存瓶颈，现有量化方法仅最小化缓存重构误差，忽略了误差通过注意力机制的传播。本文从变换编码视角，证明白噪声量化下注意力感知失真可分解为键和值的加性贡献，并提出注意力感知变换编码，利用反向注水在标定数据上优化比特分配。在多种主流模型和数据集上，约5.8倍压缩达到近乎无损，所有基线均有退化。该工作为键值缓存压缩建立了新的率失真理论基础。",
+      "tags": "query:pic",
+      "abstract_en": "The key-value (KV) cache stores information from past tokens and is a major memory bottleneck in long-context inference. Existing quantization methods address this bottleneck by representing the KV cache uniformly with lower-precision data types and designing quantization schemes to minimize reconstruction error in the cache itself, without accounting for how that error propagates through attention mechanisms. We prove that, under a white-noise quantization model, the expected attention-aware distortion decomposes into additive key and value contributions that factor across tokens and channels. Building on transform coding and reverse water-filling, which are classical tools from signal processing and rate-distortion theory, we introduce Attention-Aware Transform Coding (AATC), which allocates bits over a calibration set to minimize attention-aware distortion. On Llama-3.1-8B-Instruct and Qwen-2.5-7B-Instruct, evaluated across LongBench, RULER, GSM8K, MMLU-Pro, and MATH-500, our method achieves near-lossless accuracy at approximately $5.8\\times$ compression, whereas each baseline degrades in at least some settings.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/17/2608.09225v1-governing-the-kv-cache-preventing-timing-side-channel-leakage-in-multi-tenant-llm-inference",
+      "section": "quick",
+      "title_en": "Governing the KV Cache: Preventing Timing Side-Channel Leakage in Multi-Tenant LLM Inference",
+      "authors": "Tejasvi C. Addagada",
+      "date": "2026-08-10",
+      "pdf": "https://arxiv.org/pdf/2608.09225v1",
+      "score": "7.0",
+      "evidence": "针对多租户LLM推理中的前缀缓存侧信道泄漏",
+      "tldr": "多租户LLM推理共享KV缓存会引发时序侧信道，攻击者可借缓存命中延迟重建他人私有提示。KVGov用基于HMAC的每主体盐使缓存键跨主体加密隔离，并叠加ORIGAMI水填审计调度器。实验表明盐是充分必要防御，ORIGAMI降低攻击者期望效用12.6%，且注入边界盐可保留93%前缀缓存收益。该工作为KV缓存治理提供首个统一防护机制。",
+      "tags": "query:pic",
+      "abstract_en": "The key-value (KV) cache is the primary throughput optimization in modern large language model (LLM) inference, enabling prefix reuse across requests. In multi-tenant deployments this cache is shared across tenants, creating a timing side channel: an adversarial tenant can reconstruct another tenant's private prompt by probing cache-hit latency. Three published attacks exploit it -- PROMPTPEEK, EarlyBird and InputSnatch -- reaching up to 100% attack success rate against unprotected vLLM and SGLang, with rates varying by cache architecture and prompt structure.   We present KVGov, a governance layer addressing all three attack families' prefix-cache paths under one mechanism. A per-principal salt sigma_p = HMAC_K(secret, principal_id) seeds the block-hash chain, making cache keys cryptographically disjoint across principals. An ablation (N=1000 trials, seed 2026, deterministic judges) isolates this salt as the necessary and sufficient component. KVGov adds ORIGAMI, a Stackelberg water-filling audit scheduler that reduces adversary expected utility by 12.6% at realistic tenant heterogeneity (Gini 0.63), and an evolutionary stability analysis giving a 31.6% adversary-prevalence tipping point below which global caching remains stable.   On real hardware (Qwen2.5-7B-Instruct, vLLM 0.26.0, NVIDIA A100) we measure a gate-verified cold/cached TTFT ratio of 0.22, confirming the channel is exploitable at production scale; the defense itself is evaluated in simulation calibrated to those measurements. We replicate the channel on an independent stack (llama.cpp on Apple Metal, ratio 0.093). Finally, isolation and cache efficiency need not conflict: identifying information resides only where prompts diverge, so injecting the salt at that boundary rather than the chain root retains an estimated 93% of the prefix-cache benefit with no cross-principal signal.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/17/2608.08630v1-vlzip-unified-visual-and-textual-compression-for-interleaved-long-context-modeling",
+      "section": "quick",
+      "title_en": "VLZip: Unified Visual and Textual Compression for Interleaved Long-Context Modeling",
+      "authors": "Yuqi Zhang, Cheng Chen, Yuyu Guo, Wenjie Yang, Lingchen Meng, Peng Di, Hang Yu, Zuxuan Wu, Yu-Gang Jiang",
+      "date": "2026-08-09",
+      "pdf": "https://arxiv.org/pdf/2608.08630v1",
+      "score": "6.0",
+      "evidence": "通过图文压缩为软前缀缩短注意力序列以加速长上下文推理，而非缓存",
+      "tldr": "视觉语言模型处理超长交错图文序列时，自注意力计算呈二次复杂度，现有方法多采用激进剪枝或低精度架构，易导致不可逆信息丢失，且普遍忽略文本压缩。VLZip提出统一视觉与文本压缩的框架，将视觉和文本段分层蒸馏为紧凑的层特定'软前缀'，注入各解码器层隐藏状态，大幅缩短注意力序列同时保留细粒度全局上下文。实验表明，VLZip在长上下文多模态推理上取得领先性能，支持训练120K tokens（较基线提升6倍），推理超过280K tokens且内存显著降低，并可扩展至2M tokens。此外，新基准LongVLBench填补了叙事级推理评估缺失，为长上下文多模态AI树立高效新标准。",
+      "tags": "query:pic",
+      "abstract_en": "Vision Language Models (VLMs) face significant challenges with ultra-long, interleaved image-text sequences due to the quadratic complexity of self-attention. Current solutions either resort to aggressive token pruning, risking irreversible information loss, or adopt efficient but less precise architectures, while largely ignoring the equally vital textual component. We introduce VLZip, a framework that unifies visual and textual compression for high-fidelity reasoning within a pure Transformer. At its core, VLZip hierarchically distills visual and textual segments into compact, layer-specific \"soft prefixes\" and injects them into each decoder layer's hidden states, drastically shortening the attention sequence while preserving fine-grained global context. To address deficient evaluations in the field, we also introduce LongVLBench, a new benchmark derived from video narratives that demands holistic, narrative-level reasoning. Extensive experiments show VLZip achieves leading performance on long-context multimodal reasoning, enabling training up to 120K tokens, a 6x increase over the baseline, and inference beyond 280K tokens with significantly reduced memory, while demonstrating the memory scalability to handle up to 2M tokens. By excelling at extreme context lengths where existing methods collapse, VLZip establishes an efficient and powerful new standard for long-context multimodal AI. Code is available at https://github.com/ShareLab-SII/VLZip.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
