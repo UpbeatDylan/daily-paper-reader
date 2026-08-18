@@ -6,36 +6,43 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-17
-- 运行时间：2026-08-17 19:25:28 UTC
+- 最新运行日期：2026-08-18
+- 运行时间：2026-08-18 20:59:08 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：2
-- 速读区：2
+- 本次总论文数：7
+- 精读区：3
+- 速读区：4
 
 ### 今日简报（AI）
-今日精读4篇中2篇，聚焦RL rollout调度与KV缓存压缩，另有安全与长上下文压缩速读。
-
-最值得关注：KV缓存压缩借力变换编码，及混合RL调度跨越前缀局部性，均获8.0高分。
-
-建议优先精读这两篇高分论文，速读可快速浏览侧信道防护与VLZip统一压缩思路。
-- 详情：[/202608/17/README](/202608/17/README)
+1) 今日7篇论文聚焦KV-Cache优化，精读3篇、速读4篇，核心围绕多智能体长共享前缀与推理模型缓存管理。
+2) 最值得关注《GraniKV》以非对称粒度分页解决多智能体长前缀缓存瓶颈，以及《KV-Rescue》通过逐步交错挽救推理模型KV逐出损失，均获高分。
+3) 建议普通读者优先精读上述两篇，速读可关注《Aborted but Not Forgotten》以理解KV缓存保留引发的回滚一致性问题。
+- 详情：[/202608/18/README](/202608/18/README)
 
 ### 精读区论文标签
-1. [Scheduling Mixed RL Rollouts Beyond Prefix Locality](/202608/17/2608.11152v1-scheduling-mixed-rl-rollouts-beyond-prefix-locality)  
+1. [GraniKV: Asymmetric Granularity KV-Cache Paging for Multi-Agent Systems with Long Shared Prefix](/202608/18/2608.15584v1-granikv-asymmetric-granularity-kv-cache-paging-for-multi-agent-systems-with-long-shared-prefix)  
+   标签：评分：9.0/10、query:pic
+   evidence：提出了面向长共享前缀的非对称粒度KV缓存分页层，直接提升前缀缓存效率。
+2. [KV-Rescue: Recovering Reasoning Language Model KV Eviction Loss via Stepwise Interleaving](/202608/18/2608.15797v1-kv-rescue-recovering-reasoning-language-model-kv-eviction-loss-via-stepwise-interleaving)  
    标签：评分：8.0/10、query:pic
-   evidence：改进异构RL rollout推理中的前缀感知缓存复用与KV缓存容量调度
-2. [KV Cache Compression Through the Lens of Transform Coding](/202608/17/2608.14191v1-kv-cache-compression-through-the-lens-of-transform-coding)  
+   evidence：通过小模型逐步交错来恢复KV缓存逐出丢失的信息
+3. [KV-Pipe: On the Relation Between KV Sharing and Pipeline Parallel Efficiency in LLMs](/202608/18/2608.15943v1-kv-pipe-on-the-relation-between-kv-sharing-and-pipeline-parallel-efficiency-in-llms)  
    标签：评分：8.0/10、query:pic
-   evidence：压缩KV缓存以缓解长上下文推理的显存瓶颈
+   evidence：跨层KV共享与KV重用于大模型推理
 
 ### 速读区论文标签
-1. [Governing the KV Cache: Preventing Timing Side-Channel Leakage in Multi-Tenant LLM Inference](/202608/17/2608.09225v1-governing-the-kv-cache-preventing-timing-side-channel-leakage-in-multi-tenant-llm-inference)  
+1. [Aborted but Not Forgotten: KV-Cache Retention Breaks Rollback Consistency in Language Agents](/202608/18/2608.15939v1-aborted-but-not-forgotten-kv-cache-retention-breaks-rollback-consistency-in-language-agents)  
    标签：评分：7.0/10、query:pic
-   evidence：针对多租户LLM推理中的前缀缓存侧信道泄漏
-2. [VLZip: Unified Visual and Textual Compression for Interleaved Long-Context Modeling](/202608/17/2608.08630v1-vlzip-unified-visual-and-textual-compression-for-interleaved-long-context-modeling)  
+   evidence：KV缓存保留与回滚一致性问题，与KV缓存复用直接相关
+2. [BAG: Budget-Aware Gating for Diffusion Caching](/202608/18/2608.09231v1-bag-budget-aware-gating-for-diffusion-caching)  
    标签：评分：6.0/10、query:pic
-   evidence：通过图文压缩为软前缀缩短注意力序列以加速长上下文推理，而非缓存
+   evidence：预算感知门控的缓存策略可迁移至KV缓存复用
+3. [SEER: Long-Context Reasoning via Selective Visual-Text Compression](/202608/18/2608.15962v1-seer-long-context-reasoning-via-selective-visual-text-compression)  
+   标签：评分：6.0/10、query:pic
+   evidence：通过选择性视觉-文本压缩加速长上下文推理
+4. [Proteus: Incremental Memory Activation for Long-Context Sequence Modeling](/202608/18/2608.16844v1-proteus-incremental-memory-activation-for-long-context-sequence-modeling)  
+   标签：评分：6.0/10、query:pic
+   evidence：增量记忆激活以降低长上下文注意力成本
 
 
 <div class="dpr-home-promo-card">

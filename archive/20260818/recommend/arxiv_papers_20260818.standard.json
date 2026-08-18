@@ -1,0 +1,289 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-18T20:52:56.038473+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.15584v1",
+      "source": "arxiv",
+      "title": "GraniKV: Asymmetric Granularity KV-Cache Paging for Multi-Agent Systems with Long Shared Prefix",
+      "abstract": "Production paged-serving engines apply uniform paging granularity to the KV cache, even though the two regions of a multi-agent workload have opposite storage requirements: a long shared prefix demands contiguity, while the per-request suffix demands fine-grained allocation.   We present \\textbf{GraniKV}, a KV-cache layer that allocates the shared prefix in a contiguous HOT pool and the suffix in a token-level COLD pool, combined with a per-step dispatcher which selects the appropriate backend among dual backends for each regime (compute-, memory-, or communication-bound). To the best of our knowledge, GraniKV is the first system to apply asymmetric paging granularity to the KV cache of a production paged-serving engine.   At $L_p{=}16$\\,K shared tokens GraniKV reaches $\\mathbf{2.16\\times}$, $\\mathbf{1.98\\times}$, and $\\mathbf{1.57\\times}$ output-token throughput over the production baseline on Llama-3.1-8B/TP=1, Qwen-2.5-14B/TP=2, and Qwen-2.5-32B/TP=4. The gain decomposes: cascade attention integration contributes the majority at saturation; the asymmetric storage layer adds $1.05$--$1.15\\times$ end-to-end while being what makes the batched-GEMM prefix backend possible at all. Under heterogeneous multi-agent serving with \\emph{distinct} prompts of different lengths, the attribution inverts: GraniKV sustains $\\mathbf{1.95\\times}$ while batch-global cascade collapses to parity --- the storage layer alone carries the win in the regime that motivates the paper.",
+      "authors": [
+        "Jinhyun Jeon",
+        "Sungjoo Yoo"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-08-16T07:19:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.15584v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Presents a KV-cache paging layer for long shared prefixes with asymmetric granularity, directly targeting prefix caching efficiency.",
+      "llm_evidence_cn": "提出了面向长共享前缀的非对称粒度KV缓存分页层，直接提升前缀缓存效率。",
+      "llm_evidence": "提出了面向长共享前缀的非对称粒度KV缓存分页层，直接提升前缀缓存效率。",
+      "canonical_evidence": "提出了面向长共享前缀的非对称粒度KV缓存分页层，直接提升前缀缓存效率。",
+      "llm_tldr_en": "Production paged engines use uniform KV paging granularity, but multi-agent workloads need contiguous long shared prefixes and fine-grained suffixes. GraniKV allocates the prefix in a contiguous HOT pool and suffix in a COLD pool with a per-step dispatcher, improving prefix reuse efficiency.",
+      "llm_tldr_cn": "生产级分页服务引擎对KV缓存采用统一分页粒度，而多智能体负载中长共享前缀需要连续性、每请求后缀需要细粒度分配，二者需求相反。GraniKV提出KV缓存层，将共享前缀放入连续的HOT池、后缀放入令牌级COLD池，并通过每步调度器选择后端。这是首个在生产级分页引擎上应用非对称粒度的KV缓存系统，有效提升长共享前缀场景下的缓存复用与性能。",
+      "llm_tldr": "生产级分页服务引擎对KV缓存采用统一分页粒度，而多智能体负载中长共享前缀需要连续性、每请求后缀需要细粒度分配，二者需求相反。GraniKV提出KV缓存层，将共享前缀放入连续的HOT池、后缀放入令牌级COLD池，并通过每步调度器选择后端。这是首个在生产级分页引擎上应用非对称粒度的KV缓存系统，有效提升长共享前缀场景下的缓存复用与性能。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.15797v1",
+      "source": "arxiv",
+      "title": "KV-Rescue: Recovering Reasoning Language Model KV Eviction Loss via Stepwise Interleaving",
+      "abstract": "KV-cache eviction caps the memory cost of long reasoning traces but is inherently lossy because the model decodes from a partial view of its history. Under aggressive budgets, this not only lowers accuracy but can also cause runaway degeneration, where the model produces incoherent or repetitive tokens until reaching the length limit. We characterize much of this loss as an information gapf caused by missing context, rather than a capability gap caused by limited model capacity. An evicted 7B model and a full-context 1.5B model make complementary errors, and an oracle choice between their answers recovers 79% of the accuracy gap to the full-KV 7B model. Based on this observation, we propose KV-Rescue, a training-free inference framework that bridges the information gap introduced by KV eviction using a lightweight full-context helper. KV-Rescue interleaves reasoning steps from the two models into a shared trajectory. An online detector uses entropy and compressibility to terminate the generation of incoherent or repetitive base-model candidates early. Across five math benchmarks with Qwen2.5-Math 7B and 72B, KV-Rescue recovers an average of 87% of the accuracy lost to eviction at eviction budget B=64. A decode-cost analysis further shows that preventing runaway degeneration cuts base-model token generation by 43% on average.",
+      "authors": [
+        "Minsoo Cheong",
+        "Woosang Lim",
+        "Vincent-Daniel Yun",
+        "Sungjoo Yoo"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-08-16T15:23:25+00:00",
+      "link": "https://arxiv.org/pdf/2608.15797v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Recovers information lost by KV-cache eviction via stepwise interleaving with a smaller model",
+      "llm_evidence_cn": "通过小模型逐步交错来恢复KV缓存逐出丢失的信息",
+      "llm_evidence": "通过小模型逐步交错来恢复KV缓存逐出丢失的信息",
+      "canonical_evidence": "通过小模型逐步交错来恢复KV缓存逐出丢失的信息",
+      "llm_tldr_en": "KV-Rescue is a training-free framework that recovers accuracy lost to KV-cache eviction in long reasoning traces by interleaving a smaller full-context model, closing 79% of the gap to the full-KV larger model.",
+      "llm_tldr_cn": "长推理轨迹中KV缓存逐出虽然节省内存，但会使模型从部分历史解码，导致精度下降甚至退化。KV-Rescue方法通过观察逐出模型与全上下文小模型互补的错误，提出无训练的推理框架，利用小模型的完整上下文逐步交错恢复丢失的信息。实验表明该方法恢复了与全KV大模型精度差距的79%，为KV缓存压缩场景下的推理加速提供了新的思路。",
+      "llm_tldr": "长推理轨迹中KV缓存逐出虽然节省内存，但会使模型从部分历史解码，导致精度下降甚至退化。KV-Rescue方法通过观察逐出模型与全上下文小模型互补的错误，提出无训练的推理框架，利用小模型的完整上下文逐步交错恢复丢失的信息。实验表明该方法恢复了与全KV大模型精度差距的79%，为KV缓存压缩场景下的推理加速提供了新的思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.15943v1",
+      "source": "arxiv",
+      "title": "KV-Pipe: On the Relation Between KV Sharing and Pipeline Parallel Efficiency in LLMs",
+      "abstract": "Pipeline parallelism (PP) is widely used to scale large language model (LLM) training, but its efficiency is often limited by stage imbalance and pipeline bubbles. Meanwhile, cross-layer KV sharing has primarily been studied as a mechanism for reducing KV-cache costs during inference, without examining how KV reuse reshapes pipeline workloads. We present \\textbf{KV-Pipe}, a stage-aware KV-sharing mechanism that turns KV reuse into a pipeline-balancing control knob. KV-Pipe starts from the tail stage, converts selected attention layers to cross-layer KV sharing in a tail-first order, and iteratively retargets the current bottleneck to drive the FLOPs Imbalance Ratio (FIR) toward $1$. The procedure is performed offline and requires only a pipeline partition and per-layer FLOPs estimates, introducing negligible runtime overhead and requiring no online tuning. Across multiple pipeline-parallel configurations, KV-Pipe consistently improves utilization and throughput, achieving up to \\textbf{9.2\\%} higher training MFU and up to a \\textbf{9.8\\%} reduction in iteration time, with larger gains at higher pipeline-parallel degrees where stage imbalance is amplified. Furthermore, the same KV-sharing mechanism provides an inference-side benefit by reducing KV-cache growth and redundant KV projection work, resulting in higher decoding throughput for long-context workloads. These results identify KV layout as a system--architecture degree of freedom for jointly improving pipeline-parallel training efficiency and long-context inference.",
+      "authors": [
+        "Maryam Dialameh",
+        "Hossein Rajabzadeh",
+        "Harish Krishnamoorthy Murali",
+        "Walid Ahmed",
+        "Weiwei Zhang",
+        "Hyock Ju Kwon"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-16T22:01:16+00:00",
+      "link": "https://arxiv.org/pdf/2608.15943v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Cross-layer KV sharing and KV reuse for LLM inference",
+      "llm_evidence_cn": "跨层KV共享与KV重用于大模型推理",
+      "llm_evidence": "跨层KV共享与KV重用于大模型推理",
+      "canonical_evidence": "跨层KV共享与KV重用于大模型推理",
+      "llm_tldr_en": "KV-Pipe studies the relation between cross-layer KV sharing and pipeline parallel efficiency in LLMs, turning KV reuse into a control knob that balances stage workloads and reduces pipeline bubbles.",
+      "llm_tldr_cn": "流水线并行训练大模型时效率常受限于阶段不均衡与气泡。KV-Pipe提出一种阶段感知的跨层KV共享机制：从尾部阶段开始将注意力层转换为跨层KV共享，并迭代重定向当前瓶颈，以驱动FLOPs不均衡比率趋近于1。该方法离线进行且几乎不需要额外开销，将KV复用转化为流水线平衡的控制手段，为LLM分布式训练与推理优化提供了新的联系。",
+      "llm_tldr": "流水线并行训练大模型时效率常受限于阶段不均衡与气泡。KV-Pipe提出一种阶段感知的跨层KV共享机制：从尾部阶段开始将注意力层转换为跨层KV共享，并迭代重定向当前瓶颈，以驱动FLOPs不均衡比率趋近于1。该方法离线进行且几乎不需要额外开销，将KV复用转化为流水线平衡的控制手段，为LLM分布式训练与推理优化提供了新的联系。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.15939v1",
+      "source": "arxiv",
+      "title": "Aborted but Not Forgotten: KV-Cache Retention Breaks Rollback Consistency in Language Agents",
+      "abstract": "Stateful language agents assume a rejected branch can be taken back by clearing it from the application transcript. We show this breaks when the serving session retains key/value (KV) state across the logical abort: the model can continue attending to content the application believes it discarded. We formalize the missing guarantee as rollback consistency: a complete abort must restore the state the model attends, not just the transcript. The key failure is cross-layer: a correct logical rollback need not compose with retained inference state, and the gap can remain invisible to the application. To isolate cache effects from text effects, we introduce a same-token/different-cache audit that holds decision-step tokens identical while varying only whether the cached prefix is stale or rebuilt from committed state. Across seven open-weight families (3.8B-36B), retained KV alone flips a typed protected effect in 25 of 63 audited cells, while attacker tokens are absent from the served request in all 63; rebuilding the cache closes every cell. The channel reproduces in an end-to-end session application, on the default Hugging Face Transformers cache-reuse path, and under LangGraph time-travel, where verified logical rollback can still leave attended KV stale. Susceptibility varies across models, but the underlying attended-state integrity violation is structural. We rule out position and length confounds, generalize across protected effects, policy structures, and a cache-isolated Mixture-of-Experts model, and show that transaction-local cache restoration closes the channel without requiring a global cache flush. All headline results are deterministic and reproducible from released artifacts.",
+      "authors": [
+        "Guijia Zhang",
+        "Harry Yang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-16T21:49:38+00:00",
+      "link": "https://arxiv.org/pdf/2608.15939v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache retention and rollback consistency in LLM serving, relevant to KV cache reuse",
+      "llm_evidence_cn": "KV缓存保留与回滚一致性问题，与KV缓存复用直接相关",
+      "llm_evidence": "KV缓存保留与回滚一致性问题，与KV缓存复用直接相关",
+      "canonical_evidence": "KV缓存保留与回滚一致性问题，与KV缓存复用直接相关",
+      "llm_tldr_en": "KV retention across aborts breaks rollback consistency in language agents. The paper formalizes this guarantee, introduces a same-token/different-cache audit, and shows logical rollback cannot compose with retained KV state, guiding safe KV cache reuse.",
+      "llm_tldr_cn": "语言智能体在回滚时通常仅在应用转录中清除分支，但服务端保留的KV缓存会让模型继续关注已丢弃内容，从而破坏回滚语义。本文形式化回滚一致性：完整中止必须恢复模型关注的状态，而非仅恢复转录。作者引入同token/不同缓存审计方法，隔离缓存与文本的效应，并证明跨层失败可能使逻辑回滚与保留推理状态无法组合。该研究为语言智能体中安全、可靠的KV缓存复用提供了关键保障与诊断工具。",
+      "llm_tldr": "语言智能体在回滚时通常仅在应用转录中清除分支，但服务端保留的KV缓存会让模型继续关注已丢弃内容，从而破坏回滚语义。本文形式化回滚一致性：完整中止必须恢复模型关注的状态，而非仅恢复转录。作者引入同token/不同缓存审计方法，隔离缓存与文本的效应，并证明跨层失败可能使逻辑回滚与保留推理状态无法组合。该研究为语言智能体中安全、可靠的KV缓存复用提供了关键保障与诊断工具。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.09231v1",
+      "source": "arxiv",
+      "title": "BAG: Budget-Aware Gating for Diffusion Caching",
+      "abstract": "Diffusion caching is a lightweight strategy that accelerates Diffusion Transformers (DiTs) by reusing intermediate features across denoising steps, but existing paradigms face a fundamental trade-off: online heuristics lack global budget awareness, whereas static schedules lack instance adaptivity and fail to flexibly adapt to varying runtime budget constraints. To bridge this gap, we present BAG (Budget-Aware Gating), a novel caching policy that unifies global budget pacing with dynamic, instance-adaptive feature reuse. Rather than relying on hand-crafted rules, BAG employs a lightweight gating network that dynamically decides whether to execute a full computation or reuse cached features at each step by jointly conditioning on the budget state and local trajectory feedback. We train this policy via offline-to-online schedule distillation, transferring the decision-making of offline-searched schedules into a compact online gate. Extensive experiments on FLUX.1-dev and Wan2.1 demonstrate that BAG consistently outperforms state-of-the-art caching methods across various speedup tiers while remaining robust across different resolutions, seeds, and guidance scales. Code will be released.",
+      "authors": [
+        "Tong Zhao",
+        "Mingkun Lei",
+        "Yucheng Han",
+        "Chi Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-10T07:54:28+00:00",
+      "link": "https://arxiv.org/pdf/2608.09231v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Adaptive budget-aware caching with gating for inference acceleration, transferable to KV cache reuse",
+      "llm_evidence_cn": "预算感知门控的缓存策略可迁移至KV缓存复用",
+      "llm_evidence": "预算感知门控的缓存策略可迁移至KV缓存复用",
+      "canonical_evidence": "预算感知门控的缓存策略可迁移至KV缓存复用",
+      "llm_tldr_en": "BAG introduces a lightweight gating network for diffusion caching that jointly considers budget state and trajectory feedback to decide when to reuse cached features, enabling adaptive and globally budget-aware acceleration.",
+      "llm_tldr_cn": "扩散缓存通过跨去噪步骤复用中间特征加速DiT，但现有方法面临全局预算感知与实例自适应的权衡。BAG提出预算感知门控策略，用轻量门控网络在每步动态决策是执行完整计算还是复用缓存特征，同时考虑预算状态和局部轨迹反馈。该方法统一了全局预算节奏与实例自适应特征复用，在多种预算约束下均能取得稳健的加速效果。此机制对LLM中的KV缓存复用具有方法迁移价值。",
+      "llm_tldr": "扩散缓存通过跨去噪步骤复用中间特征加速DiT，但现有方法面临全局预算感知与实例自适应的权衡。BAG提出预算感知门控策略，用轻量门控网络在每步动态决策是执行完整计算还是复用缓存特征，同时考虑预算状态和局部轨迹反馈。该方法统一了全局预算节奏与实例自适应特征复用，在多种预算约束下均能取得稳健的加速效果。此机制对LLM中的KV缓存复用具有方法迁移价值。",
+      "llm_tags": [
+        "query:pic:composite"
+      ],
+      "matched_query_tag": "query:pic:composite",
+      "matched_query_text": "Papers central to 每日检索与PIC/position-independent KV cache优化相关的最新论文, especially work that connects or combines: position independent caching for LLM inference acceleration; KV cache reuse in large language model inference; prefix caching techniques for LLM inference; prompt caching for reducing inference latency; context caching for long context LLM inference; long context inference acceleration methods; How does position independent caching improve long context inference?; What are the latest methods for KV cache reuse in LLM inference?.",
+      "matched_requirement_id": "req-composite-pic",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.15962v1",
+      "source": "arxiv",
+      "title": "SEER: Long-Context Reasoning via Selective Visual-Text Compression",
+      "abstract": "Long-context reasoning remains computationally expensive for large language models due to the quadratic complexity of attention over text tokens. Visual-text compression offers a promising alternative by rendering text into images and processing them with vision-language models, often reducing token usage. However, existing approaches apply uniform compression regardless of query relevance, potentially sacrificing precision where detailed extraction is required. We present SEER, a framework that learns to select query-relevant images through visual scanning and retrieve textual content only where needed, combining the efficiency of visual compression with the precision of text-based reasoning. Through supervised fine-tuning on tool-interaction trajectories, SEER learns adaptive tool invocation for selection and retrieval. Experiments on long-context benchmarks show that SEER improves extraction precision through selective text retrieval while retaining average prompt-token savings relative to full-text baselines. On LongBench, SEER achieves 51.11% average accuracy, outperforming the visual-text baseline Glyph-9B by 2.33 points and Qwen3-8B by 3.49 points. Code can be accessed at https://github.com/jiaweixu98/SEER",
+      "authors": [
+        "Jiawei Xu",
+        "Zhilin Zhai",
+        "Jinrui Fang",
+        "Ruohan Xu",
+        "Mingfei Lu",
+        "Yi Zhang",
+        "Guanchu Wang",
+        "Tianlong Chen",
+        "Ying Ding"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.CV"
+      ],
+      "published": "2026-08-16T23:30:41+00:00",
+      "link": "https://arxiv.org/pdf/2608.15962v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Long-context reasoning acceleration via selective visual-text compression",
+      "llm_evidence_cn": "通过选择性视觉-文本压缩加速长上下文推理",
+      "llm_evidence": "通过选择性视觉-文本压缩加速长上下文推理",
+      "canonical_evidence": "通过选择性视觉-文本压缩加速长上下文推理",
+      "llm_tldr_en": "SEER is a framework that learns to select query-relevant images through visual scanning and retrieve textual content only where needed, reducing token usage for efficient long-context reasoning while maintaining precision.",
+      "llm_tldr_cn": "长上下文推理因注意力机制的二次复杂度而计算昂贵。SEER提出一种选择性视觉-文本压缩框架：它通过视觉扫描学习选择与查询相关的图像，仅在需要时检索对应文本内容，将视觉压缩的高效性与基于文本推理的精确性结合起来，有效减少token使用量。借助工具交互轨迹的监督微调，SEER在长上下文任务中兼顾了效率与精度，为应对长上下文推理成本提供了新思路。",
+      "llm_tldr": "长上下文推理因注意力机制的二次复杂度而计算昂贵。SEER提出一种选择性视觉-文本压缩框架：它通过视觉扫描学习选择与查询相关的图像，仅在需要时检索对应文本内容，将视觉压缩的高效性与基于文本推理的精确性结合起来，有效减少token使用量。借助工具交互轨迹的监督微调，SEER在长上下文任务中兼顾了效率与精度，为应对长上下文推理成本提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.16844v1",
+      "source": "arxiv",
+      "title": "Proteus: Incremental Memory Activation for Long-Context Sequence Modeling",
+      "abstract": "The quadratic cost of attention-based sequence models for long contexts has motivated a growing line of research on memory-based models that can compress context into a compact state. However, most existing memory models expose a static memory throughout the entire sequence. Because early tokens face no compression pressure, they occupy too many degrees of freedom and \"pollute\" the memory state, leaving little capacity for later context and increasing interference between what is stored and what arrives next. We study a new paradigm of incremental memory activation, where the effective capacity of memory is progressively expanded as the context grows. Imposing an early bottleneck forces the model to compress history more effectively, while unlocking fresh capacity over time reduces interference and improves retention of later context. We instantiate this paradigm in Proteus, a straightforward mechanism that can be incorporated into a broad class of neural memory architectures at no additional cost. We apply Proteus to state-of-the-art models, including SWLA, Comba, Titans, and Hope-Attention, and observe consistent improvements on standard language modeling and reasoning, as well as on long-context retrieval and understanding, with gains that grow at longer context lengths. Overall, our results show that static memory is suboptimal and that scheduling effective capacity is a simple and broadly applicable tool for sequence modeling.",
+      "authors": [
+        "Reza Bayat",
+        "Ali Behrouz",
+        "Vahab Mirrokni",
+        "Aaron Courville"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-08-17T17:30:43+00:00",
+      "link": "https://arxiv.org/pdf/2608.16844v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "incremental memory activation to reduce long-context attention cost",
+      "llm_evidence_cn": "增量记忆激活以降低长上下文注意力成本",
+      "llm_evidence": "增量记忆激活以降低长上下文注意力成本",
+      "canonical_evidence": "增量记忆激活以降低长上下文注意力成本",
+      "llm_tldr_en": "Proteus proposes incremental memory activation that progressively expands memory capacity as context grows, improving long-context compression.",
+      "llm_tldr_cn": "为缓解长上下文中静态记忆被早期token污染的问题，本文提出增量记忆激活范式，随上下文增长逐步扩展记忆容量。该方法强制早期瓶颈使模型更有效地压缩历史，并在实验中验证了长序列建模效果。为长上下文推理加速提供了新的记忆压缩思路。",
+      "llm_tldr": "为缓解长上下文中静态记忆被早期token污染的问题，本文提出增量记忆激活范式，随上下文增长逐步扩展记忆容量。该方法强制早期瓶颈使模型更有效地压缩历史，并在实验中验证了长序列建模效果。为长上下文推理加速提供了新的记忆压缩思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
