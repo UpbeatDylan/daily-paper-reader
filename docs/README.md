@@ -6,43 +6,38 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-18
-- 运行时间：2026-08-18 20:59:08 UTC
+- 最新运行日期：2026-08-19
+- 运行时间：2026-08-19 19:53:06 UTC
 - 运行状态：成功
-- 本次总论文数：7
+- 本次总论文数：6
 - 精读区：3
-- 速读区：4
+- 速读区：3
 
 ### 今日简报（AI）
-1) 今日7篇论文聚焦KV-Cache优化，精读3篇、速读4篇，核心围绕多智能体长共享前缀与推理模型缓存管理。
-2) 最值得关注《GraniKV》以非对称粒度分页解决多智能体长前缀缓存瓶颈，以及《KV-Rescue》通过逐步交错挽救推理模型KV逐出损失，均获高分。
-3) 建议普通读者优先精读上述两篇，速读可关注《Aborted but Not Forgotten》以理解KV缓存保留引发的回滚一致性问题。
-- 详情：[/202608/18/README](/202608/18/README)
+今日筛选6篇论文，精读3篇、速读3篇，重点关注KV-Cache调度与长上下文推理。 最值得看的两项8分工作：全在线KV缓存调度获线性确定性竞争比，模块化神经记忆MoNe实现高效长上下文推理。 建议优先关注KV缓存管理及长上下文推理优化方向，速读中也有线性注意力解码加速等可延伸参考。
+- 详情：[/202608/19/README](/202608/19/README)
 
 ### 精读区论文标签
-1. [GraniKV: Asymmetric Granularity KV-Cache Paging for Multi-Agent Systems with Long Shared Prefix](/202608/18/2608.15584v1-granikv-asymmetric-granularity-kv-cache-paging-for-multi-agent-systems-with-long-shared-prefix)  
-   标签：评分：9.0/10、query:pic
-   evidence：提出了面向长共享前缀的非对称粒度KV缓存分页层，直接提升前缀缓存效率。
-2. [KV-Rescue: Recovering Reasoning Language Model KV Eviction Loss via Stepwise Interleaving](/202608/18/2608.15797v1-kv-rescue-recovering-reasoning-language-model-kv-eviction-loss-via-stepwise-interleaving)  
+1. [A Tight Linear Deterministic Competitive Ratio for Fully Online KV-Cache Scheduling](/202608/19/2608.16944v1-a-tight-linear-deterministic-competitive-ratio-for-fully-online-kv-cache-scheduling)  
    标签：评分：8.0/10、query:pic
-   evidence：通过小模型逐步交错来恢复KV缓存逐出丢失的信息
-3. [KV-Pipe: On the Relation Between KV Sharing and Pipeline Parallel Efficiency in LLMs](/202608/18/2608.15943v1-kv-pipe-on-the-relation-between-kv-sharing-and-pipeline-parallel-efficiency-in-llms)  
+   evidence：LLM推理中受限内存下的KV缓存调度
+2. [MoNe: Modular Neural Memory for Efficient Long Context Inference](/202608/19/2608.17616v1-mone-modular-neural-memory-for-efficient-long-context-inference)  
    标签：评分：8.0/10、query:pic
-   evidence：跨层KV共享与KV重用于大模型推理
+   evidence：利用神经记忆将成本与上下文长度解耦以加速长上下文推理
+3. [Bounded-State Restoration: Decoupling Local Restore Capacity from External LLM State](/202608/19/2608.17826v1-bounded-state-restoration-decoupling-local-restore-capacity-from-external-llm-state)  
+   标签：评分：8.0/10、query:pic
+   evidence：面向长上下文LLM状态的KV缓存恢复与可复用前缀探测
 
 ### 速读区论文标签
-1. [Aborted but Not Forgotten: KV-Cache Retention Breaks Rollback Consistency in Language Agents](/202608/18/2608.15939v1-aborted-but-not-forgotten-kv-cache-retention-breaks-rollback-consistency-in-language-agents)  
+1. [When Does Distributed AI Inference Need More Wide-Area Bandwidth? A Co-Design Evaluation of Optical, Packet, and Software Levers](/202608/19/2608.14967v1-when-does-distributed-ai-inference-need-more-wide-area-bandwidth-a-co-design-evaluation-of-optical-packet-and-software-levers)  
    标签：评分：7.0/10、query:pic
-   evidence：KV缓存保留与回滚一致性问题，与KV缓存复用直接相关
-2. [BAG: Budget-Aware Gating for Diffusion Caching](/202608/18/2608.09231v1-bag-budget-aware-gating-for-diffusion-caching)  
+   evidence：对比KV重计算与缓存压缩同带宽的权衡，直接涉及KV缓存优化
+2. [DeltaLog: Deferred Materialization of Recurrent States for Linear Attention Decoding](/202608/19/2608.15533v1-deltalog-deferred-materialization-of-recurrent-states-for-linear-attention-decoding)  
+   标签：评分：7.0/10、query:pic
+   evidence：减少线性注意力解码中循环状态的访存开销，是一种长上下文推理加速技术
+3. [TileMix: Tile-Centric Mixed-Precision Attention for LLM Inference Acceleration](/202608/19/2608.17336v1-tilemix-tile-centric-mixed-precision-attention-for-llm-inference-acceleration)  
    标签：评分：6.0/10、query:pic
-   evidence：预算感知门控的缓存策略可迁移至KV缓存复用
-3. [SEER: Long-Context Reasoning via Selective Visual-Text Compression](/202608/18/2608.15962v1-seer-long-context-reasoning-via-selective-visual-text-compression)  
-   标签：评分：6.0/10、query:pic
-   evidence：通过选择性视觉-文本压缩加速长上下文推理
-4. [Proteus: Incremental Memory Activation for Long-Context Sequence Modeling](/202608/18/2608.16844v1-proteus-incremental-memory-activation-for-long-context-sequence-modeling)  
-   标签：评分：6.0/10、query:pic
-   evidence：增量记忆激活以降低长上下文注意力成本
+   evidence：通过瓦片级混合精度注意力路由加速长上下文预填充
 
 
 <div class="dpr-home-promo-card">

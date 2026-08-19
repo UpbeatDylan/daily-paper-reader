@@ -1,0 +1,244 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-19T19:48:33.421693+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2608.16944v1",
+      "source": "arxiv",
+      "title": "A Tight Linear Deterministic Competitive Ratio for Fully Online KV-Cache Scheduling",
+      "abstract": "Jaillet et al. introduced a fully online model for batching nonpreemptive LLM requests under a growing KV-cache memory constraint. For total end-to-end latency they proved that every deterministic algorithm has competitive ratio Omega(sqrt(n)), while the elementary sequential upper bound is n. We close this gap. Let R_det(n,M) be the optimal deterministic ratio for exactly n requests at memory M, and let R_det(n)=sup_M R_det(n,M). For every n >= 2 we prove   (n-1)/12 <= R_det(n) <= n,   so R_det(n)=Theta(n). The lower bound releases one memory-filling long request, observes its deterministic start time, and then releases n-1 wide one-token requests halfway through the long run. No short request can overlap the long one, whereas a hindsight schedule runs the two groups in the opposite order when useful. The hard instance uses the explicit fixed memory M=2(n-1)n. The upper bound is achieved by a uniform causal serial policy. The exact model, causality argument, both comparator branches, and quantifier order are machine-checked in Lean 4. Exact finite controls and replay commands accompany the proof.",
+      "authors": [
+        "Ian D'Ambrosio"
+      ],
+      "primary_category": "cs.DS",
+      "categories": [
+        "cs.DS"
+      ],
+      "published": "2026-08-14T04:23:35+00:00",
+      "link": "https://arxiv.org/pdf/2608.16944v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache scheduling under memory constraint in LLM inference",
+      "llm_evidence_cn": "LLM推理中受限内存下的KV缓存调度",
+      "llm_evidence": "LLM推理中受限内存下的KV缓存调度",
+      "canonical_evidence": "LLM推理中受限内存下的KV缓存调度",
+      "llm_tldr_en": "This paper closes the gap in fully online KV-cache scheduling for LLM inference, proving a tight linear deterministic competitive ratio Theta(n) for end-to-end latency, with an adversarial lower bound and matching upper bound.",
+      "llm_tldr_cn": "KV缓存内存约束下，在线批处理LLM请求的端到端延迟调度理论尚不完善。本文提出并证明了一个紧线性确定性竞争比下界，结合简单顺序上界得到Theta(n)的最优确定性比率，弥补了此前上下界之间的巨大差距。该结果对理解KV缓存调度对LLM推理延迟的影响具有重要理论意义。",
+      "llm_tldr": "KV缓存内存约束下，在线批处理LLM请求的端到端延迟调度理论尚不完善。本文提出并证明了一个紧线性确定性竞争比下界，结合简单顺序上界得到Theta(n)的最优确定性比率，弥补了此前上下界之间的巨大差距。该结果对理解KV缓存调度对LLM推理延迟的影响具有重要理论意义。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.17616v1",
+      "source": "arxiv",
+      "title": "MoNe: Modular Neural Memory for Efficient Long Context Inference",
+      "abstract": "We present MoNe, a lightweight modular neural memory that attaches to any frozen pretrained Transformer to enable long-context inference without retraining. MoNe reads context in fixed-size segments via test-time learning of fast-weight neural memory networks with layer-localized gradient updates; at inference, the memory generates keys and values from the query tokens alone, with no context tokens re-read. This two-phase design decouples inference cost from context length, achieving $O(N)$ preprocessing and $O(1)$ query cost with peak GPU memory that does not grow with $N$. At 128K tokens, MoNe reduces both compute and peak GPU memory by approximately 80% compared to ICL with only 6.4% parameter overhead. MoNe generalizes to context lengths far beyond the backbone's native window, achieving strong performance on needle-in-a-haystack and word extraction benchmarks from RULER, where ICL degrades sharply.",
+      "authors": [
+        "Wonguk Cho",
+        "Kyubyung Chae",
+        "Tribhuvanesh Orekondy",
+        "Sunghyun Park",
+        "Hyoungwoo Park",
+        "Jeongho Kim",
+        "Arash Behboodi",
+        "Kyuwoong Hwang",
+        "Sungrack Yun"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-18T10:28:23+00:00",
+      "link": "https://arxiv.org/pdf/2608.17616v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Long-context inference acceleration by decoupling cost from context length using neural memory",
+      "llm_evidence_cn": "利用神经记忆将成本与上下文长度解耦以加速长上下文推理",
+      "llm_evidence": "利用神经记忆将成本与上下文长度解耦以加速长上下文推理",
+      "canonical_evidence": "利用神经记忆将成本与上下文长度解耦以加速长上下文推理",
+      "llm_tldr_en": "MoNe attaches a lightweight modular neural memory to any frozen pretrained Transformer for efficient long-context inference. It reads context in fixed segments via test-time learning of fast-weight memory and generates keys/values from query tokens alone, achieving O(N) preprocessing and O(1) query cost with GPU memory independent of N. At 128K tokens it reduces compute and peak memory by ~80%.",
+      "llm_tldr_cn": "长上下文推理成本随序列长度增长，MoNe提出可附加到任意冻结预训练Transformer的轻量模块化神经记忆，无需重训。它在测试阶段按固定片段学习快权重记忆，推理时仅从查询token生成键值，不再重读上下文，实现O(N)预处理和O(1)查询代价，峰值GPU内存不随N增长。在128K token下相比ICL减少约80%计算和内存开销，并泛化到训练长度之外的上下文。",
+      "llm_tldr": "长上下文推理成本随序列长度增长，MoNe提出可附加到任意冻结预训练Transformer的轻量模块化神经记忆，无需重训。它在测试阶段按固定片段学习快权重记忆，推理时仅从查询token生成键值，不再重读上下文，实现O(N)预处理和O(1)查询代价，峰值GPU内存不随N增长。在128K token下相比ICL减少约80%计算和内存开销，并泛化到训练长度之外的上下文。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.17826v1",
+      "source": "arxiv",
+      "title": "Bounded-State Restoration: Decoupling Local Restore Capacity from External LLM State",
+      "abstract": "Hierarchical KV-cache systems can retain long-context LLM execution state beyond GPU memory, but retention capacity does not determine the local memory required to make that state executable again. We isolate this second resource as the restoration working set (RWS): the peak local staging state whose lifetimes overlap during restoration. In the pinned upstream LMCache whole-plan path, measured full-reuse points for 1.956, 7.823, and 15.646 GiB/rank states first succeed at 2, 8, and 16 GiB L1 rungs, with successful L1 peaks of 1.956, 7.824, and 15.648 GiB/rank.   We introduce Bounded-State Restoration (BSR), which separates complete discovery from local residency. BSR probes the complete reusable prefix without materializing the whole hit in L1, then installs confirmed state through a reusable window of at most $W$ chunks. Under bounded auxiliary state, peak restoration capacity is $O(W)$ while total transfer and installation work remains $Θ(|S|)$. Because reusable state spans heterogeneous allocator groups and tensor-parallel ranks, BSR uses a request-level commit rule: partial installation is never exposed as a valid reusable prefix; failures invalidate the advertised prefix and fall back to a lower valid tier or deterministic recomputation.   On DeepSeek-V4-Flash with TP=2 across two DGX Spark nodes, a clean no-resume sweep grows external state from 1.956 to 31.277 GiB/rank while measured L1 RWS remains exactly 500.75 MiB/rank at $W=32$, a 63.959x largest-state external-to-live-staging ratio. A second fresh 524K-token run repeats the largest-state acceptance result. Evaluated tier and rank-asymmetric failures expose either complete reuse or zero external reuse before fallback. A matched SSD optimization reduces 512K restore TTFT from 43.1 to 17.6 seconds without changing RWS.",
+      "authors": [
+        "Zixuan Li"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-18T14:26:15+00:00",
+      "link": "https://arxiv.org/pdf/2608.17826v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV-cache restoration and reusable prefix probing for long-context LLM state",
+      "llm_evidence_cn": "面向长上下文LLM状态的KV缓存恢复与可复用前缀探测",
+      "llm_evidence": "面向长上下文LLM状态的KV缓存恢复与可复用前缀探测",
+      "canonical_evidence": "面向长上下文LLM状态的KV缓存恢复与可复用前缀探测",
+      "llm_tldr_en": "Identifies restoration working set (RWS) for hierarchical KV caches and proposes Bounded-State Restoration (BSR), which separates prefix discovery from local residency to restore full-reuse prefixes without materializing the whole state. Full reuse succeeds at multiple L1 rungs with peaks equal to state size. Improves KV-cache reuse in long-context LLM inference.",
+      "llm_tldr_cn": "分层KV缓存系统可以将长上下文LLM执行状态保存在GPU之外，但保留容量不等于让状态可重新运行所需的本地内存。本文把这一资源定义为恢复工作集（RWS），并提出有界状态恢复（BSR），将完整前缀发现与本地驻留分离，无需物化整个命中即可探测可复用前缀。测试中全复用点在2/8/16GiB L1档位成功，峰值接近状态大小。该工作为长上下文推理中的KV缓存高效恢复与复用提供了新思路。",
+      "llm_tldr": "分层KV缓存系统可以将长上下文LLM执行状态保存在GPU之外，但保留容量不等于让状态可重新运行所需的本地内存。本文把这一资源定义为恢复工作集（RWS），并提出有界状态恢复（BSR），将完整前缀发现与本地驻留分离，无需物化整个命中即可探测可复用前缀。测试中全复用点在2/8/16GiB L1档位成功，峰值接近状态大小。该工作为长上下文推理中的KV缓存高效恢复与复用提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.14967v1",
+      "source": "arxiv",
+      "title": "When Does Distributed AI Inference Need More Wide-Area Bandwidth? A Co-Design Evaluation of Optical, Packet, and Software Levers",
+      "abstract": "Wide-area bandwidth per unit of GPU compute falls every hardware generation: in compute-intensity-ratio terms (CIR, bytes per FLOP), the gap between on-package memory and the conventional WAN is four to five orders of magnitude, widening at roughly 12-19% per year. Position papers - including our own - argued this makes elastic optical wide-area capacity necessary for cross-site AI inference. Reviewers correctly objected that such arguments show more bandwidth helps, not that it beats the alternatives: KV recomputation, cache compression, locality-aware routing, scheduling, or an overprovisioned packet backbone. This paper does the comparison. We derive a workload model predicting when moving inference state across sites beats recomputing it - a context-independent crossover at 74-111 Gbps per stream for a 70B multi-head-attention model, falling to 9-14 Gbps under grouped-query attention at 1/8 KV heads - and quantify five sensitivity axes: context length, attention architecture, queueing, agentic compounding, and loss/jitter-induced bandwidth collapse. On economics: at list GPU prices recomputation is cheaper; transfer wins when GPU scarcity and KV reuse multiply effective GPU cost by roughly 5-20x, and modern attention moves the breakeven an order of magnitude in transfer's favour. We position the network levers correctly rather than adversarially: packet networks allocate lit capacity at millisecond timescales; optical fungibility changes how much capacity is lit, at minute timescales, substituting for overprovisioning economically rather than functionally. Finally we specify a ten-metric measurement plan on a three-site production-fibre testbed, framed as an open ecosystem exercise: no single company can - or should - assemble this evidence alone. Every claim is bounded by the regime in which it holds; several findings weaken the naive version of our own thesis, and we state them.",
+      "authors": [
+        "Prasanna C"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.NI"
+      ],
+      "published": "2026-08-15T01:39:05+00:00",
+      "link": "https://arxiv.org/pdf/2608.14967v1",
+      "tags": [
+        "keyword:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Compares KV recomputation and cache compression against bandwidth for distributed inference, directly about KV cache optimization",
+      "llm_evidence_cn": "对比KV重计算与缓存压缩同带宽的权衡，直接涉及KV缓存优化",
+      "llm_evidence": "对比KV重计算与缓存压缩同带宽的权衡，直接涉及KV缓存优化",
+      "canonical_evidence": "对比KV重计算与缓存压缩同带宽的权衡，直接涉及KV缓存优化",
+      "llm_tldr_en": "Evaluates when wide-area bandwidth is necessary for distributed LLM inference by comparing KV recomputation, cache compression, routing, and scheduling, deriving a crossover workload model.",
+      "llm_tldr_cn": "面对广域带宽相对GPU算力逐年下降的问题，本文通过协同设计评估了光带宽与KV重计算、缓存压缩、本地感知路由、调度等软件杠杆的权衡。作者推导了一个工作负载模型，预测何时移动推理数据更优，并量化了各替代方案的适用条件。研究为KV缓存压缩与重计算等推理优化技术提供了系统级的成本效益分析，有助于指导缓存策略选择。",
+      "llm_tldr": "面对广域带宽相对GPU算力逐年下降的问题，本文通过协同设计评估了光带宽与KV重计算、缓存压缩、本地感知路由、调度等软件杠杆的权衡。作者推导了一个工作负载模型，预测何时移动推理数据更优，并量化了各替代方案的适用条件。研究为KV缓存压缩与重计算等推理优化技术提供了系统级的成本效益分析，有助于指导缓存策略选择。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.17336v1",
+      "source": "arxiv",
+      "title": "TileMix: Tile-Centric Mixed-Precision Attention for LLM Inference Acceleration",
+      "abstract": "Long-context prefill in large language models (LLMs) incurs substantial computation and memory traffic because dense self-attention computes quadratic query-key scores. Existing methods either use a uniform low-precision path or select token interactions, leaving spatial precision routing over hardware-aligned score tiles outside fused dense attention. We introduce TileMix, a tile-centric precision-routing kernel that makes numerical precision an executable spatial decision over score-tile groups within fused dense attention. TileMix partitions the attention matrix into hardware-aligned score tiles, packs routing decisions into compact bitmasks, and dispatches each tile group through FP16 or INT8 score computation while both paths update a shared online-softmax state. Scalable precision grouping lets each routing bit govern multiple adjacent key tiles, preserving hardware-aligned compute tiles and compact metadata at long contexts. By routing all legal tile groups, TileMix preserves dense token connectivity, requires no training, and supports grouped-query attention, variable-length batches, and INT8 key/value caches. Across LongEval, LV-Eval, and A100 prefill benchmarks on LLaMA, Qwen, and Vicuna, TileMix recovers long-context quality lost under uniform INT8 and improves prefill throughput over FP16, yielding a controllable accuracy-efficiency frontier across model families. The implementation is available at https://github.com/HanzhiZhang-Ulrica/TileMix.",
+      "authors": [
+        "Hanzhi Zhang",
+        "Qiao Zhang",
+        "Qinglei Cao",
+        "Heng Fan",
+        "Yan Huang",
+        "Kewei Sha",
+        "Yunhe Feng"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-18T03:53:02+00:00",
+      "link": "https://arxiv.org/pdf/2608.17336v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "long-context prefill acceleration via tile-centric mixed-precision attention routing",
+      "llm_evidence_cn": "通过瓦片级混合精度注意力路由加速长上下文预填充",
+      "llm_evidence": "通过瓦片级混合精度注意力路由加速长上下文预填充",
+      "canonical_evidence": "通过瓦片级混合精度注意力路由加速长上下文预填充",
+      "llm_tldr_en": "TileMix packs precision-routing decisions into bitmasks and dispatches attention score tiles through FP16 or INT8 computation, reducing computation/memory traffic in long-context prefill.",
+      "llm_tldr_cn": "长上下文预填充中密集自注意力带来平方级计算与访存开销。TileMix将注意力矩阵划分为硬件对齐的分数瓦片，用位掩码决定每个瓦片走FP16还是INT8计算，在融合注意力内核中实现空间精度路由。结果显示该方法在保持精度的同时降低计算与内存开销，提升长上下文LLM推理速度。",
+      "llm_tldr": "长上下文预填充中密集自注意力带来平方级计算与访存开销。TileMix将注意力矩阵划分为硬件对齐的分数瓦片，用位掩码决定每个瓦片走FP16还是INT8计算，在融合注意力内核中实现空间精度路由。结果显示该方法在保持精度的同时降低计算与内存开销，提升长上下文LLM推理速度。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.15533v1",
+      "source": "arxiv",
+      "title": "DeltaLog: Deferred Materialization of Recurrent States for Linear Attention Decoding",
+      "abstract": "Linear attention models eliminate the quadratic prefix computation and context-growing KV cache of softmax attention by replacing pairwise token interactions with recurrent state updates. However, existing decoding implementations often materialize and write back the full recurrent state after every generated token, making state maintenance a major source of memory traffic, especially for models with large states and many heads. This paper presents DeltaLog, a recurrent-state decoding scheme that reduces this overhead without changing the model semantics. Specifically, DeltaLog represents the recurrent state as a dense base state together with a bounded log of recent compact updates. Most decode steps append only compact update factors to this log, while periodic merge steps fold the accumulated updates back into the dense base state. Thus, the model observes the same dense state as in eager decoding, but most full-state write-backs are replaced by lightweight append operations. We implement DeltaLog for GDN, KDA, and RWKV6 and integrate it into a prototype serving stack. Across these models, DeltaLog accelerates the recurrent-state update kernel by up to $1.86\\times$, reduces profiled recurrent-state write traffic by up to $7.83\\times$, and achieves $1.05$--$1.20\\times$ end-to-end serving speedups over dense recurrent baselines.",
+      "authors": [
+        "Junqing Lin",
+        "Jingwei Sun",
+        "Guangzhong Sun"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-08-16T05:04:11+00:00",
+      "link": "https://arxiv.org/pdf/2608.15533v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "reduces recurrent-state memory traffic for linear attention decoding, a long-context inference acceleration technique",
+      "llm_evidence_cn": "减少线性注意力解码中循环状态的访存开销，是一种长上下文推理加速技术",
+      "llm_evidence": "减少线性注意力解码中循环状态的访存开销，是一种长上下文推理加速技术",
+      "canonical_evidence": "减少线性注意力解码中循环状态的访存开销，是一种长上下文推理加速技术",
+      "llm_tldr_en": "DeltaLog represents the recurrent state as a dense base plus a bounded log of compact updates, avoiding full-state writeback each token and cutting memory traffic during linear attention decoding.",
+      "llm_tldr_cn": "线性注意力解码常因每个生成词元都写回完整循环状态而产生高内存访存，尤其在大状态多头模型上成为瓶颈。DeltaLog将状态表示为稠密基态与有界紧凑更新日志，多数解码步仅追加更新因子，延迟完整物化。实验表明该方法在保持模型语义不变的同时显著降低内存流量，提升长序列解码速度，为线性注意力模型的高效推理提供了有力工具。",
+      "llm_tldr": "线性注意力解码常因每个生成词元都写回完整循环状态而产生高内存访存，尤其在大状态多头模型上成为瓶颈。DeltaLog将状态表示为稠密基态与有界紧凑更新日志，多数解码步仅追加更新因子，延迟完整物化。实验表明该方法在保持模型语义不变的同时显著降低内存流量，提升长序列解码速度，为线性注意力模型的高效推理提供了有力工具。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
