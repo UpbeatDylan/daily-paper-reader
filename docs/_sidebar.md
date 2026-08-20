@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-20 <!--dpr-date:20260820-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/20/2608.18656v1-flashattention-for-scalable-vector-architectures" data-sidebar-item="{&quot;title&quot;: &quot;FlashAttention for Scalable Vector Architectures&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.18656v1-flashattention-for-scalable-vector-architectures&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;面向向量架构的分块FlashAttention，加速Transformer注意力推理&quot;}">FlashAttention for Scalable Vector Architectures</a>
   * 2026-08-19 <!--dpr-date:20260819-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/19/2608.16944v1-a-tight-linear-deterministic-competitive-ratio-for-fully-online-kv-cache-scheduling" data-sidebar-item="{&quot;title&quot;: &quot;A Tight Linear Deterministic Competitive Ratio for Fully Online KV-Cache Scheduling&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.16944v1-a-tight-linear-deterministic-competitive-ratio-for-fully-online-kv-cache-scheduling&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;LLM推理中受限内存下的KV缓存调度&quot;}">A Tight Linear Deterministic Competitive Ratio for Fully Online KV-Cache Scheduling</a>
