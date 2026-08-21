@@ -1,0 +1,245 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-21T19:57:13.952329+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2608.19662v1",
+      "source": "arxiv",
+      "title": "ReCache: Efficient KV Cache Reuse and Compression for Tool-Augmented LLM Agents",
+      "abstract": "Agentic language models repeatedly encode tool and skill schemas that recur across requests in different combinations and orders, preventing standard prefix caching from reusing their key--value (KV) states. We introduce \\textbf{ReCache}, a framework for independently caching resource representations while reducing their inference-time computational and memory overhead. Resource-wise attention removes cross-resource interactions and assigns resource-local positions, producing composition-invariant KV blocks. ReCache then restricts resource visibility to contribution-selected layer--KV-head-group routes and retains only invocation-critical fields through structural and semantic pruning. We evaluate ReCache on a benchmark assembled from seven public tool- and skill-use datasets, including resource-disjoint tests. Resource-wise attention matches dense invocation performance (82.3\\% versus 82.4\\% Inv-F1) while providing a 3.655$\\times$ time-to-first-token speedup. The complete framework reduces allocated KV-tensor memory by 92.43\\% and accelerates attention by 1.423$\\times$. These results show that separating reusable schema encoding from selective resource access substantially reduces agentic inference costs with limited effectiveness loss. The code is available at https://github.com/EIT-NLP/ReCache.",
+      "authors": [
+        "Yichu Fang",
+        "Sitong Wei",
+        "Haozhe Hu",
+        "Xiaoyu Shen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-20T05:57:24+00:00",
+      "link": "https://arxiv.org/pdf/2608.19662v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache reuse and compression for tool-augmented agents overcoming prefix caching limits",
+      "llm_evidence_cn": "面向工具增强智能体的KV缓存重用与压缩，克服前缀缓存限制",
+      "llm_evidence": "面向工具增强智能体的KV缓存重用与压缩，克服前缀缓存限制",
+      "canonical_evidence": "面向工具增强智能体的KV缓存重用与压缩，克服前缀缓存限制",
+      "llm_tldr_en": "ReCache independently caches resource representations and produces composition-invariant KV blocks, enabling KV reuse and compression for tool-augmented agents despite changing tool combinations.",
+      "llm_tldr_cn": "ReCache面向工具增强LLM智能体，解决工具和技能模式在请求间重复出现但组合与顺序变化导致标准前缀缓存无法重用KV状态的问题。它通过资源级注意力消除跨资源交互、分配资源局部位置，生成组合无关的KV块，再经结构性和语义剪枝保留调用关键字段。在七个公共数据集构建的基准上，ReCache显著降低推理时的计算和内存开销。",
+      "llm_tldr": "ReCache面向工具增强LLM智能体，解决工具和技能模式在请求间重复出现但组合与顺序变化导致标准前缀缓存无法重用KV状态的问题。它通过资源级注意力消除跨资源交互、分配资源局部位置，生成组合无关的KV块，再经结构性和语义剪枝保留调用关键字段。在七个公共数据集构建的基准上，ReCache显著降低推理时的计算和内存开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.19677v1",
+      "source": "arxiv",
+      "title": "CacheRoute: Planned Prefix-Affinity Routing for Large-Scale LLM Serving",
+      "abstract": "Prefix caching avoids prefill only when a repeated request returns to a server that still holds the prefix KV. Cache-blind balancing disperses that reuse; fixed affinity preserves it but can overload a server. CacheRoute resolves this tradeoff with a periodic routing plan. It admits high-rate keys to a stable warm set and places their assignments by expected load. Hot keys may use more than one destination, although every key in our primary semi-synthetic aggregate uses exactly one. On Llama-3.3-70B in fp8 across 60 H100 GPUs, CacheRoute sustains 176+/-11 QPS at a 3.5-s p99 SLO, 2.3x the strongest of five baselines. Served KV-cache hit rate rises from 64.1+/-1.3% under cache-blind balancing to 93.2+/-0.5%. A second semi-synthetic aggregate and controlled 8B and burst experiments separate the effects of affinity and placement. Two 32B workloads provide the counterexamples: when affinity recovers too little KV work, its residual load skew reduces or erases the improvement. We therefore recommend gating any deployment with a shadow replay rather than enabling affinity from workload statistics alone.",
+      "authors": [
+        "Huang Cheng"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-08-20T06:12:47+00:00",
+      "link": "https://arxiv.org/pdf/2608.19677v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Planned prefix-affinity routing to maximize KV cache reuse in LLM serving",
+      "llm_evidence_cn": "通过前缀亲和性路由规划最大化KV缓存复用",
+      "llm_evidence": "通过前缀亲和性路由规划最大化KV缓存复用",
+      "canonical_evidence": "通过前缀亲和性路由规划最大化KV缓存复用",
+      "llm_tldr_en": "CacheRoute resolves the cache-affinity vs load tradeoff with periodic routing plans, lifting served KV-cache hit rate from 64.1% to 93.2% and sustaining 176 QPS on Llama-3.3-70B across 60 H100s.",
+      "llm_tldr_cn": "针对缓存感知负载均衡与固定亲和性之间的权衡问题，CacheRoute提出周期性路由规划，将高频率请求键稳定分配到一组服务实例并依据预期负载放置，在保留前缀KV缓存亲和性的同时避免过载。在60块H100上运行的Llama-3.3-70B实验显示，服务端KV缓存命中率从64.1%提升至93.2%，吞吐量达到基线最强方法的2.3倍，显著提升大规模LLM服务的效率与SLO达成率。",
+      "llm_tldr": "针对缓存感知负载均衡与固定亲和性之间的权衡问题，CacheRoute提出周期性路由规划，将高频率请求键稳定分配到一组服务实例并依据预期负载放置，在保留前缀KV缓存亲和性的同时避免过载。在60块H100上运行的Llama-3.3-70B实验显示，服务端KV缓存命中率从64.1%提升至93.2%，吞吐量达到基线最强方法的2.3倍，显著提升大规模LLM服务的效率与SLO达成率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.19920v1",
+      "source": "arxiv",
+      "title": "Learning how to Forget: Fine-tuning for Long-Context Sparse Attention",
+      "abstract": "A lot of prior work addressed key-value (KV) cache selection and compression by sparse attention to enable long-context inference for transformer language models without excessive hardware budgets. We provide a new method for fine-tuning models with sparse attention. It works for any KV cache policy, runs on a moderate hardware budget (e.g., a single Nvidia A100 GPU with 40 GB RAM), and allows the model to co-adapt with the policy, often outperforming models trained with exact attention (sequence parallelism). We also provide an efficient implementation of H2O sparse attention (the leading policy in our experiments) with dedicated scaled dot product attention kernel support. KeysAndValues (https://github.com/awslabs/keys_values), a new open source library for long-context inference and fine-tuning, provides easy-to-use and performant code for all methods discussed here.",
+      "authors": [
+        "Matthias Seeger",
+        "Zeyu Zhang",
+        "Vihang Patil",
+        "Konstantinos Benidis",
+        "Sebastian Schelter"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-20T11:37:04+00:00",
+      "link": "https://arxiv.org/pdf/2608.19920v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Fine-tuning method co-adapting models with any KV cache policy, improving context caching for long-context inference",
+      "llm_evidence_cn": "通过微调使模型与任意KV缓存策略共适应，改善长上下文推理中的上下文缓存",
+      "llm_evidence": "通过微调使模型与任意KV缓存策略共适应，改善长上下文推理中的上下文缓存",
+      "canonical_evidence": "通过微调使模型与任意KV缓存策略共适应，改善长上下文推理中的上下文缓存",
+      "llm_tldr_en": "A fine-tuning method that adapts models to any KV cache policy for sparse attention, enabling long-context inference on moderate hardware and outperforming exact-attention training, with optimized H2O kernel support.",
+      "llm_tldr_cn": "现有工作通过稀疏注意力选择与压缩KV缓存以支持长上下文推理，但模型通常未能与缓存策略协同优化。本文提出一种模型微调方法，可搭配任意KV缓存策略，在单块A100等中等硬件上完成训练，使模型与策略实现共适应。实验表明，该方法常优于采用精确注意力与序列并行的训练方式，并提供了高效H2O稀疏注意力内核。开源库KeysAndValues降低了长上下文推理的硬件门槛。",
+      "llm_tldr": "现有工作通过稀疏注意力选择与压缩KV缓存以支持长上下文推理，但模型通常未能与缓存策略协同优化。本文提出一种模型微调方法，可搭配任意KV缓存策略，在单块A100等中等硬件上完成训练，使模型与策略实现共适应。实验表明，该方法常优于采用精确注意力与序列并行的训练方式，并提供了高效H2O稀疏注意力内核。开源库KeysAndValues降低了长上下文推理的硬件门槛。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.20280v1",
+      "source": "arxiv",
+      "title": "Which Eviction Policy Should an LLM Cache Use? A Systematic Study Across Workloads, Capacities, and Encoders",
+      "abstract": "Semantic caches reuse an LLM response when the incoming query embedding lies near a cached query, but proposed eviction policies have rarely been compared under one protocol. Using CLEVER, we evaluate FIFO, LRU, LFU, ARC, GDSF, a single-pass streaming adaptation of SISO, and a semantic-redundancy policy across three ordered, deduplicated query corpora, three cache capacities, and two encoders. No evaluated policy improves on LFU by more than 0.041 percentage points in any of the eighteen settings. Replacement is not irrelevant: FIFO and streaming SISO trail LFU by as much as 8.67 and 8.55 points, respectively, at tight capacity.   We explain the missing upside with a conditional packing result. Under exact lookup and insert-on-miss, a newly inserted entry cannot have a resident neighbor within the hit radius, so a geometry-aware eviction rule receives little new redundancy signal. A separate audit exposes a larger problem with the evaluated operating point. At MiniLM's median nearest-neighbor threshold, only 2.1-3.9% of sampled LMSYS and QQP hits are judged answer-substitutable, reducing raw hit rates of 51-60% to quality-adjusted rates of 1.1-2.2%. The cross-encoder study further shows that thresholds do not transfer between embedding models. LFU is the strongest simple default in this protocol; deployment decisions should first establish answer validity and then test sub-point policy differences with exact search.",
+      "authors": [
+        "Yash Kulkarni",
+        "Shubham Harkare",
+        "Arvind Suresh Yogesh Babu"
+      ],
+      "primary_category": "cs.DB",
+      "categories": [
+        "cs.DB",
+        "cs.LG"
+      ],
+      "published": "2026-08-20T17:14:19+00:00",
+      "link": "https://arxiv.org/pdf/2608.20280v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Semantic caching for LLM responses with eviction policy comparisons",
+      "llm_evidence_cn": "LLM响应语义缓存与驱逐策略系统比较",
+      "llm_evidence": "LLM响应语义缓存与驱逐策略系统比较",
+      "canonical_evidence": "LLM响应语义缓存与驱逐策略系统比较",
+      "llm_tldr_en": "Systematically compares FIFO, LRU, LFU, ARC, GDSF, SISO, and semantic-redundancy eviction policies for semantic LLM response caches across workloads, capacities, and encoders, finding LFU is robust and none beats it meaningfully.",
+      "llm_tldr_cn": "针对LLM语义缓存中查询缓存复用与驱逐策略缺乏统一评测的问题，论文使用CLEVER基准在三种有序去重查询语料、三种容量和两种编码器下系统比较FIFO、LRU、LFU、ARC、GDSF、SISO及语义冗余策略。结果显示没有任何策略在18种设置下比LFU提升超过0.041个百分点，但差策略在紧容量下落后多达8.67点。该研究为提示词缓存与响应复用的工程实践提供了清晰的策略选择依据。",
+      "llm_tldr": "针对LLM语义缓存中查询缓存复用与驱逐策略缺乏统一评测的问题，论文使用CLEVER基准在三种有序去重查询语料、三种容量和两种编码器下系统比较FIFO、LRU、LFU、ARC、GDSF、SISO及语义冗余策略。结果显示没有任何策略在18种设置下比LFU提升超过0.041个百分点，但差策略在紧容量下落后多达8.67点。该研究为提示词缓存与响应复用的工程实践提供了清晰的策略选择依据。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.19758v1",
+      "source": "arxiv",
+      "title": "FlashPrefill V2: Block-Sparse Prefill Attention for Long-Context LLM Serving",
+      "abstract": "Long-context modeling is a pivotal capability for Large Language Models, yet the quadratic complexity of attention remains a critical bottleneck, particularly during the compute-intensive prefilling phase. Our previous work, FlashPrefill, mitigates this cost through instantaneous pattern discovery and max-based dynamic thresholding; however, it remains an algorithmic prototype that is still distant from production deployment. In this paper, we present FlashPrefill V2, which evolves FlashPrefill from a prototype toward practical long-context serving along three dimensions. First, we introduce a mean correction term that effectively suppresses the approximation error, keeping performance degradation manageable even at extreme sparsity levels. Second, we redesign the sparse attention operator with PackGQA memory access, warp specialization, and pingpong pipelining, fully aligning with the latest FlashAttention-3/4 implementations and supporting FP8 inference to meet practical quantization requirements. Third, FlashPrefill V2 natively supports paged KV cache and continuous batching, allowing integration as an attention backend in modern inference frameworks such as SGLang. Extensive evaluations on NVIDIA H20 GPUs---among the most widely deployed inference accelerators---demonstrate that FlashPrefill V2 delivers up to 47.26x and 27.19x speedups over FlashAttention-2 at 128K context length under FP8 and BF16 precision, respectively, and, in FP8, still achieves a 30.49x speedup against an FA3/4-aligned dense baseline.",
+      "authors": [
+        "Qihang Fan",
+        "Huaibo Huang",
+        "Zhiying Wu",
+        "Bingning Wang",
+        "Ran He"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-20T08:02:55+00:00",
+      "link": "https://arxiv.org/pdf/2608.19758v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "block-sparse prefill attention for long-context LLM serving acceleration",
+      "llm_evidence_cn": "面向长上下文LLM服务加速的块稀疏预填充注意力",
+      "llm_evidence": "面向长上下文LLM服务加速的块稀疏预填充注意力",
+      "canonical_evidence": "面向长上下文LLM服务加速的块稀疏预填充注意力",
+      "llm_tldr_en": "FlashPrefill V2 improves long-context serving by introducing mean correction and sparsity-aware optimizations to block-sparse prefill attention, moving closer to production deployment.",
+      "llm_tldr_cn": "FlashPrefill V2是对FlashPrefill的升级，旨在将块稀疏预填充注意力从算法原型推进到实际长上下文LLM服务。它引入均值校正项，有效抑制近似误差，即使在高稀疏度下也能保持性能可控；同时沿三个方向优化：改进稀疏模式发现、增强阈值动态调整、提高部署可行性，为长上下文预填充阶段显著降低计算成本。",
+      "llm_tldr": "FlashPrefill V2是对FlashPrefill的升级，旨在将块稀疏预填充注意力从算法原型推进到实际长上下文LLM服务。它引入均值校正项，有效抑制近似误差，即使在高稀疏度下也能保持性能可控；同时沿三个方向优化：改进稀疏模式发现、增强阈值动态调整、提高部署可行性，为长上下文预填充阶段显著降低计算成本。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.19535v1",
+      "source": "arxiv",
+      "title": "From Retrieved Context to Runtime Control: Adaptive Compression for Edge-based RAG",
+      "abstract": "Retrieval-augmented generation (RAG) improves language-model responses by grounding generation in external passages, which comes with overhead: retrieved context lengthens the prompt, increasing prefill work, KV-cache footprint, memory traffic, latency, and energy. Context compression offers a natural remedy by pruning retrieved text before generation. However, state-of-the-art context-compression methods are typically used with a fixed compression budget, or with the rate selected offline and then applied at inference time. This static view ignores both workload variation and the live state of the edge device. On an edge SoC, compression is not free: the compressor itself runs on the same SoC and consumes latency and energy that can offset any generation savings.   This paper proposes a vision for telemetry-informed adaptive compression in edge RAG, grounded in experimental evidence. We characterize the compression tradeoff on the NVIDIA Jetson AGX Thor using Llama and Qwen generators, Natural Questions and HotpotQA datasets, and LLMLingua-2 compression. Our measurements show that generation dominates the RAG budget for larger models, reaching roughly 90% of per-query latency and 91% of GPU energy for 7B-8B generators. Exploring the impact of the compression rate reveals an adaptive operating region: mild compression can miss energy opportunities, and overly aggressive compression can hurt inference quality. Intermediate compression can reduce GPU energy by up to 53.2%, and SoC energy by up to 48.2%, with negligible quality loss. We argue for runtime policies that dynamically manage compression, guided by workload features and edge telemetry.",
+      "authors": [
+        "Zlatan Feric",
+        "Amir Taherin",
+        "Yanzhi Wang",
+        "David Kaeli"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.DC",
+        "cs.IR",
+        "cs.PF"
+      ],
+      "published": "2026-08-20T01:13:29+00:00",
+      "link": "https://arxiv.org/pdf/2608.19535v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Runtime-adaptive context compression reduces KV-cache footprint and latency for RAG long prompts",
+      "llm_evidence_cn": "运行时自适应上下文压缩减少RAG长提示的KV缓存占用和延迟",
+      "llm_evidence": "运行时自适应上下文压缩减少RAG长提示的KV缓存占用和延迟",
+      "canonical_evidence": "运行时自适应上下文压缩减少RAG长提示的KV缓存占用和延迟",
+      "llm_tldr_en": "This paper addresses the latency and KV-cache overhead of RAG prompts by proposing runtime-adaptive context compression for edge devices, dynamically tuning compression budget based on workload and device state to reduce costs while preserving quality.",
+      "llm_tldr_cn": "检索增强生成通过外部段落提升回答质量，但提示变长带来KV缓存膨胀、内存带宽和延迟开销。现有上下文压缩多采用固定压缩率，未能适应工作负载与边缘设备的动态变化。本文提出面向边缘RAG的运行时自适应压缩控制，依据实时设备状态动态调整压缩预算，平衡压缩收益与压缩器自身开销。实验表明该方法在减少KV缓存和延迟的同时保持生成质量，为边缘端长提示推理提供了实用方案。",
+      "llm_tldr": "检索增强生成通过外部段落提升回答质量，但提示变长带来KV缓存膨胀、内存带宽和延迟开销。现有上下文压缩多采用固定压缩率，未能适应工作负载与边缘设备的动态变化。本文提出面向边缘RAG的运行时自适应压缩控制，依据实时设备状态动态调整压缩预算，平衡压缩收益与压缩器自身开销。实验表明该方法在减少KV缓存和延迟的同时保持生成质量，为边缘端长提示推理提供了实用方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
