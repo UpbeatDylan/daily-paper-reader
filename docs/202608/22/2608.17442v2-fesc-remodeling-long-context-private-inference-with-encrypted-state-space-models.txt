@@ -1,0 +1,5548 @@
+Title: FESC: Remodeling Long-Context Private Inference with Encrypted State-Space Models
+
+URL Source: https://arxiv.org/pdf/2608.17442v2
+
+Published Time: Thu, 20 Aug 2026 00:23:10 GMT
+
+Number of Pages: 33
+
+Markdown Content:
+# FESC: Remodeling Long-Context Private Inference with Encrypted State-Space Models 
+
+Yufan Zhu ∗, Chao Jin †, Khin Mi Mi Aung †, Xiaokui Xiao ∗∗National University of Singapore, Singapore 
+
+†Agency for Science, Technology and Research, Singapore 
+
+Abstract —Processing long, sensitive documents with machine-learning models requires efficient, privacy-preserving long-context inference. Prior private inference systems optimize or distribute encrypted Transformer attention, but its quadratic token-pair work remains the bottleneck as sequence length grows. Selective state-space models (SSMs) offer linear-time recurrence, yet direct encrypted implementation incurs linear multiplicative depth, sequence-wide state residency, or dense FHE–MPC conversion. We present Factorized Encrypted Scan-Contract (FESC), a hybrid FHE–MPC system for private long-context selective SSM inference. Its factorized scan-contract keeps input-dependent transitions compact across conversion boundaries, composes them without dense expansion, streams state chunks on demand, and contracts outputs before conversion. We demonstrate interface compatibility of the scan-contract implementation across invariant and selective SSM architec-tures. For our Mamba-2 instantiation, we design GPU-optimized CKKS kernels for linear computations, MPC protocols for SiLU, softplus, exponential, and RMSNorm, with approximation-aware fine-tuning. To our knowledge, FESC is the first private long-document inference system to complete native end-to-end execution at L≥1,024 on a single GPU. At L=2 ,048 , a 12 -layer Mamba-base model completes inference in 77 .3 minutes on one A100 GPU with a peak memory footprint of 32 .7 GB, while maintaining near-plaintext accuracy on the evaluated long-document tasks. 
+
+I. I NTRODUCTION 
+
+The growing deployment of Machine Learning as a Service (MLaaS) enables users to outsource inference to the cloud without hosting models locally. However, inputs such as legal contracts, medical records, and financial reports are sensitive and should remain hidden from the model provider [1]– [3]. Private inference addresses this problem by evaluating the model without revealing the user’s input, typically using cryptographic methods such as fully homomorphic encryption (FHE) and secure multi-party computation (MPC) [4]–[6]. Re-cent hybrid FHE–MPC systems make Transformer inference practical for short-context tasks [7]–[11], but their encrypted attention scales quadratically with sequence length in both operations and memory. For workloads spanning hundreds or thousands of tokens, this quadratic cost dominates latency and can exceed available hardware memory [12]. Existing mitigations reduce this cost through token pruning or multi-GPU placement [13], [14], improving practical efficiency while retaining quadratic attention over the executed tokens. As Figure 1 illustrates, long-context private inference therefore needs a different encrypted sequence primitive. Client  Server 
+
+FHE linear 
+
+MPC nonlinear 
+
+…
+
+Input  Weight 
+
+Output 
+
+(b) Long-context divergence (a) Hybrid Private Inference 
+
+Fig. 1. FESC motivation. (a) Hybrid FHE–MPC inference. (b) Encrypted Mamba key-switching scales linearly with sequence length, while encrypted BERT attention is quadratic. 
+
+Selective SSMs [15], [16] replace token-pair attention with an input-selective recurrence that scales linearly in sequence length and performs strongly on long-sequence tasks [17]. However, direct encrypted execution breaks this linear-scaling advantage in three ways, as summarized in Figure 2. Sequen-tially evaluating the recurrence creates a multiplicative chain of length Θ( L) and exceeds the leveled-FHE multiplicative depth budget. A parallel prefix scan [18] reduces the depth to 
+
+Θ(log L), but keeping all token-state ciphertexts live across the scan exceeds hardware memory at long context. Also, a naive CKKS–MPC boundary materializes the affine transition ciphertexts before conversion, requiring full-state communica-tion and high boundary payload. These naive implementations remain impractical, so selective SSMs require redesigned FHE kernels and MPC protocols under encryption. We present Factorized Encrypted Scan-Contract (FESC) as a hybrid FHE–MPC system for private long-context selective SSM inference with a logarithmic-depth encrypted dependency chain, resident encrypted state, and low online communication. Its scan-contract primitive keeps compact private factors, com-poses the same affine recurrence under CKKS, and exports contracted outputs. We deploy FESC on Mamba-2 as the headline end-to-end model, evaluate it against prior encrypted inference systems on matched tasks, and validate the same scan-contract implementation across representative invariant and selective SSM recurrences. This establishes the long-context cost advantage of encrypted selective SSM inference arXiv:2608.17442v2 [cs.CR] 19 Aug 2026 𝑂(1) 
+
+> CKKS level budget
+
+⋮        
+
+> bootstrapping needed
+> 𝒉 𝟏
+> multiplicative depth 𝑂(𝐿) ✗
+> peak residency 𝑂(1) ✓
+> multiplicative depth 𝑂(log 𝐿) ✓
+> peak residency 𝑂(𝐿𝐾 𝑠 )✗
+> GPU VRAM budget
+> 𝒉 2
+> 𝒉 3
+> 𝒉 L
+> peak live cts > VRAM
+> ⨀
+> ⨀
+
+(b) Full Prefix Scan (a) Sequential Recurrence 
+
+(c) Materialized Dense Boundary  
+
+> Masked conversion traffic around SSM
+> communication volume 𝑂(𝐿𝐻𝑃𝑑 𝑠 )✗
+
+⋮
+
+> 𝑃 𝑎
+> conversion communication blow-up
+> 𝑂(1)
+
+⋮
+
+> 𝑃 𝑏
+
+⋮ ⋮
+
+⇔     
+
+> ℎ𝑘 𝑘=1 𝐿  ∈ ℝ 𝐿×𝐻×𝑃×𝑑 𝑠
+> FHE-MPC boundary
+> ℎ𝑘  𝑘=1 𝐿  ∈ ℝ 𝐿×𝐻×𝑃×𝑑 𝑠  𝑠ℎ𝑎𝑟𝑒 ·0𝑠ℎ𝑎𝑟𝑒 ·0Fig. 2. Naive encrypted selective SSM failure modes. (a) Sequential recur-rence exceeds the multiplicative depth budget. (b) A full prefix scan exceeds GPU memory. (c) A materialized dense boundary communicates the full recurrent state volume.
+
+while retaining high task accuracy, and shows that the same encrypted primitive applies beyond Mamba-2. FESC is the first system to realize encrypted input-selective SSM inference at long context, breaking the quadratic complexity bottleneck that has confined prior private systems to short sequences. We make the following contributions. 1) FHE Scan-Contract Algorithm. FESC introduces a factorized FHE scan-contract algorithm for blocked pri-vate input-selective affine recurrences, formalized in §V and evaluated in §IX, that resolves all three naive imple-mentation failures. A parallel-summary scan has loga-rithmic dependency depth and linear encrypted work, the resident schedule cuts the L=2048 live-state footprint from 59 .2 GB to 12 .8 GB, and compact boundary factors compose selective decay without dense state expansion. 2) Specialized MPC Nonlinear Protocols. FESC de-signs MoSiLU, MoSoft, NeRMS, and MMExp, four MPC protocols formalized in §VI that replace generic elementary-function circuits with structure-specific poly-nomial, comparison, mux, and Newton components. Their fixed data-independent schedules reduce MPC online operations and rounds, yielding up to a 7.7×
+
+online nonlinear-protocol cost reduction in §IX. 3) End-to-End GPU Implementation and Evaluation. 
+
+FESC builds an end-to-end private inference system covering L ∈ {128 , 256 , 512 , 1024 , 2048 , 4096 } with GPU-optimized kernels, detailed in §VIII, running on a single GPU where prior hybrid systems [6]–[11] require multi-GPU execution or remain limited to short sequences, while also scaling to four GPUs. On a single A100, FESC runs L=2048 in 77 .3 minutes, faster than the reported four-GPU AEGIS [14] result, and a four-A100 path reaches 36 .0 minutes. §IX reports latency, memory, communication, accuracy, approximation, ab-lations, model-shape sweeps, and cross-GPU portability, separate from the cross-family SSM implementations in Appendix H. II. B ACKGROUND AND THREAT MODEL 
+
+A. Fully Homomorphic Encryption and CKKS 
+
+A public-key FHE scheme provides KeyGen , Enc , Dec , and 
+
+Eval such that an evaluator can compute on ciphertexts without seeing the plaintext 
+
+Dec sk 
+
+ Eval evk (f, Enc pk (x))  ≈ f (x).
+
+For exact schemes such as BGV [19], the output is exact modulo a plaintext ring. The CKKS scheme [20] instead provides approximate arithmetic over complex values, with error from encoding, rounding, and noise growth. A leveled CKKS instantiation fixes a modulus chain Q = Q 
+
+> i
+
+qi for a target multiplicative depth, consumed by evaluation until the level budget is exhausted, with bootstrapping available to refresh it at the cost of substantial latency and additional approximation error. Since selective SSM inference is finite-precision and dominated by real-valued linear algebra, FESC follows prior hybrid private-inference systems [6]–[10] and uses leveled CKKS without bootstrapping, as detailed in Appendix C-A. CKKS encrypts vectors over the cyclotomic ring RQ =
+
+ZQ[X]/(XN + 1) and packs nckks = N/ 2 complex slots into one ciphertext for SIMD-style evaluation. A key-switching rewrites a ciphertext after an automorphism or multiplication so it remains usable under the evaluation keys. Slot rotations, conjugation, and relinearization require auxiliary special-prime moduli and key-switching through public evaluation keys, which dominate packed GPU CKKS kernels. Separately, plaintext–ciphertext and ciphertext–ciphertext multiplications raise the scale and require rescaling that drops one modulus prime and one level, while additions, rotations, conjugation, and relinearization do not by themselves consume levels. Packing conventions and GPU primitive latencies are given in Appendix C-B and Table XI. 
+
+B. Secure Multiparty Computation 
+
+Secure multiparty computation allows parties to jointly evaluate a function over private inputs while revealing only the intended output. FESC uses two-party arithmetic secret sharing to evaluate the nonlinear components of selective SSM inference without exposing intermediate activations. A real value r is encoded in fixed point over Z2ℓ and split into an additive share pair [[ r]] = ( r0, r 1) with r0 +r1 = r mod 2 ℓ, so neither party holds r in the clear. Additions and public-scalar operations are local and free. Multiplying two secret-shared values uses a precomputed Beaver triple [21] ([[ a]] , [[ b]] , [[ c]]) 
+
+2with c = ab . Given [[ x]] and [[ y]] , the parties open α = x − a
+
+and β = y − b, then compute 
+
+[[ xy ]] = [[ c]] + α[[ b]] + β[[ a]] + αβ, 
+
+where αβ is a public correction absorbed into one share. Fixed-point multiplication is followed by secure truncation to restore scale 2F . Secret-share multiplication and secure com-parison introduce interaction, so §IX-B reports both critical-path rounds and total interactive operation counts. We eval-uate SiLU, softplus, the discretization exponential, and RM-SNorm under these primitives in the semi-honest real–ideal model [22], [23], with full protocol specifications in §VI. 
+
+C. Threat Model and Security Goal 
+
+We follow the standard two-party semi-honest private-inference setting for MLaaS [6]–[11]. The client P0 holds the private input x and the CKKS secret key. The server P1
+
+holds the private model parameters θ and the CKKS public and evaluation keys. We assume one static semi-honest corruption without collusion, where the corrupted party follows the protocol but may inspect its full execution view. Security is defined for the fixed deployed encrypted compu-tation f dep  
+
+> θ
+
+, including its approximation, fixed-point encoding, packing, and FHE–MPC schedule, with μ covering the archi-tecture, tensor shapes, sequence lengths, CKKS parameters, approximation degrees, bucket counts, loop bounds, and fixed execution schedule, treating numerical approximation error separately from protocol privacy. The protocol achieves two-sided privacy, so a corrupted server learns nothing about x
+
+beyond μ, message sizes, timing induced by the fixed public schedule, and abort status, while a corrupted client learns nothing about θ beyond its output y and the same public quantities. We formalize the ideal functionality as 
+
+FSelSSM ⟨x, θ, μ ⟩ 7 → ⟨ f dep  
+
+> θ
+
+(x), ⊥⟩ ,
+
+where x is supplied by P0, θ is supplied by P1, and μ is public. The first output is delivered to P0, while P1 receives 
+
+⊥.
+
+Theorem 1 (End-to-end semi-honest security) . Assume se-mantic security of CKKS, semi-honest simulation security of the MPC primitives, semi-honest simulation security of the CKKS–MPC conversion protocols, and valid input-independent preprocessing correlations. Then ΠInfer securely realizes FSelSSM for the deployed function f dep  
+
+> θ
+
+against one static semi-honest corruption, leaking only μ, message sizes and timing induced by the fixed public schedule, and abort status. 
+
+The proof appears in Appendix D-D. Appendix E-C quan-tifies the required input-independent preprocessing. 
+
+D. State Space Models 
+
+Structured state space models map an input sequence through a latent state governed by a linear dynamical system, 
+
+h′(t) = Ah(t) + Bu(t),y(t) = Ch(t) + Dskip u(t),
+
+where A is the state transition, B and C are input and output maps, and Dskip is a skip parameter. After discretization with step size δ, the model becomes an affine recurrence 
+
+hk = ¯Ahk−1 + ¯Buk, yk = Chk + Dskip uk,
+
+with ¯A = exp( δA) and the corresponding zero-order-hold input map ¯B. This affine form exposes the decay and input-update factors that the scan-contract primitive composes under encryption. Appendix B-B gives the closed-form discretization details used by Mamba-style selective SSMs. 
+
+E. Mamba-2 Recurrence 
+
+Mamba-1 [15] makes the SSM parameters input-dependent, allowing the recurrence to select information as it scans the sequence, and Mamba-2 [16] exposes a grouped scan form that is especially useful for encrypted execution. FESC uses Mamba-2 as the deployed model, while Appendix H instan-tiates the same scan-packet view for representative invariant and selective SSM implementations, including Mamba-3. For each token k, the Mamba-2 mixer produces compact factors, illustrated in Figure 3. The scan input is 
+
+xk[h, p ] = ∆ k[h]xraw  
+
+> k
+
+[h, p ],
+
+with per-head decay ak[h], grouped factors Bk, C k ∈ RG×ds ,raw skip branch xraw  
+
+> k
+
+, and output gate gout  
+
+> k
+
+, whose full construction appears in Appendix B-B. Let gh = g(h) ∈ { 1, . . . , G } be the group assigned to head 
+
+h, with H heads, per-head width P , and state dimension ds.The grouped Mamba-2 recurrence is 
+
+hk[h, p, i ] = ak[h] hk−1[h, p, i ] + xk[h, p ] Bk[gh, i ],yk[h, p ] = X
+
+> i
+
+hk[h, p, i ] Ck[gh, i ] + Dskip [h, p ] xraw  
+
+> k
+
+[h, p ],
+
+˜yk[h, p ] = yk[h, p ] gout  
+
+> k
+
+[h, p ].
+
+Thus each (h, p ) channel maintains a ds-dimensional recur-rent state, while heads assigned to the same group share the dynamic Bk and Ck factors. FESC preserves this model-side factorization, where the scan input xk is compact over HP 
+
+channels, the decay ak is compact over heads, the additive update factors as xk ⊗g Bk, the state is contracted with 
+
+Ck before the skip and gate path, and the block output is 
+
+ok = ˆykWout with ˆyk = RMSNorm γrms (˜ yk) flattened to length HP .
+
+F. Parallel Prefix Scans 
+
+The Mamba-2 recurrence can be evaluated as a parallel prefix scan, where each token update defines an affine map 
+
+Fk(z) = akz + sk with sk = xk ⊗g Bk, where ⊗g denotes the grouped outer product induced by g(h). Composing two such maps gives 
+
+(aL, s L) • (aR, s R) = ( aRaL, a RsL + sR),
+
+3𝑥 ∈ ℝ 𝐿×𝐷                           
+
+> 𝐶𝑜𝑛𝑣1𝐷
+> 𝑆𝑖𝐿𝑈
+> 𝑊 𝑖𝑛
+> 𝑥 𝐵
+> Wout
+> 𝐶
+> softplus
+> RMSNorm
+> o∈ℝ𝐿×𝐷
+> Linear op
+> Activation
+> Normalization Parameter
+> +
+> 𝑥 𝐵𝐶 𝑑𝑡 𝑧
+> 𝐴
+> 𝐷𝑖𝑠𝑐𝑟𝑒𝑡𝑖𝑧𝑒
+> Discretization
+> ℎ𝑡 =𝐴 𝑡 ℎ𝑡−1 +𝐵 𝑡 𝑥 𝑡 ,
+> 𝑦 𝑡 = 𝐶 𝑡 ℎ𝑡 + 𝐷𝑥 𝑡
+> 𝑆𝑒𝑙𝑒𝑐𝑡𝑖𝑣𝑒 𝑆𝑆𝑀
+> ∆𝐷
+> 𝛾 RMS
+> ⨀Fig. 3. Illustration of the Mamba-2 SSM mixer, producing the scan factors
+> (x, a, B, C )and post-SSM factors xraw , g out .Stage 1Stage 2Stage 3Stage 4Stage 5
+> F1
+> F3
+> F2
+> F4
+> F5
+> F6
+> F7
+> F8
+> S1
+> S3
+> S2
+> S4
+> S5
+> S6
+> S7
+> S8
+> up − sweep down − sweep
+> Fig. 4. Brent–Kung prefix network for L=8 . Each node applies the associative affine-composition operator.
+
+which is associative because it is function composition, so an inclusive scan 
+
+Tk = t1 • t2 • · · · • tk, k = 1 , . . . , L, 
+
+over the token-local maps produces the same states as sequen-tial evaluation in Θ(log L) dependency depth. Among classic scan networks [24]–[26], FESC uses the Brent–Kung scan, shown in Figure 4, because it achieves the fastest encrypted runtime by minimizing total composition nodes at logarithmic depth, since each composition is expensive under CKKS. Appendix C-E compares the scan topologies. III. R ELATED WORK 
+
+Private SSM Inference. Structured state-space models such as S4 [17], Mamba [15], and Mamba-2 [16] provide linear-time alternatives to attention for long-context sequence pro-cessing. MPCMamba [38] establishes secure Mamba inference for short image-patch vision sequences under an MPC-only system. FESC is the first hybrid FHE–MPC system to realize private selective SSM inference on long-document text. 
+
+Private Transformer Systems. Private Transformer systems fall into three backend families. THE-X [27] is client-assisted, while non-interactive FHE-only systems includ-ing NEXUS [28], THOR [29], Powerformer [30], Encrypt-edLLM [31], MOAI [32], and AEGIS [14] evaluate the model homomorphically, replacing nonlinearities with HE-compatible approximations and managing depth, packing, key-switching, and, where used, bootstrapping. MPC-only systems, including MPCFormer [33], PUMA [36], SecFormer [35], SIGMA [34], and SHAFT [37], evaluate the model through secret sharing together with arithmetic, comparison, and, where used, function-secret-sharing protocols for attention, normalization, activations, quantization, and fixed-point arith-metic, avoiding homomorphic depth but incurring interaction, communication, and preprocessing. Hybrid systems, including Iron [39], BOLT [8], BumbleBee [9], BLB [10], and Enc-Former [11], assign wide linear algebra to FHE and nonlinear operators to MPC, reducing deep homomorphic nonlinear evaluation and communication-heavy MPC matrix multipli-cation, but adding conversion and packing boundaries. These systems establish practical private Transformer inference for short contexts, but encrypted attention keeps their rotation, key-switch, communication, or materialization costs quadratic in sequence length. 
+
+Long-Context Strategies. Recent systems extend private Transformer inference without replacing attention. Cipher-Prune [13] adaptively prunes encrypted tokens layer by layer and assigns lower-degree polynomials to less important retained tokens, reporting GPT-2 runtime scaling through 
+
+L=512 . AEGIS [14] retains full BERT-base self-attention and scales FHE execution through L=2048 on four GPUs using application- and encryption-aware placement together with polynomial-operator reordering. CipherPrune shortens the sequence processed by later layers, whereas AEGIS partitions and overlaps the dense-attention workload. Neither replaces at-tention with a full-token linear-work sequence operator. FESC instead preserves every input token and replaces token-pair attention with an associative selective recurrence, as positioned against each family in Table I. IV. S YSTEM OVERVIEW 
+
+The FESC block follows the alternating FHE–MPC pipeline in Figure 5, with encrypted kernels developed in §V, non-linear protocols in §VI, and the shared SSM interface in Appendix H. It runs HEInProj and HEConv in CKKS, uses MoSiLU, MoSoft, and MMExp in MPC to build the compact HEScan packet, evaluates the selective recurrence in CKKS, then applies the post-scan skip, gate, and NeRMS path before HEOutProj emits the encrypted block output. HEOutProj feeds the next FESC block as a CKKS ciphertext, so the client decrypts only the final prediction. The packet contains the private token input, decay, and B, C factors, while skip and output-gate streams remain in MPC until the contracted scan output returns. This split keeps wide linear maps and recurrent processing in CKKS, places nonlinear factor construction in MPC, and makes each backend crossing proportional to compact packets rather than expanded recurrent state. Each crossing uses ΠC 
+
+> C2M
+
+and ΠC 
+
+> M2C
+
+from §VII, and the full protocol details appear in Appendices C-C and D-C. V. E NCRYPTED KERNEL DESIGN 
+
+This section first defines the CKKS primitives and complex projection and convolution kernels, then develops HEScan as the encrypted recurrence primitive that makes the scan contract executable under FHE. 4TABLE I COMPARISON OF PRIVATE -INFERENCE SYSTEMS .
+
+Properties Workloads Sequence Design Nonlinear Methods Evaluation Systems Family System 
+
+> Setting Sec. model Artifact Text Vision Long-doc Attention SSM
+> O(L)
+> C-Cvt. NoBS Poly. Piece. Iter. LUT/FSS FS/ODE Adapt. Latency Memory Enc. acc. Ablations GPU Opts. Multi-GPU Network Breadth
+> Lrun
+> Lacc
+> FHE-only
+
+THE-X [27] 2P/CA – – NR NR NEXUS [28] 2P/NI – – 128t 128t THOR [29] 2P/NI – – 128t 128t Powerformer [30] 2P/NI – – 128t 128t EncryptedLLM [31] 2P/NI – – 128t NR AEGIS [14] 2P/NI – – 2048t NR MOAI [32] 2P/NI – – 128t 128t 
+
+> MPC-only
+
+MPCFormer [33] 2P+P – – 512t 512t SIGMA [34] 2P+P – – 1024t 128t SecFormer [35] 2P+P – – 512t NR PUMA [36] 3P – – 256t 128t SHAFT [37] 2P+P – – 128t 128t MPCMamba [38] 2P+P – – NR NR 
+
+> FHE–MPC
+
+Iron [39] 2P 128t 128t BOLT [8] 2P 128t 128t BumbleBee [9] 2P 128t 128t BLB [10] 2P 128t 128t CipherPrune [13] 2P 512t 128t EncFormer [11] 2P 128t 128t FESC 2P 8192t § 2048t         
+
+> : present; : partial; : absent or unreported; “–”: not applicable; NR: not reported or released. Sec. model: explicit threat model and security proof; CA: client-assisted; NI: non-interactive; C-Cvt.: complex and compact FHE–MPC conversion; NoBS: no bootstrapping; LUT/FSS: lookup-table or function-secret-sharing; FS/ODE: Fourier-series or ODE-based. Multi-GPU: one inference across GPUs. Network: multiple network profiles; Breadth: multiple models, sizes, or architectures. Lrun /Lacc :largest paper-reported encrypted-runtime and encrypted-accuracy lengths; t,p: tokens, patches; §:L=8192 with a secure carry refresh; baseline scope: Appendix F-B.
+
+TABLE II CKKS PRIMITIVES USED BY THE ENCRYPTED KERNELS .
+
+add ptmul ctmul rot conj 
+
+in ⟨v⟩, u or ⟨u⟩ ⟨v⟩, w ⟨v⟩, ⟨w⟩ ⟨v⟩, r ⟨v⟩
+
+out ⟨v+u⟩ ⟨v⊙w⟩ ⟨v⊙w⟩ ⟨ρ(v; r)⟩ ⟨v⟩
+
+shorthand + ⊙ ⊙ ρ(·; r) (·)
+
+A. CKKS Primitives and Slot Maps 
+
+We write ⟨v⟩ for a CKKS ciphertext with nckks slots, and 
+
+[[ v]] for additive MPC shares. Unbracketed CKKS operands are public plaintext weights, masks, or constants. Table II lists the CKKS primitives used below. The cyclic left shift by r
+
+slots is 
+
+ρ(v; r)j = v(j+r) mod nckks .
+
+The symbol ⊙ denotes elementwise multiplication. On CKKS operands, it is implemented by ptmul with one ciphertext operand and by ctmul with two. FESC uses public broadcast and reduction slot-map fam-ilies. The map br expands a compact factor into the state packing, br (κ) restricts it to chunk κ, and Σd sums an axis of length d while aligning chunk-local partial sums to common output slots, 
+
+br (κ)(a⊙a′) = br (κ)(a)⊙br (κ)(a′), Σd(u)[ e] = 
+
+d−1X
+
+j=0 
+
+u[e, j ].
+
+On ciphertext inputs, ρ, br , br (κ), and Σd denote their ho-momorphic realizations, with exact packings and reduction accounting in Appendices C-C and C-D. 
+
+B. Plaintext–Ciphertext Projections 
+
+FESC uses plaintext-weight linear projections before and after the selective recurrence, evaluated with BSGS plaintext– ciphertext matrix multiplication [8], [30] under segment-column packing and complex pair compression [11]. The HEInProj kernel computes packed slices of ⟨z⟩, ⟨xBC ⟩, and 
+
+⟨dt ⟩, the HEOutProj kernel applies Wout after the MPC post-SSM stage, and all weight diagonals are encoded offline. Appendix C-B expands this projection kernel into its slot packing, diagonal encoding, and online cost. 
+
+C. Causal Depthwise Convolution 
+
+The causal depthwise convolution sits between the HEInProj kernel and the nonlinear factor builder. At the plaintext level, HEInProj produces qk = xBC k ∈ RHP +2 Gd s alongside zk
+
+and dt k. For channel c, the HEConv kernel evaluates 
+
+ηk[c] = bconv 
+
+c +
+
+dconv −1X
+
+r=0 
+
+wconv 
+
+c,r qk−r [c],qt[c] = 0 , t < 0.
+
+(1) With the HEInProj packing, the HEConv kernel realizes Eq. 1 in CKKS as 
+
+⟨η⟩ = bconv +
+
+dconv −1X
+
+r=0 
+
+Mconv 
+
+r ⊙ ρ(⟨q⟩; δr ) .
+
+The public plaintext vector Mconv 
+
+r fuses tap weights with the causal boundary mask, and δr is a public rotation offset. At the CKKS–MPC boundary, FESC converts ⟨η⟩, ⟨z⟩, and ⟨dt ⟩ in one boundary crossing, after which the nonlinear factor builder forms the compact private factors from the resulting shares. 5𝑥                           
+
+> 𝐻𝐸𝐼𝑛𝑃𝑟𝑜𝑗 𝐾𝑒𝑟𝑛𝑒𝑙
+> 𝐅𝐇𝐄 𝐛𝐥𝐨𝐜𝐤 𝟏
+> 𝑊 𝑖𝑛 , 𝑊 z𝐻𝐸Conv 𝐾𝑒𝑟𝑛𝑒𝑙
+> 𝑧 𝑑𝑡
+> 𝑥 𝐵𝐶
+> 𝜂
+> 𝐅𝐇𝐄 𝐭𝐨 𝐌𝐏𝐂 𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧 𝛱 𝐶2𝑀 ℂ
+> 𝐌𝐏𝐂 𝐭𝐨 𝐅𝐇𝐄 𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧 𝛱 𝑀2𝐶 ℂ
+> 𝐅𝐇𝐄 𝐭𝐨 𝐌𝐏𝐂 𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧 𝛱 𝐶2𝑀 ℂ
+> 𝐌𝐏𝐂 𝐛𝐥𝐨𝐜𝐤 𝟏
+> MoSiLU on 𝜂 𝑘 MoS oft on 𝑑𝑡 𝑘 MMExp on 𝛥 𝑘 𝐴 MoSiLU on 𝑧 𝑘
+> 𝑥 𝑘
+> 𝐵 𝑘 𝐶 𝑘 𝑎 𝑘 𝛾 𝑘 𝑢 𝑘
+> 𝛥 𝑘
+> 𝐴
+> 𝐅𝐇𝐄 𝐛𝐥𝐨𝐜𝐤 𝟐 𝐻𝐸Scan 𝐾𝑒𝑟𝑛𝑒𝑙
+> transient full-state build
+> resident affine scan
+> fused output path ෤𝑦 2
+> 𝐷
+> 𝐌𝐏𝐂 𝐭𝐨 𝐅𝐇𝐄 𝐜𝐨𝐧𝐯𝐞𝐫𝐬𝐢𝐨𝐧 𝛱 𝑀2𝐶 ℂ
+> 𝐌𝐏𝐂 𝐛𝐥𝐨𝐜𝐤 𝟐 NeRMS on ෤𝑦 2
+> K-bucket init 𝑎
+> 𝐅𝐇𝐄 𝐛𝐥𝐨𝐜𝐤 𝟑
+> 𝛾 RMS 𝐻𝐸𝑂𝑢𝑡𝑃𝑟𝑜𝑗 𝐾𝑒𝑟𝑛𝑒𝑙
+> 𝑊 out
+> O
+> ෤y
+> ⨀
+> 𝑁𝑒𝑅𝑀𝑆 𝑅𝑒𝑠𝑐𝑎𝑙𝑒
+> ෤𝑦 ⨀𝑎
+> multiplicative depth 𝑂(log 𝐿) ✓
+> peak residency 𝑂(𝐵) ✓
+> communication 𝑂(𝐿(𝐻 + 𝐸 + 𝐺𝑑 𝑠 )) ✓
+
+Fig. 5. FESC per-block pipeline alternating CKKS linear kernels and MPC nonlinear computations. 
+
+D. Factorized HEScan Kernel 
+
+HEInProj and HEConv produce the encrypted pre-activations from which the MPC factor builder derives one packet per token. For the deployed Mamba-2 block and token 
+
+k, the packet contains 
+
+xk ∈ RH×P , ak ∈ RH , Bk, Ck ∈ RG×ds .
+
+With the grouped outer product ⊗g defined in §II-E, HEScan realizes the scan contract 
+
+hk = br( ak) ⊙ hk−1 + xk ⊗g Bk, h0 = 0, (2) 
+
+mk = Σ ds (hk ⊙ br( Ck)) . (3) Equations 2 and 3 define the logical recurrence and output contraction. The mechanisms below realize this contract with-out representing {hk}Lk=1 as either a hybrid-boundary payload or a sequence-resident ciphertext tensor. Figure 6 traces one factor packet through the encrypted prefix scan and output contraction on a toy packing, using compact labels without boldface or share brackets. 
+
+Factorized Boundary. A direct implementation expands the compact decay and input factors into state-shaped tensors, 
+
+br( ak), xk ⊗g Bk, hk ∈ RH×P ×ds .
+
+Transferring these representations across the hybrid boundary over the sequence incurs Θ( LHP d s) logical real values. FESC instead converts only the factorized packet defined above, 
+
+ [[ xk]] , [[ ak]] , [[ Bk]] , [[ Ck]] , xk[h, p ] = ∆ k[h]xraw  
+
+> k
+
+[h, p ].
+
+The skip and gate streams Dskip xraw  
+
+> k
+
+and gout  
+
+> k
+
+, shown as Dx 
+
+and γ in Figure 6, remain in MPC, while HEScan returns only the contracted value mk ∈ RH×P . Consequently, the logical inbound and outbound boundary payloads over L tokens are 
+
+Nin = L(HP + H + 2 Gd s), Nout = LHP, 
+
+rather than quantities proportional to LHP d s. These are logical-real counts, and complex pairing carries two indepen-dent real entries in each CKKS slot. Table IX quantifies how this factorized contract removes dense-state conversion from the pipeline. 
+
+State-Chunk Packing. Let E = HP and choose an active state capacity sstate ≤ nckks divisible by ds, so that each ciphertext stores cstate = sstate /d s expanded channels and 
+
+Ks =
+
+ Ed s
+
+sstate 
+
+
+
+chunks cover the recurrent state. Indexing an expanded channel by e = hP + p and a state coordinate by (e, i ) for 0 ≤ i < ds, chunk κ owns the channel set Eκ and stores (e, i ) at slot 
+
+λκ(e, i ), where 
+
+Eκ =
+
+n
+
+e ∈ Z 0≤e<E κc state ≤e< (κ+1) cstate 
+
+o
+
+,λκ(e, i ) = ( e − κc state )ds + i. 
+
+(4) Appendix C-C gives the exact source indices with the padded broadcast and reduction maps. 
+
+Affine Prefix Composition. For token k and chunk κ, the induced affine update is represented as T (κ) 
+
+> k
+
+= ( ⟨ak⟩, ⟨s(κ) 
+
+> k
+
+⟩).Its ideal plaintext semantics are the chunk-local affine map 
+
+F (κ) 
+
+> k
+
+(z) = br (κ)(ak) ⊙ z + s(κ) 
+
+> k
+
+.
+
+When map R follows map L, their composition is 
+
+T (κ) 
+
+> R
+
+◦ T (κ) 
+
+> L
+
+=
+
+
+
+⟨aR⟩ ⊙ ⟨ aL⟩,
+
+br (κ)(⟨aR⟩) ⊙ ⟨ s(κ) 
+
+> L
+
+⟩ + ⟨s(κ) 
+
+> R
+
+⟩
+
+
+
+. (5) Because br (κ) preserves elementwise products, the composed head-wise decay remains in compact packing, while the ad-ditive term remains local to chunk κ. An encrypted Brent– Kung network evaluates O(L) such composition nodes with 
+
+O(log L) composition depth, and applying each resulting prefix map to the zero initial state yields ⟨h(κ) 
+
+> k
+
+⟩.
+
+On-Demand Construction and Contraction. HEScan con-structs each additive update only while processing its chunk and contracts each prefix before releasing the chunk workspace, 
+
+⟨s(κ) 
+
+> k
+
+⟩ = br (κ)(⟨xk⟩) ⊙ br (κ)(⟨Bk⟩) ,
+
+⟨mk⟩ =
+
+> Ks−1
+
+X
+
+> κ=0
+
+Σds
+
+
+
+⟨h(κ) 
+
+> k
+
+⟩ ⊙ br (κ)(⟨Ck⟩)
+
+
+
+. (6) 6𝒎 𝒌,𝟎 
+
+𝟏 
+
+𝒎 𝒌+𝟏,𝟎 
+
+𝟏 
+
+𝒎 𝒌,𝟏 
+
+𝟏 
+
+𝒎 𝒌+𝟏,𝟏 
+
+𝟏 
+
+𝒎 𝒌,𝟐 
+
+𝟏 
+
+𝒎 𝒌+𝟏,𝟐 
+
+𝟏 
+
+𝒎 𝒌,𝟑 
+
+𝟏 
+
+𝒎 𝒌+𝟏,𝟑 
+
+𝟏 
+
+𝒖 𝒌,𝟒 
+
+𝒖 𝒌,𝟒 
+
+𝒖 𝒌,𝟓 
+
+𝒖 𝒌,𝟓 
+
+𝒖 𝒌,𝟔 
+
+𝒖 𝒌,𝟔 
+
+𝒖 𝒌,𝟕 
+
+𝒖 𝒌,𝟕 
+
+𝒖 𝒌,𝟎𝟎 
+
+𝒖 𝒌,𝟎𝟏 
+
+𝒖 𝒌,𝟎𝟐 
+
+𝒖 𝒌,𝟎𝟑 
+
+𝒖 𝒌,𝟏𝟎 
+
+𝒖 𝒌,𝟏𝟏 
+
+𝒖 𝒌,𝟏𝟐 
+
+𝒖 𝒌,𝟏𝟑 
+
+> ℱ𝓀:𝓀+3  = 𝑥, 𝑎, 𝐵, 𝐶, 𝐷 𝑥 , 𝛾
+
+𝑥  𝑎  𝐵  𝐶 
+
+1. Factor Packet 
+
+broadcast 
+
+𝒂 𝒌,𝟎 
+
+𝒂 𝒌,𝟏 
+
+𝒂 𝒌+𝟏,𝟎 
+
+𝒂 𝒌+𝟏,𝟏 
+
+𝒂 𝒌+𝟐,𝟎 
+
+𝒂 𝒌+𝟐,𝟏 
+
+𝒂 𝒌+𝟑,𝟎 
+
+𝒂 𝒌+𝟑,𝟏 
+
+𝑩 𝒌,𝟎 
+
+𝑩 𝒌,𝟏 
+
+𝑩 𝒌+𝟏,𝟎 
+
+𝑩 𝒌+𝟏,𝟏 
+
+𝑩 𝒌+𝟐,𝟎 
+
+𝑩 𝒌+𝟐,𝟏 
+
+𝑩 𝒌+𝟑,𝟎 
+
+𝑩 𝒌+𝟑,𝟏 
+
+𝑪 𝒌,𝟎 
+
+𝑪 𝒌,𝟏 
+
+𝑪 𝒌+𝟏,𝟎 
+
+𝑪 𝒌+𝟏,𝟏 
+
+𝑪 𝒌+𝟐,𝟎 
+
+𝑪 𝒌+𝟐,𝟏 
+
+𝑪 𝒌+𝟑,𝟎 
+
+𝑪 𝒌+𝟑,𝟏 
+
+𝒂 𝒌,𝟎 
+
+𝒂 𝒌,𝟎 
+
+𝒂 𝒌,𝟎 
+
+𝒂 𝒌,𝟎 
+
+𝒂 𝒌,𝟏 
+
+𝒂 𝒌,𝟏 
+
+𝒂 𝒌,𝟏 
+
+𝒂 𝒌,𝟏 
+
+𝒙 𝒌,𝟎 
+
+𝒙 𝒌,𝟎 
+
+𝒙 𝒌,𝟏 
+
+𝒙 𝒌,𝟏 
+
+𝒙 𝒌,𝟐 
+
+𝒙 𝒌,𝟐 
+
+𝒙 𝒌,𝟑 
+
+𝒙 𝒌,𝟑 
+
+𝑩 𝒌,𝟎 
+
+𝑩 𝒌,𝟏 
+
+𝑩 𝒌,𝟎 
+
+𝑩 𝒌,𝟏 
+
+𝑩 𝒌,𝟎 
+
+𝑩 𝒌,𝟏 
+
+𝑩 𝒌,𝟎 
+
+𝑩 𝒌,𝟏 
+
+> 𝑝 𝑘  = 𝑏𝑟  𝑎 𝑘
+> 𝑏𝑟  B𝑘
+
+𝑏𝑟  𝑥 𝑘 
+
+s𝒌,𝟎𝟎,0 
+
+0
+
+s𝒌,𝟎𝟎,0 
+
+0
+
+s𝒌,𝟎𝟎,0 
+
+0
+
+s𝒌,𝟎𝟎,0 
+
+0
+
+s𝒌,𝟎𝟎,0 
+
+0
+
+s𝒌,𝟎𝟎,0 
+
+0
+
+s𝒌,𝟎𝟎,0 
+
+0
+
+s𝒌,𝟎𝟎,0 
+
+0
+
+𝑻 𝒌 = 𝒑 𝒌 , 𝒔 𝒌 
+
+> s𝑘  = 𝑏𝑟  u𝑘  ⊙ 𝑏𝑟  B𝑘
+
+𝑻 𝒌+𝟐 = 𝒑 𝒌+𝟐 , 𝒔 𝒌+𝟐 𝑻 𝒌+𝟏 = 𝒑 𝒌+𝟏 , 𝒔 𝒌+𝟏  𝑻 𝒌+𝟑 = 𝒑 𝒌+𝟑 , 𝒔 𝒌+𝟑 
+
+𝑨 𝒌+𝟏 = 𝑻 𝒌+𝟏 ∘ 𝑻 𝒌  𝑨 𝒌+𝟑 = 𝑻 𝒌+𝟑 ∘ 𝑻 𝒌+𝟐 
+
+𝑯 𝒌 = 𝑻 𝒌 
+
+𝒑 ∗𝒌  𝒉 𝒌 
+
+𝑯 𝒌+𝟏 = 𝑻 𝒌+𝟏  ∘ 𝑻 𝒌 
+
+𝒑 ∗𝒌+𝟏  𝒉 𝒌+𝟏 
+
+𝑯 𝒌+𝟑 = 𝑨 𝒌+𝟑 ∘ 𝑨 𝒌+𝟏 
+
+𝒑 ∗𝒌+𝟑  𝒉 𝒌+𝟑 
+
+𝑪 𝒌,𝟎 
+
+𝑪 𝒌,𝟏 
+
+𝑪 𝒌+𝟏,𝟎 
+
+𝑪 𝒌+𝟏,𝟏 
+
+𝑪 𝒌+𝟐,𝟎 
+
+𝑪 𝒌+𝟐,𝟏 
+
+𝑪 𝒌+𝟑,𝟎 
+
+𝑪 𝒌+𝟑,𝟏 
+
+𝐶 
+
+𝑪 𝒌,𝟎 
+
+𝑪 𝒌,𝟏 
+
+𝑪 𝒌,𝟎 
+
+𝑪 𝒌,𝟏 
+
+𝑪 𝒌,𝟎 
+
+𝑪 𝒌,𝟏 
+
+𝑪 𝒌,𝟎 
+
+𝑪 𝒌,𝟏 
+
+broadcast 
+
+𝒔 𝒌,𝟎,𝟎 
+
+𝟎 
+
+𝒔 𝒌,𝟎,𝟏 
+
+𝟎 
+
+𝒔 𝒌,𝟎𝟎,𝟐 
+
+𝟎 
+
+𝒔 𝒌,𝟎𝟎,𝟑 
+
+𝟎 
+
+𝒔 𝒌,𝟎𝟎,𝟒 
+
+𝟎 
+
+𝒔 𝒌,𝟎𝟎,𝟓 
+
+𝟎 
+
+𝒔 𝒌,𝟎𝟎,𝟔 
+
+𝟎 
+
+𝒔 𝒌,𝟎𝟎,𝟕 
+
+𝟎 
+
+𝒗 𝒌,𝟎,𝟎 
+
+𝟎 
+
+𝒗 𝒌,𝟎,𝟏 
+
+𝟎 
+
+𝒗 𝒌,𝟏,𝟎 
+
+𝟎 
+
+𝒗 𝒌,𝟏,𝟏 
+
+𝟎 
+
+𝒗 𝒌,𝟐,𝟎 
+
+𝟎 
+
+𝒗 𝒌,𝟐,𝟏 
+
+𝟎 
+
+𝒗 𝒌,𝟑,𝟎 
+
+𝟎 
+
+𝒗 𝒌,𝟑,𝟏 
+
+𝟎 
+
+𝒗 𝒌,𝟎,𝟎 
+
+𝟎 + 𝒊𝒗 𝒌,𝟎,𝟎 
+
+𝟏 
+
+𝒗 𝒌,𝟎,𝟏 
+
+𝟎 + 𝒊𝒗 𝒌,𝟎,𝟏 
+
+𝟏 
+
+𝒗 𝒌,𝟏,𝟎 
+
+𝟎 + 𝒊𝒗 𝒌,𝟏,𝟎 
+
+𝟏 
+
+𝒗 𝒌,𝟏,𝟏 
+
+𝟎 + 𝒊𝒗 𝒌,𝟏,𝟏 
+
+𝟏 
+
+𝒗 𝒌,𝟐,𝟎 
+
+𝟎 + 𝒊𝒗 𝒌,𝟐,𝟎 
+
+𝟏 
+
+𝒗 𝒌,𝟐,𝟏 
+
+𝟎 + 𝒊𝒗 𝒌,𝟐,𝟏 
+
+𝟏 
+
+𝒗 𝒌,𝟑,𝟎 
+
+𝟎 + 𝒊𝒗 𝒌,𝟑,𝟎 
+
+𝟏 
+
+𝒗 𝒌,𝟑,𝟏 
+
+𝟎 + 𝒊𝒗 𝒌,𝟑,𝟏 
+
+𝟏 
+
+𝒖 𝒌,𝟎𝟎 
+
+𝒖 𝒌,𝟎𝟏 
+
+𝒖 𝒌,𝟎𝟐 
+
+𝒖 𝒌,𝟎𝟑 
+
+𝒖 𝒌,𝟏𝟎 
+
+𝒖 𝒌,𝟏𝟏 
+
+𝒖 𝒌,𝟏𝟐 
+
+𝒖 𝒌,𝟏𝟑 
+
+> 𝐾 𝑠  = 2 𝑐ℎ𝑢𝑛𝑘𝑠; 𝑎𝑙𝑙  𝑝 𝑡  , 𝑠 𝑡  , 𝑎𝑛𝑑  ℎ𝑡
+> 𝑑𝑒𝑛𝑜𝑡𝑒 𝑐ℎ𝑢𝑛𝑘 𝑜𝑣𝑒𝑟 𝑞 ∈  0,1
+
+𝒖 𝒌,𝟎𝟎 
+
+𝒖 𝒌,𝟎𝟏 
+
+𝒖 𝒌,𝟎𝟐 
+
+𝒖 𝒌,𝟎𝟑 
+
+𝒖 𝒌,𝟏𝟎 
+
+𝒖 𝒌,𝟏𝟏 
+
+𝒖 𝒌,𝟏𝟐 
+
+𝒖 𝒌,𝟏𝟑 
+
+𝒙 𝒌,𝟎 
+
+𝒙 𝒌,𝟏 
+
+𝒙 𝒌,𝟐 
+
+𝒙 𝒌,𝟑 
+
+𝒙 𝒌,𝟒 
+
+𝒙 𝒌,𝟓 
+
+𝒙 𝒌,𝟔 
+
+𝒙 𝒌,𝟕 
+
+𝒂 𝒌,𝟎 
+
+𝒂 𝒌,𝟎 
+
+𝒂 𝒌,𝟎 
+
+𝒂 𝒌,𝟎 
+
+𝒂 𝒌,𝟏 
+
+𝒂 𝒌,𝟏 
+
+𝒂 𝒌,𝟏 
+
+𝒂 𝒌,𝟏 
+
+complexify 
+
+𝒉 𝒌,𝟎,𝟎 
+
+𝟎 
+
+𝒉 𝒌,𝟎,𝟏 
+
+𝟎 
+
+𝒉 𝒌,𝟏,𝟎 
+
+𝟎 
+
+𝒉 𝒌,𝟏,𝟏 
+
+𝟎 
+
+𝒉 𝒌,𝟐,𝟎 
+
+𝟎 
+
+𝒉 𝒌,𝟐,𝟏 
+
+𝟎 
+
+𝒉 𝒌,𝟑,𝟎 
+
+𝟎 
+
+𝒉 𝒌,𝟑,𝟏 
+
+𝟎 
+
+𝒗 𝒌,𝟎,𝟎 
+
+𝟎 
+
+𝒗 𝒌,𝟎,𝟏 
+
+𝟎 
+
+𝒗 𝒌,𝟏,𝟎 
+
+𝟎 
+
+𝒗 𝒌,𝟏,𝟏 
+
+𝟎 
+
+𝒗 𝒌,𝟐,𝟎 
+
+𝟎 
+
+𝒗 𝒌,𝟐,𝟏 
+
+𝟎 
+
+𝒗 𝒌,𝟑,𝟎 
+
+𝟎 
+
+𝒗 𝒌,𝟑,𝟏 
+
+𝟎 
+
+𝒔 𝒌,𝟎,𝟎 
+
+𝟎 
+
+𝒔 𝒌,𝟎,𝟏 
+
+𝟎 
+
+𝒔 𝒌,𝟏,𝟎 
+
+𝟎 
+
+𝒔 𝒌,𝟏,𝟏 
+
+𝟎 
+
+𝒔 𝒌,𝟐,𝟎 
+
+𝟎 
+
+𝒔 𝒌,𝟐,𝟏 
+
+𝟎 
+
+𝒔 𝒌,𝟑,𝟎 
+
+𝟎 
+
+𝒔 𝒌,𝟑,𝟏 
+
+𝟎 
+
+> 𝛯 𝑘  = ෍ 𝑑 𝑠
+> 𝒗 𝒌
+> 𝟎  + 𝒊𝒗 𝒌
+> 𝟏
+
+𝒗 𝒌,𝟎,𝟏 
+
+𝟎 + 𝒊𝒗 𝒌,𝟎,𝟏 
+
+𝟏 
+
+𝒗 𝒌,𝟏,𝟎 
+
+𝟎 + 𝒊𝒗 𝒌,𝟏,𝟎 
+
+𝟏 
+
+𝒗 𝒌,𝟏,𝟏 
+
+𝟎 + 𝒊𝒗 𝒌,𝟏,𝟏 
+
+𝟏 
+
+𝒗 𝒌,𝟐,𝟎 
+
+𝟎 + 𝒊𝒗 𝒌,𝟐,𝟎 
+
+𝟏 
+
+𝒗 𝒌,𝟐,𝟏 
+
+𝟎 + 𝒊𝒗 𝒌,𝟐,𝟏 
+
+𝟏 
+
+𝒗 𝒌,𝟑,𝟎 
+
+𝟎 + 𝒊𝒗 𝒌,𝟑,𝟎 
+
+𝟏 
+
+𝒗 𝒌,𝟑,𝟏 
+
+𝟎 + 𝒊𝒗 𝒌,𝟑,𝟏 
+
+𝟏 
+
+𝒗 𝒌,𝟎,𝟎 
+
+𝟎 + 𝒊𝒗 𝒌,𝟎,𝟎 
+
+𝟏 
+
+𝜌  1
+
+𝜩 𝒌,𝟎 
+
+∗
+
+𝜩 𝒌,𝟏 
+
+∗
+
+𝜩 𝒌,𝟐 
+
+∗
+
+𝜩 𝒌,𝟑 
+
+∗
+
+de-complexify 
+
+𝒓 𝒌,𝟎 
+
+𝟎 
+
+∗
+
+𝒓 𝒌,𝟏 
+
+𝟎 
+
+∗
+
+𝒓 𝒌,𝟐 
+
+𝟎 
+
+∗
+
+𝒓 𝒌,𝟑 
+
+𝟎 
+
+∗
+
+𝒓 𝒌,𝟎 
+
+𝟏 
+
+∗
+
+𝒓 𝒌,𝟏 
+
+𝟏 
+
+∗
+
+𝒓 𝒌,𝟐 
+
+𝟏 
+
+∗
+
+𝒓 𝒌,𝟑 
+
+𝟏 
+
+∗
+
+𝒎 𝒌,𝟎 
+
+𝟎 
+
+𝒎 𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝒎 𝒌,𝟏 
+
+𝟎 
+
+𝒎 𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝒎 𝒌,𝟐 
+
+𝟎 
+
+𝒎 𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝒎 𝒌,𝟑 
+
+𝟎 
+
+𝒎 𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟎 
+
+𝟏 
+
+𝑫 𝒙𝒌+𝟏,𝟎 
+
+𝟏 
+
+𝑫 𝒙𝒌,𝟏 
+
+𝟏 
+
+𝑫 𝒙𝒌+𝟏,𝟏 
+
+𝟏 
+
+𝑫 𝒙𝒌,𝟐 
+
+𝟏 
+
+𝑫 𝒙𝒌+𝟏,𝟐 
+
+𝟏 
+
+𝑫 𝒙𝒌,𝟑 
+
+𝟏 
+
+𝑫 𝒙𝒌+𝟏,𝟑 
+
+𝟏 
+
+𝒓 𝒌+𝟏 
+
+gather 
+
+𝑫 𝒙𝒌,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟐 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟑 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝒚 𝒌,𝟎 
+
+𝟏 
+
+𝒚 𝒌+𝟏,𝟎 
+
+𝟏 
+
+𝒚 𝒌,𝟏 
+
+𝟏 
+
+𝒚 𝒌+𝟏,𝟏 
+
+𝟏 
+
+𝒚 𝒌,𝟐 
+
+𝟏 
+
+𝒚 𝒌+𝟏,𝟐 
+
+𝟏 
+
+𝒚 𝒌,𝟑 
+
+𝟏 
+
+𝒚 𝒌+𝟏,𝟑 
+
+𝟏 
+
+𝒚 𝒌,𝟎 
+
+𝟎 
+
+𝒚 𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝒚 𝒌,𝟏 
+
+𝟎 
+
+𝒚 𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝒚 𝒌,𝟐 
+
+𝟎 
+
+𝒚 𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝒚 𝒌,𝟑 
+
+𝟎 
+
+𝒚 𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝛾 𝐷 𝑥 
+
+𝑫 𝒙𝒌,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟐 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝑫 𝒙 𝒌,𝟑 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟐 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟑 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝜸 𝒌,𝟎 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝜸 𝒌,𝟏 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝜸 𝒌,𝟐 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝜸 𝒌,𝟑 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝜸 𝒌,𝟎 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝜸 𝒌,𝟏 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝜸 𝒌,𝟐 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝜸 𝒌,𝟑 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝜸 𝒌,𝟎 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝜸 𝒌,𝟏 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝜸 𝒌,𝟐 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝜸 𝒌,𝟑 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝜸 𝒌,𝟎 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝜸 𝒌,𝟏 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝜸 𝒌,𝟐 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝜸 𝒌,𝟑 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟐 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟑 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟐 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝑫 𝒙𝒌,𝟑 
+
+𝟎 
+
+𝑫 𝒙𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝜸 𝒌,𝟎 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝜸 𝒌,𝟏 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝜸 𝒌,𝟐 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝜸 𝒌,𝟑 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝜸 𝒌,𝟎 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟎 
+
+𝟎 
+
+𝜸 𝒌,𝟏 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟏 
+
+𝟎 
+
+𝜸 𝒌,𝟐 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟐 
+
+𝟎 
+
+𝜸 𝒌,𝟑 
+
+𝟎 
+
+𝜸 𝒌+𝟏,𝟑 
+
+𝟎 
+
+෥𝒚 𝒌,𝟎 
+
+𝟎 
+
+෥𝒚 𝒌+𝟏,𝟎 
+
+𝟎 
+
+෥𝒚 𝒌,𝟏 
+
+𝟎 
+
+෥𝒚 𝒌+𝟏,𝟏 
+
+𝟎 
+
+෥𝒚 𝒌,𝟐 
+
+𝟎 
+
+෥𝒚 𝒌+𝟏,𝟐 
+
+𝟎 
+
+෥𝒚 𝒌,𝟑 
+
+𝟎 
+
+෥𝒚 𝒌+𝟏,𝟑 
+
+𝟎 
+
+෥𝒚 𝒌,𝟎 
+
+𝟎 
+
+෥𝒚 𝒌+𝟏,𝟎 
+
+𝟎 
+
+෥𝒚 𝒌,𝟏 
+
+𝟎 
+
+෥𝒚 𝒌+𝟏,𝟏 
+
+𝟎 
+
+෥𝒚 𝒌,𝟐 
+
+𝟎 
+
+෥𝒚 𝒌+𝟏,𝟐 
+
+𝟎 
+
+෥𝒚 𝒌,𝟑 
+
+𝟎 
+
+෥𝒚 𝒌+𝟏,𝟑 
+
+𝟎 
+
+𝑯 𝒌+𝟐 = 𝑻 𝒌+𝟐 ∘ 𝑨 𝒌+𝟏 
+
+𝒑 ∗𝒌+𝟐  𝒉 𝒌+𝟐 
+
+𝐹 =  𝛼 ,  𝛽 , 𝑟𝑒𝑝𝑟𝑒𝑠𝑒𝑛𝑡𝑖𝑛𝑔 ℎ ⟼  𝛼 ⨀ ℎ + 𝛽 
+
+𝐹 𝑎 = 𝛼 𝑎 , 𝛽 𝑎 
+
+𝐹 𝑏 ∘ 𝐹 𝑎 = 𝛼 𝑏 ⊙ 𝛼 𝑎 , 𝛼 𝑏 ⊙ 𝛽 𝑎 + 𝛽 𝑏 
+
+𝐹 𝑎 
+
+𝜶 𝒂,𝟎,𝟎 
+
+𝒒  𝜷 𝒂,𝟎,𝟎 
+
+𝒒 
+
+𝜶 𝒂,𝟎,𝟏 
+
+𝒒  𝜷 𝒂,𝟎,𝟏 
+
+𝒒 
+
+𝜶 𝒂,𝟏,𝟎 
+
+𝒒  𝜷 𝒂,𝟏,𝟎 
+
+𝒒 
+
+𝜶 𝒂,𝟏,𝟏 
+
+𝒒  𝜷 𝒂,𝟏,𝟏 
+
+𝒒 
+
+𝜶 𝒂,𝟐,𝟎 
+
+𝒒  𝜷 𝒂,𝟐,𝟎 
+
+𝒒 
+
+𝜶 𝒂,𝟐,𝟏 
+
+𝒒  𝜷 𝒂,𝟐,𝟏 
+
+𝒒 
+
+𝜶 𝒂,𝟑,𝟎 
+
+𝒒  𝜷 𝒂,𝟑,𝟎 
+
+𝒒 
+
+𝜶 𝒂,𝟑,𝟏 
+
+𝒒  𝜷 𝒂,𝟑,𝟏 
+
+𝒒 
+
+𝐹 𝑏 
+
+𝜶 𝒃,𝟎,𝟎 
+
+𝒒  𝜷 𝒃,𝟎,𝟎 
+
+𝒒 
+
+𝜶 𝒃,𝟎,𝟏 
+
+𝒒  𝜷 𝒃,𝟎,𝟏 
+
+𝒒 
+
+𝜶 𝒃,𝟏,𝟎 
+
+𝒒  𝜷 𝒃,𝟏,𝟎 
+
+𝒒 
+
+𝜶 𝒃,𝟏,𝟏 
+
+𝒒  𝜷 𝒃,𝟏,𝟏 
+
+𝒒 
+
+𝜶 𝒃,𝟐,𝟎 
+
+𝒒  𝜷 𝒃,𝟐,𝟎 
+
+𝒒 
+
+𝜶 𝒃,𝟐,𝟏 
+
+𝒒  𝜷 𝒃,𝟐,𝟏 
+
+𝒒 
+
+𝜶 𝒃,𝟑,𝟎 
+
+𝒒  𝜷 𝒃,𝟑,𝟎 
+
+𝒒 
+
+𝜶 𝒃,𝟑,𝟏 
+
+𝒒  𝜷 𝒃,𝟑,𝟏 
+
+𝒒 
+
+𝐹 𝑜𝑢𝑡 
+
+𝜶 𝒃,𝟎,𝟎 
+
+𝒒 ⊙ 𝜶 𝒂,𝟎,𝟎 
+
+𝒒  𝜶 𝒃,𝟎,𝟎 
+
+𝒒 ⊙ 𝜷 𝒂,𝟎,𝟎 
+
+𝒒 + 𝜷 𝒃,𝟎,𝟎 
+
+𝒒 
+
+𝜶 𝒃,𝟎,𝟏 
+
+𝒒 ⊙ 𝜶 𝒂,𝟎,𝟏 
+
+𝒒  𝜶 𝒃,𝟎,𝟏 
+
+𝒒 ⊙ 𝜷 𝒂,𝟎,𝟏 
+
+𝒒 + 𝜷 𝒃,𝟎,𝟏 
+
+𝒒 
+
+𝜶 𝒃,𝟏,𝟎 
+
+𝒒 ⊙ 𝜶 𝒂,𝟏,𝟎 
+
+𝒒  𝜶 𝒃,𝟏,𝟎 
+
+𝒒 ⊙ 𝜷 𝒂,𝟏,𝟎 
+
+𝒒 + 𝜷 𝒃,𝟏,𝟎 
+
+𝒒 
+
+𝜶 𝒃,𝟏,𝟏 
+
+𝒒 ⊙ 𝜶 𝒂,𝟏,𝟏 
+
+𝒒  𝜶 𝒃,𝟏,𝟏 
+
+𝒒 ⊙ 𝜷 𝒂,𝟏,𝟏 
+
+𝒒 + 𝜷 𝒃,𝟏,𝟏 
+
+𝒒 
+
+𝜶 𝒃,𝟐,𝟎 
+
+𝒒 ⊙ 𝜶 𝒂,𝟐,𝟎 
+
+𝒒  𝜶 𝒃,𝟐,𝟎 
+
+𝒒 ⊙ 𝜷 𝒂,𝟐,𝟎 
+
+𝒒 + 𝜷 𝒃,𝟐,𝟎 
+
+𝒒 
+
+𝜶 𝒃,𝟐,𝟏 
+
+𝒒 ⊙ 𝜶 𝒂,𝟐,𝟏 
+
+𝒒  𝜶 𝒃,𝟐,𝟏 
+
+𝒒 ⊙ 𝜷 𝒂,𝟐,𝟏 
+
+𝒒 + 𝜷 𝒃,𝟐,𝟏 
+
+𝒒 
+
+𝜶 𝒃,𝟑,𝟎 
+
+𝒒 ⊙ 𝜶 𝒂,𝟑,𝟎 
+
+𝒒  𝜶 𝒃,𝟑,𝟎 
+
+𝒒 ⊙ 𝜷 𝒂,𝟑,𝟎 
+
+𝒒 + 𝜷 𝒃,𝟑,𝟎 
+
+𝒒 
+
+𝜶 𝒃,𝟑,𝟏 
+
+𝒒 ⊙ 𝜶 𝒂,𝟑,𝟏 
+
+𝒒  𝜶 𝒃,𝟑,𝟏 
+
+𝒒 ⊙ 𝜷 𝒂,𝟑,𝟏 
+
+𝒒 + 𝜷 𝒃,𝟑,𝟏 
+
+𝒒 
+
+𝐹 𝑏 = 𝛼 𝑏 , 𝛽 𝑏 
+
+⟹
+
+2. Scan-Item  Build  3. Blocked Prefix Scan 
+
+4. State Contract  5. Complex Reduction  6. Skip + Gate 
+
+𝑰𝒏𝒄𝒐𝒎 ing carry:  𝑮 𝒃 = 𝒑 𝑮 , 𝒔 𝑮 
+
+⊙⊙
+
+⊙Fig. 6. Factorized HEScan dataflow on a toy packing with L=4 , H=2 , P =4 , G=1 , ds=2 , and Ks=2 , so E=HP =8 expanded channels are split into two state chunks. The numbered panels follow one factor packet from broadcast through the blocked prefix scan to HEScan contraction and MPC gating, and the inset gives the affine composition at each scan node. 
+
+Because the sets {E κ}Ks−1
+
+κ=0 partition the expanded channels, and hence the recurrent coordinates, while every Σds reduction targets the same output slots, summing the chunk contributions exactly recovers the full contraction in Eq. 3. The output therefore remains in its contracted packing throughout the chunk sweep. For the state-axis reduction, FESC uses complex reduction, placing two chunks in the real and imaginary channels of one rotate–add tree before one conjugation sepa-rates their partial sums. Relative to reducing the two chunks independently, this pairing halves the state-axis rotation count. Appendix C-D gives the unpacking identities and exact rota-tion and conjugation counts. 
+
+E. Resident Block Schedule 
+
+For L > B blk , HEScan splits the sequence into Kblk =
+
+⌈L/B blk ⌉ blocks and evaluates each state chunk with a two-pass resident schedule, so blocks partition tokens while chunks partition recurrent coordinates. With T (κ)
+
+j,t denoting the com-pact affine map for global token k = jB blk + t in block j, the schedule uses 
+
+Bj = min( Bblk , L − jB blk ),
+
+I(κ) =
+
+
+
+⟨1H ⟩, ⟨0(κ)⟩
+
+
+
+, G(κ)0 = I(κ),
+
+where Bj counts the valid positions in block j and the identity map I(κ) pads the final partial block to the prefix-network ca-pacity. The local prefixes, block summaries, incoming carries, and corrected prefixes are 
+
+P(κ)
+
+j,t = T (κ)
+
+j,t ◦ · · · ◦ T (κ)
+
+j, 0 , S(κ)
+
+j = P(κ)
+
+j,B j −1,
+
+G(κ)
+
+j = S(κ)
+
+j−1 ◦ · · · ◦ S (κ)0 , j ≥ 1, bP(κ)
+
+j,t = P(κ)
+
+j,t ◦ G (κ)
+
+j .
+
+(7) The first pass computes block summaries, an exclusive scan over them gives incoming carries, and the second pass replays 𝓢 𝟎  𝓢 𝟏  𝓢 𝒃−𝟐 
+
+> ⋮
+
+𝓖 𝟏  𝓖 𝟐  𝓖 𝒃−𝟏 
+
+> ⋮
+
+𝓖 𝟎 
+
+𝐁𝐥𝐨𝐜𝐤 𝟎 
+
+token 0: 𝐵 − 1 
+
+𝐁𝐥𝐨𝐜𝐤 𝟏 
+
+token 𝐵: 2𝐵 − 1 
+
+𝐁𝐥𝐨𝐜𝐤  𝒃 − 𝟏 
+
+token  𝑏 − 1 𝐵: 𝑏𝐵 − 1 
+
+> ⋮
+
+𝐋𝐨𝐜𝐚𝐥 𝐏𝐫𝐞𝐟𝐢𝐱𝐞𝐬 𝟎 
+
+⟨𝒫 0,{0...𝐵−1} ⟩
+
+𝐋𝐨𝐜𝐚𝐥 𝐏𝐫𝐞𝐟𝐢𝐱𝐞𝐬 𝟏 
+
+⟨𝒫 1,{0...𝐵−1} ⟩
+
+𝐋𝐨𝐜𝐚𝐥 𝐏𝐫𝐞𝐟𝐢𝐱𝐞𝐬  𝒃 − 𝟏 
+
+⟨𝒫  𝑏−1 ,{0...𝐵−1} ⟩
+
+> ⋮
+
+𝐒𝐮𝐦𝐦𝐚𝐫𝐲 𝟎 
+
+⟨𝒮 0⟩ = ⟨𝒫 0,𝐵−1 ⟩
+
+𝐒𝐮𝐦𝐦𝐚𝐫𝐲 𝟏 
+
+⟨𝒮 1⟩ = ⟨𝒫 1,𝐵−1 ⟩
+
+𝐒𝐮𝐦𝐦𝐚𝐫𝐲  𝒃 − 𝟏 
+
+⟨𝒮  𝑏−1 ⟩ = ⟨𝒫  𝑏−1 ,𝐵−1 ⟩
+
+> ⋮
+
+𝐋𝐨𝐜𝐚𝐥 𝐏𝐫𝐞𝐟𝐢𝐱𝐞𝐬 
+
+⟨𝒫  𝑏−1 ,{0...𝐵−1} ⟩ 𝒢 𝑏−1 
+
+𝐂𝐚𝐫𝐫𝐲 𝐟𝐫𝐨𝐦 𝐒𝐜𝐚𝐧 
+
+𝐁𝐥𝐨𝐜𝐤  𝒃 − 𝟏 
+
+apply carry to local prefix 
+
+⟨ ෠ 𝒫  𝑏−1 ,{0...𝐵−1} ⟩ = ⟨𝒫  𝑏−1 ,{0...𝐵−1} ⟩ ⊙ ⟨𝒢 𝑏−1 ⟩
+
+𝐂𝐨𝐫𝐫𝐞𝐜𝐭𝐞𝐝 𝐏𝐫𝐞𝐟𝐢𝐱𝐞𝐬 
+
+⟨ ෠ 𝒫  𝑏−1 ,{0...𝐵−1} ⟩ ⟨ෝ 𝒚⟩ 
+
+1. Block-Local HEScan 
+
+2. Exclusive Summary Scan  3. Carry Injection 
+
+For one state chunk 𝜅 
+
+Fig. 7. Resident HEScan kernel schedule for one state chunk. Only block summaries persist between passes, and corrected prefixes are rebuilt on demand through carry injection. 
+
+one block at a time to rebuild the corrected prefixes. After carry injection, each rebuilt prefix is applied and contracted into the output, allowing the chunk workspace to be reused before the next state chunk. The replay therefore increases total work only by a constant factor, as illustrated in Figure 7. 
+
+F. Correctness and Complexity 
+
+Theorem 2 (Correctness of the HEScan Kernel) . For private factor packets and broadcast maps satisfying the product-preservation property above, HEScan with h0 = 0 has ideal plaintext semantics equal to the packet-induced recurrence and contraction in Eqs. 2 and 3. The decoded deployed outputs differ from these ideal values only because of CKKS arithmetic error and CKKS–MPC conversion quantization. 
+
+7TABLE III ONLINE COMMUNICATING MPC PRIMITIVES OVER Z2ℓ .                          
+
+> Primitive Functionality Comm. layers Online comm.
+> Π×[21] ([[ a]] ,[[ b]]) →[[ ⌊ab/ 2F⌉]] 12ℓ
+> Πcmp [40] ([[ x]] , τ )→[[ 1[x < τ ]]] bit 1λℓ
+> Πmux [40] ([[ u]] ,[[ b]] bit )→[[ bu ]] 12ℓ
+
+Appendix C-C proves the theorem from Eqs. 5, 7, and 6, while Appendix E-A gives the primitive-count ledger. For fixed model dimensions and public slot maps, HEScan satisfies 
+
+Nctmul , N ks = O(LK s),Dmult = O(log Bblk + log Kblk ) = O(log L),Nlive = O(Bblk + Kblk + Ky + Kfac ) .
+
+The live set comprises one block of prefixes, one summary per block, the contracted-output inventory Ky = ⌈LHP/s y ⌉
+
+for active output capacity sy , and the resident compact-factor inventory Kfac . Because state chunks are processed serially, 
+
+Ks scales total work but does not enter the peak-residency bound. Appendix G-D audits the level budget. VI. MPC N ONLINEAR PROTOCOLS 
+
+This section presents the MPC nonlinear protocols used by the FESC block, where MoSiLU evaluates the convolved input and output-gate branches, MoSoft produces positive timesteps, MMExp derives selective decays, and NeRMS computes inverse-RMS factors. Across SiLU, softplus, exponential, and RMSNorm, these protocols use fixed data-independent sched-ules and replace generic elementary-function circuits with structure-specific polynomial, comparison, mux, and Newton components. 
+
+A. MPC Primitives 
+
+All MPC real values are additively shared over Z2ℓ , with r
+
+encoded as ⌊r2F ⌉ and [[ x]] denoting shares at scale 2F . For public c, c ⊙pub [[ x]] is local. Additions, public-scalar multi-plications, and reductions over shares also require no online communication. Table III therefore lists only the communicat-ing primitives. Protocol schedules count one communicating layer per primitive invocation. Comparisons return unscaled shared bits [[ b]] bit under the centered signed interpretation of ring elements. Correctness assumes that no centered in-termediate wraps, while security follows by sequential com-position of Π×, Πcmp , and Πmux in the semi-honest model. Appendix D-B gives the preprocessing, range audit, deployed counts, and approximation coefficients. 
+
+B. Even-Residual SiLU and Softplus 
+
+MoSiLU and MoSoft exploit the same symmetry in SiLU and softplus. Both fsilu (x) = xσ (x) and fsoft (x) = log(1+ ex)
+
+satisfy 
+
+f (−x) = f (x) − x. 
+
+Hence the residual is even and factors through x2,
+
+g(x) = f (x) − x
+
+2 = h(x2).
+
+Algorithm 1 Even-residual protocol for MoSiLU and MoSoft 
+
+Require: Shares [[ x]] , threshold τ , coefficients a0, . . . , a r ,
+
+r ≥ 1
+
+Ensure: Shares [[ bf (x)]] approximating f (x), for f ∈{SiLU , softplus } 
+
+> 1:
+
+[[ u]] ← Π×([[ x]] , [[ x]])  
+
+> 2:
+
+if r = 1 then  
+
+> 3:
+
+[[ p]] ← 12 ⊙pub [[ x]] + a0 + a1 ⊙pub [[ u]]  
+
+> 4:
+
+else  
+
+> 5:
+
+[[ q]] ← ar ⊙pub [[ u]] + ar−1 
+
+> 6:
+
+for i = r−2, . . . , 1 do  
+
+> 7:
+
+[[ q]] ← Π×([[ q]] , [[ u]]) + ai 
+
+> 8:
+
+end for  
+
+> 9:
+
+[[ p]] ← 12 ⊙pub [[ x]] + a0 + Π ×([[ q]] , [[ u]])  
+
+> 10:
+
+end if  
+
+> 11:
+
+[[ b−]] bit ← Πcmp ([[ x]] , −τ ) 
+
+> 12:
+
+[[ b<]] bit ← Πcmp ([[ x]] , τ ) 
+
+> 13:
+
+[[ b+]] bit ← 1 − [[ b<]] bit  
+
+> 14:
+
+[[ bin ]] bit ← [[ b<]] bit − [[ b−]] bit  
+
+> 15:
+
+[[ y]] ← Πmux ([[ p]] , [[ bin ]] bit ) + Π mux ([[ x]] , [[ b+]] bit ) 
+
+> 16:
+
+return [[ y]] 
+
+For an even degree d = 2 r, FESC fits h on [0 , τ 2] by minimax approximation and evaluates 
+
+bf (x) = x
+
+2 +
+
+> r
+
+X
+
+> i=0
+
+aiui, u = x2.
+
+The two functions therefore use the same secure graph and differ only in their public coefficients. Two parallel com-parisons select the left-tail approximation 0, the polynomial inside [−τ, τ ], or the right-tail approximation x. The shared even-residual form gives MoSiLU and MoSoft one fixed MPC execution path, reducing each nonlinearity to r secure products and constant comparison and mux overhead instead of generic elementary-function chains. 
+
+C. Split Inverse-RMS Normalization 
+
+NeRMS splits RMSNorm at the elementwise square, form-ing ⟨ui⟩ = ⟨xi⟩ ⊙ ⟨ xi⟩ in the surrounding CKKS path and reducing the resulting shares in MPC to 
+
+[[ v]] = 1
+
+D
+
+> D
+
+X
+
+> i=1
+
+[[ ui]] + ϵ. 
+
+After this reduction, the remaining nonlinear step is the inverse root, where parallel comparisons against K − 1 public bucket boundaries select an initializer together with its precomputed square from public tables. Both table values feed the first Newton update, avoiding an additional secure square, 
+
+y ← y(1 .5 − 0.5vy 2).
+
+Algorithm 2 gives the resulting protocol. The bucket indicators stay secret-shared, while table selec-tion uses local linear arithmetic. With K buckets and tNR 
+
+Newton steps, NeRMS requires K−1 parallel comparisons and 8Algorithm 2 Secure protocol for NeRMS 
+
+Require: Shares [[ ui]] of CKKS-formed squares ui = x2 
+
+> i
+
+, D, ϵ,ordered boundaries b1 < · · · < b K−1, initializers {y(0)  
+
+> j
+
+}K−1 
+
+> j=0
+
+,steps tNR 
+
+Ensure: Shares [[ bs]] approximating 1/pD−1 P 
+
+> i
+
+ui + ϵ 
+
+> 1:
+
+[[ v]] ← 1 
+
+> D
+
+⊙pub 
+
+PDi=1 [[ ui]] + ϵ 
+
+> 2:
+
+[[ y]] ← y(0) 0 
+
+> 3:
+
+[[ y2]] ← (y(0) 0 )2 
+
+> 4:
+
+for j = 1 , . . . , K − 1 in parallel do  
+
+> 5:
+
+[[ ej ]] bit ← 1 − Πcmp ([[ v]] , b j ) 
+
+> 6:
+
+end for  
+
+> 7:
+
+for j = 1 , . . . , K − 1 do  
+
+> 8:
+
+[[ y]] ← [[ y]] +  y(0)  
+
+> j
+
+− y(0) 
+
+> j−1
+
+ ⊙pub [[ ej ]] bit  
+
+> 9:
+
+[[ y2]] ← [[ y2]] +  (y(0)  
+
+> j
+
+)2 − (y(0) 
+
+> j−1
+
+)2 ⊙pub [[ ej ]] bit  
+
+> 10:
+
+end for  
+
+> 11:
+
+for t = 1 , . . . , t NR do  
+
+> 12:
+
+[[ y]] ← Π×
+
+ [[ y]] , 32 − 12 ⊙pub Π×([[ v]] , [[ y2]])  
+
+> 13:
+
+if t < t NR then  
+
+> 14:
+
+[[ y2]] ← Π×([[ y]] , [[ y]])  
+
+> 15:
+
+end if  
+
+> 16:
+
+end for  
+
+> 17:
+
+return [[ y]] 
+
+3tNR − 1 secure products, with interaction depth independent of D. The surrounding path applies the inverse-RMS factor and RMSNorm weights after the subprotocol returns. 
+
+D. Private Selective-Decay Exponential 
+
+MMExp exploits the one-sided selective-decay domain in-duced by Ah = − exp( Alog ,h ) < 0 and ∆h ≥ 0,
+
+zh = ∆ hAh ≤ 0, ah = exp( zh).
+
+Here ah is the decay factor consumed by the HEScan packet, staying near one at small |zh| and vanishing in the negative tail, so the protocol only needs the negative half-line rather than a general signed-input circuit. MMExp approximates exp( z)
+
+over [−τ, 0] using the public-coefficient minimax polynomial 
+
+pd(z) = 
+
+> d
+
+X
+
+> i=0
+
+cizi,
+
+and muxes the negligible tail z < −τ to zero with one secret comparison, avoiding repeated-squaring and range-reduction machinery. All coefficients, thresholds, and the per-head schedule are public, while the timestep, decay argument, tail bit, and returned factor stay secret-shared, so the executed schedule is data-independent. Algorithm 3 gives the protocol, and its deployed D4 instantiation is the five-product, one-comparison, one-mux row in Appendix D-B. VII. CKKS–MPC C ONVERSION 
+
+At each CKKS–MPC boundary, FESC converts between CKKS ciphertexts and MPC additive shares over Z2ℓ . FESC instantiates the complex-lane CKKS–MPC conversion primi-tives of EncFormer [11], whose masking and share-modulus conversion follow BLB and SiRNN [10], [40]. We use these inherited primitives at the factorized selective-SSM boundary, where the FESC contribution is the compact boundary packet 
+
+Algorithm 3 Secure protocol for MMExp 
+
+Require: Shares [[ ∆]] , shares [[ Ah]] , threshold τ , coefficients 
+
+c0, . . . , c d
+
+Ensure: Shares [[ bah]] approximating exp(∆ hAh) for each head h 
+
+> 1:
+
+for all heads h in parallel do  
+
+> 2:
+
+[[ zh]] ← Π×([[∆ h]] , [[ Ah]])  
+
+> 3:
+
+[[ ph]] ← cd ⊙pub [[ zh]] + cd−1 
+
+> 4:
+
+for i = d−2, . . . , 0 do  
+
+> 5:
+
+[[ ph]] ← Π×([[ ph]] , [[ zh]]) + ci 
+
+> 6:
+
+end for  
+
+> 7:
+
+[[ bh]] bit ← Πcmp ([[ zh]] , −τ ) 
+
+> 8:
+
+[[ ah]] ← Πmux ([[ ph]] , 1 − [[ bh]] bit ) 
+
+> 9:
+
+end for  
+
+> 10:
+
+return [[ a]]                                            
+
+> TABLE IV CKKS PARAMETERS FOR EACH ENCRYPTED STAGE .
+> Stage Nnckks Depth Chain bits CKKS scale HEInProj kernel 32768 16384 2[60 ,40 ,40 ,60] 230
+> HEScan kernel, L≤256 32768 16384 Dscan (L)†[60 ,40 ×Dscan( L),60] 240
+> HEScan kernel, L≥512 65536 32768 Dscan (L)†[60 ,40 ×Dscan( L),60] 240
+> NeRMS + HEOutProj kernel 32768 16384 3[60 ,40 ,40 ,40 ,60] 230
+> †Adapts to L, for example 22 at L=2048 , with values in Appendix G-D.
+
+and its placement in the pipeline. We write ΠC 
+
+> C2M
+
+for complex CKKS-to-MPC conversion, which maps a CKKS ciphertext to additive shares, and ΠC 
+
+> M2C
+
+for the reverse MPC-to-CKKS conversion, which maps additive shares back to a CKKS ciphertext. Following EncFormer [11], FESC applies modulus trimming to reduce ciphertext payload before conversion by dropping unused RNS primes. Appendix D-A records the exact interfaces, parameterization, and security argument used by the protocol. VIII. E XPERIMENTAL SETUP 
+
+Evaluation follows the Mamba-base pipeline under the same semi-honest, single-query document classification setting used by private-inference baselines. The main latency measure-ments use NVIDIA A100 GPUs, with one-GPU and multi-GPU results in Table VIII, while Appendix G-E extends the feasibility checks to additional GPU memory classes. 
+
+A. System Setup 
+
+FHE Settings. The encrypted kernels are implemented with CKKS and executed on PhantomFHE’s GPU backend [41]. Ta-ble IV summarizes the parameter set for each stage, including the polynomial modulus degree, usable slots, multiplicative depth, modulus chain, and scale. The projection stages and the NeRMS–HEOutProj path use the N =32768 setting, while HEScan moves to N =65536 for L≥512 to support the longer scan with the matching slot and level budget. For Mamba-base, scan packing keeps sstate =16 ,384 active state slots per ciphertext, which yields Ks = 12 state chunks. Appendix C-F gives the level-budget audit. 9MPC Settings. The pipeline evaluates all nonlinear stages with a SCI/EzPC-style two-party arithmetic-sharing back-end [42], [43]. MPC values are signed fixed-point shares over Z2ℓ with fractional precision F =19 and arithmetic bit width ℓ=44 in the full encrypted pipeline. Secure products, comparisons, and muxes use the interactive backend, while additions and public-coefficient products are local share oper-ations. Standalone protocol sweeps keep the deployed protocol graphs and polynomial degrees, and report their fixed-point setting when it differs. 
+
+Network Profiles. Following encrypted-inference evaluations in prior works [9]–[11], latency combines online computation with aggregate online traffic under LAN at 1 Gbps and 0.3 ms, WAN1 at 400 Mbps and 4 ms, WAN2 at 100 Mbps and 4 ms, and WAN3 at 100 Mbps and 80 ms. 
+
+OOM Threshold. For feasibility reporting, OOM denotes out-of-memory execution, meaning a run that fails due to memory exhaustion or exceeds 40 GB of live GPU allocation or 256 GB of peak host allocation per inference, with threshold provenance in Appendix F-C. 
+
+B. Model and Workload Setup 
+
+Deployed Model and Reference. The main implementation, Mamba-base, is a 12 -layer student constructed through task-specific distillation from Mamba-2-130M [44] to match the depth and width of BERT-base-uncased [45] used in prior private-inference evaluations. For each dataset and target length, we adapt the public 24 -layer Mamba-2 checkpoint for one epoch and distill the 12 -layer student for one epoch, while BERT-base is fine-tuned directly for two epochs. Both recipes use the same dataset splits, target sequence length, document-prefix policy, seed set, and validation-loss checkpoint selec-tion, so the comparison controls task accuracy under fixed training recipes. Mamba-base keeps model width dmodel =768 ,expanded width dinner =E=1536 , and state dimension ds=128 
+
+in the encrypted scan interface. Mamba-base is the end-to-end model used for accuracy, latency, communication, residency, and multi-GPU scaling results, while Appendix H validates the same scan-contract implementation across different model shapes and representative invariant and selective SSM imple-mentations, including Mamba-3. 
+
+Workloads and Datasets. Following the single-query infer-ence setting used by prior private inference systems [8]–[11], FESC targets single-pass document classification and scoring. Table V summarizes the three long-document benchmarks, each evaluated at L ∈ { 128 , 256 , 512 , 1024 , 2048 , 4096 } to-kens to test long-context encrypted inference beyond prior sys-tems’ windows. Fine-tuning and evaluation hyperparameters are summarized in Appendix F-A. 
+
+Approximation Methodology. We evaluate two approxima-tion regimes. Post-swap substitutes polynomial approximations only at inference on a matched exact Mamba-base checkpoint. 
+
+Approximation-aware fine-tuning (AAT) fine-tunes Mamba-base with the polynomial approximations installed. The exact Mamba-base control and AAT initialize from the same distilled student and each receive one additional task epoch, isolating                 
+
+> TABLE V LONG -DOCUMENT CLASSIFICATION DATASETS .
+> Dataset Domain Task Classes # Docs SCOTUS [46] Legal Issue area classif. 13 1,400
+> arXiv [47] Scientific Topic classif. 11 2,500
+> Patent [48] Technical CPC classif. 95,000
+
+the effect of the secure-friendly approximations. MoSiLU and MoSoft sweep degree dpoly ∈ { 2, 4, 6} at threshold τ =4 ,NeRMS sweeps tNR ∈ { 1, 2, 3} Newton iterations at K=8 
+
+buckets, and MMExp sweeps degree dpoly ∈ {2, 4, 6, 8}.Because a full joint sweep spans thousands of AAT runs, we use a progressive approximation search that replaces nonlinear operators stage by stage with fine-tuning, following prior FHE methodology [49] and the HE-friendly practice of training around fixed approximations [30]. 
+
+C. Baselines and Measurement Methodology 
+
+Direct end-to-end latency compares measured FESC runs with executable or published semi-honest two-party private-inference rows under common network profiles. The baseline set follows the FHE-only, MPC-only, then hybrid order, cover-ing AEGIS [14], MPCFormer [33], SIGMA [34], SHAFT [37], BOLT [8], BumbleBee [9], BLB [10], and EncFormer [11]. Mamba-family ablations use MPCMamba [38] as the prior encrypted-SSM protocol reference for the MPC nonlinear path. The direct comparison retains AEGIS because it is the only prior FHE-only system that attempts L≥1024 , reporting full-sequence encrypted execution through L=2048 on four A100s. Other FHE-only systems are positioned in related work because their workloads are less directly aligned, and Ci-pherPrune [13] is excluded because it evaluates pruned-token inference rather than the full-sequence workload. Section III positions all systems by backend and sequence primitive, and Appendix F-B gives artifact provenance and counting rules. IX. P ERFORMANCE 
+
+We evaluate FESC across kernel cost, accuracy, approxi-mation accuracy, encrypted correctness, end-to-end latency, memory, communication, GPU scaling, and portability. We separate reach into accuracy-audited secure inference through 
+
+L=2 ,048 , native one-GPU latency through L=4 ,096 , and backend reach through L=8 ,192 with secure refresh. The re-sults show near-linear scaling, preserved task accuracy, OOM-free execution beyond the audited range, portability across six GPU classes, and kernel compatibility with SSM families including Mamba-3. 
+
+A. Microbenchmarks 
+
+FHE Computation Cost. Figure 8 compares one FESC Mamba-base layer with one BERT-base layer from Enc-Former [11] and BLB [10], showing the key-switch advan-tage of a linear encrypted sequence primitive over quadratic encrypted attention. Transformer primitives retain token-pair cost, so the crossover occurs by L=512 and widens at long 10 025K 100K 500K 1.0M 3.0M 7.0M          
+
+> Key-switch count
+> 14K 39K 79K 160K 321K 3.7K 21K 99K 553K 3.0M 4.9K 23K 136K 948K 7.1M
+> FESC FESC FESC FESC FESC EncFormer EncFormer EncFormer EncFormer EncFormer BLB BLB BLB BLB BLB
+> L= 128 L= 256 L= 512 L= 1024 L= 2048
+> Op type
+
+Fig. 8. Key-switch cost by operation type for one layer of FESC, Enc-Former [11], and BLB [10]. TABLE VI PREFIX -SCAN TOPOLOGY COMPARISON FOR ONE FESC SCAN BLOCK .                                                                           
+
+> Sequential Kogge–Stone Sklansky Brent–Kung
+> LKSw (s/layer) dep. KSw (s/layer) dep. KSw (s/layer) dep. KSw (s/layer) dep. 128 3.0K —127 18 .5K 48 .5710 .8K 28 .375.9K 15 .613
+> 256 6.1K —255 43 .0K 115 .1824 .6K 65 .7812 .0K 32 .215
+> 512 12 .3K —511 98 .3K 256 .6955 .3K 144 .3924 .3K 63 .517
+> 1024 24 .6K —1023 221 .2K 631 .110 122 .9K 350 .610 48 .9K 139 .419
+> 2048 49 .1K —2047 491 .5K 1,425 .611 270 .3K 784 .011 98 .0K 284 .221
+
+context, with equations and one-layer KSw totals in Appen-dices G-C and F-D. 
+
+Scan Topology Selection. As introduced in §II-F, SSM recur-rences admit several parallel-prefix scan topologies, and Ta-ble VI selects the best one for FHE execution. The comparison uses the Mamba-base scan shape dinner =1536 , ds=128 , and active FESC state packing sstate =16 ,384 slots, and the times are s/layer under the one-GPU online latency accounting used in Table XIX. Sequential recurrence has the lowest work but depth L−1, which exceeds the multiplicative budget. Among parallel-prefix scans, Brent–Kung has the fewest key-switches and lowest latency at every length, so FESC adopts Brent– Kung inside each encrypted scan block. 
+
+B. Accuracy and Approximation Results 
+
+Long-Sequence Model Accuracy. Figure 9 compares Mamba-base with the BERT-base reference used by prior private-inference systems under the controlled setup in §VIII-B, matching splits, target lengths, seeds, validation selection, and two task epochs. At L≥512 , Mamba-base matches or exceeds BERT-base in all nine evaluated cells and averages 2.66 percentage points higher, showing that the linear selective-scan primitive improves long-sequence task quality while preserving the scaling needed for encrypted execution. Because each length uses the checkpoint deployed at that operating point, these accuracies are paired with the corresponding encrypted latency and memory measurements. 
+
+Nonlinear Protocol Sweep. Figure 10 reports the progres-sive sweep from §VIII-B and selects MoSiLU/MoSoft D4, NeRMS N1, and MMExp D4 as the deployed nonlinear stack. MoSiLU/MoSoft D4 gives the best low-round accuracy–cost tradeoff, NeRMS N1 avoids extra Newton-step cost without 128 256 512 1024 2048    
+
+> 45 50 55 60 65 70 75
+> acc. (%) SCOTUS
+> 128 256 512 1024 2048
+> sequence length L
+> 84 85 86 87 88 89 90 91
+> arXiv
+> 128 256 512 1024 2048
+> 60 62 64 66 68 70 Patent
+> BERT-base Mamba-base
+
+Fig. 9. Three-seed mean task accuracy across sequence lengths. D2 D4 D6 
+
+> −2 −1 0
+> Mean  Δ vs Exact (pp)
+
+(a) MoSiLU/MoSoft 
+
+> Mamba-base BERT-base
+
+N1 N2 N3 
+
+> −2 −1 0
+
+(b) NeRMS 
+
+> Mamba-base BERT-base
+
+D2 D4 D6 D8 
+
+> −3 −2 −1 0
+
+(c) MMExp    
+
+> Mamba-base BERT-base
+> Post-Swap AAT selected excl. collapse
+
+Fig. 10. Nonlinear protocol selection across three progressive sweep stages, averaged over all datasets and lengths. Per-cell three-seed deviations appear in Appendix I-C. 
+
+stable accuracy loss, and MMExp D4 is sufficient because higher degrees do not improve the selected AAT point enough to justify their cost. AAT gives the highest accuracy by training around the fixed nonlinear protocols offline, and this preparation is outside online latency. Post-swap needs no retraining and remains a competitive fallback, showing that the selected D4/N1/D4 stack is stable under direct protocol substitution. We use the AAT-selected stack for deployed encrypted measurements, while Appendices D-B and I-C report the calibration curves, pointwise errors, and full grids. 
+
+MPCMamba Protocol Comparison. MPCMamba [38] is the closest MPC-only Mamba system, but uses generic elementary-function protocols for Mamba nonlinearities, in-curring high communication overhead. Figure 11 compares FESC with the nonlinear protocols reported in that paper, using repeated-squaring exp at nexp =8 and Newton/House-holder refinements at t=3 , including SiLU sign comparison and RMSNorm/softplus exponential initialization. Across the Mamba nonlinear stack, FESC uses up to 7.7× fewer online communicating operations than the MPCMamba protocols. 
+
+Approximation Fidelity. Table VII separates exact-model accuracy from the deployed approximation stack. Across the nine full-test cells, Plain FESC differs from exact Mamba-base by −0.53 signed points on average and 0.62 absolute points on average. The selected D4/N1/D4 stack therefore preserves the useful accuracy of the exact Mamba-base control. 11 SiLU Soft RMS Exp 010 20 30 40 50                 
+
+> Ops/elem
+> 18 46 22 86697
+> (a) Operations
+> SiLU Soft RMS Exp 010 20 30 40 50
+> Layers/elem
+> 17 46 22 83334
+> (b) Layers
+> SiLU Soft RMS Exp 0510 15
+> s/1M elem
+> 6.3x 17.8x 5.5x 1.5x
+> (c) Time
+> mul cmp mux MPCMamba FESC
+
+Fig. 11. MPC nonlinear cost per output element, reporting (a) online operation mix, (b) communicating layers, and (c) measured runtime at L=2048 .TABLE VII FULL -TEST ACCURACY AND ENCRYPTED AUDIT ACCURACY [%].                                                  
+
+> Full-test Audit Dataset LBERT-base Mamba-base Plain FESC Plain FESC Encrypted FESC SCOTUS 512 64 .07 68 .36 67 .71 69 .05 68 .81
+> 1024 64 .36 70 .50 69 .57 70 .48 70 .00
+> 2048 66 .36 72 .50 70 .93 70 .00 69 .76
+> arXiv 512 86 .56 88 .84 89 .08 87 .47 87 .33
+> 1024 87 .76 89 .96 89 .36 88 .00 88 .00
+> 2048 88 .36 90 .28 89 .80 88 .40 88 .00
+> Patent 512 65 .78 65 .88 66 .06 65 .20 65 .07
+> 1024 66 .98 67 .44 67 .00 66 .47 66 .40
+> 2048 67 .72 68 .12 67 .60 66 .93 66 .87
+
+Encrypted Accuracy. A full encrypted sweep of the three datasets would require an estimated 823 GPU-days per seed on one A100, so we perform an end-to-end encrypted accuracy audit on a stratified 10% subset with 2,670 inferences per seed. By running Plain and Encrypted FESC on the same stratified examples, the audit directly isolates the encrypted-execution gap from subset sampling noise. Across 8,010 audited predic-tions, Encrypted FESC stays within 0.48 percentage points of Plain FESC in every row and within 0.15 percentage points in aggregate. Encrypted FESC therefore preserves the Plain FESC accuracy profile across the audited settings, showing that leveled-CKKS evaluation and CKKS–MPC conversion introduce no meaningful task-level loss on the stratified subset. Appendix I-B reports the audit construction, native-runtime estimate, and residual-stream measurements. 
+
+C. End-to-End Latency 
+
+Table VIII compares end-to-end encrypted document-classification latency and long-context coverage across the stated private-inference settings and GPU counts. The rows place the FHE-only reference first, the MPC-only baselines next, and the hybrid baselines together with FESC last. Several hybrid BERT systems are faster at L=128 , but the long-context columns expose the execution boundary, where Trans-former baselines become unavailable or run out of memory while FESC reports native latency measurements through 
+
+L=4 ,096 . Baseline provenance and the multi-GPU HEScan algorithm appear in Appendices F-B and G-B. 128 256 512 1,024 2,048        
+
+> sequence length L
+> 020 40 60 80
+> online comm. (GB)
+> 4.7 9.3 18.5 36.9 73.8
+> 128 256 512 1,024 2,048
+> sequence length L
+> LAN WAN1 WAN2 WAN3
+> network
+> 050 100 150
+> latency (min)
+> LAN WAN1 WAN2 WAN3
+> 77.3 93.3 172.5 174.1
+> (a) communication volume (b) end-to-end latency
+
+Fig. 12. FESC online communication (a) and end-to-end latency across net-work profiles (b) versus sequence length. Exact values appear in Appendix I-C. 
+
+FESC-base is the row used throughout the systems measure-ments, and FESC-130M provides a parameter-size reference near 110M-parameter BERT-base systems. At L=2 ,048 , FESC completes in 77 .3 minutes on one GPU, faster than the only reported encrypted Transformer result at that length, AEGIS on four GPUs at 83 .9 minutes, while consuming 4.34 × fewer GPU-minutes, and four-GPU FESC reaches 36 .0 minutes. From L=128 to L=2 ,048 , one-GPU FESC latency grows by 
+
+17 .6×, close to the 16 × sequence growth, against 26 .2× for reported four-GPU AEGIS. 
+
+D. Communication Cost 
+
+Online communication in FESC comes from CKKS–MPC conversion and MPC nonlinear computations, scaling linearly from 4.7 GB at L=128 to 73 .8 GB at L=2048 for the 12 -layer pipeline. Figure 12 shows measured latency across the network profiles from §VIII-A, with full values in Appendix I-C. The main sensitivity is bandwidth rather than round-trip latency, as moving from LAN to WAN1 adds 16 .0 min at L=2048 and the 100 Mbps profile makes communication the largest term, while WAN3’s higher RTT adds only 1.6 min over WAN2 after online conversion and MPC protocol layers. 
+
+Boundary-Placement Ablation. Table IX measures the gains from FHE contraction and compact factor transport over a dense boundary. The dense bridge transfers scan maps and states, FHE contraction removes the outbound state transfer, and the factorized boundary replaces inbound maps with compact factors expanded inside HEScan. At L=2048 , FHE contraction reduces online communication by 1.30 ×, while factorized inputs add another 12 .4× reduction and deliver the full 16 .1× gain, sustained across sequence lengths. 
+
+E. Long-Sequence Memory Feasibility 
+
+At L=2048 , the full-length HEScan schedule requires 
+
+59 .2 GB of live state, exceeding the 40 GB device capacity. Figure 13 shows the depth–residency tradeoff, where small blocks exhaust multiplicative depth, while larger blocks in-crease residency until the full-length schedule exceeds device memory. The deployed Bblk =1024 serialized-carry schedule 12 TABLE VIII ENCRYPTED END -TO -END LATENCY AND GPU-MINUTES .                                                                                                                                                                                                                                           
+
+> L=128 L=256 L=512 L=1 ,024 L=2 ,048 L=4 ,096 §Type System Model Layers Params. GPUs min GPU ·min min GPU ·min min GPU ·min min GPU ·min min GPU ·min min GPU ·min
+> FHE  AEGIS [14] BERT-base 12 110 M112 .4‡12 .4‡NR NR 34 .9‡34 .9‡NR NR OOM OOM NR NR AEGIS BERT-base 12 110 M43.212 .8NR NR 9.136 .4NR NR 83 .9335 .6NR NR
+> MPC  MPCFormer [33] BERT-base 12 110 M15.5†5.510 .6†10 .629 .9†29 .9NR NR NR NR NR NR SIGMA [34] BERT-base 12 110 M17.8†7.8NR NR NR NR NR NR NR NR NR NR SHAFT [37] BERT-base 12 110 M12.9†2.9NR NR NR NR NR NR NR NR NR NR
+> Hybrid
+> BOLT [8] BERT-base 12 110 M124 .024 .0NR NR NR NR NR NR NR NR NR NR BumbleBee [9] BERT-base 12 110 M15.15.1NR NR NR NR NR NR NR NR NR NR BLB [10] BERT-base 12 110 M12.62.6OOM OOM OOM OOM NR NR NR NR NR NR EncFormer [11] BERT-base 12 110 M12.22.2NR NR NR NR NR NR NR NR NR NR FESC-base Mamba-base 12 84 M14.44.49.09.017 .817 .838 .138 .177 .377 .3149 .8149 .8
+> FESC-base Mamba-base 12 84 M22.85.65.611 .211 .723 .424 .949 .850 .6101 .298 .2196 .4
+> FESC-base Mamba-base 12 84 M42.28.84.417 .68.634 .417 .871 .236 .0144 .068 .5274 .0
+> FESC-130M Mamba-130M 24 130 M17.87.817 .717 .734 .234 .269 .869 .8148 .6148 .6291 .7291 .7
+> NR means no end-to-end latency is paper-reported or reproducible from a released artifact. OOM means reported or reproduced out of memory. †cells are reproduced and normalized to the paper network profile. ‡cells are computed from the paper-reported four-A100 rows and speedup ratio. § reports L=4 ,096 latency only.
+
+TABLE IX BOUNDARY -PLACEMENT ABLATION ACROSS SEQUENCE LENGTHS .                                                                     
+
+> Boundary variant Metric 128 256 512 1024 2048
+> Dense bridge CTs/layer 3,123 6,245 12 ,489 24 ,978 49 ,955
+> Online (GB) 6.20 12 .39 24 .79 49 .57 99 .15
+> 12-layer LAN (min) 10 .621 .342 .685 .2170 .3+FHE contraction CTs/layer 1,623 3,245 6,489 12 ,978 25 ,955
+> Online (GB) 4.78 9.56 19 .12 38 .23 76 .46
+> 12-layer LAN (min) 8.216 .432 .865 .7131 .4+Factorized inputs CTs/layer 124 246 490 980 1,958
+> Online (GB) 0.39 0.77 1.54 3.08 6.16
+> 12-layer LAN (min) 0.71.32.65.310 .664 128 256 512 1024 2048
+
+block size B
+
+020 40 60  
+
+> peak memory (GB)
+> Device budget
+> 7.86 9.75 12.83 19.49 59.2
+> Chain exhausted OOM Over budget
+> Deployed 32.7 GB
+
+76 78 80 82 84 
+
+> End-to-end latency (min)
+> 82.2 80.6 77.3
+
+Fig. 13. HEScan block-size tradeoff between depth and residency at L=2048 .
+
+has depth 22 , limits live-state peak to 32 .7 GB, and runs the complete 12 -layer pipeline in 77 .3 min end-to-end. 
+
+F. Additional Deployment Evaluations 
+
+Additional evaluations establish that FESC extends beyond the headline Mamba-base, A100-40GB, and L≤4096 operat-ing point. Appendix G-C sweeps hidden width, head count, state dimension, and layer depth across configurations up to FESC-370M and confirms that latency follows the theoret-ical state-chunk scaling law. Appendix H implements S4D, S5, LRU, Mamba-1/S6, Mamba-2, and Mamba-3 through the same HEScan interface, validating a shared encrypted primitive across SSM recurrences. Appendix G-E runs the native backend through L=2048 on T4, Titan, A100-40GB, A100-80GB, H100, and H200 GPUs, establishing portability across different hardware platforms. Appendix G-D reports execution at the longer sequence length L=8192 with secure carry refresh at depth 24 .X. C ONCLUSION 
+
+We introduced FESC, a hybrid FHE–MPC pipeline that makes selective SSMs practical for private long-context in-ference. Its factorized scan-contract achieves linear encrypted work and logarithmic depth while reducing memory and com-munication costs. Specialized MPC protocols further reduce online nonlinear cost by up to 7.7×. Across sequence lengths from L=128 to L=4096 , FESC executes a native 12-layer Mamba-base model end to end on a single GPU. At L=2048 ,it completes inference in 77 .3 minutes on one A100 with 
+
+32 .7 GB peak memory. It maintains near-plaintext accuracy across three long-document tasks, reaches 36 .0 minutes on four A100s, runs across six GPU classes, and applies the same scan-contract interface across representative invariant and selective SSMs. Together, these results establish encrypted selective SSMs as a scalable foundation for private long-context inference beyond encrypted attention. 
+
+Limitations and Future Work. The end-to-end evaluation targets semi-honest, single-query document classification with Mamba-2, while the same interface instantiates more SSM families including Mamba-3. Mamba-3 exposes a separate crypto-friendliness challenge because its factor construction shifts more work into the secure nonlinear path. Future work can optimize Mamba-3’s secure factor construction, extend to malicious threat models, autoregressive decoding, and model-agnostic automatic FHE–MPC implementations. 13 XI. E THICS CONSIDERATIONS 
+
+This work introduces FESC, a system for privacy-preserving machine-learning inference. It does not introduce new attack capabilities, train on sensitive data, or generate harmful con-tent. The underlying models are publicly available pretrained checkpoints fine-tuned on public benchmarks. No human subjects data was collected, and no personally identifiable information was used beyond these public benchmarks. REFERENCES [1] J. Lee, W. Yoon, S. Kim, D. Kim, S. Kim, C. H. So, and J. Kang, “Biobert: a pre-trained biomedical language representation model for biomedical text mining,” Bioinformatics , vol. 36, no. 4, pp. 1234–1240, Feb. 2020. [Online]. Available: https://doi.org/10.1093/bioinformatics/b tz682 [2] I. Chalkidis, M. Fergadiotis, P. Malakasiotis, N. Aletras, and I. Androutsopoulos, “LEGAL-BERT: The muppets straight out of law school,” in Findings of the Association for Computational Linguistics: EMNLP 2020 , T. Cohn, Y. He, and Y. Liu, Eds. Online: Association for Computational Linguistics, Nov. 2020, pp. 2898–2904. [Online]. Available: https://aclanthology.org/2020.findings-emnlp.261/ [3] X. Yang, C. Zhang, Y. Sun, K. Pang, L. Jing, S. Wa, and C. Lv, “Finchain-bert: A high-accuracy automatic fraud detection model based on nlp methods for financial scenarios,” Information , vol. 14, no. 9, p. 499, 2023. [Online]. Available: https://www.mdpi.com/2078-2489/14/9 /499 [4] R. Gilad-Bachrach, N. Dowlin, K. Laine, K. Lauter, M. Naehrig, and J. Wernsing, “Cryptonets: Applying neural networks to encrypted data with high throughput and accuracy,” in Proceedings of The 33rd International Conference on Machine Learning , ser. Proceedings of Machine Learning Research, M. F. Balcan and K. Q. Weinberger, Eds., vol. 48. New York, New York, USA: PMLR, Jun. 2016, pp. 201–210. [Online]. Available: https://proceedings.mlr.press/v48/gilad-bachrach16. html [5] P. Mohassel and Y. Zhang, “Secureml: A system for scalable privacy-preserving machine learning,” in 2017 IEEE Symposium on Security and Privacy (SP) . IEEE, 2017, pp. 19–38. [Online]. Available: https://doi.org/10.1109/SP.2017.12 [6] C. Juvekar, V. Vaikuntanathan, and A. Chandrakasan, “GAZELLE: A low latency framework for secure neural network inference,” in 27th USENIX Security Symposium (USENIX Security 18) . Baltimore, MD: USENIX Association, Aug. 2018, pp. 1651–1669. [Online]. Available: https://www.usenix.org/conference/usenixsecurity18/presentation/juveka r[7] Z. Huang, W. jie Lu, C. Hong, and J. Ding, “Cheetah: Lean and fast secure Two-Party deep neural network inference,” in 31st USENIX Security Symposium (USENIX Security 22) . Boston, MA: USENIX Association, Aug. 2022, pp. 809–826. [Online]. Available: https://ww w.usenix.org/conference/usenixsecurity22/presentation/huang-zhicong [8] Q. Pang, J. Zhu, H. M¨ ollering, W. Zheng, and T. Schneider, “BOLT: privacy-preserving, accurate and efficient inference for transformers,” in 
+
+IEEE Symposium on Security and Privacy (SP 2024) . San Francisco, CA, USA: IEEE, May 2024, pp. 4753–4771. [9] W.-j. Lu, Z. Huang, Z. Gu, J. Li, J. Liu, C. Hong, K. Ren, T. Wei, and W. Chen, “BumbleBee: Secure two-party inference framework for large transformers,” in Network and Distributed System Security (NDSS) Symposium 2025 , Internet Society. San Diego, CA, USA: Internet Society, Feb. 2025. [Online]. Available: https://doi.org/10.14722/ndss.2025.230057 [10] T. Xu, W.-j. Lu, J. Yu, Y. Chen, C. Lin, R. Wang, and M. Li, “Breaking the layer barrier: Remodeling private transformer inference with hybrid CKKS and MPC,” in 34th USENIX Security Symposium (USENIX Security 25) . Seattle, WA, USA: USENIX Association, Aug. 2025, pp. 2653–2672. [Online]. Available: https: //www.usenix.org/conference/usenixsecurity25/presentation/xu-tianshi [11] Y. Zhu, C. Jin, K. M. M. Aung, and X. Xiao, “EncFormer: Secure and efficient transformer inference over encrypted data,” IEEE Transactions on Dependable and Secure Computing , pp. 1–16, 2026. [Online]. Available: https://doi.org/10.1109/TDSC.2026.3714715 [12] P. Huang, K. Maeng, and G. E. Suh, “Beyond latency: A system-level characterization of MPC and FHE for PPML,” in Proceedings of the IEEE International Symposium on Performance Analysis of Systems and Software (ISPASS) . Seoul, Korea: IEEE, Apr. 2026, pp. 323–334. [Online]. Available: https://doi.org/10.1109/ISPASS69572.2026.00039 [13] Y. Zhang, J. Xue, M. Zheng, M. Xie, M. Zhang, L. Jiang, and Q. Lou, “CipherPrune: Efficient and scalable private transformer inference,” in International Conference on Learning Representations .OpenReview.net, 2025. [Online]. Available: https://openreview.net/for um?id=mUMvr33FTu [14] Z. Gong, R. Ran, F. Yao, and W. Wen, “AEGIS: Scaling long-sequence homomorphic encrypted transformer inference via hybrid parallelism on multi-GPU systems,” in Proceedings of the 40th ACM International Conference on Supercomputing . Belfast, United Kingdom: Association for Computing Machinery, Jul. 2026, pp. 1206–1219. [Online]. Available: https://doi.org/10.1145/3797905.3800539 [15] A. Gu and T. Dao, “Mamba: Linear-time sequence modeling with selective state spaces,” in First Conference on Language Modeling (COLM) , 2024. [Online]. Available: https://openreview.net/forum?id= tEYskw1VY2 [16] T. Dao and A. Gu, “Transformers are SSMs: Generalized models and efficient algorithms through structured state space duality,” in Proceedings of the 41st International Conference on Machine Learning , ser. Proceedings of Machine Learning Research, vol. 235. Vienna, Austria: PMLR, 2024, pp. 10 041–10 071. [Online]. Available: https://proceedings.mlr.press/v235/dao24a.html [17] A. Gu, K. Goel, and C. R´ e, “Efficiently modeling long sequences with structured state spaces,” in International Conference on Learning Representations . Virtual Event: OpenReview.net, 2022. [Online]. Available: https://openreview.net/forum?id=uYLFoz1vlAC [18] G. E. Blelloch, “Prefix sums and their applications,” in Synthesis of Parallel Algorithms , J. H. Reif, Ed. Morgan Kaufmann, 1993, ch. 1, pp. 35–60. [Online]. Available: https://www.cs.cmu.edu/ ∼guyb/papers /Ble93.pdf [19] Z. Brakerski, C. Gentry, and V. Vaikuntanathan, “Leveled fully homomorphic encryption without bootstrapping,” in Proceedings of the 3rd Innovations in Theoretical Computer Science Conference . ACM, 2012, pp. 309–325. [Online]. Available: https://doi.org/10.1145/209023 6.2090262 [20] J. H. Cheon, A. Kim, M. Kim, and Y. Song, “Homomorphic encryption for arithmetic of approximate numbers,” in Advances in Cryptology – ASIACRYPT 2017 , ser. Lecture Notes in Computer Science, vol. 10624. Springer, 2017, pp. 409–437. [Online]. Available: https://doi.org/10.1007/978-3-319-70694-8 15 [21] D. Beaver, “Efficient multiparty protocols using circuit randomization,” in Advances in Cryptology — CRYPTO ’91 , ser. Lecture Notes in Computer Science, J. Feigenbaum, Ed., vol. 576. Berlin, Heidelberg: Springer Berlin Heidelberg, 1992, pp. 420–432. [22] A. C.-C. Yao, “How to generate and exchange secrets,” in 27th Annual Symposium on Foundations of Computer Science (FOCS) . IEEE, 1986, pp. 162–167. [23] O. Goldreich, S. Micali, and A. Wigderson, “How to play any mental game,” in Proceedings of the 19th Annual ACM Symposium on Theory of Computing (STOC) . ACM, 1987, pp. 218–229. [24] P. M. Kogge and H. S. Stone, “A parallel algorithm for the efficient solution of a general class of recurrence equations,” IEEE Transactions on Computers , vol. C-22, no. 8, pp. 786–793, Aug. 1973. [25] J. Sklansky, “Conditional-sum addition logic,” IRE Transactions on Electronic Computers , vol. EC-9, no. 2, pp. 226–231, Jun. 1960. [26] R. P. Brent and H. T. Kung, “A regular layout for parallel adders,” IEEE Transactions on Computers , vol. C-31, no. 3, pp. 260–264, Mar. 1982. [27] T. Chen, H. Bao, S. Huang, L. Dong, B. Jiao, D. Jiang, H. Zhou, J. Li, and F. Wei, “THE-X: Privacy-preserving transformer inference with homomorphic encryption,” in Findings of the Association for Computational Linguistics: ACL 2022 , S. Muresan, P. Nakov, and A. Villavicencio, Eds. Dublin, Ireland: Association for Computational Linguistics, May 2022, pp. 3510–3520. [Online]. Available: https: //aclanthology.org/2022.findings-acl.277/ [28] J. Zhang, X. Yang, L. He, K. Chen, W. jie Lu, Y. Wang, X. Hou, J. Liu, K. Ren, and X. Yang, “Secure transformer inference made non-interactive,” in 32nd Annual Network and Distributed System Security Symposium (NDSS 2025) . San Diego, CA, USA: The Internet Society, Feb. 2025. [Online]. Available: https://www.ndss-symposium.o rg/ndss-paper/secure-transformer-inference-made-non-interactive/ 
+
+14 [29] J. Moon, D. Yoo, X. Jiang, and M. Kim, “Thor: Secure transformer inference with homomorphic encryption,” in Proceedings of the 2025 ACM SIGSAC Conference on Computer and Communications Security (CCS ’25) . Taipei, Taiwan: Association for Computing Machinery, 2025, pp. 3765–3779. [Online]. Available: https://doi.org/10.1145/3719 027.3765150 [30] D. Park, E. Lee, and J.-W. Lee, “Powerformer: Efficient and high-accuracy privacy-preserving language model with homomorphic encryption,” in Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) .Vienna, Austria: Association for Computational Linguistics, Jul. 2025, pp. 11 090–11 111. [Online]. Available: https://aclanthology.org/2025. acl-long.543/ [31] L. De Castro, D. Escudero, A. Agrawal, A. Polychroniadou, and M. Veloso, “EncryptedLLM: Privacy-preserving large language model inference via GPU-accelerated fully homomorphic encryption,” in 
+
+Proceedings of the 42nd International Conference on Machine Learning , ser. Proceedings of Machine Learning Research, vol. 267. PMLR, 2025, pp. 12 677–12 688. [Online]. Available: https: //proceedings.mlr.press/v267/de-castro25a.html [32] L. Zhang, X. Wang, J. J. Sim, Z. Huang, J. Zhong, H. Wang, P. Duan, and K. Y. Lam, “MOAI: Module-optimizing architecture for non-interactive secure transformer inference,” in International Conference on Learning Representations (ICLR) , 2026. [Online]. Available: https://openreview.net/forum?id=qJn4HtTzhH [33] D. Li, H. Wang, R. Shao, H. Guo, E. Xing, and H. Zhang, “MPC-FORMER: FAST, PERFORMANT AND PRIVATE TRANSFORMER INFERENCE WITH MPC,” in The Eleventh International Conference on Learning Representations . Kigali, Rwanda: OpenReview.net, 2023. [Online]. Available: https://openreview.net/forum?id=CWmvjOEhgH-[34] K. Gupta, N. Jawalkar, A. Mukherjee, N. Chandran, D. Gupta, A. Panwar, and R. Sharma, “SIGMA: Secure GPT inference with function secret sharing,” Proceedings on Privacy Enhancing Technologies , vol. 2024, no. 4, pp. 61–79, 2024, artifact available. [Online]. Available: https://doi.org/10.56553/popets-2024-0107 [35] J. Luo, Y. Zhang, Z. Zhang, J. Zhang, X. Mu, H. Wang, Y. Yu, and Z. Xu, “SecFormer: Fast and accurate privacy-preserving inference for transformer models via SMPC,” in Findings of the Association for Computational Linguistics (ACL 2024) , L.-W. Ku, A. Martins, and V. Srikumar, Eds. Bangkok, Thailand: Association for Computational Linguistics, Aug. 2024, pp. 13 333–13 348. [Online]. Available: https://aclanthology.org/2024.findings-acl.790/ [36] Y. Dong, W.-j. Lu, Y. Zheng, H. Wu, D. Zhao, J. Tan, Z. Huang, C. Hong, T. Wei, W.-G. Chen, and J. Zhou, “PUMA: Secure inference of LLaMA-7B in five minutes,” Security and Safety , vol. 4, p. 2025014, 2025, published online 23 Oct 2025. [Online]. Available: https://doi.org/10.1051/sands/2025014 [37] A. Y. L. Kei and S. S. M. Chow, “Shaft: Secure, handy, accurate, and fast transformer inference,” in Network and Distributed System Security Symposium (NDSS) 2025 , Internet Society. San Diego, CA, USA: Internet Society, 2025. [Online]. Available: https://www.ndss-symposium.org/ndss-paper/shaft-secure-handy-accur ate-and-fast-transformer-inference/ [38] Y. Yu, Y. Lu, X. Yan, W. Yan, and S. Luo, “MPCMamba: Privacy-preserving inference for Mamba models via secure multi-party computation,” Applied Soft Computing , vol. 184, p. 113859, 2025. [Online]. Available: https://doi.org/10.1016/j.asoc.2025.113859 [39] M. Hao, H. Li, H. Chen, P. Xing, G. Xu, and T. Zhang, “Iron: Private inference on transformers,” in Advances in Neural Information Processing Systems , S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh, Eds., vol. 35. New Orleans, LA, USA: Curran Associates, Inc., 2022, pp. 15 718–15 731. [Online]. Available: https://proceedings.neurips.cc/paper files/paper/2022/file/64e2449d74f8 4e5b1a5c96ba7b3d308e-Paper-Conference.pdf [40] D. Rathee, M. Rathee, R. K. Kiran Goli, D. Gupta, R. Sharma, N. Chandran, and A. Rastogi, “Sirnn: A math library for secure rnn inference,” in 2021 IEEE Symposium on Security and Privacy (SP) . IEEE, 2021, pp. 1003–1020. [Online]. Available: https: //doi.org/10.1109/SP40001.2021.00086 [41] H. Yang, S. Shen, W. Dai, L. Zhou, Z. Liu, and Y. Zhao, “Phantom: A cuda-accelerated word-wise homomorphic encryption library,” IEEE Trans. Dependable Secur. Comput. , vol. 21, no. 5, pp. 4895–4906, 2024. [Online]. Available: https://doi.org/10.1109/TDSC.2024.3363900 [42] N. Chandran, D. Gupta, A. Rastogi, R. Sharma, and S. Tripathi, “EzPC: Programmable and efficient secure two-party computation for machine learning,” in 2019 IEEE European Symposium on Security and Privacy (EuroS&P) . IEEE, 2019, pp. 496–511. [43] D. Rathee, M. Rathee, N. Kumar, N. Chandran, D. Gupta, A. Rastogi, and R. Sharma, “CrypTFlow2: Practical 2-party secure inference,” in 
+
+Proceedings of the 2020 ACM SIGSAC Conference on Computer and Communications Security . New York, NY, USA: Association for Computing Machinery, 2020, pp. 325–342. [44] State Spaces, “Mamba-2-130M,” https://huggingface.co/state-spaces/ mamba2-130m/commit/3a5aea0c25d0fb43cc360e2c2aac82c26e3eed49, May 2024. [45] J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, “BERT: Pre-training of deep bidirectional transformers for language understanding,” in 
+
+Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers) . Minneapolis, Minnesota: Association for Computational Linguistics, 2019, pp. 4171–4186. [Online]. Available: https://aclanthology.org/N19-1423/ [46] I. Chalkidis, A. Jana, D. Hartung, M. Bommarito, I. Androutsopoulos, D. M. Katz, and N. Aletras, “LexGLUE: A benchmark dataset for legal language understanding in english,” in Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . Dublin, Ireland: Association for Computational Linguistics, 2022, pp. 4310–4330. [Online]. Available: https://aclanthology.org/2022.acl-long.297/ [47] C. B. Clement, M. Bierbaum, K. P. O’Keeffe, and A. A. Alemi, “On the use of ArXiv as a dataset,” in Representation Learning on Graphs and Manifolds Workshop at the International Conference on Learning Representations (ICLR) , 2019. [Online]. Available: https://rlgm.github.io/papers/39.pdf [48] E. Sharma, C. Li, and L. Wang, “BIGPATENT: A large-scale dataset for abstractive and coherent summarization,” in Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics (ACL) .Florence, Italy: Association for Computational Linguistics, 2019, pp. 2204–2213. [Online]. Available: https://aclanthology.org/P19-1212/ [49] J. Tong, J. Dang, A. Golder, A. Raychowdhury, C. Hao, and T. Krishna, “Accurate low-degree polynomial approximation of non-polynomial operators for fast private inference in homomorphic encryption,” in 
+
+Proceedings of Machine Learning and Systems , vol. 6, 2024, pp. 210– 223. [Online]. Available: https://proceedings.mlsys.org/paper files/paper /2024/file/621d0fd41c720ab252e178b77c200d90-Paper-Conference.pdf [50] DESILO, “The DESILO FHE Library,” https://fhe.desilo.dev/latest/, 2026, documentation, accessed 2026-07-18. [51] J.-P. Bossuat, C. Mouchet, J. Troncoso-Pastoriza, and J.-P. Hubaux, “Efficient bootstrapping for approximate homomorphic encryption with non-sparse keys,” in Advances in Cryptology – EUROCRYPT 2021 , ser. Lecture Notes in Computer Science, vol. 12696. Springer, 2021, pp. 587–617. [Online]. Available: https://doi.org/10.1007/978-3-030-77870 -5 21 [52] E. Boyle, G. Couteau, N. Gilboa, Y. Ishai, L. Kohl, and P. Scholl, “Efficient pseudorandom correlation generators from ring-LPN,” in 
+
+Advances in Cryptology – CRYPTO 2020, Part II , ser. Lecture Notes in Computer Science, vol. 12171. Springer, 2020, pp. 387–416. [53] Y. Ishai, J. Kilian, K. Nissim, and E. Petrank, “Extending oblivious transfers efficiently,” in Advances in Cryptology – CRYPTO 2003 , ser. Lecture Notes in Computer Science, vol. 2729. Springer, 2003, pp. 145–161. [54] N. Gilboa, “Two party RSA key generation,” in Advances in Cryptology – CRYPTO ’99 , ser. Lecture Notes in Computer Science, vol. 1666. Springer, 1999, pp. 116–129. [55] M. Keller, “MP-SPDZ: A versatile framework for multi-party computation,” in Proceedings of the 2020 ACM SIGSAC Conference on Computer and Communications Security (CCS) . New York, NY, USA: Association for Computing Machinery, 2020, pp. 1575–1590. [Online]. Available: https://doi.org/10.1145/3372297.3417872 [56] Amazon Web Services, “Amazon ec2 p4 instances,” https://aws.amazon .com/ec2/instance-types/p4/, accessed: July 2026. [57] M. Harris, S. Sengupta, and J. D. Owens, “Parallel prefix sum (scan) with CUDA,” in GPU Gems 3 , H. Nguyen, Ed. Addison-Wesley, 2007, ch. 39, pp. 851–876. [Online]. Available: https: //developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/cha pter-39-parallel-prefix-sum-scan-cuda 
+
+15 [58] A. Gu, K. Goel, A. Gupta, and C. R´ e, “On the parameterization and initialization of diagonal state space models,” in Advances in Neural Information Processing Systems 35 , vol. 35. New Orleans, LA, USA: Curran Associates, Inc., 2022, pp. 35 971–35 983. [Online]. Available: https://proceedings.neurips.cc/paper files/paper/2022/hash/e9a32fade47 b906de908431991440f7c-Abstract-Conference.html [59] J. T. H. Smith, A. Warrington, and S. W. Linderman, “Simplified state space layers for sequence modeling,” in International Conference on Learning Representations . Kigali, Rwanda: OpenReview.net, 2023. [Online]. Available: https://openreview.net/forum?id=Ai8Hw3AXqks [60] A. Orvieto, S. L. Smith, A. Gu, A. Fernando, C¸ . G¨ ulc ¸ehre, R. Pascanu, and S. De, “Resurrecting recurrent neural networks for long sequences,” in Proceedings of the 40th International Conference on Machine Learning , ser. Proceedings of Machine Learning Research, vol. 202. Honolulu, HI, USA: PMLR, 2023, pp. 26 670–26 698. [Online]. Available: https://proceedings.mlr.press/v202/orvieto23a.html [61] A. Lahoti, K. Y. Li, B. Chen, C. Wang, A. Bick, J. Z. Kolter, T. Dao, and A. Gu, “Mamba-3: Improved sequence modeling using state space principles,” in The Fourteenth International Conference on Learning Representations , 2026. [Online]. Available: https://openreview.net/forum?id=HwCvaJOiCj [62] State Spaces, “Mamba-3 implementation,” https://github.com/state-spa ces/mamba/blob/main/mamba ssm/modules/mamba3.py, 2026, accessed July 2026. 
+
+APPENDIX ROADMAP 
+
+This appendix opens with the released artifact and then follows the technical dependencies of FESC. Appendix A describes the released package and the checks it supports. Appendix B clarifies notation and model semantics. Ap-pendix C gives the detailed encrypted kernel construction, packing, resident schedule, correctness proof, complex re-ductions, and scan-network choice. Appendix D specifies the FHE–MPC boundary, nonlinear protocols, deployed block pro-tocol, and security argument. Appendix E derives operation, communication, and preprocessing costs. Appendix F records the accuracy-evaluation setup, baseline provenance, hardware limits, key-switch accounting, and protocol-cost comparison. Appendix G gives runtime breakdowns, multi-GPU HES-can execution, model-shape scaling, longer-sequence deploy-ment, and cross-GPU portability evidence. Appendix H gives the common scan-contract interface, representative invariant and selective SSM implementations including Mamba-3, and cross-family cost results. Appendix I gives training details, audit scope, complete accuracy tables, and nonlinear-sweep results. APPENDIX AARTIFACT AND OPEN SCIENCE 
+
+We provide an anonymous FESC artifact at https://anon ymous.4open.science/r/FESC-23D8. The artifact contains the source code, experiment logs, and verification drivers used to check the scan-contract primitive, resident schedule, CKKS parameters, nonlinear protocols, model-shape scaling, and accuracy results. After review, the same artifact will be de-anonymized and archived with more trained checkpoints, complete logs, and permanent public run instructions. APPENDIX BNOTATION AND MODEL SEMANTICS 
+
+A. Notation Conventions 
+
+Table X lists the recurring symbols whose interpretation depends on context. Bold symbols denote packed vectors or tensors in the kernel-packing sections, while unbolded symbols denote abstract recurrence operands in the background and cross-family equations. Fully indexed expressions such as 
+
+xk[h, p ] and Bk[g, i ] denote scalar components. Mathematical token indices are one-based, while algorithmic array and block indices are zero-based. All other symbols retain their local definitions. 
+
+B. Mamba-2 Recurrence Details 
+
+This appendix expands the factor construction and dis-cretization details summarized in §§II-D and II-E. 
+
+Factor Construction. Let X ∈ RL×dmodel be the block input after the surrounding normalization. The mixer has H
+
+SSM heads, per-head channel dimension P , G groups, state dimension ds, and inner width dinner = HP . Algebraically, one input projection produces the gate branch, the SSM factor branch, and the timestep branch 
+
+[zk, xBC k, dt k] = XkWin + bin ,Win ∈ Rdmodel ×(2 HP +2 Gd s+H),bin ∈ R2HP +2 Gd s+H .
+
+Here zk ∈ RH×P is the gate branch, dt k ∈ RH is the timestep branch, and xBC k ∈ RHP +2 Gd s contains the SSM input stream and the dynamic B, C factors. If an implemen-tation stores the gate projection as a separate matrix Wz ∈
+
+Rdmodel ×HP , it is algebraically equivalent to concatenating that projection into Win . FESC evaluates these plaintext-weight projections with the same FHE input-projection kernel. Only the xBC branch passes through the causal depthwise convolution and SiLU 
+
+ξk = SiLU  Conv1D causal (xBC )k
+
+,
+
+[xraw  
+
+> k
+
+, B k, C k] = split( ξk),
+
+where xraw  
+
+> k
+
+∈ RH×P and Bk, C k ∈ RG×ds . We reserve xk
+
+for the step-scaled scan input. The timestep, scan input, decay, and output gate are 
+
+∆k[h] = softplus  dt k[h] + b∆,h 
+
+,Ah = − exp( Alog ,h ),xk[h, p ] = ∆ k[h] xraw  
+
+> k
+
+[h, p ],ak[h] = exp  ∆k[h]Ah
+
+,gout  
+
+> k
+
+[h, p ] = SiLU  zk[h, p ].
+
+Since Ah < 0 and ∆k[h] > 0 in the source recurrence, ak[h] ∈
+
+(0 , 1) is a stable decay. The block output is 
+
+ˆyk = RMSNorm γrms (˜ yk),ok = ˆ ykWout , Wout ∈ RHP ×dmodel .
+
+16 TABLE X NOTATION CONVENTIONS ACROSS FESC. 
+
+Symbol Meaning and convention 
+
+∆, ∆ CKKS. ∆ denotes the encoding scale. SSM. ∆k [h] is the Mamba timestep and ∆ is the timestep tensor. Evaluation. ∆ denotes an accuracy difference. 
+
+N, n ckks N is the CKKS ring degree and nckks = N/ 2 is the complex-slot count. 
+
+dmodel , d inner ,dpoly , d s dmodel is model hidden width, dinner = E = HP is expanded width, dpoly is nonlinear-approximation degree, and ds is SSM state dimension. 
+
+sstate , c state ,sy sstate is the active state-packing capacity, cstate = sstate /d s is the number of expanded channels stored in one state chunk, and sy is the effective number of real output entries stored in one ciphertext. 
+
+E, e, κ, λ κ In the HEScan kernel, E = HP is the expanded channel count, e = hP + p indexes an expanded channel, κ indexes a state chunk, and λκ maps chunk-local state coordinates to CKKS slots. 
+
+G, N gpu G is the number of SSM groups, and Ngpu is the number of GPUs used by the multi-GPU execution. 
+
+tNR In ΠNeRMS , tNR denotes the number of Newton iterations. 
+
+i, i Upright i is the imaginary unit in complex CKKS slots. Italic i indexes the SSM state coordinate. 
+
+Bblk , B j , Bk Bblk is the resident HEScan block capacity, Bj the valid token count in block j, and Bk the dynamic SSM input factor with scalar entry Bk [g, i ].
+
+F, sk , S(κ) 
+
+> j
+
+F is the number of fractional bits in the MPC fixed-point encoding. In the HEScan kernel, sk = xk ⊗g Bk is the additive state update and s(κ) 
+
+> k
+
+is its chunk-local form. S(κ) 
+
+> j
+
+is the affine summary of block j.
+
+K K is the number of NeRMS initializer buckets. 
+
+Ks, K blk ,Ky , K fac Ks is the number of state chunks, Kblk is the number of sequence blocks, Ky is the number of output ciphertexts, and Kfac is the number of resident compact-factor ciphertexts. 
+
+g(h), gout  
+
+> k
+
+,
+
+γrms 
+
+g(h) maps head h to its SSM group. gout  
+
+> k
+
+is the Mamba output gate. γrms is the RMSNorm weight. 
+
+δ In the SSM background, δ denotes a continuous-time discretization step. 
+
+σ, σ stat σ(·) denotes the logistic sigmoid. σstat denotes the statistical-security parameter. 
+
+Zero-Order-Hold Discretization. For the continuous system in §II-D with diagonal A and scalar step δ, zero-order hold gives 
+
+¯A = exp( δA), ¯B =
+
+Z δ
+
+0
+
+exp( Aτ ) dτ 
+
+!
+
+B.
+
+When A is invertible, the input map can be written as 
+
+¯B = A−1 exp( δA) − IB = ( δA)−1 exp( δA) − IδB.
+
+Mamba-2 keeps the exponential decay from this discretiza-tion, where ak[h] = exp(∆ k[h]Ah) is the per-head diagonal transition for head h. For the input map, Mamba-2 uses the simplified selective-scan parameterization 
+
+¯Bk ≈ ∆kBk,
+
+so the scan input is 
+
+xk[h, p ] = ∆ k[h]xraw 
+
+k [h, p ],
+
+and the dynamic factor Bk is applied separately in the grouped state update [16]. Thus only the decay branch requires an online exponential, which FESC evaluates in MPC, while the input branch requires one elementwise product between ∆k
+
+and xraw 
+
+k .These model details justify the compact packet used by the encrypted scan contract in §V-D. After MPC factor con-struction, FESC sends (xk, a k, B k, C k) to CKKS, expands state-shaped products only inside the current HEScan chunk, contracts the scanned state with Ck, and returns the H × P
+
+output to MPC for the skip and gate, after which the gated result passes through the hybrid NeRMS normalization before HEOutProj applies Wout in CKKS. APPENDIX CENCRYPTED KERNEL CONSTRUCTION 
+
+A. CKKS Backend and Parameters 
+
+The main text fixes CKKS as the FHE backend and reports the stage-level parameter sets in Table IV, while this appendix records the primitive timings that justify the concrete GPU backend choice. The hybrid split keeps the headline encrypted path within leveled CKKS because non-linear factor construction runs in MPC, the deployed depth fits the coefficient-modulus budget audited in Appendix C-F, and longer-sequence refresh is evaluated separately in Ap-pendix G-D. Thus the relevant operating point is GPU CKKS without bootstrapping. Table XI compares PhantomFHE [41], the GPU backend used by FESC, with DESILO [50], a CKKS library with bootstrapping support. All measurements use one A100 GPU and the listed leveled chains. PhantomFHE is faster for every measured primitive, so the hybrid design that avoids bootstrap-ping in the headline path lets FESC leverage the faster GPU backend. 
+
+TABLE XI CKKS PRIMITIVE LATENCY IN MILLISECONDS .
+
+Chain Library add pt mul ct mul rot conj 3-prime 
+
+[60 , 40 , 60] 
+
+PhantomFHE 0.06 0.06 0.74 0.35 0.05 DESILO 0.55 3.40 3.92 13.4 9.38 10-prime 
+
+[60 , 40 ×8, 60] 
+
+PhantomFHE 0.07 0.07 2.07 1.00 0.04 DESILO 0.54 3.54 3.95 13.2 8.59 
+
+B. Projection Kernel Breakdown 
+
+This subsection expands the HEInProj and HEOutProj ker-nels introduced in §V-B. It fixes the segment shifts used by 17 the packed ciphertext layout, then gives the BSGS plaintext-ciphertext projection, offline diagonal encoding, online lane extraction, and key-switch sources used by the layer-level ledger. The kernel follows the packed CKKS matrix multi-plication form used by BLB [10] and EncFormer [11]. 
+
+Segment View. Following the notation in §V-A, we view the slots as 
+
+n = ℓseg Nseg , idx( r, s ) = sℓ seg + r, 
+
+where r ∈ {0, . . . , ℓ seg − 1} indexes positions inside one segment and s ∈ { 0, . . . , N seg − 1} indexes the segment. In FESC, a segment stores the corresponding axis of a state or factor packing. For a slot vector x ∈ Cn, define segment and intra-segment shifts by 
+
+(Φ δ x)idx( r,s ) = xidx( r, (s+δ) mod Nseg ),
+
+(Ψ tx)idx( r,s ) = xidx(( r+t) mod ℓseg ,s ).
+
+We use the same symbols for their homomorphic realizations on ciphertexts. A whole-segment shift is one CKKS rotation 
+
+Φδ (⟨x⟩) = ρ(⟨x⟩; δℓ seg ).
+
+An intra-segment shift is implemented with two rotations and public masks 
+
+Ψt(⟨x⟩) = Mstay 
+
+t ⊙ ρ(⟨x⟩; t) + Mwrap 
+
+t ⊙ ρ(⟨x⟩; t − ℓseg ).
+
+Here Mstay 
+
+t keeps entries that do not cross a segment boundary and Mwrap 
+
+t keeps entries that wrap within the same segment. When only the first C segments are active, ΦδC denotes the same rotation-and-mask construction restricted to the first 
+
+Cℓ seg slots. These local maps use rotations, plaintext masks, and additions only. 
+
+Packing and Online Cost. The projection kernel evaluates plaintext-weight maps of the form 
+
+Y = XW, X ∈ RT ×din , W ∈ Rdin ×dout ,
+
+where T ≤ ℓseg is the token block stored inside each segment. Let C be the number of active feature segments in one ciphertext. Input block g is packed as 
+
+x(g)idx( r,c ) = X[r, gC + c], c = 0 , . . . , C − 1,
+
+with out-of-range entries set to zero. Output block b uses the same convention for columns bC, . . . , bC + C − 1 of Y . If din 
+
+or dout exceeds C, the matrix is split across ciphertext blocks. FESC uses the standard complex BSGS plaintext-ciphertext matrix multiplication kernel for this packing, which pairs two real input blocks in the real and imaginary CKKS channels 
+
+⟨ex(u)⟩ = ⟨x(2 u) + i x(2 u+1) ⟩.
+
+Choose BSGS parameters n1n2 = C. For output block b and giant step p, the kernel forms 
+
+⟨ec(b)
+
+p ⟩ = X
+
+un1−1X
+
+q=0 
+
+ΦqC
+
+ ⟨ex(u)⟩ ⊙ eD(b)
+
+u,p,q ,Plaintext Real-Only  𝑿 𝟎𝟎       
+
+> 𝑿 𝟏𝟎
+> 𝑿 𝟎𝟏
+> 𝑿 𝟏𝟏
+> 𝑾 𝟎𝟎
+> 𝑾 𝟎𝟎
+> 𝑾 𝟏𝟏
+> 𝑾 𝟏𝟏
+> 𝑿 𝟎𝟐
+> 𝑿 𝟏𝟐
+> 𝑿 𝟎𝟑
+> 𝑿 𝟏𝟑
+> 𝑾 𝟐𝟎
+> 𝑾 𝟐𝟎
+> 𝑾 𝟑𝟏
+> 𝑾 𝟑𝟏
+> 𝑿 𝟎𝟏
+> 𝑿 𝟏𝟏
+> 𝑿 𝟎𝟎
+> 𝑿 𝟏𝟎
+> 𝑾 𝟏𝟎
+> 𝑾 𝟏𝟎
+> 𝑾 𝟎𝟏
+> 𝑾 𝟎𝟏
+> 𝑿 𝟎𝟎
+> 𝑿 𝟏𝟎
+> 𝑿 𝟎𝟏
+> 𝑿 𝟏𝟏
+> 𝑾 𝟑𝟎
+> 𝑾 𝟑𝟎
+> 𝑾 𝟐𝟏
+> 𝑾 𝟐𝟏
+> 𝑿 𝟎𝟎 𝑿 𝟎𝟏 𝑿 𝟎𝟐 𝑿 𝟎𝟑
+> 𝑿 𝟏𝟎 𝑿 𝟏𝟏 𝑿 𝟏𝟐 𝑿 𝟏𝟑
+
+𝑋  𝑾 𝟎𝟎  𝑾 𝟎𝟏  𝑾 𝟎𝟐  𝑾 𝟎𝟑          
+
+> 𝑾 𝟏𝟎 𝑾 𝟏𝟏 𝑾 𝟏𝟐 𝑾 𝟏𝟑
+> 𝑾 𝟐𝟎 𝑾 𝟐𝟏 𝑾 𝟐𝟐 𝑾 𝟐𝟑
+> 𝑾 𝟑𝟎 𝑾 𝟑𝟏 𝑾 𝟑𝟐 𝑾 𝟑𝟑
+
+= 𝒀 𝟎𝟎  𝒀 𝟎𝟏  𝒀 𝟎𝟐  𝒀 𝟎𝟑    
+
+> 𝒀 𝟏𝟎 𝒀 𝟏𝟏 𝒀 𝟏𝟐 𝒀 𝟏𝟑
+
+𝑌 
+
+×
+
+(1)                         
+
+> 𝒀 𝟎𝟎
+> 𝒀 𝟏𝟎
+> 𝒀 𝟎𝟏
+> 𝒀 𝟏𝟏
+> 𝑿 𝟎𝟎 + 𝑿 𝟎𝟐 𝒊
+> 𝑿 𝟏𝟎 + 𝑿 𝟏𝟐 𝒊
+> 𝑿 𝟎𝟏 + 𝑿 𝟎𝟑 𝒊
+> 𝑿 𝟏𝟏 + 𝑿 𝟏𝟑 𝒊
+> 𝑾 𝟎𝟎 − 𝑾 𝟐𝟎 𝒊
+> 𝑾 𝟎𝟎 − 𝑾 𝟐𝟎 𝒊
+> 𝑾 𝟏𝟏 − 𝑾 𝟑𝟏 𝒊
+> 𝑾 𝟏𝟏 − 𝑾 𝟑𝟏 𝒊
+> 𝑿 𝟎𝟏 + 𝑿 𝟎𝟑 𝒊
+> 𝑿 𝟏𝟏 + 𝑿 𝟏𝟑 𝒊
+> 𝑿 𝟎𝟎 + 𝑿 𝟎𝟐 𝒊
+> 𝑿 𝟏𝟎 + 𝑿 𝟏𝟐 𝒊
+> 𝑾 𝟏𝟎 − 𝑾 𝟑𝟎 𝒊
+> 𝑾 𝟏𝟎 − 𝑾 𝟑𝟎 𝒊
+> 𝑾 𝟎𝟏 − 𝑾 𝟐𝟏 𝒊
+> 𝑾 𝟎𝟏 − 𝑾 𝟐𝟏 𝒊
+> 𝑿 𝟎𝟎 𝑾 𝟎𝟎 + 𝑿 𝟎𝟐 𝑾 𝟐𝟎
+> 𝑿 𝟏𝟎 𝑾 𝟎𝟎 + 𝑿 𝟏𝟐 𝑾 𝟐𝟎
+> 𝑿 𝟎𝟏 𝑾 𝟏𝟏 + 𝑿 𝟎𝟑 𝑾 𝟑𝟏
+> 𝑿 𝟏𝟏 𝑾 𝟏𝟏 + 𝑿 𝟏𝟑 𝑾 𝟑𝟏
+> 𝑿 𝟎𝟎 𝑾 𝟎𝟎 + 𝑿 𝟎𝟐 𝑾 𝟐𝟎
+> 𝑿 𝟏𝟎 𝑾 𝟎𝟎 + 𝑿 𝟏𝟐 𝑾 𝟐𝟎
+> 𝑿 𝟎𝟏 𝑾 𝟏𝟏 + 𝑿 𝟎𝟑 𝑾 𝟑𝟏
+> 𝑿 𝟏𝟏 𝑾 𝟏𝟏 + 𝑿 𝟏𝟑 𝑾 𝟑𝟏
+> 𝒀 𝟎𝟎
+> 𝒀 𝟏𝟎
+> 𝒀 𝟎𝟏
+> 𝒀 𝟏𝟏
+> ignore img
+
+(2) 
+
+(3) 
+
+⊙ ⊙ ⊙ ⊙
+
+⊙ ⊙
+
+> Complex
+
+Fig. 14. Toy BSGS plaintext-ciphertext projection packing for the HEInProj kernel with T =2 , C=4 , and n1=n2=2 . The toy multiplies X ∈ R2×4 by 
+
+W ∈ R4×4 to produce Y ∈ R2×4, while the complex path pairs two real feature blocks in the CKKS real and imaginary channels. 
+
+where eD(b)
+
+u,p,q is the pre-encoded plaintext diagonal containing the two real weight slices for paired input blocks. The real output accumulator is extracted as 
+
+⟨c(b)
+
+p ⟩ = 12
+
+
+
+⟨ec(b)
+
+p ⟩ + ⟨ec(b)
+
+p ⟩
+
+
+
+,
+
+and the giant steps are folded by segment shifts 
+
+⟨y(b)⟩ =
+
+n2−1X
+
+p=0 
+
+Φpn 1
+
+C
+
+ ⟨c(b)
+
+p ⟩.
+
+All plaintext diagonals are encoded offline and reused across requests. Figure 14 shows a toy projection instance. Key-switches arise from the rotations in ΦqC and Φpn 1
+
+C and from conjugations used for real-lane extraction, while plaintext diagonal multiplications and additions do not key-switch. 
+
+Use in FESC. HEInProj uses this method to produce z, xBC ,and dt . A separately stored gate matrix Wz is evaluated in the same fused projection call. HEOutProj uses the same method for Wout after NeRMS. 
+
+C. HEScan Kernel Packing and Correctness 
+
+Exact State and Slot Maps. Let E = HP and cstate =
+
+sstate /d s, let Eκ and λκ be the chunk channel set and slot map of Eq. 4, and for an expanded channel e = hP + p define 18 h(e) = ⌊e/P ⌋ and p(e) = e mod P . For a sequence block, the compact source packings are 
+
+λa(k, h ) = kH + h, λx(k, e ) = kE + e, λB (k, g, i ) = kGd s + gd s + i, λC (k, g, i ) = kGd s + gd s + i. 
+
+Writing j = λκ(e, i ), the public broadcasts satisfy 
+
+[br (κ)(ak)] j = ak[h(e)] ,
+
+[br (κ)(xk)] j = xk[h(e), p (e)] ,
+
+[br (κ)(Bk)] j = Bk[g(h(e)) , i ],
+
+[br (κ)(Ck)] j = Ck[g(h(e)) , i ].
+
+The reduction map is 
+
+[Σ ds (v(κ))] e =
+
+> ds−1
+
+X
+
+> i=0
+
+v(κ)
+
+> λκ(e,i )
+
+, e ∈ E κ,
+
+with inactive slots masked to zero. In sequence packing, token 
+
+k is placed at (e − κc state )L + k before each chunk emits its slice of the global LHP output stream. 
+
+Correctness Proof . For each state chunk κ, the tuple T (κ)
+
+> k
+
+represents the affine map induced by token k. Expanding right-after-left composition and applying multiplicative compatibil-ity of br (κ) gives Eq. 5, so the operator is exact function composition and remains associative. Within one block, the prefix network produces the same map as packet-induced sequential evaluation. For longer sequences, 
+
+S(κ) 
+
+> j
+
+is the exact map of block j, while G(κ) 
+
+> j
+
+composes all preceding block maps. Equation 7 therefore gives the global prefix through local position t, and replay leaves its value unchanged. Finally, Eq. 6 applies the output factor to every exact prefix chunk and sums a partition of the full recurrent coordinates after alignment to the common output packing. The resulting ciphertext contains the same mk as Eq. 3. Only CKKS arithmetic and the specified conversion quantization separate the deployed result from this real-arithmetic value. 
+
+Fused Post-SSM Path. In the secure end-to-end pipeline, 
+
+⟨mk⟩ is converted to MPC shares before the skip and gate path. For the standalone fused FHE component benchmark, the same algebra remains in CKKS. 
+
+⟨yk⟩ = ⟨mk⟩ + Dskip ⊙ ⟨ xskip ,k ⟩,
+
+⟨˜yk⟩ = ⟨yk⟩ ⊙ ⟨ gout  
+
+> k
+
+⟩.
+
+D. Complex-Packed Reduction Accounting 
+
+When two ciphertexts encode real slot vectors 
+
+v(0) , v(1) ∈ Rn
+
+with the same d-axis packing, FESC reduces both with one complex-packed rotate-add tree. It forms 
+
+⟨χ⟩ = ⟨v(0) ⟩ + i ⟨v(1) ⟩ = ⟨v(0) + i v(1) ⟩,
+
+where multiplication by i is a plaintext multiplication. Linear-ity of Σd gives 
+
+⟨Ξ⟩ = Σ d
+
+ ⟨χ⟩ =
+
+D
+
+Σd(v(0) ) + i Σ d(v(1) )
+
+E
+
+.
+
+One conjugation then separates the two real reductions 
+
+D
+
+Σd(v(0) )
+
+E
+
+= 12
+
+ ⟨Ξ⟩ + ⟨Ξ⟩, (8) 
+
+D
+
+Σd(v(1) )
+
+E
+
+= − i2
+
+ ⟨Ξ⟩ − ⟨ Ξ⟩. (9) The constants i, 1/2, and −i/2 are plaintext constants, so the only additional key-switch beyond the rotate-add tree is the conjugation in Eqs. 8–9. For FESC, the contracted state chunks ⟨v(κ) 
+
+> k
+
+⟩ are paired as 
+
+(2 ℓ, 2ℓ + 1) 
+
+before the state-axis reduction, and an odd final chunk falls back to the ordinary real Σds tree. With 
+
+Ks =
+
+ HP d s
+
+sstate 
+
+
+
+,
+
+the complex-packed ds-reduction contributes 
+
+N red rot = L
+
+ Ks
+
+2
+
+
+
+⌈log 2 ds⌉, N red conj = L
+
+ Ks
+
+2
+
+
+
+.
+
+When Ks is even, this is 
+
+L Ks
+
+2
+
+ ⌈log 2 ds⌉ + 1 
+
+total reduction key-switches, versus 
+
+LK s⌈log 2 ds⌉
+
+for the real-only path. 
+
+E. Prefix-Network Selection 
+
+FESC supports three parallel prefix network topologies for the SSM scan. For a padded length 
+
+L′ = 2 ⌈log 2 L⌉,
+
+each time step k is represented as an affine tuple (pk, s k). The associative operator • composes two consecutive steps by 
+
+(pj , s j ) • (pk, s k) = ( pj pk, s j pk + sk).
+
+All three networks compute the inclusive prefix 
+
+t1: k = t1 • · · · • tk
+
+for every k.
+
+Kogge–Stone Scan. Kogge–Stone scan [24] is the fully par-allel prefix network used when minimum prefix depth is prioritized. At each stage 
+
+s = 1 , . . . , ⌈log 2 L′⌉,
+
+every position k ≥ 2s−1 combines with the position 2s−1 steps to its left using values from the previous stage 
+
+t(s) 
+
+> k
+
+← t(s−1)  
+
+> k−2s−1
+
+• t(s−1)  
+
+> k
+
+, k ≥ 2s−1.
+
+19 The stride doubles each stage, so after ⌈log 2 L′⌉ stages every position k accumulates the full prefix t1: k. At stage s, the active-position count is 
+
+L′ − 2s−1.
+
+The total number of compositions is therefore  
+
+> log 2L′
+
+X
+
+> s=1
+
+(L′ − 2s−1) = L′ log 2 L′ − (L′ − 1) .
+
+Sklansky Scan. Sklansky scan [25] keeps logarithmic depth by broadcasting each lower-half prefix across an aligned upper half. At stage s, positions are grouped into aligned blocks of 
+
+2s. Every position k in the upper half of block b,
+
+k ∈ [b · 2s + 2 s−1, (b + 1) · 2s),
+
+combines with the last position of the lower half 
+
+t(s) 
+
+> k
+
+← t(s−1)  
+
+> b·2s+2 s−1−1
+
+• t(s−1)  
+
+> k
+
+.
+
+Exactly L′/2 positions update per stage, yielding 
+
+L′
+
+2 ⌈log 2 L′⌉
+
+total compositions at the same depth ⌈log 2 L′⌉ as Kogge–Stone but with half the work. Fan-out is explicit since one source, the last element of each lower half, supplies 2s−1 destinations simultaneously. 
+
+Brent–Kung Scan. Brent–Kung scan [26] trades an extra logarithmic pass for fewer composition nodes and lower fan-out. The network proceeds in two phases. During the up-sweep, 
+
+s = 1 , . . . , ⌈log 2 L′⌉,
+
+every 2s-aligned position k combines with position k − 2s−1
+
+t(s) 
+
+> k
+
+← t(s−1)  
+
+> k−2s−1
+
+• t(s−1)  
+
+> k
+
+, 2s | k. 
+
+After the up-sweep, only positions at power-of-two multiples carry complete prefixes. The remaining “gap” positions hold only short partial prefixes from the up-sweep stage at which they were last touched. The down-sweep uses stages 
+
+s = ⌈log 2 L′⌉ − 1, . . . , 1
+
+and propagates the missing prefixes by having the rightmost element of every aligned lower half pass its accumulated prefix to the adjacent gap position 
+
+t(dn ,s ) 
+
+> k+2 s−1
+
+← t(dn ,s +1)  
+
+> k
+
+• t(up ,s ) 
+
+> k+2 s−1
+
+, 2s | k, 2s+1 ∤ k. 
+
+The up-sweep performs L′ − 1 compositions, and the down-sweep performs 
+
+L′ − 1 − log 2 L′.
+
+The total composition count is 
+
+2( L′ − 1) − log 2 L′
+
+at depth 
+
+2⌈log 2 L′⌉ − 1.Stage  1 Stage  2 Stage  3        
+
+> F1
+> F3
+> F2
+> F4
+> F5
+> F6
+> F7
+> F8
+> S1
+> S3
+> S2
+> S4
+> S5
+> S6
+> S7
+> S8
+> Stage 1Stage 2Stage 3
+> F1
+> F3
+> F2
+> F4
+> F5
+> F6
+> F7
+> F8
+> S1
+> S3
+> S2
+> S4
+> S5
+> S6
+> S7
+> S8
+> (a) Kogge-Stone Scan
+> (b) Sklansky Scan
+> Fig. 15. Illustrative diagrams for the Kogge–Stone and Sklansky parallel prefix networks at L= 8 .
+
+Figure 15 illustrates the computations of the Kogge–Stone and Sklansky networks at L = 8 , with the Brent–Kung wiring shown in Figure 4. A filled circle at position k and stage s
+
+marks an affine composition •, with the diagonal line carrying the cross-input from position j < k at stage s−1 and the vertical wire carrying the self-input from stage s−1.
+
+F. Multiplicative Depth Budget 
+
+The scan is evaluated without bootstrapping under the FHE-standard 128-bit coefficient-modulus budgets, which are 
+
+881 bits at ring degree N = 32 ,768 and 1,782 bits at 
+
+N = 65 ,536 [51]. A chain of the form [60 , 40 ×k, 60] consumes 
+
+120 + 40 k bits, and Table XII reports the deployed-level audit using N = 32 ,768 for the short-scan rows and N = 65 ,536 
+
+for the long-scan rows, where every deployed length leaves a positive coefficient-modulus margin.                           
+
+> TABLE XII CKKS LEVEL AND COEFFICIENT -MODULUS BUDGET .
+> LRing NData levels Chain bits Margin 128 32 ,768 17 800 +81
+> 256 32 ,768 19 880 +1
+> 512 65 ,536 21 960 +812
+> 1024 65 ,536 23 1040 +732
+> 2048 65 ,536 22 1000 +772
+
+The projection stages use independent shallow chains and remain at N = 32 ,768 . The larger long-scan ring is used only for the non-bootstrapped HEScan kernel whose depth exceeds the short-ring budget. 20 Algorithm 4 Complex CKKS-to-MPC conversion instantiated from EncFormer [11], Algorithm 3 
+
+Require: P1 holds ⟨m⟩ ∈ A2 
+
+> N,q
+
+at scale ∆
+
+Ensure: Each Pb receives shares [[ u]] b 
+
+> 2ℓ
+
+and [[ v]] b 
+
+> 2ℓ
+> 1:
+
+P1 samples ˆr ← Rq uniformly.  
+
+> 2:
+
+P1 sends ⟨d⟩ ← ⟨ m⟩ + ˆ r to P0. 
+
+> 3:
+
+P1 sets [[ˆ t]] q 
+
+> 1
+
+← − ˆr. 
+
+> 4:
+
+P0 decrypts and sets [[ˆ t]] q 
+
+> 0
+
+← Dec( ⟨d⟩). 
+
+> 5:
+
+P0, P 1 invoke [[ˆ t]] 2ℓ ← ΠField2Ring ([[ˆ t]] q ). 
+
+> 6:
+
+Each Pb decodes zb ← Decode([[ˆ t]] b 
+
+> 2ℓ
+
+). 
+
+> 7:
+
+Pb outputs [[ u]] b 
+
+> 2ℓ
+
+← ℜ (zb) and [[ v]] b 
+
+> 2ℓ
+
+← ℑ (zb).
+
+APPENDIX DHYBRID PROTOCOLS AND SECURITY 
+
+A. CKKS–MPC Boundary Protocols 
+
+This appendix specifies the CKKS–MPC conversion bound-ary used by FESC. FESC instantiates the complex-lane conver-sions of EncFormer [11], whose masking and share-modulus conversion follow BLB and SiRNN [10], [40]. The conversion primitive, correctness argument, and semi-honest security are inherited from those protocols. The FESC contribution at this boundary is the compact factorized payload and its placement in the selective-SSM pipeline. The algorithms below state the exact interfaces and parameters used by the deployed system. 
+
+Boundary Interface. At a boundary, a CKKS ciphertext at scale ∆ decrypts and decodes to a packed slot vector 
+
+u + i v ∈ Cn,
+
+where the real lane u and imaginary lane v are fixed-point vectors whose centered representatives fit in Z2ℓ . The complex conversion protocols are 
+
+( ΠC
+
+> C2M
+
+ ⟨u + i v⟩ →  [[ u]] 2ℓ , [[ v]] 2ℓ
+
+,
+
+ΠC
+
+> M2C
+
+ [[ u]] 2ℓ , [[ v]] 2ℓ
+
+ → ⟨ u + i v⟩.
+
+The real-only case is obtained by setting the imaginary lane to zero. 
+
+CKKS-to-MPC Conversion. Let q = Qconv be the CKKS boundary modulus and let ˆp = Encode( u + i v, ∆) be the plaintext-ring element encrypted in ⟨m⟩. Following the secure polynomial-ring masking approach of BLB [10] and EncFormer [11], the server samples a uniform mask 
+
+ˆr ← Rq
+
+directly in the plaintext ring, not by encoding a random slot vector. The client decrypts only the masked plaintext-ring element 
+
+ˆp + e + ˆ r (mod q),
+
+where e is the CKKS decryption error. The server keeps −ˆr
+
+as its share. The parties then convert the resulting additive shares from modulus q to Z2ℓ and decode the two complex lanes locally. The two plaintext-ring shares reconstruct the masked value because 
+
+[[ˆ t]] q 
+
+> 0
+
++ [[ˆ t]] q 
+
+> 1
+
+= ˆ p + e (mod q).
+
+Algorithm 5 Complex MPC-to-CKKS conversion instantiated from EncFormer [11], Algorithm 4 
+
+Require: Shares [[ u]] 2ℓ and [[ v]] 2ℓ at scale ∆
+
+Ensure: P1 receives ⟨m⟩ ∈ A2 
+
+> N,q
+> 1:
+
+Each Pb center-lifts its shares to ˜ub, ˜vb. 
+
+> 2:
+
+Each Pb encodes [[ˆ t]] 2ℓ 
+
+> b
+
+← Encode(˜ ub + i˜ vb, ∆) . 
+
+> 3:
+
+P0, P 1 invoke [[ˆ t]] q ← ΠRing2Field ([[ˆ t]] 2ℓ
+
+). 
+
+> 4:
+
+P0 encrypts and sends ⟨c⟩ ← Enc pk ([[ˆ t]] q
+
+> 0
+
+) to P1. 
+
+> 5:
+
+P1 outputs ⟨m⟩ ← ⟨ c⟩ + [[ˆ t]] q
+
+> 1
+
+.
+
+The ring conversion preserves the centered representative except with statistical error at most 2−σstat . Since CKKS decoding is linear before the final fixed-point rounding, local decoding of the two plaintext-ring shares gives additive shares of the decoded real and imaginary lanes. Correctness therefore holds up to CKKS decoding error, fixed-point rounding, and the statistical error of the ring conversion. 
+
+MPC-to-CKKS Conversion. For the reverse direction, the parties locally center-lift their fixed-point shares, encode them as plaintext-ring shares, convert those shares to the CKKS boundary modulus, and let the client encrypt one share. The server adds its own plaintext share to obtain an encryption of the sum. The encoded plaintext shares satisfy 
+
+[[ˆ t]] q 
+
+> 0
+
++ [[ˆ t]] q 
+
+> 1
+
+≡ Encode( u + i v, ∆) (mod q)
+
+except for the statistical error of ΠRing2Field and the fixed public rounding used by the encoder. After the server adds its plaintext share to the encrypted client share, the resulting ciphertext decrypts to the encoded sum up to CKKS encryption noise. Correctness and semi-honest security follow from the complex-lane conversion analysis of EncFormer [11] and the assumed security of the share-extension primitive. In ΠC
+
+> C2M
+
+,the client decrypts a plaintext-ring value masked by fresh uniform server randomness. In ΠC
+
+> M2C
+
+, the server receives only a CKKS encryption of the client’s share. With public tensor shapes and the fixed FESC schedule, the instantiated conversions add no leakage beyond the public parameters, message sizes, schedule-induced timing, and abort status al-ready included in the functionality of Theorem 1. 
+
+Share-Modulus Conversion. We record the SiRNN/BLB-style share-modulus instantiation used by FESC for the inher-ited conversion boundary. The conversion protocols use addi-tive shares over two moduli. For any modulus M , write [[ w]] M
+
+for a two-party additive sharing with w0 + w1 = w mod M .Let cl M (w) be the centered representative in (−M/ 2, M/ 2] .We use the standard share-extension primitive ΠExt from SiRNN/BLB-style conversion protocols [10], [40]. For field-to-ring conversion, ΠField2Ring maps [[ w]] q to 
+
+[[ w]] 2ℓ . The parties invoke 
+
+Πq, 2ℓ′ 
+
+> Ext
+
+, ℓ′ ≥ max( ⌈log 2 q⌉, ℓ ),
+
+to obtain shares representing cl q (w) in Z2ℓ′ , except with error at most 2−σstat . They then locally reduce shares modulo 2ℓ.21 For ring-to-field conversion, ΠRing2Field maps [[ w]] 2ℓ to 
+
+[[ w]] q . The parties first extend to Z2ℓ+σstat . Let the extended shares be w′
+
+> 0
+
+, w ′
+
+> 1
+
+. They locally output 
+
+[[ w]] q 
+
+> 0
+
+= w′ 
+
+> 0
+
+mod q, [[ w]] q 
+
+> 1
+
+= ( w′ 
+
+> 1
+
+− 2ℓ+σstat ) mod q. 
+
+Except with probability at most 2−σstat , the two new shares reconstruct the centered value modulo q.
+
+Adopted Modulus Trimming. Following EncFormer [11], FESC modulus-switches a ciphertext to the shortest admissi-ble boundary modulus before CKKS-to-MPC conversion. A CKKS ciphertext at a boundary need not retain levels for future CKKS multiplications before it enters MPC. When the current modulus is larger than needed, P1 modulus-switches the ciphertext down to a boundary modulus q = Qconv 
+
+satisfying 
+
+log 2 q ≥ ℓ + σstat + 1 , q/ 2 > ∆Bmax .
+
+The first condition gives statistical slack for share conversion. The second prevents plaintext-ring wraparound for boundary magnitude Bmax . This trimming changes only the transmitted ciphertext size. It does not change the converted plaintext value, the MPC ring, or the conversion functionality. 
+
+B. MPC Nonlinear Calibration and Cost 
+
+Section VI defines the four MPC nonlinear protocols. This appendix complements the task-level sweep by reporting the numerical approximations used by each protocol together with the online communicating primitives required by each candi-date configuration. All approximation domains, coefficients, thresholds, bucket boundaries, and iteration counts are fixed before inference and reused across all tasks and sequence lengths. 
+
+Approximation Calibration. MoSiLU and MoSoft share the even-residual construction from §VI-B, and both use threshold 
+
+τ = 4 with Remez minimax polynomials fitted over [0 , τ 2].Degree four attains maximum errors of 0.072 for MoSiLU and 0.018 for MoSoft, while degree six provides no further im-provement under the fixed tail rule. NeRMS uses K = 8 public initializer buckets and one Newton iteration, with the bucket boundaries and initializers calibrated once from the variance range and then held fixed across datasets and sequence lengths. MMExp exploits the Mamba decay domain ∆k[h]Ah ≤ 0,where Ah = − exp( Alog ,h ), and uses a degree-four minimax approximation of exp( z) over z ∈ [−8, 0] . Figure 16 compares the selected approximations with their exact functions, and Figure 17 reports the corresponding pointwise absolute errors and the numerical tradeoffs among the candidate degrees and Newton-step counts. 
+
+Online Primitive Cost. Table XIII counts only the com-municating primitives defined in Table III, since additions, reductions, and public-coefficient operations are local. FP prod. denotes a secure fixed-point product, Cmp. a secure comparison, and Mux a secret bit-value selection. Settings D d
+
+use polynomial degree d, while N t use t Newton iterations. MoSiLU and MoSoft have different public coefficients but the same online protocol graph. −5 0 5
+
+> x
+> 0.0 2.5 5.0 7.5
+> f(x)
+
+MoSiLU   
+
+> Exact D2 (tau=3) D4 (tau=4) D6 (tau=4)
+> −10 010
+> x
+> 0510
+> f(x)
+
+MoSoft   
+
+> Exact D2 (tau=3) D4 (tau=4) D6 (tau=4)
+> 510
+> s= mean( x2)
+> 012
+> f(x)
+
+NeRMS      
+
+> Exact K=8, n=1 K=8, n=2
+> −8 −6 −4 −2 0
+> z= Δ⋅ A
+> 0.0 0.5 1.0
+> f(z)
+
+MMExp   
+
+> Exact D2 (tau=8) D4 (tau=8) D6 (tau=8)
+> Fig. 16. Exact functions and calibrated approximations for the MPC nonlinear protocols. −5 05
+> x
+> 10 −4
+> 10 −3
+> 10 −2
+> 10 −1
+> |err|
+
+MoSiLU     
+
+> Degree D2 D4 D6
+> −10 010
+> x
+> 10 −5
+> 10 −4
+> 10 −3
+> 10 −2
+> |err|
+
+MoSoft     
+
+> Degree D2 D4 D6
+> 510
+> s= mean( x2)
+> 10 −9
+> 10 −7
+> 10 −5
+> 10 −3
+> 10 −1
+> |err|
+
+NeRMS       
+
+> PW Newton K=8 n=1 n=2
+> −8 −6 −4 −2 0
+> z= Δ⋅ A
+> 10 −5
+> 10 −3
+> 10 −1
+> |err|
+
+MMExp    
+
+> Degree D2 D4 D6
+> Fig. 17. Pointwise absolute error over the calibrated approximation domains.
+
+C. End-to-End FESC Block Protocol 
+
+Algorithm 6 instantiates the block pipeline in Figure 5 as the ordered sequence of FHE kernels, boundary conversions, and MPC nonlinear protocols. 
+
+D. Security Analysis 
+
+Functionality and Leakage. The ideal functionality receives the private input x, the private model θ, and public metadata μ,then returns only the deployed inference output to the client. 
+
+FSelSSM (x, θ ; μ) →
+
+
+
+f dep  
+
+> θ
+
+(x), ⊥
+
+
+
+.
+
+22 TABLE XIII PER -OUTPUT ONLINE COMMUNICATING PRIMITIVE COUNTS FOR THE NONLINEAR CONFIGURATIONS .                                                  
+
+> Protocol Setting Unit FP prod. Cmp. Mux MoSiLU & MoSoft D2 element 122
+> MoSiLU & MoSoft D4 element 222
+> MoSiLU & MoSoft D6 element 322
+> NeRMS N1 token vector 270
+> NeRMS N2 token vector 570
+> NeRMS N3 token vector 870
+> MMExp D2 head 311
+> MMExp D4 head 511
+> MMExp D6 head 711
+
+Algorithm 6 FESC Algorithm for one Block. 
+
+Require: Encrypted block input ⟨X⟩ and server-held parameters 
+
+Ensure: Encrypted block output ⟨o⟩
+
+1: (⟨z⟩, ⟨xBC ⟩, ⟨dt ⟩) ← HEInProj kernel (⟨X⟩)
+
+2: ⟨η⟩ ← HEConv kernel (⟨xBC ⟩)
+
+3: ([[ z]] , [[ dt ]] , [[ η]]) ← ΠC
+
+> C2M
+
+(⟨z⟩, ⟨dt ⟩, ⟨η⟩)
+
+4: [[ ξ]] ← ΠMoSiLU ([[ η]]) 
+
+5: ([[ xraw ]] , [[ B]] , [[ C]]) ← Split ([[ ξ]]) 
+
+6: [[ ∆]] ← ΠMoSoft ([[ dt ]] + [[ b∆]]) 
+
+7: [[ a]] ← ΠMMExp ([[ ∆]] , [[ A]]) 
+
+8: [[ x]] ← Π×([[ ∆]] , [[ xraw ]]) 
+
+9: [[ gout ]] ← ΠMoSiLU ([[ z]]) 
+
+10: (⟨x⟩, ⟨a⟩, ⟨B⟩, ⟨C⟩) ← ΠC
+
+> M2C
+
+([[ x]] , [[ a]] , [[ B]] , [[ C]]) 
+
+11: ⟨m⟩ ← HEScan kernel (⟨x⟩, ⟨a⟩, ⟨B⟩, ⟨C⟩)
+
+12: [[ m]] ← ΠC
+
+> C2M
+
+(⟨m⟩)
+
+13: [[ y]] ← [[ m]] + Π ×([[ Dskip ]] , [[ xraw ]]) 
+
+14: [[ ey]] ← Π×([[ y]] , [[ gout ]]) 
+
+15: ⟨ey⟩ ← ΠC
+
+> M2C
+
+([[ ey]]) 
+
+16: ⟨u⟩ ← ⟨ ey⟩ ⊙ ⟨ ey⟩
+
+17: [[ u]] ← ΠC
+
+> C2M
+
+(⟨u⟩)
+
+18: [[ sRMS ]] ← ΠNeRMS ([[ u]] , HP, ϵ )
+
+19: ⟨sRMS ⟩ ← ΠC
+
+> M2C
+
+([[ sRMS ]]) 
+
+20: ⟨by⟩ ← γRMS ⊙ (⟨ey⟩ ⊙ br( ⟨sRMS ⟩)) 
+
+21: ⟨o⟩ ← HEOutProj kernel (⟨by⟩)
+
+22: return ⟨o⟩
+
+TABLE XIV PRIVACY AND LEAKAGE OF THE DEPLOYED PROTOCOL .             
+
+> Object Status Client input and secret key Private to P0
+> Model weights Private to P1except through the authorized output Selective factors and scan states Private ciphertexts or additive shares CKKS public and evaluation keys Available to P1
+> Final output Revealed only to P0
+> Public metadata Architecture, dimensions, length, crypto parame-ters, packing, block size, and schedule Observable transcript Public message count, dimensions, and abort status
+
+The function f dep  
+
+> θ
+
+includes the public approximation, fixed-point, and quantization rules defined in §II-C. Table XIV summarizes the private values, public metadata, and tran-script leakage captured by this functionality. Malicious behav-ior, party collusion, implementation side channels, and data-dependent hardware leakage are outside the scope of this analysis. The explicit protocol leakage is 
+
+Leak =  μ, {| Mj |} Jj=1 , abort  ,
+
+where J is the number of composed protocol components and the number and dimensions of all messages are determined by the public schedule. No token value, selective factor, recurrent state, comparison result, bucket index, clipping decision, or activation-region decision is opened. 
+
+Component Security. CKKS evaluation blocks reveal no encrypted client value under CKKS semantic security. The server-held plaintext weights used by these blocks are part of 
+
+P1’s private input and are not public metadata. At a CKKS-to-MPC boundary, the client decrypts only 
+
+ˆv + e + ˆ r (mod Qconv ),
+
+where ˆv is the encoded value, e is the CKKS approximation error, and ˆr is uniform over the conversion ring. The decrypted value is statistically independent of ˆv. At an MPC-to-CKKS boundary, the server receives only an encryption of the client’s additive share and combines it with its own share under encryption. MoSiLU, MoSoft, MMExp, and NeRMS are fixed compo-sitions of Π×, Πcmp , Πmux , truncation, and the boundary pro-tocols, with public coefficients, thresholds, bucket boundaries, iteration counts, tensor shapes, and schedules. Comparison and selection bits remain shared under a fixed message schedule, while approximation and fixed-point errors are included in the deployed functionalities and do not introduce additional leakage. 
+
+End-to-End Security . Fix a corrupted party Pb for b ∈{0, 1}. We construct a simulator Sb from the corrupted party’s input, authorized output, and public leakage. For a corrupted server, CKKS semantic security hides the client input and all ciphertext intermediates. The MPC transcripts are simulatable from the server’s model input and the prescribed interfaces of MPC functionalities, while MPC-to-CKKS conversion reveals only encryptions of client shares. For a corrupted client, the model weights remain server-local. Every intermediate CKKS decryption occurs inside CKKS-to-MPC conversion after the ciphertext has been masked by fresh server randomness. The resulting value is statistically independent of the underlying intermediate, while the remaining MPC transcripts are simulatable from the client input and prescribed outputs. The protocol is a fixed sequential composition ΠInfer =Π1 ◦ · · · ◦ ΠJ of CKKS blocks, MPC blocks, and conversion boundaries. Each component admits a simulator under the assumptions of Theorem 1. Let Hj denote the execution in which the first j component transcripts are simulated. Then 
+
+Hj−1 ≡c Hj for j = 1 , . . . , J. 
+
+The real execution is computationally indistinguishable from the ideal execution of FSelSSM with leakage Leak .23 APPENDIX ECOST AND RESOURCE ACCOUNTING 
+
+A. HEScan Kernel Work and Residency 
+
+The HEScan kernel work and residency analysis uses the Brent–Kung affine-composition count 
+
+CBK (n) = 2 n − log 2 n − 2
+
+for a power-of-two scan of size n. For block j, let Bj =2⌈log 2 Bj ⌉ and Kblk = 2⌈log 2 Kblk ⌉. The two-pass resident schedule executes 
+
+Cres = 2 
+
+> Kblk −1
+
+X
+
+> j=0
+
+CBK (Bj ) + CBK (Kblk ) + 
+
+> Kblk −1
+
+X
+
+> j=1
+
+Bj .
+
+The terms account for block-summary construction and replay, the summary scan, and carry application. We charge two ciphertext products for every composition and state chunk. Update construction and output contraction each add one product per token and chunk, giving 
+
+Nctmul = 2 KsCres + 2 LK s = O(LK s).
+
+Let Rcomp , Rbuild , and Rout denote the rotations required by affine composition, update construction, and contraction with state-axis reduction. The aggregate key-switch count is 
+
+Nks = Nctmul +KsCres Rcomp +LK s (Rbuild + Rout )+ N pair  
+
+> conj
+
+.
+
+For fixed model dimensions and slot maps, Nks = O(LK s),and Appendix C-D gives the instantiated rotation and conju-gation counts. With DBK (n) = 2 ⌈log 2 n⌉ − 1, the multiplicative depen-dency depth satisfies 
+
+Dscan ≤ DBK (Bblk ) + DBK (Kblk ) + 1 = O(log L).
+
+This protocol-level bound assumes the exclusive parallel-summary scan used by the resident HEScan schedule. Peak ciphertext residency satisfies 
+
+Nlive ≤ cblk Bblk + csum Kblk + Ky + Kfac + c0.
+
+The state-chunk count 
+
+Ks =
+
+ Ed s
+
+sstate 
+
+
+
+multiplies total work but not peak residency because the HEScan kernel processes one state chunk at a time. Peak device memory stays within 1.11 × at any given length while 
+
+Ks varies by 8×, so residency follows the resident schedule rather than the model shape. 
+
+B. Online Communication 
+
+The online communication is the sum of CKKS–MPC conversion traffic and MPC protocol traffic. 
+
+Conline = Cconv + CMPC .
+
+For boundary b containing Vb real fixed-point values, complex conversion uses 
+
+Kb =
+
+ Vb
+
+2nckks 
+
+
+
+ciphertexts. If Sct (Qb) denotes the serialized ciphertext size at boundary modulus Qb, then 
+
+Cconv = X
+
+> b
+
+(KbSct (Qb) + Cext (Vb)) ,
+
+where Cext is the ring-to-field or field-to-ring share-conversion traffic. Rounding is applied independently at each boundary. The deployed inbound boundary contains 
+
+Vin = L(H + HP + 2 Gd s)
+
+real values from (x, a, B, C), while the outbound boundary contains 
+
+Vout = LHP 
+
+values from the contracted output m. The state-shaped tensors 
+
+p, s, and h never cross the boundary. The MPC term follows from the deployed MoSiLU/MoSoft D4, NeRMS N1, and MMExp D4 primitive counts in Ap-pendix D-B. Consequently, 
+
+Conline = O(L(E + Gd s + H)) ,
+
+so the complete online path scales linearly with sequence length and compact factor dimensions, eliminating both token-pair work and dense-state conversion. 
+
+C. Offline Preprocessing 
+
+The MPC protocols consume input-independent Beaver triples and comparison correlations generated before inference by standard two-party OT/VOLE/PCG preprocessing [7], [8], [10], [37], [52]. For one layer, the deployed MoSiLU/MoSoft D4, NeRMS N1, and MMExp D4 configuration consumes 
+
+Tlayer (L) = L
+
+
+
+4( E + 2 Gd s) + 4 E + 4 H + 6 H
+
++ E + 2 E + 2 
+
+
+
+= L(11 E + 8 Gd s + 10 H + 2) 
+
+triples. For NL layers, 
+
+TBeaver (L) = NLTlayer (L).
+
+With arithmetic width ℓ, dealer-based generation transmits 
+
+Cdealer = 6ℓ
+
+8 TBeaver 
+
+bytes in aggregate. The OT-extension estimate used in Ta-ble XV is 
+
+COT ≈ 300 TBeaver 
+
+bytes [53]–[55]. For Mamba-base with E=1 ,536 , H=24 ,
+
+G=1 , ds=128 , and NL=12 , Table XV reports the resulting preprocessing volume. 24 TABLE XV OFFLINE BEAVER -TRIPLE BUDGET .                            
+
+> LTriples/layer Total triples Dealer (GB) OT (GB)
+> 128 2.32 M27 .9M0.92 8.4512 9.30 M111 .6M3.68 33 .51,024 18 .60 M223 .2M7.37 67 .02,048 37 .20 M446 .3M14 .73 133 .9
+
+APPENDIX FEVALUATION METHODOLOGY AND BASELINES 
+
+A. Training and Accuracy Evaluation Setup 
+
+The Mamba and BERT controls use the same dataset splits, target lengths, document-prefix policy, seed set, and validation-loss checkpoint selection, while retaining their native tok-enizers and fixed architecture-specific training recipes. For 
+
+L > 512 , BERT-base copies its final pretrained position vector into the added positions and fine-tunes the extended embedding table at the target length. The reported long-context accuracy therefore reflects full-context evaluation rather than truncation to 512 tokens. 
+
+B. Baseline Evidence and Provenance 
+
+Evidence Matrix. Table XVI follows the system order of Ta-ble VIII and records the evidence source, validated execution scope, paper use, and treatment of unavailable long-sequence results. Artifact-derived values are used within the scope that we successfully validated. 
+
+Artifact and Latency Provenance. AEGIS [14] reports four-A100-40GB BERT-base SST-2 end-to-end latencies directly. Its one-GPU-equivalent entries at L=128 and L=512 multiply the reported four-GPU values by the midpoint 3.844 × of the paper’s 3.823 –3.865 × four-GPU speedup range. At L=2048 ,AEGIS reports single-GPU memory infeasibility, so Table VIII marks the one-GPU cell as OOM. MPCFormer’s [33] released profiler was built and executed through L=512 , but it times same-node passes on synthetic inputs. Table VIII therefore anchors on its directly measured L=128 latency and scales the reproduced L=256 and L=512 costs by the 9.45 × ratio be-tween that measurement and the profiler’s L=128 cost normal-ized to the same network profile. SIGMA [34] is reproduced from its artifact and normalized to the paper network profile using its measured online traffic and offline FSS material, while SHAFT [37] is reproduced from its released short-context artifact and converted to the same network profile us-ing its compute, communication, and round ledger. BOLT [8] was built locally, but its two-party inference loop did not com-plete after initialization, so the paper-reported value is retained. BumbleBee [9] completed its released L=128 configuration, and its artifact exposes no validated executable path beyond that length. BLB [10] was built and executed from its Zenodo release, which provides longer-input options, but the L=256 
+
+and L=512 runs exceed the memory threshold defined in the paper. EncFormer [11] runs its native encrypted path only through L=128 . We therefore anchor its key-switch counts on the reproduced artifact at that length and take longer sequences (a) Token Pruning  (b) Multi-GPU Placement         
+
+> Attention Input tokens sequence
+> pruned tokens sequence
+> Fig. 18. Orthogonal long-context strategies, where (a) token pruning shortens the secure sequence and (b) multi-GPU placement distributes encrypted attention.
+
+from its simulator ledger, rather than using EncFormer as a long-sequence latency baseline. CipherPrune [13] changes the securely executed sequence through token pruning and is therefore discussed as an orthogonal long-context strategy. The two strategies are summarized in Figure 18, where token pruning shortens the securely executed sequence and multi-GPU placement distributes encrypted attention across devices, so both reduce cost without changing the quadratic scaling. 
+
+C. Hardware Memory Limits 
+
+We classify reproduced configurations against the physical memory limits of the evaluation hardware. The device refer-ence is one A100-40GB, a widely deployed accelerator used in AWS p4d.24xlarge instances, and the reproduction host provides 256 GB of system memory [56]. Configurations exceeding 40 GB of live GPU allocation or 256 GB of peak resident host allocation are classified as OOM. This host limit is permissive relative to a p4d.24xlarge , which provides 
+
+1,152 GiB across eight A100s, or 144 GiB per GPU, making our limit approximately 1.78 × larger than the equal-share reference [56]. We reserve OOM for configurations that fail from memory exhaustion or whose measured live allocation exceeds the corresponding physical limit. 
+
+D. Baseline Key-Switch Accounting 
+
+Figure 8 and Table XVII compare one-layer key-switch counts under a common accounting setting, with one re-linearization for each ciphertext multiplication. The de-ployed long-context HEScan-kernel runtime rows instead use 
+
+nckks =32 ,768 complex slots. The HEInProj and HEOutProj kernels retain the 16 ,384 -slot configurations in Table IV. At short context lengths, the wider Mamba factor path gives FESC a higher fixed operation cost, and the ordering reverses at L=512 as token-pair attention begins to dominate. At L=2 ,048 , EncFormer and BLB require 9.45 × and 21 .97 ×
+
+more key-switches, respectively, reflecting quadratic attention growth against the linear scan-contract path. 
+
+E. MPCMamba Comparison and Protocol Cost 
+
+MPCMamba [38] is the only prior secure Mamba infer-ence system, but it evaluates Vision Mamba under MPC on short image-patch sequences using six RTX 4090 GPUs across two servers. FESC instead evaluates encrypted SSM on long-document text using a hybrid CKKS–MPC backend at sequence lengths from 128 to 8192 . MPCMamba provides 25 TABLE XVI EVIDENCE AND PROVENANCE FOR BASELINE COMPARISONS .
+
+Type System Evidence Validated scope Paper use Long-sequence treatment 
+
+> FHE
+
+AEGIS [14] Paper reported BERT-base at L=128 ,
+
+512 , and 2048 
+
+Long-sequence reference Paper-reported long-sequence rows are used at the reported lengths. 
+
+> MPC
+
+MPCFormer [33] Paper and artifact BERT-base at L=128 ,
+
+256 , and 512 
+
+Latency baseline Reproduced rows are scaled to the paper network profile. SIGMA [34] Artifact reproduced BERT-base at L=128 LAN-normalized latency Reproduced short-context rows are used, with no validated longer executable path. SHAFT [37] Artifact reproduced BERT-base at L=128 LAN-normalized latency Reproduced short-context rows are used, with no validated longer executable path. 
+
+> Hybrid
+
+BOLT [8] Paper reported BERT-base at L=128 Latency baseline Paper-reported short-context rows are used, with no validated long-sequence executable path. BumbleBee [9] Artifact reproduced BERT-base at L=128 Latency baseline Reproduced short-context rows are used, with no validated longer executable path. BLB [10] Artifact reproduced BERT-base at L=128 Latency and key-switch anchor Reproduced short-context rows are used, while longer probes exceed the host-memory threshold or expose no executable path. EncFormer [11] Artifact reproduced BERT-base at L=128 Latency and key-switch anchor Reproduced short-context encrypted rows are used, with longer key-switch rows generated by its CKKS simulator. FESC This work SSM at L=128 –2048 Deployed system Native encrypted rows are measured at every reported length. 
+
+TABLE XVII ONE -LAYER KEY -SWITCH COUNTS AT 16 ,384 SLOTS .
+
+Key switches Ratio to FESC 
+
+L FESC EncFormer BLB EncFormer BLB 
+
+128 13 .9K 3.7K 4.9K 0.27 × 0.35 ×
+
+256 38 .8K 21 .5K 22 .5K 0.55 × 0.58 ×
+
+512 79 .2K 99 .2K 136 .0K 1.25 × 1.72 ×
+
+1,024 160 .0K 552 .7K 948 .3K 3.46 × 5.93 ×
+
+2,048 321 .5K 3.0M 7.1M 9.45 × 21 .97 ×
+
+TABLE XVIII EVALUATION SCOPE OF MPCM AMBA AND FESC. 
+
+Axis MPCMamba [38] FESC Workload Vision classification Long-document text classifica-tion Model Vision Mamba Mamba-2 Sequence regime Image-patch sequences 128 to 8192 text tokens Private inference MPC only Hybrid CKKS–MPC Nonlinear protocols RMSNorm, SiLU, softplus, and exponential NeRMS, MoSiLU, MoSoft, and MMExp Backend CrypTen with SEMI-2K Phantom CKKS with SCI-style MPC Hardware Two servers with six RTX 4090 GPUs One to four GPUs in the main evaluation Reported metrics Accuracy and latency Accuracy, latency, communica-tion, and memory Artifact Not publicly available Paper artifact provided 
+
+no public artifact, and its workload, protocol family, and hardware differ from FESC. We therefore use MPCMamba as a same-family protocol reference rather than a direct end-to-end latency baseline, with the evaluation scope summarized in Table XVIII. We reconstruct MPCMamba’s nonlinear protocol costs from the published algorithms and parameters. The comparison reports protocol-level operation counts under the shared cost model, complementing the end-to-end latency measurements. MPCMamba uses nexp = 8 limit-approximation squarings and 
+
+t = 3 Newton or Householder iterations. Its resulting per-output operation counts are 
+
+CSiLU = nexp + 2 t + 4 = 18 ,CSoftplus = nexp + t(nexp + 2) + nexp = 46 ,CRMSNorm = 2 + 4 t + nexp = 22 ,Cexp(∆ A) = nexp = 8 .
+
+FESC uses the deployed D4, N1, and D4 configurations reported in Appendix D-B. MoSiLU and MoSoft each require two products, two comparisons, and two muxes. NeRMS re-quires two products and seven comparisons. MMExp requires five products, one comparison, and one mux. APPENDIX GDEPLOYMENT SCALING 
+
+This section validates FESC deployment across runtime stages, GPU counts, model shapes, six accelerator classes, and sequence lengths through L=8192 .
+
+A. End-to-End Runtime Breakdown 
+
+Table XIX decomposes the measured L=2 ,048 12 -layer latency, where the left panel gives a per-layer stage breakdown on one A100-40GB GPU and the pie panel visualizes the same shares. The scan compositions dominate at ∼74% of single-GPU per-layer time, with the remaining time split across projections, MPC nonlinear work, CKKS–MPC conversion, and LAN communication. One-time offline weight encoding for the BSGS projections costs roughly 43 s per layer at this length, and is amortized across inferences and excluded from the per-layer online breakdown below. 
+
+B. Multi-GPU HEScan Kernel Execution 
+
+Parallel prefix evaluation separates the associative recur-rence operator from the hardware partition that evaluates it [15], [18], [57]. After the compact FHE–MPC boundary, the HEScan kernel admits a direct device partition because distinct state chunks cover disjoint expanded channels. FESC assigns complete state chunks to GPUs and keeps every sequence 26 TABLE XIX RUNTIME BREAKDOWN FOR DEPLOYED MAMBA -BASE AT L=2 ,048 .         
+
+> Stage, 1 GPU Time (s/layer) MPC RMSNorm 5.3
+> HEInProj kernel 15 .2
+> MPC factored activation 9.8
+> HEScan kernel 284 .2
+> HEOutProj kernel 17 .4
+> CKKS–MPC conversion 1.5
+> LAN transfer and protocol layers 52 .9
+> Online Total, 1 GPU 386 .3RMS HEInProj kernel Act. HEScan kernel HEOutProj kernel Cvt. LAN
+
+Algorithm 7 Multi-GPU HEScan kernel execution 
+
+Require: Encrypted factor streams ⟨xk ⟩, ⟨ak ⟩, ⟨Bk ⟩, ⟨Ck ⟩
+
+Require: Chunks Ks, block size Bblk , GPUs Ngpu 
+
+Ensure: Contracted outputs ⟨m1⟩, . . . , ⟨mL⟩ 
+
+> 1:
+
+Partition chunks into Q0, . . . , QNgpu −1 by Eq. 10  
+
+> 2:
+
+Replicate the CKKS context, keys, and compact factor ciphertexts  
+
+> 3:
+
+for all GPUs g = 0 , . . . , N gpu − 1 do  
+
+> 4:
+
+Initialize shard output ⟨Mg ⟩ ← 0 
+
+> 5:
+
+for each state chunk κ ∈ Q g do  
+
+> 6:
+
+for blocks j = 0 , . . . , K blk − 1 do  
+
+> 7:
+
+Build block maps {T (κ) 
+
+> j,t
+
+}t with identity padding  
+
+> 8:
+
+({P (κ) 
+
+> j,t
+
+}t, S(κ) 
+
+> j
+
+) ← BKScan ({T (κ) 
+
+> j,t
+
+}t) 
+
+> 9:
+
+Store S(κ) 
+
+> j
+
+and release block-local prefixes  
+
+> 10:
+
+end for  
+
+> 11:
+
+{G (κ) 
+
+> j
+
+}j ← ExclusiveScan ({S (κ) 
+
+> j
+
+}j ) 
+
+> 12:
+
+for blocks j = 0 , . . . , K blk − 1 do  
+
+> 13:
+
+Replay block j to rebuild {P (κ) 
+
+> j,t
+
+}t<B j 
+
+> 14:
+
+{ bP(κ) 
+
+> j,t
+
+}t<B j ← {P (κ) 
+
+> j,t
+
+◦ G (κ) 
+
+> j
+
+}t<B j 
+
+> 15:
+
+⟨Mg ⟩ ← ⟨ Mg ⟩ + Contract ds ( bP(κ) 
+
+> j
+
+, br (κ)(⟨Cj ⟩))  
+
+> 16:
+
+end for  
+
+> 17:
+
+end for  
+
+> 18:
+
+end for  
+
+> 19:
+
+return PNgpu −1 
+
+> g=0
+
+⟨Mg ⟩
+
+prefix, block summary, carry, and contraction associated with a chunk on the same device. 
+
+State-Chunk Partitioning. Let the Ks state chunks be those defined in §V-D. For Ngpu GPUs, device g receives the contiguous chunk set 
+
+Qg =
+
+
+
+κ
+
+ gK s
+
+Ngpu 
+
+
+
+≤ κ < 
+
+ (g + 1) Ks
+
+Ngpu 
+
+ 
+
+. (10) The sets Q0, . . . , QNgpu −1 are disjoint, cover all state chunks, and differ in size by at most one chunk. Contiguous assignment preserves the global expanded-channel order and simplifies output assembly. Each GPU receives a device-local copy of the common CKKS context, public encryption key, evaluation keys, and compact factor ciphertexts, while only the state-packing ci-phertexts for chunks in Qg are constructed on device g.
+
+Cross-Device Communication. Each state chunk stays on one GPU, so all affine composition, carry propagation, and contraction are device local. Multi-GPU execution replicates the compact factor ciphertexts once and collects the contracted shard outputs at the end, with no encrypted collective during the prefix scan. Since shards occupy disjoint expanded-channel coordinates, their ciphertext sum reconstructs the single-GPU packed output, or they can be added as MPC shares before the post-SSM stage. This chunk partition avoids the token-pair matrix split and prefix-node communication used by multi-GPU encrypted attention placement [14]. 
+
+Correctness. For a fixed chunk κ, Algorithm 7 executes the same two-pass resident schedule defined in Eq. 7. The first pass computes exact block summaries, the exclusive summary scan computes the exact incoming carry for every block, and the replay pass composes that carry with each local prefix before contraction. Distributing the outer loop over κ there-fore changes only the device that evaluates each independent chunk. Each device consequently produces a disjoint subset of the terms in Eq. 6, and summing the shard outputs gives the same contracted ciphertext as the single-GPU HEScan kernel path. The block size and GPU count affect work placement and peak residency but not the recurrence being evaluated. 
+
+Scaling Analysis. Let f denote the fraction of one-GPU execution time spent in the HEScan kernel. When the non-scan stages remain unsharded and scan work is balanced across 
+
+Ngpu devices, the idealized execution time and speedup are 
+
+T ideal  
+
+> Ngpu
+
+= Tother + Tscan 
+
+Ngpu 
+
+, Sideal  
+
+> Ngpu
+
+= 11 − f + f /N gpu 
+
+.
+
+(11) At L=2048 , the HEScan kernel accounts for 73 .6% of one-GPU per-layer latency in Table XIX, and four-GPU execution achieves a measured 2.15 × speedup, closely matching the 
+
+2.23 × Amdahl prediction from Eq. 11. 
+
+C. Model-Shape Scaling 
+
+FESC supports model shapes beyond the deployed Mamba-base configuration, and we validate this breadth by sweeping hidden width dmodel , head count H, and state dimension 
+
+ds while retaining the same PhantomFHE CKKS backend, SCI/EzPC-style MPC backend, and blocked-scan execution path. With active state-packing capacity sstate =16 ,384 , each shape induces the encrypted state-chunk count 
+
+Ks =
+
+ HP d s
+
+sstate 
+
+
+
+.
+
+The scan key-switch count follows directly from the Brent– Kung network, where each node uses two composition key-switches per state chunk, giving 
+
+2KsBK( L)
+
+composition key-switches, where 
+
+BK( L) = 2( L′ − 1) − log 2 L′, L′ = 2 ⌈log 2 L⌉.
+
+Latency therefore scales with the number of resident state chunks, while larger active packings trade larger ciphertexts for fewer chunks, and Table XX reports both the concrete configurations and an independent shape-sweep latency mea-surement over all evaluated sequence lengths. 27 TABLE XX SHAPE SWEEP AND MEASURED LATENCY ACROSS FESC 
+
+> CONFIGURATIONS
+
+.                                                           
+
+> Config dmodel HdsLayers FESC-small 384 12 64 12
+> FESC-slim 768 24 64 12
+> FESC-base 768 24 128 12
+> FESC-wide 1024 32 128 12
+> FESC-state+ 768 24 256 12
+> FESC-130M 768 24 128 24
+> FESC-370M 1024 32 128 48 128 256 512 1024 2048
+> Sequence length
+> FESC-small FESC-slim FESC-base FESC-wide FESC-state+ FESC-130M FESC-370M 1.4 2.5 4.8 10.2 21.2 2.5 4.7 9.3 20.2 42.9 3.7 7.6 15.7 34.8 76.2 4.9 10.1 20.9 46.6 104.6 6.5 13.5 29.2 64.0 143.3 7.5 15.1 31.4 69.5 152.4 19.6 40.2 83.7 186.4 418.3
+> Latency
+> 100 200 300 400
+> min
+
+D. Longer-Sequence Deployment 
+
+The main evaluation establishes FESC through L=2048 ,and this section pushes the system to L=8192 while preserving the factorized boundary, block-local Brent–Kung scan, and resident execution schedule within the defined OOM budget. These configurations serialize the block carries instead of scanning the summaries in parallel, so for resident block size 
+
+Bblk and Kblk = ⌈L/B blk ⌉ the scan consumes 
+
+Dscan = 2 ⌈log 2 Bblk ⌉ + Kblk 
+
+multiplicative levels. The first term is the block-local Brent– Kung depth. The second term is the carry depth across blocks. At L=2048 and Bblk =1024 , this expression gives 22 
+
+levels and matches the 1000 -bit deployed chain in Table XII. The longer-sequence configurations use N =65 ,536 , which provides 41 levels within a 1782 -bit modulus budget. Feasibility requires both the level count and ciphertext residency to remain within the device limits. At L=4096 ,
+
+Bblk =512 requires 26 levels and reaches a measured peak of 37 .8 GB. The configuration completes a measured 12 -layer run without bootstrapping at serialized-carry depth 26 , with 
+
+748 .9 s per layer. At L=8192 , the unrefreshed depth and memory constraints no longer overlap. With Bblk =512 , the scan requires only 34 
+
+levels, but the measured 40 .4 GB footprint exceeds the usable allocator envelope. Reducing the block to Bblk =256 lowers the peak to 27 .6 GB, but increases the requirement to 48 levels, beyond the available chain. Since residency increases with block size while carry depth decreases, these two configura-tions bracket the unrefreshed feasibility boundary. A secure carry refresh every R blocks bounds the scan depth by 
+
+Drefresh = 2 ⌈log 2 Bblk ⌉ + R. 
+
+With Bblk =256 and R=8 , the HEScan kernel requires 24 lev-els and 1160 chain bits. The measured peak falls to 28 .6 GB, and the complete L=8192 scan runs in 1748 .9 s per layer. The refresh converts the carry to shares with ΠC 
+
+> C2M
+
+and back with 
+
+ΠC
+
+> M2C
+
+, returning it at the top of the modulus chain without bootstrapping and without revealing it to either party. The resulting execution remains bootstrapping-free, and Table XXI collects the depth, residency, and latency of every longer-sequence configuration. 
+
+TABLE XXI LONGER -SEQUENCE EXECUTION ON ONE A100-40GB GPU.                                             
+
+> LBblk Ref. Ds/layer GB 12 L min
+> 2048 1024 none 22 386 .332 .777 .34096 512 none 26 748 .937 .8149 .88192 512 none 34 allocator failure at a measured peak of 40 .4GB
+> 8192 256 none 48 exceeds the available 41 levels
+> 8192 256 every 8blocks 24 1748 .928 .6349 .8T4 Titan A100-40 A100-80 H100 H200
+> GPU class
+> 050 100 150
+> device memory (GB)
+> 128 256 512 1,024 2,048
+> sequence length L
+> H200 H100 A100-80 A100-40 Titan T4
+> GPU class
+> 0100 200
+> latency (min)
+> 53.2 56.2 74.3 77.3 120.7 247.1
+> (a) device memory (b) end-to-end latency
+
+Fig. 19. FESC execution across six GPU classes. Panel a reports device memory, and Panel b reports end-to-end latency from L=128 to L=2 ,048 .
+
+E. Cross-GPU Portability 
+
+Figure 19 tests whether the resident HEScan schedule preserves long-context deployment across GPU generations and memory capacities by executing the same native backend build on T4, Titan, A100-40GB, A100-80GB, H100, and H200 devices. FESC reaches L=2048 on every tested class, demonstrating portable execution reach while latency tracks device capability. APPENDIX HCROSS -F AMILY SSM I MPLEMENTATIONS 
+
+This appendix shows how invariant and selective SSM families map to the same scan-contract interface exposed by the HEScan kernel in the deployed Mamba-2 pipeline. 
+
+A. Common Scan-Contract Interface 
+
+Let r denote an SSM family and let e ∈ { 0, . . . , E (r) − 1}
+
+index its expanded scan-channel dimension. For the grouped Mamba-2 family, e = (h, p ) and E(r) = HP . Let i ∈{0, . . . , d (r) 
+
+> s
+
+−1} index the SSM state coordinate, and let gr (e)
+
+denote the group assigned to channel e by family r. Each family adapter first emits a compact factor packet 
+
+Pack (r) 
+
+> k
+
+=  x(r) 
+
+> k
+
+, a (r) 
+
+> k
+
+, B (r) 
+
+> k
+
+, C (r) 
+
+> k
+
+, . . . , k = 1 , . . . , L. 
+
+The packet contains recurrence factors rather than a materi-alized dense transition, and the family adapter maps it to the affine packet consumed by HEScan, 
+
+Aff (r) 
+
+> k
+
+=  a(r) 
+
+> k
+
+, s (r) 
+
+> k
+
+, bC(r)
+
+> k
+
+.
+
+FESC interprets the family-specific decay through a broadcast map br (r) 
+
+> a
+
+,
+
+α(r) 
+
+> k
+
+[e, i ] = br (r)
+
+> a
+
+ a(r)
+
+> k
+
+[e, i ],
+
+28 and scans the additive state update already represented by s(r) 
+
+> k
+
+,
+
+h(r) 
+
+> k
+
+[e, i ] = α(r) 
+
+> k
+
+[e, i ] h(r)
+
+> k−1
+
+[e, i ] + s(r) 
+
+> k
+
+[e, i ], h(r)0 = 0 .
+
+The contracted scan output is 
+
+m(r) 
+
+> k
+
+[e] =  
+
+> d(r)
+> s−1
+
+X
+
+> i=0
+
+h(r) 
+
+> k
+
+[e, i ] bC(r) 
+
+> k
+
+[e, i ].
+
+For S4D, S5, LRU, Mamba-1/S6, and Mamba-2, the affine packet is the one-endpoint implementation 
+
+s(r) 
+
+> k
+
+[e, i ] = x(r) 
+
+> k
+
+[e] B(r) 
+
+> k
+
+[gr (e), i ],
+
+bC(r) 
+
+> k
+
+[e, i ] = C(r) 
+
+> k
+
+[gr (e), i ].
+
+Mamba-3 uses the same affine packet after its exponential– trapezoidal factor builder forms a two-endpoint state input. Thus the scan-contract interface is shared, while the construc-tion of (ak, s k, bCk) remains family-specific, as summarized in Table XXII. 
+
+B. Invariant Families 
+
+S4D. S4D instantiates the invariant packet with a diagonal state-transition spectrum and static input/output factors 
+
+aS4D  
+
+> k
+
+[i] = ¯ aS4D [i], BS4D  
+
+> k
+
+[g, i ] = ¯BS4D [g, i ],CS4D  
+
+> k
+
+[g, i ] = ¯CS4D [g, i ].
+
+Only the scan input varies with the token 
+
+xS4D  
+
+> k
+
+[e] = xscan  
+
+> k
+
+[e].
+
+The resulting FESC state update is 
+
+hS4D  
+
+> k
+
+[e, i ] = ¯ aS4D [i] hS4D 
+
+> k−1
+
+[e, i ] + xscan  
+
+> k
+
+[e] ¯BS4D [gr (e), i ],
+
+with contracted output 
+
+mS4D  
+
+> k
+
+[e] = X
+
+> i
+
+hS4D  
+
+> k
+
+[e, i ] ¯CS4D [gr (e), i ].
+
+This is the diagonal invariant-decay case. 
+
+S5. The S5-style artifact row uses the same invariant scan law as S4D, but with richer static MIMO-style B, C factors. In the diagonal-basis view used by the FESC adapter, the recurrence factors are 
+
+aS5  
+
+> k
+
+[i] = ¯ aS5 [i], BS5  
+
+> k
+
+[g, i ] = ¯BS5 [g, i ],CS5  
+
+> k
+
+[g, i ] = ¯CS5 [g, i ],
+
+and 
+
+xS5  
+
+> k
+
+[e] = xscan  
+
+> k
+
+[e].
+
+The update and contraction are 
+
+hS5  
+
+> k
+
+[e, i ] = ¯ aS5 [i] hS5 
+
+> k−1
+
+[e, i ] + xscan  
+
+> k
+
+[e] ¯BS5 [gr (e), i ],
+
+and 
+
+mS5  
+
+> k
+
+[e] = X
+
+> i
+
+hS5  
+
+> k
+
+[e, i ] ¯CS5 [gr (e), i ].
+
+It should be read as an invariant scan row with richer static 
+
+B, C mixing, not as a general dense-transition benchmark. 
+
+LRU. LRU is also an invariant affine recurrence. In complex form, let ¯λLRU [i] = ρieiθi , |ρi| < 1,
+
+or use the equivalent real block form for complex-conjugate pairs. The artifact uses the same invariant factorization 
+
+aLRU  
+
+> k
+
+[i] = ¯λLRU [i], BLRU  
+
+> k
+
+[g, i ] = ¯BLRU [g, i ],CLRU  
+
+> k
+
+[g, i ] = ¯CLRU [g, i ],
+
+while 
+
+xLRU  
+
+> k
+
+[e] = xscan  
+
+> k
+
+[e].
+
+Thus 
+
+hLRU  
+
+> k
+
+[e, i ] = ¯λLRU [i] hLRU  
+
+> k−1
+
+[e, i ] + xscan  
+
+> k
+
+[e] ¯BLRU [gr (e), i ],
+
+and 
+
+mLRU  
+
+> k
+
+[e] = X
+
+> i
+
+hLRU  
+
+> k
+
+[e, i ] ¯CLRU [gr (e), i ].
+
+LRU differs from S4D/S5 in its lightweight linear-recurrent parameterization, but cryptographically it remains in the invariant-factor regime. 
+
+C. Selective Families 
+
+Mamba-1/S6. Mamba-1/S6 instantiates the same packet with token-dependent selective factors. Let e denote the selective-scan channel index. The timestep and decay are 
+
+∆S6  
+
+> k
+
+[e] = softplus  dS6  
+
+> k
+
+[e] + bS6 ∆ [e],
+
+and 
+
+aS6  
+
+> k
+
+[e, i ] = exp  ∆S6  
+
+> k
+
+[e] AS6 [e, i ].
+
+The scan input is step-scaled 
+
+xS6  
+
+> k
+
+[e] = ∆ S6  
+
+> k
+
+[e] xraw ,S6  
+
+> k
+
+[e].
+
+The dynamic input and output factors are produced by the family-specific factor projection and represented through the same group map gS6 
+
+BS6  
+
+> k
+
+[gS6 (e), i ], CS6  
+
+> k
+
+[gS6 (e), i ].
+
+The FESC recurrence is 
+
+hS6  
+
+> k
+
+[e, i ] = aS6  
+
+> k
+
+[e, i ] hS6 
+
+> k−1
+
+[e, i ] + xS6  
+
+> k
+
+[e] BS6  
+
+> k
+
+[gS6 (e), i ],
+
+with contraction 
+
+mS6  
+
+> k
+
+[e] = X
+
+> i
+
+hS6  
+
+> k
+
+[e, i ] CS6  
+
+> k
+
+[gS6 (e), i ].
+
+Unlike the invariant families, ak, Bk, and Ck are private token-dependent factors. Unlike Mamba-2, whose decay is compact over heads and broadcast over p, i , the S6 row allows decay to vary over the scan channel and state coordinate. The common 
+
+br (r) 
+
+> a
+
+map covers both decay structures. 
+
+Mamba-2. Mamba-2 uses the grouped selective scan form. Let e = ( h, p ), where h is the SSM head and p is the per-head channel. Let g(h) ∈ { 1, . . . , G } be the group assigned to head h. The timestep, step-scaled input, and decay are 
+
+∆M2  
+
+> k
+
+[h] = softplus  dM2  
+
+> k
+
+[h] + bM2 ∆ [h],
+
+29 TABLE XXII SCAN -PACKET FACTORS BY FAMILY AT L=128 FOR dmodel =768 , H=24 , P =64 , E=1536 .                                                                  
+
+> Family Regime Decay State input Contraction dsKsAffine relin. S4D [58] invariant Fixed diagonal xk¯BFixed ¯C64 60
+> S5 [59] invariant Fixed shared transition xk¯BFixed ¯C128 12 0
+> LRU [60] invariant Fixed complex recurrence xk¯BFixed ¯C128 12 0
+> Mamba-1/S6 [15] selective Token-dependent exp(∆ kA)xkBkToken-dependent Ck16 2988
+> Mamba-2 [16] selective Headwise token-dependent xkBkGrouped dynamic Ck128 12 5,928
+> Mamba-3 [61] selective Trapezoidal complex βkvk−1+γkvkDynamic or RoPE-adjusted Ck———
+
+xM2  
+
+> k
+
+[h, p ] = ∆ M2  
+
+> k
+
+[h] xraw ,M2  
+
+> k
+
+[h, p ],
+
+and 
+
+aM2  
+
+> k
+
+[h] = exp  ∆M2  
+
+> k
+
+[h] AM2 [h].
+
+The grouped factors are 
+
+BM2  
+
+> k
+
+[g, i ], CM2  
+
+> k
+
+[g, i ], g = 1 , . . . , G. 
+
+The broadcast decay is αM2  
+
+> k
+
+[h, p, i ] = aM2  
+
+> k
+
+[h], so the recur-rence is 
+
+hM2  
+
+> k
+
+[h, p, i ] = aM2  
+
+> k
+
+[h] hM2 
+
+> k−1
+
+[h, p, i ] + xM2  
+
+> k
+
+[h, p ] BM2  
+
+> k
+
+[g(h), i ],
+
+and the contracted scan output is 
+
+mM2  
+
+> k
+
+[h, p ] = X
+
+> i
+
+hM2  
+
+> k
+
+[h, p, i ] CM2  
+
+> k
+
+[g(h), i ].
+
+Mamba-2 differs from Mamba-1/S6 by grouped SSD-style 
+
+Bk, C k sharing while retaining private token-dependent selec-tive decay. 
+
+Mamba-3. Mamba-3 remains affine and prefix-computable, but its factor builder no longer emits the one-endpoint state input xkBk [61], [62]. Its private builder produces a positive timestep ∆M3  
+
+> k
+
+, a sigmoid gate λM3  
+
+> k
+
+, and a negative transition parameter AM3  
+
+> k
+
+, from which the exponential–trapezoidal coef-ficients follow, 
+
+ρM3  
+
+> k
+
+= exp  ∆M3  
+
+> k
+
+AM3 
+
+> k
+
+ , γM3  
+
+> k
+
+= λM3  
+
+> k
+
+∆M3  
+
+> k
+
+,βM3  
+
+> k
+
+=  1 − λM3 
+
+> k
+
+∆M3  
+
+> k
+
+ρM3  
+
+> k
+
+.
+
+Writing vM3  
+
+> k
+
+[h, p, j ] = BM3  
+
+> k
+
+[h, j ] xM3  
+
+> k
+
+[h, p ], the affine state input combines two endpoints, 
+
+sM3  
+
+> k
+
+= βM3  
+
+> k
+
+vM3  
+
+> k−1
+
++ γM3  
+
+> k
+
+vM3  
+
+> k
+
+,
+
+so HEScan runs the same affine recurrence under multiplier 
+
+ρM3  
+
+> k
+
+and contracts with CM3  
+
+> k
+
+, and the extra secure work falls on constructing sk rather than on the scan algebra. The complex transition admits two CKKS representations, a paired-real rotation and the direct complex multiplier 
+
+qM3  
+
+> k
+
+[h, j ] = ρM3  
+
+> k
+
+[h] cos ϕM3  
+
+> k
+
+[h, j ] + i sin ϕM3  
+
+> k
+
+[h, j ]. Both use the same secure factors and differ only in how the transition is packed, and Appendix H-E selects the faster direct-complex path. The MIMO variant raises the state-input and state-output rank from one to R, summing R rank-indexed copies of the recurrence and contracting with R output factors. These factors stay private in FESC, so the rank-R products become additional ciphertext or MPC operations rather than ordinary low-precision matrix multiplications, and Table XXIV reports the resulting native secure implementation at L=128 .
+
+D. Shared HEScan Kernel Backend 
+
+The family adapters above differ in how they construct the affine packet 
+
+Aff (r) 
+
+> k
+
+=  a(r) 
+
+> k
+
+, s (r) 
+
+> k
+
+, bC(r)
+
+> k
+
+.
+
+For S4D, S5, and LRU, the recurrence factors are invariant server-held plaintexts. Mamba-1/S6 and Mamba-2 produce pri-vate one-endpoint selective factors, while Mamba-3 produces the two-endpoint affine input sk described in the preceding subsection. Once this packet is available, all families use the same resident prefix schedule and state-contraction backend. 
+
+Affine Prefix Composition. For state chunk κ, token k is represented by 
+
+T (r,κ ) 
+
+> k
+
+=  a(r) 
+
+> k
+
+, s (r,κ )
+
+> k
+
+.
+
+For adjacent scan items i < j , HEScan applies 
+
+T (r,κ ) 
+
+> i
+
+• T (r,κ ) 
+
+> j
+
+=  a(r) 
+
+> j
+
+a(r) 
+
+> i
+
+, br (r,κ ) 
+
+> a
+
+(a(r) 
+
+> j
+
+) ⊙ s(r,κ ) 
+
+> i
+
++ s(r,κ )
+
+> j
+
+.
+
+The Brent–Kung resident schedule computes 
+
+P(r,κ ) 
+
+> k
+
+= T (r,κ )1 • · · · • T (r,κ ) 
+
+> k
+
+, h(r,κ ) 
+
+> k
+
+= P(r,κ ) 
+
+> k
+
+(0) ,
+
+and contracts each prefix before releasing the chunk workspace, 
+
+⟨m(r) 
+
+> k
+
+⟩ = X
+
+> κ
+
+Σd(r)
+
+> s
+
+
+
+⟨h(r,κ ) 
+
+> k
+
+⟩ ⊙ bC(r,κ )
+
+> k
+
+
+
+.
+
+Encrypted Operand Regimes. The common backend re-ceives either  ¯a(r), ⟨s(r) 
+
+> k
+
+⟩, ¯C(r)
+
+for invariant families, or 
+
+ ⟨a(r) 
+
+> k
+
+⟩, ⟨s(r) 
+
+> k
+
+⟩, ⟨ bC(r) 
+
+> k
+
+⟩
+
+for selective families. Invariant decay therefore introduces no ciphertext relinearization during affine composition. Selective families pay a ciphertext composition cost according to the size and structure of their private transition factors. 30 TABLE XXIII MATCHED -SHAPE LATENCY FOR SSM FAMILIES , IN SECONDS .                              
+
+> Family L=128 L=256 L=512 L=1 ,024 L=2 ,048
+> S4D 6.712 .226 .965 .2132 .6
+> S5 6.612 .026 .565 .1132 .6
+> LRU 6.511 .926 .564 .8132 .5
+> Mamba-1/S6 722 .61,430 .62,865 .55,771 .612 ,623 .6
+> Mamba-2 18 .536 .977 .4173 .1381 .5
+
+E. Cross-Family HEScan Cost and Latency 
+
+Figure 20 summarizes how invariant and selective SSM adapters feed the common scan-contract backend. Their costs differ because the representations of ak, sk, and bCk differ, with invariant factors remaining plaintext, Mamba-2 retaining compact headwise decay, Mamba-1/S6 using a state-expanded private transition, and Mamba-3 requiring a two-endpoint secure factor builder. Table XXII reports the canonical state shape and affine-composition cost of the one-endpoint fami-lies at L=128 . Table XXIII then fixes dmodel =768 , H=24 ,
+
+P =64 , and ds=128 , so that E=1536 , Ks=12 , slot packing, residency, contraction, and output packing are held constant. The resulting differences therefore reflect each family’s factor representation and encrypted affine composition rather than model dimensions. The invariant families have nearly identical latency be-cause their recurrence factors remain plaintext and only the encrypted scan input varies across tokens. Mamba-1/S6 is substantially slower because its private transition expands across both channel and state coordinates, which motivates the grouped Mamba-2 factorization used by the FESC pipeline. Mamba-3 is reported in Table XXIV because its native secure-layer scope includes the exponential–trapezoidal factor builder and, for MIMO, rank-R state-input and output factors. For Mamba-3, we implement both paired-real and direct-complex transition representations and select the faster direct-complex path for the native secure-layer evaluation. The table compares Mamba-2 and Mamba-3 under the same single-layer component harness, while Table VIII reports deployed end-to-end model latency. At ds=128 , Table XXIV reports 179 .1 s for SISO and 405 .8 s for MIMO-R4, compared with 48 .3 s for the matched Mamba-2 control. Profiling attributes the additional cost primarily to secure two-endpoint and rank-R factor con-struction rather than to the resident prefix schedule. The result therefore demonstrates compatibility with the shared HEScan backend while confirming that compact Mamba-2 remains the faster encrypted deployment at this scale. Reducing Mamba-3 factor-construction overhead is left to future work. APPENDIX ITRAINING AND ACCURACY 
+
+A. Approximation-Aware Fine-Tuning Procedure 
+
+The AAT procedure described in §VIII-B starts from the same task-specific 12 -layer student used for exact evaluation. Before fine-tuning, it replaces every exact Mamba nonlinearity with its deployment polynomial and calibrates the bucket                                       
+
+> TABLE XXIV NATIVE SINGLE -LAYER LATENCY FOR THE MAMBA -3 COMPATIBILITY STUDY AT L=128 .
+> Model Rank dsLayer time (s) Rel. err. Ratio Mamba-2 164 34 .20.010 1.00 ×
+> Mamba-3 SISO 164 130 .30.059 3.81 ×
+> Mamba-3 MIMO-R4 464 274 .60.060 8.03 ×
+> Mamba-2 1128 48 .30.004 1.00 ×
+> Mamba-3 SISO 1128 179 .10.059 3.71 ×
+> Mamba-3 MIMO-R4 4128 405 .80.060 8.39 ×
+
+boundaries once on 500 training samples, after which the boundaries remain frozen. Table XXV summarizes the con-figuration.                   
+
+> TABLE XXV MODEL CONSTRUCTION AND APPROXIMATION CONFIGURATION .
+> Setting Value Teacher initialization state-spaces/mamba2-130m
+> Teacher adaptation One task epoch Student distillation One task epoch, T=2 ,λ=0 .5
+> Exact/AAT initialization Task-specific 12 -layer student Optimizer AdamW Learning rate 1×10 −5
+> Weight decay 0.01 LR schedule Linear warmup (6%) then linear decay Precision AMP (fp16 optimizer, fp32 master weights) Activation swap Before fine-tuning, not during Bucket calibration Single pass, 500 train samples, frozen
+
+With the approximations active from the first gradient update, the model can adapt to their error throughout fine-tuning. Post-swap evaluation instead applies them to an already fine-tuned exact checkpoint without further optimization, pro-viding a lower-bound deployment scenario without learned compensation. 
+
+B. Encrypted Accuracy Audit Scope 
+
+The encrypted audit runs 2,670 stratified long-document queries per seed end-to-end on the deployed native encrypted backend. The full test splits contain 1,400 SCOTUS, 2,500 
+
+arXiv, and 5,000 Patent examples, so evaluating every example at the three deployed lengths L ∈ { 512 , 1024 , 2048 } would re-quire 26 ,700 encrypted queries per seed. Table XXVI converts the measured latency rows into native encrypted wall-clock time and motivates the stratified 10% subset as the accuracy-evaluation unit. On this paired subset, Encrypted FESC stays within 0.48 percentage points of Plain FESC in every row and within 0.15 percentage points in aggregate. The AEGIS row gives an illustrative cross-system estimate of the cost scale for encrypted long-sequence evaluation. Applying its reported per-query latencies from Table VIII, with the missing L=1024 point geometrically interpolated from the 
+
+L=512 and L=2048 rows, to the same query count would put a single-seed full-test sweep at 7.84 years on one GPU and 
+
+2.04 years on four, about 3.5× and 1.9× longer than FESC. We also audit encrypted-versus-plaintext residual-stream agreement at all three deployed lengths. Figure 21 shows that 31 Shared  HE Scan    
+
+> 𝑥 𝑘 ത𝐵 ҧ𝐶 ത𝑎
+> ⋮
+
+𝐒 5 𝐋𝐑𝐔 𝐒𝟒𝐃   
+
+> 𝑥 𝑘
+> 𝐵 𝑘
+> 𝐶 𝑘
+> 𝑎 𝑘
+> 𝑘 = 0 𝑘 = 1 𝑘 = 𝐿 − 1
+
+𝐌𝐚𝐦𝐛𝐚𝟏/𝐒𝟔  𝑘 = 0             
+
+> ⟨𝑎 k[ℎ]⟩
+> ⟨𝑥 k[ℎ, 𝑝]⟩
+> ⟨𝐵 k[𝑔, : ]⟩
+> ⟨𝐶 k[𝑔, : ]⟩
+> ℎ = 0 ℎ = 1 ℎ = 2 ℎ = 3
+> 𝑔 = 0 𝑔 = 1
+> 𝑘 = 1
+> ℎ = 0 ℎ = 1 ℎ = 2 ℎ = 3
+> 𝑔 = 0 𝑔 = 1
+> 𝑘 = 𝐿 − 1
+> ℎ = 0 ℎ = 1 ℎ = 2 ℎ = 3
+> 𝑔 = 0 𝑔 = 1
+> ⋮
+
+Mamab2       
+
+> ҧ𝐴 = 𝑑𝑖𝑎𝑔( ത 𝑎)
+> ത𝐵, ҧ𝐶 ∶ 𝑠𝑡𝑎𝑡𝑖𝑐 𝑆𝐼𝑆𝑂
+> ҧ𝐴 = 𝑑𝑖𝑎𝑔( ത 𝑎)
+> ത𝐵, ҧ𝐶 ∶ 𝑠𝑡𝑎𝑡𝑖𝑐 𝑀𝐼𝑀𝑂
+> ҧ𝐴 = 𝑑𝑖𝑎𝑔( ҧ𝜆), | ҧ𝜆 𝑖 | < 1
+> ത𝐵, ҧ𝐶 ∶ 𝑐𝑜𝑚𝑝𝑎𝑐𝑡 𝑠𝑡𝑎𝑡𝑖𝑐
+
+Selective Factor Family 
+
+Invariant Factor Family 
+
+Invariant Factor Regime        
+
+> 𝑎 𝑘 =ҧ𝐴, 𝐵 𝑘 = ത 𝐵, 𝐶 𝑘 =ҧ𝐶
+> ⟨𝑥 𝑘 ⟩ 𝑣𝑎𝑟𝑖𝑒𝑠 𝑜𝑣𝑒𝑟 𝑡𝑜𝑘𝑒𝑛𝑠
+
+Selective Factor Regime        
+
+> ⟨𝑥 𝑘 ⟩, 𝑎 𝑘 ,𝐵 𝑘 ,𝐶 𝑘
+> all vary over tokens
+> 𝑥 𝑘 𝐵 𝑘 𝐶 𝑘 𝑎 𝑘
+
+Shared FESC Adaptor             
+
+> for each token 𝑘, emit scan packet
+> 𝑥 𝑘 , 𝑎 𝑘 , 𝐵 𝑘 , 𝐶 𝑘
+> 𝒙 𝟎 , 𝒂 𝟎 , 𝑩 𝟎 , 𝑪 𝟎 𝒙 𝟏 , 𝒂 𝟏 , 𝑩 𝟏 , 𝑪 𝟏
+> Build
+> 𝑠 𝑘 = 𝑥 𝑘 ⊗𝑔 𝐵 𝑘
+> 𝐄𝐧𝐜𝐫𝐲𝐩𝐞𝐝 𝐁𝐫𝐞𝐧𝐭 − 𝐊𝐮𝐧𝐠 𝐒𝐜𝐚𝐧
+> 𝒙 𝑳−𝟏 , 𝒂 𝑳−𝟏 , 𝑩 𝑳−𝟏 , 𝑪 𝑳−𝟏
+> 𝒔 𝟎 𝒔 𝟏 𝒔 𝑳−𝟏
+> ⋮⋮
+> 𝑻 𝟎 𝑻 𝟏 𝑻 𝑳−𝟏
+> ⋮
+> 𝒉 𝟎
+> 𝒎 𝟎
+> 𝒉 𝟏
+> 𝒎 𝟏
+> 𝒉 𝑳−𝟏
+> 𝒎 𝑳−𝟏
+> ⋮⋮
+> Scan
+> 𝑇 𝑘 =𝑎 𝑘 , 𝑠 𝑘
+> 𝐶 0Contract
+> 𝑚 𝑘 = 𝐶 𝑘 ℎ𝑘
+> 𝐶 1𝐶 𝐿−1
+
+Post SSM Stages Fig. 20. Invariant and selective SSM families use the same FESC scan-contract backend. TABLE XXVI SERIAL ENCRYPTED -EVALUATION RUNTIME IMPLIED BY TABLE VIII. 
+
+1 GPU 4 GPUs System Scope Queries/seed 1 seed 3 seeds 1 seed 3 seeds AEGIS † [14] Full test 26 ,700 2,865 .4 d ( 7.84 y) 23 .5 y 745 .6 d ( 2.04 y) 6.12 y10% audit 2,670 286 .5 d 859 .6 d ( 2.35 y) 74 .6 d 223 .7 dFESC Full test 26 ,700 823 .3 d ( 2.26 y) 6.76 y 385 .7 d ( 1.06 y) 3.17 y10% audit 2,670 82 .3 d 247 .0 d 38 .6 d 115 .7 d
+
+†AEGIS one-GPU entries are serial-equivalent values computed from paper-reported multi-GPU rows and the interpolation below, not native one-GPU runs. 
+
+the cumulative residual error grows monotonically with depth, with the growth rate stabilizing across all 12 layers. 1 2 3 4 5 6 7 8 9 10 11 12 
+
+> Layer
+> 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5
+> Cumulative rel. residual error (%)
+> SCOTUS arXiv Patent
+
+Fig. 21. Layerwise residual-stream error on the encrypted audit subset. 
+
+C. Complete Accuracy Tables 
+
+This subsection gives the complete values behind the main evaluation figures: Table XXVII reports the three-seed un-approximated accuracy in Figure 9, Table XXVIII reports the per-length communication and latency in Figure 12, and Table XXIX reports the scan residency and key-switch counts in Figure 13. For Table XXIX, the peak column records the logged live ciphertext inventory, while the result column applies the one-A100 memory envelope and CKKS chain-depth constraints. The approximation sweeps use paired controls: Exact and AAT start from the same task-specific distilled Mamba-base checkpoint and receive one additional exact or approximation-aware epoch, while BERT uses bert-base-uncased 
+
+trained directly for two epochs. Table XXX varies MoSiLU and MoSoft with RMSNorm and the exponential exact; Ta-ble XXXI varies the NeRMS Newton count with both fixed at D4; and Table XXXII varies the MMExp degree with both fixed. 
+
+TABLE XXVII THREE -SEED MEAN TASK ACCURACY [%]. 
+
+Dataset Model L=128 L=256 L=512 L=1024 L=2048 
+
+SCOTUS BERT-base 48 .78 58 .38 64 .07 64 .36 66 .36 
+
+Mamba-base 44 .65 58 .86 68 .36 70 .50 72 .50 
+
+arXiv BERT-base 86 .00 86 .40 86 .56 87 .76 88 .36 
+
+Mamba-base 85 .48 87 .60 88 .84 89 .96 90 .28 
+
+Patent BERT-base 60 .47 64 .77 65 .78 66 .98 67 .72 
+
+Mamba-base 61 .22 64 .48 65 .88 67 .44 68 .12 
+
+TABLE XXVIII FESC COMMUNICATION AND END -TO -END LATENCY .
+
+Latency (min) 
+
+L Online (GB) LAN WAN1 WAN2 WAN3 
+
+128 4.7 4.4 5.5 10 .5 12 .1256 9.3 9.0 11 .1 21 .0 22 .6512 18 .5 17 .8 21 .9 41 .7 43 .31,024 36 .9 38 .1 46 .1 85 .8 87 .42,048 73 .8 77 .3 93 .2 172 .5 174 .1
+
+TABLE XXIX RESIDENT HES CAN KERNEL SCHEDULES AT L=2048 .
+
+Scan schedule Bblk Kblk Peak (GB) HEScan KSw Time (s/layer) Result Two-pass 64 32 — 370K — chain exhausted Two-pass 128 16 — 372K — chain exhausted Two-pass 256 8 12 .8 372K 302 .1 feasible, slower Two-pass 512 4 19 .5 370K 296 .3 feasible, slower Two-pass 1024 2 32 .7 372K 284 .2 default Full-length 2048 1 — 283K — OOM 
+
+32 TABLE XXX MOSILU/M OSOFT DEGREE SWEEP WITH THREE -SEED DEVIATIONS .
+
+Baselines Post-Swap AAT Dataset L BERT-base Mamba-base D2 D4 D6 D2 D4 D6 SCOTUS 512 64 .07 ± 2.20 68 .36 ± 2.51 68 .00 ± 0.37 68 .29 ± 0.18 68 .50 ± 0.15 67 .93 ± 0.25 68 .43 ± 0.25 68 .57 ± 0.29 
+
+1024 64 .36 ± 0.70 70 .50 ± 2.27 68 .93 ± 0.61 70 .43 ± 0.46 70 .29 ± 0.53 69 .14 ± 0.82 70 .29 ± 0.08 70 .21 ± 0.27 
+
+2048 66 .36 ± 2.07 72 .50 ± 1.22 70 .86 ± 0.12 72 .64 ± 0.39 72 .71 ± 0.35 71 .00 ± 0.14 72 .71 ± 1.39 72 .50 ± 1.20 
+
+arXiv 512 86 .56 ± 1.31 88 .84 ± 0.29 88 .92 ± 0.42 88 .88 ± 0.46 88 .88 ± 0.50 89 .28 ± 0.26 88 .96 ± 0.22 89 .00 ± 0.33 
+
+1024 87 .76 ± 0.82 89 .96 ± 0.42 89 .60 ± 0.24 89 .96 ± 0.34 89 .88 ± 0.34 89 .92 ± 0.16 89 .96 ± 0.04 89 .88 ± 0.12 
+
+2048 88 .36 ± 0.77 90 .28 ± 0.31 89 .96 ± 0.09 90 .28 ± 0.16 90 .28 ± 0.20 90 .24 ± 0.43 90 .36 ± 0.17 90 .48 ± 0.45 
+
+Patent 512 65 .78 ± 0.63 65 .88 ± 0.49 64 .64 ± 0.13 65 .84 ± 0.42 65 .80 ± 0.37 65 .34 ± 0.43 65 .90 ± 0.14 65 .90 ± 0.18 
+
+1024 66 .98 ± 0.67 67 .44 ± 0.54 66 .20 ± 0.34 67 .50 ± 0.08 67 .44 ± 0.13 67 .54 ± 0.17 67 .60 ± 0.12 67 .46 ± 0.14 
+
+2048 67 .72 ± 0.95 68 .12 ± 0.50 67 .84 ± 0.34 68 .14 ± 0.29 68 .22 ± 0.31 68 .14 ± 0.05 68 .12 ± 0.10 68 .18 ± 0.17 
+
+MPC online ops — — 5 6 7 5 6 7
+
+MPC online layers — — 2 3 4 2 3 4
+
+Avg ∆ vs BERT-base — +2 .66 +1 .89 +2 .67 +2 .67 +2 .29 +2.71 +2 .69 
+
+Avg ∆ vs Mamba-base −2.66 — −0.77 +0 .01 +0 .01 −0.37 +0.05 +0 .03 
+
+TABLE XXXI NERMS ITERATION SWEEP WITH THREE -SEED DEVIATIONS .
+
+Baselines Post-Swap AAT Dataset L BERT-base Mamba-base N1 N2 N3 N1 N2 N3 SCOTUS 512 64 .07 ± 2.20 68 .36 ± 2.51 65 .86 ± 0.11 65 .86 ± 0.46 66 .14 ± 0.45 68 .29 ± 0.62 67 .57 ± 0.85 67 .14 ± 0.80 
+
+1024 64 .36 ± 0.70 70 .50 ± 2.27 66 .64 ± 0.29 66 .71 ± 0.19 66 .64 ± 0.33 68 .71 ± 0.52 68 .71 ± 0.41 68 .43 ± 0.59 
+
+2048 66 .36 ± 2.07 72 .50 ± 1.22 67 .21 ± 0.62 67 .50 ± 0.37 67 .79 ± 0.44 70 .07 ± 0.95 69 .71 ± 0.70 69 .36 ± 0.83 
+
+arXiv 512 86 .56 ± 1.31 88 .84 ± 0.29 88 .60 ± 0.63 88 .76 ± 0.72 88 .80 ± 0.61 88 .84 ± 1.09 88 .20 ± 1.21 88 .16 ± 1.03 
+
+1024 87 .76 ± 0.82 89 .96 ± 0.42 89 .28 ± 0.24 89 .44 ± 0.29 89 .64 ± 0.18 89 .80 ± 0.46 89 .80 ± 0.54 89 .36 ± 0.36 
+
+2048 88 .36 ± 0.77 90 .28 ± 0.31 90 .12 ± 0.17 90 .08 ± 0.08 90 .12 ± 0.10 90 .04 ± 0.39 89 .32 ± 0.29 8.48 † ± 1.31 
+
+Patent 512 65 .78 ± 0.63 65 .88 ± 0.49 65 .18 ± 0.17 65 .36 ± 0.32 65 .36 ± 0.30 66 .05 ± 0.52 66 .19 ± 0.65 65 .93 ± 0.60 
+
+1024 66 .98 ± 0.67 67 .44 ± 0.54 66 .78 ± 0.23 66 .78 ± 0.24 66 .88 ± 0.22 67 .63 ± 0.46 67 .73 ± 0.47 67 .51 ± 0.42 
+
+2048 67 .72 ± 0.95 68 .12 ± 0.50 67 .62 ± 0.06 67 .58 ± 0.02 67 .58 ± 0.09 68 .25 ± 0.20 68 .11 ± 0.15 68 .13 ± 0.23 
+
+MPC online ops — — 9 12 15 9 12 15 
+
+MPC online layers — — 3 6 9 3 6 9
+
+Avg ∆ vs BERT-base — +2 .66 +1 .04 +1 .12 +1 .22 +2.19 +1 .93 −7.27 
+
+Avg ∆ vs Mamba-base −2.66 — −1.62 −1.53 −1.44 −0.47 −0.73 −9.93 
+
+Avg ∆ vs BERT-base (excl. †) — +2 .66 +1 .04 +1 .12 +1 .22 +2.19 +1 .93 +1 .80 
+
+Avg ∆ vs Mamba-base (excl. †) −2.66 — −1.62 −1.53 −1.44 −0.47 −0.73 −0.95 
+
+Note. † marks the collapsed arXiv L2048 N3 AAT cell. 
+
+TABLE XXXII MME XP -DEGREE SWEEP WITH THREE -SEED DEVIATIONS .                                                                                                                                                                                                                                                                                                                                                                 
+
+> Baselines Post-Swap AAT Dataset LBERT-base Mamba-base D2 D4 D6 D8 D2 D4 D6 D8 SCOTUS 512 64 .07 ±2.20 68 .36 ±2.51 64 .69 ±0.21 65 .79 ±0.69 65 .86 ±1.62 65 .86 ±0.27 68 .07 ±0.26 67 .71 ±2.91 68 .36 ±1.86 68 .43 ±2.37
+> 1024 64 .36 ±0.70 70 .50 ±2.27 65 .33 ±0.42 66 .07 ±0.87 66 .64 ±2.88 66 .64 ±2.56 69 .52 ±0.36 69 .57 ±2.23 69 .93 ±0.48 70 .07 ±1.73
+> 2048 66 .36 ±2.07 72 .50 ±1.22 64 .86 ±0.57 67 .21 ±0.72 67 .29 ±1.17 67 .21 ±0.89 70 .60 ±1.16 70 .93 ±1.93 70 .93 ±0.03 70 .93 ±1.51
+> arXiv 512 86 .56 ±1.31 88 .84 ±0.29 87 .31 ±0.58 88 .60 ±0.67 88 .60 ±1.02 88 .60 ±1.07 88 .93 ±0.14 89 .08 ±0.36 89 .40 ±0.44 88 .52 ±1.84
+> 1024 87 .76 ±0.82 89 .96 ±0.42 88 .23 ±0.36 89 .56 ±0.45 89 .32 ±0.44 89 .32 ±2.09 62 .65 †±46 .92 89 .36 ±0.03 87 .72 ±0.27 88 .20 ±2.96
+> 2048 88 .36 ±0.77 90 .28 ±0.31 88 .53 ±0.24 90 .08 ±0.30 90 .16 ±0.48 90 .12 ±1.40 62 .81 †±47 .06 89 .80 ±1.49 89 .68 ±0.28 89 .96 ±1.28
+> Patent 512 65 .78 ±0.63 65 .88 ±0.49 64 .15 ±0.34 65 .12 ±0.49 65 .10 ±0.50 65 .12 ±1.45 66 .01 ±0.30 66 .06 ±0.82 66 .08 ±0.21 66 .14 ±1.69
+> 1024 66 .98 ±0.67 67 .44 ±0.54 65 .63 ±0.09 66 .84 ±1.03 66 .82 ±0.81 66 .80 ±1.91 67 .16 ±0.27 67 .00 ±0.26 67 .44 ±0.20 66 .86 ±2.47
+> 2048 67 .72 ±0.95 68 .12 ±0.50 66 .59 ±0.18 67 .64 ±0.12 67 .62 ±0.48 67 .66 ±2.91 49 .35 †±29 .68 67 .60 ±0.15 68 .20 ±2.10 67 .70 ±1.96
+> MPC online ops ——57911 57911
+> MPC online layers ——34563456
+> Avg ∆vs BERT-base —+2 .66 −0.29 +1 .00 +1 .05 +1 .04 −5.87 +2 .13 +2.20 +2 .10
+> Avg ∆vs Mamba-base −2.66 —−2.95 −1.66 −1.61 −1.62 −8.53 −0.53 −0.46 −0.56
+> Avg ∆vs BERT-base (excl. †)—+2 .66 −0.29 +1 .00 +1 .05 +1 .04 +2.70 +2 .13 +2 .20 +2 .10
+> Avg ∆vs Mamba-base (excl. †)−2.66 —−2.95 −1.66 −1.61 −1.62 −0.54 −0.53 −0.46 −0.56
+
+Note. † marks collapsed D2 AAT cells. The excluding-dagger rows summarize stable cells. 
+
+33

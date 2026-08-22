@@ -1,0 +1,141 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-22T20:28:11.745240+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.13868v1",
+      "source": "arxiv",
+      "title": "Exploring High-Bandwidth Flash for Modern LLM Inference: Opportunities and Challenges",
+      "abstract": "This work investigates the potential benefits and technical challenges of using high-bandwidth flash (HBF) for large language model (LLM) inference. HBF has gained increasing attention as a promising solution to mitigate memory-capacity bottlenecks in modern LLM-serving systems, but its benefits and challenges remain largely uninvestigated. To address this gap, we thoroughly analyze HBF-based LLM-serving systems under diverse system configurations and operating scenarios in which HBF serves as a main GPU-memory component to handle both reads and writes. Our analysis shows that, despite its limited write performance, HBF can significantly improve the batch size, throughput, and flexibility of LLM-serving systems while reducing the minimum GPU requirements, but realizing these benefits critically depends on sustaining HBM-comparable read bandwidth and requires significant endurance improvements.",
+      "authors": [
+        "Dowon Son",
+        "Yonggon Park",
+        "Hyunuk Cho",
+        "Hyungkyu Ham",
+        "Onur Mutlu",
+        "Sungjin Lee",
+        "Gwangsun Kim",
+        "Jisung Park"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-08-14T01:36:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.13868v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "high-bandwidth flash as GPU memory extension to mitigate capacity bottleneck for context caching and long-context inference",
+      "llm_evidence_cn": "将高带宽闪存作为GPU内存扩展，缓解长上下文推理的容量瓶颈",
+      "llm_evidence": "将高带宽闪存作为GPU内存扩展，缓解长上下文推理的容量瓶颈",
+      "canonical_evidence": "将高带宽闪存作为GPU内存扩展，缓解长上下文推理的容量瓶颈",
+      "llm_tldr_en": "This paper analyzes high-bandwidth flash as a main GPU-memory component for LLM inference, showing it can improve batch size, throughput, and flexibility despite limited write performance, thus supporting larger KV/context caches.",
+      "llm_tldr_cn": "大语言模型推理面临GPU内存容量瓶颈，高带宽闪存（HBF）被视为有前景的解决方案但研究不足。本文在多种系统配置和读写场景下全面分析HBF作为GPU内存主组件的表现。结果表明，尽管写入性能有限，HBF仍能显著提升批大小、吞吐量和灵活性，同时降低最小部署成本。该工作为长上下文场景下的上下文缓存与推理系统设计提供了重要参考。",
+      "llm_tldr": "大语言模型推理面临GPU内存容量瓶颈，高带宽闪存（HBF）被视为有前景的解决方案但研究不足。本文在多种系统配置和读写场景下全面分析HBF作为GPU内存主组件的表现。结果表明，尽管写入性能有限，HBF仍能显著提升批大小、吞吐量和灵活性，同时降低最小部署成本。该工作为长上下文场景下的上下文缓存与推理系统设计提供了重要参考。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.15241v1",
+      "source": "arxiv",
+      "title": "LOCAL: Enabling Learning On-device Contiguously for Agent LLMs",
+      "abstract": "On-device LLM agents interact repeatedly with users on local hardware, producing private traces that are valuable for adaptation but should not be sent to a remote trainer. Ideally, such agents would learn contiguously---adapting from every interaction without pausing or suspending user-facing inference---yet existing inference runtimes assume stable weights and existing RL systems assume separated resources, so neither can support this continuity. We present LOCAL, the first single-GPU runtime that enables contiguous on-device learning for LLM agents. The key insight is that GPU scheduling, adapter version management, and KV-cache validity cannot be handled by independent subsystems: adapter updates invalidate cached KV tensors from older versions, and cache retention affects the memory available for training. LOCAL makes adapter version, task priority, and cache state visible to three cooperating components---a cooperative scheduler, a version-aware KV-cache manager, and a multi-agent model runtime---that share this state to keep scheduling, execution, and cache maintenance mutually consistent. On a single 24 GB GPU with 7B-class models, LOCAL lowers foreground queue-wait p95 by 3.1x over FIFO, lowers p95 time-to-first-token (TTFT) by 1.55x versus non-preemptible training, cuts post-publish first-hit prefill p99 by 25.6% and cross-agent TTFT p99 by 21.9%, and keeps background learning progressing under tight KV budgets.",
+      "authors": [
+        "Xinxin Liu",
+        "Jiaxin Li",
+        "Zibo Wang",
+        "Yun Ji",
+        "Zhangqi Zhu",
+        "Qing Hu",
+        "Zhibin Wang",
+        "Rong Gu",
+        "Sheng Zhong",
+        "Chen Tian"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-15T14:03:14+00:00",
+      "link": "https://arxiv.org/pdf/2608.15241v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Addresses KV-cache validity and invalidation during on-device adapter updates, a key aspect for KV cache reuse",
+      "llm_evidence_cn": "处理设备端适配器更新导致的KV缓存失效问题，是KV缓存复用中的关键环节",
+      "llm_evidence": "处理设备端适配器更新导致的KV缓存失效问题，是KV缓存复用中的关键环节",
+      "canonical_evidence": "处理设备端适配器更新导致的KV缓存失效问题，是KV缓存复用中的关键环节",
+      "llm_tldr_en": "LOCAL enables contiguous on-device learning for LLM agents by coordinating GPU scheduling, adapter version management, and KV-cache validity, allowing adaptation without pausing user-facing inference.",
+      "llm_tldr_cn": "设备端LLM智能体需要持续从交互中学习，但现有推理运行时假设权重固定，强化学习系统又假设资源分离，难以支持连续学习。LOCAL在单GPU上统一调度GPU任务、适配器版本与KV缓存有效性，解决了适配器更新使旧版KV张量失效的难题，实现了不中断推理的持续设备端学习。",
+      "llm_tldr": "设备端LLM智能体需要持续从交互中学习，但现有推理运行时假设权重固定，强化学习系统又假设资源分离，难以支持连续学习。LOCAL在单GPU上统一调度GPU任务、适配器版本与KV缓存有效性，解决了适配器更新使旧版KV张量失效的难题，实现了不中断推理的持续设备端学习。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.17442v2",
+      "source": "arxiv",
+      "title": "FESC: Remodeling Long-Context Private Inference with Encrypted State-Space Models",
+      "abstract": "Processing long, sensitive documents with machine-learning models requires efficient, privacy-preserving long-context inference. Prior private inference systems optimize or distribute encrypted Transformer attention, but its quadratic token-pair work remains the bottleneck as sequence length grows. Selective state-space models (SSMs) offer linear-time recurrence, yet direct encrypted implementation incurs linear multiplicative depth, sequence-wide state residency, or dense FHE-MPC conversion. We present Factorized Encrypted Scan-Contract (FESC), a hybrid FHE-MPC system for private long-context selective SSM inference. Its factorized scan-contract keeps input-dependent transitions compact across conversion boundaries, composes them without dense expansion, streams state chunks on demand, and contracts outputs before conversion. We demonstrate interface compatibility of the scan-contract implementation across invariant and selective SSM architectures. For our Mamba-2 instantiation, we design GPU-optimized CKKS kernels for linear computations, MPC protocols for SiLU, softplus, exponential, and RMSNorm, with approximation-aware fine-tuning. To our knowledge, FESC is the first private long-document inference system to complete native end-to-end execution at $L \\geq 1{,}024$ on a single GPU. At $L = 2{,}048$, a 12-layer Mamba-base model completes inference in 77.3 minutes on one A100 GPU with a peak memory footprint of 32.7 GB, while maintaining near-plaintext accuracy on the evaluated long-document tasks.",
+      "authors": [
+        "Yufan Zhu",
+        "Chao Jin",
+        "Khin Mi Mi Aung",
+        "Xiaokui Xiao"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-08-18T07:20:09+00:00",
+      "link": "https://arxiv.org/pdf/2608.17442v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Provides a factorized encrypted scan-contract for linear-time private long-context inference with SSMs",
+      "llm_evidence_cn": "面向SSM的线性时间私有长上下文推理，采用因子化加密扫描-收缩",
+      "llm_evidence": "面向SSM的线性时间私有长上下文推理，采用因子化加密扫描-收缩",
+      "canonical_evidence": "面向SSM的线性时间私有长上下文推理，采用因子化加密扫描-收缩",
+      "llm_tldr_en": "FESC proposes a hybrid FHE-MPC system for private long-context inference using selective state-space models, with a factorized scan-contract that keeps transitions compact and avoids quadratic attention bottlenecks.",
+      "llm_tldr_cn": "处理长且敏感的文档需要高效且保护隐私的长上下文推理，但Transformer注意力的二次复杂度限制了已有私有推理系统。FESC提出因子化加密扫描-收缩框架，以混合FHE-MPC方式执行线性时间的私密选择性状态空间模型推理。它使输入依赖的状态转换在转换边界保持紧凑，避免深乘法深度和密集FHE-MPC转换开销，为私密长上下文推理提供了新的高效路径。",
+      "llm_tldr": "处理长且敏感的文档需要高效且保护隐私的长上下文推理，但Transformer注意力的二次复杂度限制了已有私有推理系统。FESC提出因子化加密扫描-收缩框架，以混合FHE-MPC方式执行线性时间的私密选择性状态空间模型推理。它使输入依赖的状态转换在转换边界保持紧凑，避免深乘法深度和密集FHE-MPC转换开销，为私密长上下文推理提供了新的高效路径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

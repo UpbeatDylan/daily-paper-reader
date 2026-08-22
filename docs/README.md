@@ -6,38 +6,30 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-21
-- 运行时间：2026-08-21 20:02:40 UTC
+- 最新运行日期：2026-08-22
+- 运行时间：2026-08-22 20:30:41 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：5
-- 速读区：1
+- 本次总论文数：3
+- 精读区：0
+- 速读区：3
 
 ### 今日简报（AI）
-今日精读5篇、速读1篇，聚焦LLM缓存与边缘RAG。最值得关注的是《ReCache》与《CacheRoute》，均获9分，分别解决工具型Agent的缓存复用压缩和大规模服务的路由优化。建议普通读者优先了解缓存复用技术如何提升LLM服务效率，可留意后续系统落地案例。
-- 详情：[/202608/21/README](/202608/21/README)
+今日共速读3篇论文，均获6.0分，聚焦LLM推理优化与隐私计算前沿。最值得关注的方向是“高带宽闪存加速现代LLM推理”及“设备端Agent持续学习”，两者均直面当前部署瓶颈。建议后续优先精读这两篇，并追踪其在真实硬件与长任务场景中的验证效果。
+- 详情：[/202608/22/README](/202608/22/README)
 
 ### 精读区论文标签
-1. [ReCache: Efficient KV Cache Reuse and Compression for Tool-Augmented LLM Agents](/202608/21/2608.19662v1-recache-efficient-kv-cache-reuse-and-compression-for-tool-augmented-llm-agents)  
-   标签：评分：9.0/10、query:pic
-   evidence：面向工具增强智能体的KV缓存重用与压缩，克服前缀缓存限制
-2. [CacheRoute: Planned Prefix-Affinity Routing for Large-Scale LLM Serving](/202608/21/2608.19677v1-cacheroute-planned-prefix-affinity-routing-for-large-scale-llm-serving)  
-   标签：评分：9.0/10、query:pic
-   evidence：通过前缀亲和性路由规划最大化KV缓存复用
-3. [Learning how to Forget: Fine-tuning for Long-Context Sparse Attention](/202608/21/2608.19920v1-learning-how-to-forget-fine-tuning-for-long-context-sparse-attention)  
-   标签：评分：9.0/10、query:pic
-   evidence：通过微调使模型与任意KV缓存策略共适应，改善长上下文推理中的上下文缓存
-4. [Which Eviction Policy Should an LLM Cache Use? A Systematic Study Across Workloads, Capacities, and Encoders](/202608/21/2608.20280v1-which-eviction-policy-should-an-llm-cache-use-a-systematic-study-across-workloads-capacities-and-encoders)  
-   标签：评分：9.0/10、query:pic
-   evidence：LLM响应语义缓存与驱逐策略系统比较
-5. [FlashPrefill V2: Block-Sparse Prefill Attention for Long-Context LLM Serving](/202608/21/2608.19758v1-flashprefill-v2-block-sparse-prefill-attention-for-long-context-llm-serving)  
-   标签：评分：8.0/10、query:pic
-   evidence：面向长上下文LLM服务加速的块稀疏预填充注意力
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [From Retrieved Context to Runtime Control: Adaptive Compression for Edge-based RAG](/202608/21/2608.19535v1-from-retrieved-context-to-runtime-control-adaptive-compression-for-edge-based-rag)  
-   标签：评分：7.0/10、query:pic
-   evidence：运行时自适应上下文压缩减少RAG长提示的KV缓存占用和延迟
+1. [Exploring High-Bandwidth Flash for Modern LLM Inference: Opportunities and Challenges](/202608/22/2608.13868v1-exploring-high-bandwidth-flash-for-modern-llm-inference-opportunities-and-challenges)  
+   标签：评分：6.0/10、query:pic
+   evidence：将高带宽闪存作为GPU内存扩展，缓解长上下文推理的容量瓶颈
+2. [LOCAL: Enabling Learning On-device Contiguously for Agent LLMs](/202608/22/2608.15241v1-local-enabling-learning-on-device-contiguously-for-agent-llms)  
+   标签：评分：6.0/10、query:pic
+   evidence：处理设备端适配器更新导致的KV缓存失效问题，是KV缓存复用中的关键环节
+3. [FESC: Remodeling Long-Context Private Inference with Encrypted State-Space Models](/202608/22/2608.17442v2-fesc-remodeling-long-context-private-inference-with-encrypted-state-space-models)  
+   标签：评分：6.0/10、query:pic
+   evidence：面向SSM的线性时间私有长上下文推理，采用因子化加密扫描-收缩
 
 
 <div class="dpr-home-promo-card">
