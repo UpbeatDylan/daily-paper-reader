@@ -1,0 +1,57 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-23T20:08:58.972056+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.15592v1",
+      "source": "arxiv",
+      "title": "When Entropy Is Not Enough: Reclaiming Lost Semantics in LLM Output Length Prediction",
+      "abstract": "Efficient LLM serving is often bottlenecked by the need to pad sequences to a fixed maximum length, and this wastes compute and degrades throughput. Predicting output lengths in advance makes it possible to adopt length-aware scheduling, and this reduces the overhead. This advantage is especially pronounced in long-context reasoning and reinforcement learning applications. Existing approaches, such as entropy-guided token pooling, use token-wise entropy as their primary signal, but they tend to ignore differences in semantic content across tokens. So, important tokens are often underweighted, and tokens carrying little information receive disproportionate emphasis. This hurts the reliability of length prediction. We introduce ESTP (Entropy-and-Semantic Token Pooling), a lightweight framework that addresses this issue by combining entropy with attention-based importance scores. These scores are derived directly from the self-attention weights computed during the LLM prefill phase, and this allows ESTP to capture both uncertainty and semantic importance with minimal additional computation. Since the framework reuses prefill activations, it adds almost no extra memory overhead and introduces only minimal latency. On the ForeLen benchmark, ESTP outperforms baseline methods, achieves better prediction accuracy and lower error rates in most scenarios. When integrated with a length-aware scheduler in end-to-end system tests, it further helps improve overall throughput and reduce the padding ratio. Our results offer a practical and effective building block for length-aware LLM serving systems.",
+      "authors": [
+        "Feiyang Ren",
+        "Shengtao Wen",
+        "Lingbing Guo",
+        "Yu Tian",
+        "Yuanning Cui",
+        "Xiang Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-16T07:28:15+00:00",
+      "link": "https://arxiv.org/pdf/2608.15592v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "output length prediction for length-aware scheduling to reduce padding overhead, especially in long-context reasoning and RL applications",
+      "llm_evidence_cn": "通过输出长度预测实现长度感知调度以减少填充开销，尤其针对长上下文推理与强化学习应用",
+      "llm_evidence": "通过输出长度预测实现长度感知调度以减少填充开销，尤其针对长上下文推理与强化学习应用",
+      "canonical_evidence": "通过输出长度预测实现长度感知调度以减少填充开销，尤其针对长上下文推理与强化学习应用",
+      "llm_tldr_en": "ESTP improves LLM output length prediction by combining entropy with semantic content, enabling length-aware scheduling that reduces padding overhead and boosts throughput in long-context settings.",
+      "llm_tldr_cn": "LLM服务常因将序列填充到固定最大长度而浪费算力，现有熵引导方法忽略词元间语义差异导致长度预测不准确。论文提出ESTP，在熵信号基础上结合词元语义内容以更可靠地预测输出长度。在长上下文推理与强化学习场景中，该方法支撑长度感知调度，减少填充开销并提升吞吐，为更高效的LLM服务提供新手段。",
+      "llm_tldr": "LLM服务常因将序列填充到固定最大长度而浪费算力，现有熵引导方法忽略词元间语义差异导致长度预测不准确。论文提出ESTP，在熵信号基础上结合词元语义内容以更可靠地预测输出长度。在长上下文推理与强化学习场景中，该方法支撑长度感知调度，减少填充开销并提升吞吐，为更高效的LLM服务提供新手段。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

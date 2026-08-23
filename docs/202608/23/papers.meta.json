@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-23",
+  "date": "2026-08-23",
+  "generated_at": "2026-08-23T20:09:45",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/23/2608.15592v1-when-entropy-is-not-enough-reclaiming-lost-semantics-in-llm-output-length-prediction",
+      "section": "quick",
+      "title_en": "When Entropy Is Not Enough: Reclaiming Lost Semantics in LLM Output Length Prediction",
+      "authors": "Feiyang Ren, Shengtao Wen, Lingbing Guo, Yu Tian, Yuanning Cui, Xiang Chen",
+      "date": "2026-08-16",
+      "pdf": "https://arxiv.org/pdf/2608.15592v1",
+      "score": "6.0",
+      "evidence": "通过输出长度预测实现长度感知调度以减少填充开销，尤其针对长上下文推理与强化学习应用",
+      "tldr": "LLM输出长度预测对高效服务至关重要，但现有基于熵的方法忽略token语义差异，导致预测失真。为此提出ESTP框架，将熵与来自预填充自注意力的重要性分数结合，几乎不增加额外开销。在ForeLen基准上取得更优精度和更低误差，与调度器集成可提升吞吐并减少填充。为长度感知LLM服务系统提供轻量实用组件。",
+      "tags": "query:pic",
+      "abstract_en": "Efficient LLM serving is often bottlenecked by the need to pad sequences to a fixed maximum length, and this wastes compute and degrades throughput. Predicting output lengths in advance makes it possible to adopt length-aware scheduling, and this reduces the overhead. This advantage is especially pronounced in long-context reasoning and reinforcement learning applications. Existing approaches, such as entropy-guided token pooling, use token-wise entropy as their primary signal, but they tend to ignore differences in semantic content across tokens. So, important tokens are often underweighted, and tokens carrying little information receive disproportionate emphasis. This hurts the reliability of length prediction. We introduce ESTP (Entropy-and-Semantic Token Pooling), a lightweight framework that addresses this issue by combining entropy with attention-based importance scores. These scores are derived directly from the self-attention weights computed during the LLM prefill phase, and this allows ESTP to capture both uncertainty and semantic importance with minimal additional computation. Since the framework reuses prefill activations, it adds almost no extra memory overhead and introduces only minimal latency. On the ForeLen benchmark, ESTP outperforms baseline methods, achieves better prediction accuracy and lower error rates in most scenarios. When integrated with a length-aware scheduler in end-to-end system tests, it further helps improve overall throughput and reduce the padding ratio. Our results offer a practical and effective building block for length-aware LLM serving systems.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

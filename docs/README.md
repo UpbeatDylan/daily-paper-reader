@@ -6,30 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-22
-- 运行时间：2026-08-22 20:30:41 UTC
+- 最新运行日期：2026-08-23
+- 运行时间：2026-08-23 20:09:40 UTC
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：1
 - 精读区：0
-- 速读区：3
+- 速读区：1
 
 ### 今日简报（AI）
-今日共速读3篇论文，均获6.0分，聚焦LLM推理优化与隐私计算前沿。最值得关注的方向是“高带宽闪存加速现代LLM推理”及“设备端Agent持续学习”，两者均直面当前部署瓶颈。建议后续优先精读这两篇，并追踪其在真实硬件与长任务场景中的验证效果。
-- 详情：[/202608/22/README](/202608/22/README)
+今日精读0篇、速读1篇，整体阅读量较少，聚焦于语言模型输出长度预测的语义缺失问题。  
+最值得留意的是《When Entropy Is Not Enough》，它指出仅靠熵预测输出长度不够，需找回丢失的语义信息（6.0/10）。  
+建议普通读者先浏览该文结论，后续可补充精读同类主题，或增加其他方向论文以拓宽视野。
+- 详情：[/202608/23/README](/202608/23/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Exploring High-Bandwidth Flash for Modern LLM Inference: Opportunities and Challenges](/202608/22/2608.13868v1-exploring-high-bandwidth-flash-for-modern-llm-inference-opportunities-and-challenges)  
+1. [When Entropy Is Not Enough: Reclaiming Lost Semantics in LLM Output Length Prediction](/202608/23/2608.15592v1-when-entropy-is-not-enough-reclaiming-lost-semantics-in-llm-output-length-prediction)  
    标签：评分：6.0/10、query:pic
-   evidence：将高带宽闪存作为GPU内存扩展，缓解长上下文推理的容量瓶颈
-2. [LOCAL: Enabling Learning On-device Contiguously for Agent LLMs](/202608/22/2608.15241v1-local-enabling-learning-on-device-contiguously-for-agent-llms)  
-   标签：评分：6.0/10、query:pic
-   evidence：处理设备端适配器更新导致的KV缓存失效问题，是KV缓存复用中的关键环节
-3. [FESC: Remodeling Long-Context Private Inference with Encrypted State-Space Models](/202608/22/2608.17442v2-fesc-remodeling-long-context-private-inference-with-encrypted-state-space-models)  
-   标签：评分：6.0/10、query:pic
-   evidence：面向SSM的线性时间私有长上下文推理，采用因子化加密扫描-收缩
+   evidence：通过输出长度预测实现长度感知调度以减少填充开销，尤其针对长上下文推理与强化学习应用
 
 
 <div class="dpr-home-promo-card">

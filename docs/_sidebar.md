@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-23 <!--dpr-date:20260823-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/23/2608.15592v1-when-entropy-is-not-enough-reclaiming-lost-semantics-in-llm-output-length-prediction" data-sidebar-item="{&quot;title&quot;: &quot;When Entropy Is Not Enough: Reclaiming Lost Semantics in LLM Output Length Prediction&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.15592v1-when-entropy-is-not-enough-reclaiming-lost-semantics-in-llm-output-length-prediction&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;通过输出长度预测实现长度感知调度以减少填充开销，尤其针对长上下文推理与强化学习应用&quot;}">When Entropy Is Not Enough: Reclaiming Lost Semantics in LLM Output Length Prediction</a>
   * 2026-08-22 <!--dpr-date:20260822-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/22/2608.13868v1-exploring-high-bandwidth-flash-for-modern-llm-inference-opportunities-and-challenges" data-sidebar-item="{&quot;title&quot;: &quot;Exploring High-Bandwidth Flash for Modern LLM Inference: Opportunities and Challenges&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.13868v1-exploring-high-bandwidth-flash-for-modern-llm-inference-opportunities-and-challenges&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;将高带宽闪存作为GPU内存扩展，缓解长上下文推理的容量瓶颈&quot;}">Exploring High-Bandwidth Flash for Modern LLM Inference: Opportunities and Challenges</a>
