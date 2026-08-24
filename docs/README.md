@@ -6,26 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-23
-- 运行时间：2026-08-23 20:09:40 UTC
+- 最新运行日期：2026-08-24
+- 运行时间：2026-08-24 20:34:41 UTC
 - 运行状态：成功
-- 本次总论文数：1
-- 精读区：0
+- 本次总论文数：2
+- 精读区：1
 - 速读区：1
 
 ### 今日简报（AI）
-今日精读0篇、速读1篇，整体阅读量较少，聚焦于语言模型输出长度预测的语义缺失问题。  
-最值得留意的是《When Entropy Is Not Enough》，它指出仅靠熵预测输出长度不够，需找回丢失的语义信息（6.0/10）。  
-建议普通读者先浏览该文结论，后续可补充精读同类主题，或增加其他方向论文以拓宽视野。
-- 详情：[/202608/23/README](/202608/23/README)
+今日精读1篇、速读1篇，聚焦大模型异构通信与API生态安全。最值得关注的是《Dual-Cache Latent Space Communication》提出的跨模型缓存通信新思路（9/10），以及《Prefix-Cache Side Channels》揭示的LLM API供应商间隐藏依赖风险。建议普通读者优先追踪前者，后者可关注缓存侧信道带来的生态安全隐患。
+- 详情：[/202608/24/README](/202608/24/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Dual-Cache Latent Space Communication between Heterogeneous Language Models](/202608/24/2608.20617v1-dual-cache-latent-space-communication-between-heterogeneous-language-models)  
+   标签：评分：9.0/10、query:pic
+   evidence：提出位置无关的共享者缓存池化用于异构 KV 缓存翻译，契合位置无关缓存概念
 
 ### 速读区论文标签
-1. [When Entropy Is Not Enough: Reclaiming Lost Semantics in LLM Output Length Prediction](/202608/23/2608.15592v1-when-entropy-is-not-enough-reclaiming-lost-semantics-in-llm-output-length-prediction)  
+1. [Uncovering and Understanding Hidden Dependencies in the LLM API Reseller Ecosystem via Prefix-Cache Side Channels](/202608/24/2608.20732v1-uncovering-and-understanding-hidden-dependencies-in-the-llm-api-reseller-ecosystem-via-prefix-cache-side-channels)  
    标签：评分：6.0/10、query:pic
-   evidence：通过输出长度预测实现长度感知调度以减少填充开销，尤其针对长上下文推理与强化学习应用
+   evidence：利用前缀缓存复用作为侧信道，直接涉及 LLM 服务中的前缀缓存技术
 
 
 <div class="dpr-home-promo-card">

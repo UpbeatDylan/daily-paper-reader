@@ -1,0 +1,99 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-24T20:32:10.130036+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2608.20617v1",
+      "source": "arxiv",
+      "title": "Dual-Cache Latent Space Communication between Heterogeneous Language Models",
+      "abstract": "Multi-agent LLM systems split work across models, so answering often requires knowledge that sits in another agent's context: a Sharer has encoded information that a Receiver needs to complete its task. They usually communicate by exchanging text, which puts autoregressive decoding on the critical path and reduces the exchange to a discrete message written without sight of the receiver's state. Recent latent protocols instead translate the sharer's key-value (KV) cache into the receiver's: C2C supports heterogeneous models but requires both to read the same input, while LCF-X removes this shared-context requirement through position-free sharer-cache pooling. Three restrictions remain: LCF-X compresses the sharer alone, supplies the same layer-local summary to every receiver position with no joint cross-layer memory to retrieve from, and assumes matched layer count and KV geometry. We introduce XKV, which lifts all three: learned-query attention pools both caches; self-attention over receiver-aligned layer tokens, with a learned layer map reconciling different depths, mixes the pooled summaries into a compact joint memory; and a shared position decoder lets every raw receiver cache position retrieve its own per-head-gated residual in the receiver's native KV geometry. Both models stay frozen and may differ in family, depth, KV-head count, head dimension, and tokenizer; only the translator is trained. Across 45 dataset-model-pair settings (six heterogeneous and three same-model ordered pairings, five datasets), XKV attains the highest macro score and best average rank, improving on LCF-X on every dataset (by 4.6 exact-match and 4.2 F1 points on ROPES) and surpassing text communication on four of the five, while training 76% fewer parameters and translating a cache pair 10.3x faster (5.8 vs. 59.9 ms); end to end, XKV is 26% faster than LCF-X and 6.8x faster than text communication.",
+      "authors": [
+        "Jiyao Liu",
+        "Qi Zhang",
+        "Yaoyi Jia",
+        "Ziwen Kan",
+        "Song Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-20T23:35:36+00:00",
+      "link": "https://arxiv.org/pdf/2608.20617v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Introduces position-free sharer-cache pooling for heterogeneous KV cache translation, matching position independent caching concept",
+      "llm_evidence_cn": "提出位置无关的共享者缓存池化用于异构 KV 缓存翻译，契合位置无关缓存概念",
+      "llm_evidence": "提出位置无关的共享者缓存池化用于异构 KV 缓存翻译，契合位置无关缓存概念",
+      "canonical_evidence": "提出位置无关的共享者缓存池化用于异构 KV 缓存翻译，契合位置无关缓存概念",
+      "llm_tldr_en": "Dual-cache latent communication removes shared-context and position constraints via position-free sharer-cache pooling, enabling KV cache reuse across heterogeneous LLMs without shared input.",
+      "llm_tldr_cn": "多智能体 LLM 系统常需在异构模型间传递上下文信息，文本通信将自回归解码置于关键路径且无法感知接收方状态。已有方法通过 KV 缓存翻译实现潜在空间通信，但往往要求共享输入或存在位置约束。本文提出双缓存机制，结合位置无关的 sharer 缓存池化，消除共享上下文需求，支持异构模型间的缓存级通信。该方法展示了位置无关 KV 缓存在模型间复用和通信中的潜力，为 LLM 推理加速和协作提供了新思路。",
+      "llm_tldr": "多智能体 LLM 系统常需在异构模型间传递上下文信息，文本通信将自回归解码置于关键路径且无法感知接收方状态。已有方法通过 KV 缓存翻译实现潜在空间通信，但往往要求共享输入或存在位置约束。本文提出双缓存机制，结合位置无关的 sharer 缓存池化，消除共享上下文需求，支持异构模型间的缓存级通信。该方法展示了位置无关 KV 缓存在模型间复用和通信中的潜力，为 LLM 推理加速和协作提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.20732v1",
+      "source": "arxiv",
+      "title": "Uncovering and Understanding Hidden Dependencies in the LLM API Reseller Ecosystem via Prefix-Cache Side Channels",
+      "abstract": "LLM API resellers have become an important access layer to modern LLM services. However, multi-level resale creates an opaque supply chain: a user's request may traverse undisclosed upstream resellers, each of which can inspect or modify prompts and responses, inducing ecosystem-level confidentiality and integrity risks. Existing studies audit individual resellers, but provide little visibility into hidden dependencies across resellers. We present CacheTracer, the first API-only measurement of such hidden dependencies. Our key insight is to exploit prefix-cache reuse as a side channel to measure dependency via cache-reach relations. CacheTracer operationalizes this insight with two primitives: Flood populates fresh cache state through one endpoint, and Prove probes whether another can reuse it while excluding probe-created hits.   We then conduct a real-world measurement study with CacheTracer on 39 reseller endpoints, sending 1.1 million API requests across 636 endpoint pairs. Our measurements reveal a deep, concentrated cache-reach structure: 37.1% of measured pairs exhibit shared cache reach, the containment order spans seven layers, and one cache reach is contained within at least 31 of other nodes. We further find that the recovered structure is model-specific. We also evaluate the validity of CacheTracer through both real-world consistency checks and controlled experiments. The results show its high reliability and accuracy. These findings reveal substantial hidden dependencies among seemingly independent API resellers. Such deep and concentrated dependencies can create a large potential blast radius, where a confidentiality or integrity failure along a common upstream path may affect users across multiple downstream resellers.",
+      "authors": [
+        "Zimo Ji",
+        "Xin Wei",
+        "Congying Xu",
+        "Wenyuan Jiang",
+        "Xin Yang",
+        "Zongjie Li",
+        "Yudong Gao",
+        "Shuai Wang"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-08-21T04:35:21+00:00",
+      "link": "https://arxiv.org/pdf/2608.20732v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Exploits prefix-cache reuse as a side channel, directly relevant to prefix caching techniques in LLM services",
+      "llm_evidence_cn": "利用前缀缓存复用作为侧信道，直接涉及 LLM 服务中的前缀缓存技术",
+      "llm_evidence": "利用前缀缓存复用作为侧信道，直接涉及 LLM 服务中的前缀缓存技术",
+      "canonical_evidence": "利用前缀缓存复用作为侧信道，直接涉及 LLM 服务中的前缀缓存技术",
+      "llm_tldr_en": "CacheTracer uses prefix-cache reuse as an API-only side channel to measure hidden dependencies in LLM API reseller ecosystems, operationalized via flood and cache-reach primitives.",
+      "llm_tldr_cn": "LLM API 转售链路不透明，用户的请求可能经由未披露的上游转售商，存在机密性和完整性风险。CacheTracer 是首个仅基于 API 的测量工具，利用前缀缓存复用作为侧信道，通过缓存可达关系揭示转售商之间的隐藏依赖。其核心原语 Flood 填充缓存，并借助前缀缓存重用行为推断依赖。该工作为理解 LLM 服务生态中的缓存行为提供了新视角，也提醒前缀缓存复用可能带来信息泄露风险。",
+      "llm_tldr": "LLM API 转售链路不透明，用户的请求可能经由未披露的上游转售商，存在机密性和完整性风险。CacheTracer 是首个仅基于 API 的测量工具，利用前缀缓存复用作为侧信道，通过缓存可达关系揭示转售商之间的隐藏依赖。其核心原语 Flood 填充缓存，并借助前缀缓存重用行为推断依赖。该工作为理解 LLM 服务生态中的缓存行为提供了新视角，也提醒前缀缓存复用可能带来信息泄露风险。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

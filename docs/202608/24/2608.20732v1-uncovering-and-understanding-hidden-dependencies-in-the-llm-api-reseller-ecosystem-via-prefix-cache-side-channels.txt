@@ -1,0 +1,1214 @@
+Title: Uncovering and Understanding Hidden Dependencies in the LLM API Reseller Ecosystem via Prefix-Cache Side Channels
+
+URL Source: https://arxiv.org/pdf/2608.20732v1
+
+Published Time: Mon, 24 Aug 2026 00:24:37 GMT
+
+Number of Pages: 17
+
+Markdown Content:
+# Uncovering and Understanding Hidden Dependencies in the LLM API Reseller Ecosystem via Prefix-Cache Side Channels 
+
+Zimo Ji ∗, Xin Wei ∗, Congying Xu ∗, Wenyuan Jiang †, Xin Yang ‡, Zongjie Li ∗, Yudong Gao ∗, and Shuai Wang ∗∗Hong Kong University of Science and Technology, Hong Kong SAR, China 
+
+†ETH Z¨ urich, Z¨ urich, Switzerland 
+
+‡Zhejiang University, Hangzhou, China 
+
+{zjiag,zligo,shuaiw }@cse.ust.hk, {xweiba,cxubl,ygaodj }@connect.ust.hk, wenyjiang@ethz.ch, lucienyang@zju.edu.cn 
+
+Abstract —LLM API resellers have become an important access layer to modern LLM services. However, multi-level resale creates an opaque supply chain: a user’s request may traverse undis-closed upstream resellers, each of which can inspect or modify prompts and responses, inducing ecosystem-level confidentiality and integrity risks. Existing studies audit individual resellers, but provide little visibility into hidden dependencies across resellers. We present C ACHE TRACER , the first API-only measurement of such hidden dependencies. Our key insight is to exploit prefix-cache reuse as a side channel to measure dependency via cache-reach relations. C ACHE TRACER operationalizes this insight with two primitives: F LOOD populates fresh cache state through one endpoint, and P ROVE probes whether another can reuse it while excluding probe-created hits. We then conduct a real-world measurement study with C A-
+
+> CHE
+
+TRACER on 39 reseller endpoints, sending 1.1 million API requests across 636 endpoint pairs. Our measurements reveal a deep, concentrated cache-reach structure: 37 .1% of measured pairs exhibit shared cache reach, the containment order spans seven layers, and one cache reach is contained within at least 31 
+
+of other nodes. We further find that the recovered structure is model-specific. We also evaluate the validity of C ACHE TRACER 
+
+through both real-world consistency checks and controlled ex-periments. The results show its high reliability and accuracy. These findings reveal substantial hidden dependencies among seemingly independent API resellers. Such deep and concentrated dependencies can create a large potential blast radius, where a confidentiality or integrity failure along a common upstream path may affect users across multiple downstream resellers. 
+
+I. I NTRODUCTION 
+
+Large language models (LLMs) are increasingly accessed through APIs for question answering [1], coding [2], [3], cybersecurity [4], [5], and agentic workflows [6], [7], [8], [9]. Because first-party API providers (e.g., OpenAI and An-thropic) may impose rate limits or regional restrictions [10], [11], many users instead obtain access through a third-party 
+
+API reseller (e.g., OpenRouter [12] : an intermediary that relays users’ requests to upstream API providers. This ecosys-tem has become substantial. OpenRouter reports a run rate of nearly 1.5 quadrillion tokens per year as of May 2026 [13], while at least 17 reseller endpoints are used to access LLMs in 187 published papers [14]. API resellers have become an important access layer for modern LLMs. 
+
+Problem. However, this exposes users to significant confiden-tiality and integrity risks. API resellers occupy a privileged position in the request path: they receive users’ prompts and models’ responses in plaintext and can modify either before forwarding them. Prior studies have found code injection or prompt-secret exfiltration [15], model substitution [16], [14], [17], and price violations [18]. Furthermore, these risks are amplified by multi-level resale, in which one reseller obtains API access from another and resells it downstream [19], [20]. This practice creates an opaque supply chain: each intermediary on the request path can inspect or alter prompts and responses, while a compromised upstream reseller can affect downstream traffic routed through it. Multi-level resale can therefore extend users’ trust boundary beyond the reseller they directly choose and make the risks difficult to assess. 
+
+Research goal. A complete view of this opaque trust boundary would identify the supplier edges behind each reseller. Ordi-nary users, however, generally observe only black-box API behavior [16], [14], while resellers’ internal routing remains undisclosed [18]. We therefore do not attempt to recover supplier edges. Instead, we target dependency visibility : we measure externally observable relations across resellers and analyze their implications for potential supply-chain exposure. In this paper, hidden dependencies refer to the cache-reach relations defined next, not to verified supplier edges. 
+
+Measurement object. During autoregressive inference, serv-ing systems can cache the key–value state of a prompt prefix and reuse it for a later request with the same prefix [21], [22]. Commercial APIs from OpenAI, Anthropic, and Azure isolate this state across provider-defined scopes and report cache reuse in response telemetry [23], [24], [25]. We call each isolated prefix-cache scope a cache domain . For a fixed model, an endpoint’s cache reach is the set of cache domains that its requests can reach. Two endpoints have shared cache reach 
+
+when their cache reaches overlap. At a selected measurement resolution, if endpoint A’s cache reach is contained in endpoint 
+
+B’s, we call this relation cache-reach containment . Shared cache reach and cache-reach containment together form the 
+
+cache-reach structure that we measure. 
+
+Measurement method. To obtain such evidence, we use arXiv:2608.20732v1 [cs.CR] 21 Aug 2026 LLMs             
+
+> Opaque
+> supply chain
+> User
+> 𝜏 1
+> 𝜏 2
+> 𝜏 3
+> 𝑣 𝑢
+> 𝑣 𝑤
+> 𝑣 𝑑
+> 𝑃 𝑣 𝑑
+> =𝜏 1, 𝜏 2, 𝜏 3
+> 𝑃 𝑣 𝑢 =𝜏 1, 𝜏 2
+> 𝑃 𝑣 𝑤 =𝜏 31/3
+> 2/3
+> PROVIDER
+> cache domain
+> UPSTREAM DOWNSTREAM
+> (load -balancing)
+> Prefix -cache side -channel
+> 𝑣 𝑑 cache contains
+
+𝑣 𝑢 ⇒                  
+
+> Forward direction Reverse direction
+> 𝑃 𝑣ᵤ ⊆ 𝑃 𝑣 𝑑 𝑃 𝑣 𝑑 ⊆ 𝑃 𝑣ᵤ Fig. 1. Multi-level cache containment and how prefix-cache sharing exposes it. vd,vuand vware resellers; P(v)denotes v’s reachable cache domains.
+
+prefix-cache reuse as a side channel. The key insight is that prefix-cache reuse makes the cache-reach relations above externally observable (Section II-C). If a fresh prefix cached only through one endpoint is later reused through another, the two endpoints can reach a common cache domain, providing evidence of shared cache reach. Multi-level resale can further make this signal directional. We turn the above idea into C ACHE TRACER , an API-only measurement method that probes reseller endpoints pairwise in both directions with two primitives, F LOOD and P ROVE 
+
+(Section III). For one direction, F LOOD repeatedly sends a fresh prompt prefix through endpoint A until the observations support that the prefix has populated cache domains covering almost all of A’s routing mass (Algorithm 1). P ROVE then probes endpoint B to measure whether, and how consis-tently, B can reuse the cached state populated through A
+
+(Algorithm 2). Because probing can itself populate cache domains, P ROVE uses a ladder of previously unqueried prefix extensions so that newly created state cannot be mistaken for cross-endpoint reuse. Reversing the roles of A and B
+
+classifies the supported cache-reach relation between them (Algorithm 3). Repeating this pairwise measurement across all endpoints yields a global cache-reach structure (Algorithm 4). This measurement method requires only ordinary API access without reseller cooperation or access to internal reseller systems (Section II-D). The output is one-sided under-approximation (§V): every reported relation is supported by positive cache evidence, while an unreported relation is unknown rather than absent. 
+
+Findings. We apply C ACHE TRACER to 39 real-world reseller endpoints, covering 636 endpoint pairs with 1.1 million API requests. The results show widespread shared cache reach and a deep, concentrated cache-reach structure. 1) 236 /636 (37 .1% ) of the measured endpoint pairs show shared cache reach. This result shows that endpoints with different identities can reach common cache domains. 2) After endpoints with equivalent cache reach are contracted into 34 nodes, the cache-reach containment order is highly concentrated: at least 31 other nodes have cache reaches that contain one node’s cache reach. 3) The cache-reach containment order spans seven layers. This result is consistent with multi-level sourcing and trust paths that extend beyond the reseller selected by the user, although it does not measure commercial hop count. 4) The cache-reach structure is model-specific: among 22 
+
+decisive retests of cache-reach containment on a second model, only two retain cache-reach containment. These findings show that a confidentiality or integrity failure through a certain endpoint may therefore have consequences for more downstream endpoints. Meanwhile, a measurement for one model does not automatically apply to another, making the hidden dependencies even more complex. 
+
+Validation. Further validation experiments find only three false-hit reports among 5,059 cold-prompt observations and show that 14 /21 three-node cache-reach containment chains agree with the predicted hit probability, both validate our measurement assumptions. In a controlled evaluation, C A-
+
+> CHE
+
+TRACER recovers all eight configured cache-reach struc-tures exactly as well. In summary, this paper makes the following contributions. 1) Novel problem. To the best of our knowledge, we are the first to systematically study the hidden dependencies created by multi-level resale among LLM API resellers. We formulate dependency visibility as an API-only measure-ment problem while distinguishing observable cache-reach relations from unverified supplier edges. 2) Side-channel insight. We identify prefix-cache reuse as a side channel for measuring shared cache reach and cache-reach containment across reseller endpoints, thereby exposing hidden dependencies in the LLM API reseller ecosystem. 3) Black-box measurement. We develop C ACHE TRACER , an API-only method to measure pairwise cache-reach relations and assemble them into a cache-reach structure. It requires only a paid API key, without reseller cooperation or privi-leged access. 4) Empirical findings. We validate the reliability and effec-tiveness of C ACHE TRACER and apply it to 39 real-world reseller endpoints. The measurements reveal widespread shared cache reach and a seven-layer, highly concentrated, model-specific containment order, providing evidence of ecosystem hidden dependencies exposure. These findings can motivate and facilitate further research on supply-chain-aware security assessment and greater trans-parency around hidden dependencies in the LLM API reseller ecosystem. II. B ACKGROUND AND KEY OBSERVATION 
+
+A. Provider-side cache isolation 
+
+Autoregressive inference prefills a prompt into key/value state, then decodes. Fig. 2 shows how reuse appears to the customer: a follow-up request can reuse the full cached 2You are a helpful assitant. Stored attention keys/values in LLMs...       
+
+> system user response
+> What is KV Cache? Cached Context Token Length≈15
+> new user message Further, what is prefix KV Cache Tree ？cached_tokens ≈15 You are a helpful assitant. system user What is side channel attack?
+> Cache HIT Cached from prefix
+> cached_tokens ≈5 Another Session Fig. 2. Prefix-cache in KV cache tree.
+
+conversation prefix, whereas a new session sharing only the system prompt reuses only that shorter prefix. The API reports the reused length as cached_tokens . Because prefill domi-nates cost for long prompts, every production stack reuses KV state across requests sharing a token prefix: PagedAttention in vLLM [26], RadixAttention in SGLang [21], and the prompt-cache features of the major commercial APIs [23], [24], [25]. Providers were aware that reuse across customers would be a channel, and closed it by two means. Each partitions the cache domain by a coarse tenancy identifier: an organization, project, or workspace; furthermore, they create and store cache in a length unit (chunk, e.g, 256 or 512 tokens) [23], [24], [25]. State cached under one tenancy is not reusable from another even when both are scheduled on the same physical instance. Independent auditing supports this posture [22]. Within one provider the property is what it claims to be: a customer cannot learn anything about another customer’s prompts from the cache. In our measurement, a successful request is defined as a HIT when its reported cached-token count shows reuse of the planted prefix, and a M ISS otherwise. Transport errors and timeouts carry no cache-state information and are not counted as either. An assumption is needed before a hit can be treated as evidence about shared infrastructure.   
+
+> Assumption 1 (Cache Telemetry integrity) .The reported cached-token count reflects genuine reuse of state deposited by our earlier request.
+
+This assumption is needed because the customer observes an API field, not the cache itself. Economically motivated misreporting is more likely to suppress hits and charge for full input. Such behavior can only remove relations from our results, not create spurious ones, preserving our under-approximation (see §V). 
+
+B. Reseller-side load balancing 
+
+A reseller is an OpenAI-compatible endpoint that accepts requests from its customers and reissues them to an upstream service under credentials controlled by the reseller. Each hop therefore uses two distinct credentials: the customer calls the reseller with a reseller-issued access key, while the reseller calls its upstream with an upstream-issued key that the reseller holds. The upstream sees the reseller’s credential rather than the customer’s; if the upstream is itself a reseller, the same cre-dential replacement occurs again. This separation is explicit in OpenAI-compatible gateways through customer-facing tokens and provider-facing channels [20]. A reseller can configure multiple upstream channels rather than a single credential. New API supports weighted channel selection and automatic retry, while LiteLLM provides load balancing and fallback across multiple deployments [19], [27]. Consequently, repeated requests sent through one endpoint may be re-authenticated under different upstream credentials and reach different provider-side cache domains. 
+
+Reseller Routing model. For a fixed model, we abstract the reseller’s channel selection, retry, and fallback behavior by the induced distribution ( πv ) over provider-side cache domains for endpoint ( v). The distribution need not be uniform: different domains may carry arbitrarily different fractions of the end-point’s successful requests.    
+
+> Assumption 2 (Reseller routing consistency) .During one mea-surement window, successful requests to an endpoint are indepen-dent samples from a fixed routing distribution ( πv). Moreover, the prompt prefixes of cached prompts do not systematically change this distribution.
+
+This assumption makes cache observations across repeated requests comparable. Temporal stability allows finite se-quences of hits and misses to estimate routing mass, while prefix invariance allows observations made with different prompt prefixes in C ACHE TRACER to characterize the same endpoint-level routing. Common gateways select eligible up-stream channels using model availability, configured weights or priorities [19], [27]. These signals are independent of prompt itself, so both sample the same channel distribution. §IV-C further validates this assumption. 
+
+C. How reseller routing exposes the cache channel 
+
+Fix a prompt and a measurement window. Let T be the set of cache domains at which the provider partitions its prefix cache, and let P(v) be the domains in which a request issued at endpoint v can deposit or retrieve cache state. The prompt and window remain implicit below. Two facts about this set drive our work. 1) P is monotone along the supply relation. If vd forwards some of its traffic through vu, then every cache domain vu
+
+reaches is also reachable from vd, through vu: P(vu) ⊆P(vd). The inclusion is strict exactly when vd also buys from someone else. 2) Load balancing makes the whole set reachable. Acustomer of vd does not choose which upstream credential carries a request; the balancer does, and over many identi-cal requests it exercises the whole set. Every cache domain in P(vd) carries a lower-bounded share of the traffic. Together, these facts create a directional channel, illustrated in Fig. 3. Take a prompt p minted fresh, never sent anywhere. Send it repeatedly to the downstream vd until every cache domain it reaches holds p. Because P(vu) ⊆ P (vd), this has 3BUILDGRAPH FLOOD  PROVE                                  
+
+> Prefix ladder 𝒫
+> ❷❶❸❹❺CLASSIFY PROFILE Endpoints
+> AB
+> Plant 𝑝* ×1000
+> User Cache
+> domains
+> AB
+> TTFT rank
+> ABC
+> (A,B) (B,C) AB
+> HIT A ⪰ B
+> 𝐵 ⋠ 𝐴
+> ⇒ 𝐴 ≻ 𝐵
+> A
+> B
+> C
+> Adjacent pair sfirst
+> FLOOD −PROVE
+> Fresh prompt 𝑝*
+> AAA BBB CCC AAA
+> AAA
+> AAA
+> BBB
+> BBB CCC
+> (A,C)MISS
+> reuse 𝒫 𝑖
+> use 𝒫 𝑖 + 1
+> NOOBSERVED
+> PARTIAL
+> CONTAINE D
+> H=0∧M=59
+> H>0∧M≥15
+> N=181 ∧M≤4
+> pruned
+> 𝐴 ≻ 𝐵
+> 𝐵 ≻ 𝐶
+> Thresholds
+> ×2directions
+> H=HIT, M= MISS Ladder probes 𝒫 Fig. 3. Overview of C ACHE TRACER .
+
+planted p in every domain the upstream vu can reach, even though p was never sent to vu and vu has no relationship with us. Every subsequent probe at vu is a cache hit. Run the experiment the other way and it degrades: flooding vu covers only P(vu), so probes at vd hit only when its balancer selects that subset of its reach, at a rate below one. Thus, without crossing any provider-side cache isolation boundary, reseller routing turns cache-reach containment into a directional signal. 
+
+Measurement target. Let V be the endpoints accessible to the measurer. After a fresh prompt p has been planted through 
+
+vx, define the coverage c(vx, v y ) as the probability that a subsequent successful query at vy hits that state—equivalently, the share of vy ’s routing mass covered by the namespaces reached through vx. At resolution δ = 0 .05 , we write vy ⪯ vx
+
+when c(vx, v y ) ≥ 1 − δ, and write vy ≺ vx when the reverse containment does not hold. Containment concerns routing mass, not literal inclusion of zero-probability paths, and does not by itself establish a commercial supplier. Section III turns this population property into a finite-sample test. 
+
+Why we choose δ = 0 .05 . A tighter resolution requires a longer sequence of cache hits, which increases both the request volume and the measurement duration. Higher request volume can cause OpenAI [23] and Azure [25] to distribute requests across additional cache domains, while a longer measurement increases the chance that cache state in previously hit domains expires [11], [19], [27]. Both effects introduce transient misses even when nearly all routing mass is covered. In preliminary runs, we observed such misses frequently at δ = 0.01 ,making 99% coverage difficult to distinguish reliably from full containment under these production effects. We therefore set δ = 0 .05 and operationally define cache containment as coverage of at least 95% , treating the remaining routing mass as negligible. 
+
+D. Threat and measurement model 
+
+The measurer is an ordinary paying customer. It holds low-privilege credentials for each candidate endpoint and issues chat-completion requests. It observes response payloads, usage metadata, errors, and end-to-end timing. It does not control the network, the reseller software, the provider scheduler, model weights, or any other tenant, and it never sees another customer’s data: prompts are synthetic padding plus a fresh nonce. III. C ACHE TRACER 
+
+Section II-C presents that cache-reach containment induces an observable directional signal. Turning this signal into a practical measurement procedure, however, requires address-ing two challenges: (i) cache domains cannot be enumerated from outside, and (ii) each probe can change the cache it observes. To address these challenges, we develop C A-
+
+> CHE
+
+TRACER , an API-only measurement framework consisting of five primitives that progressively recover pairwise cache-reach relationships and assemble them into a global contain-ment structure. 
+
+A. Method overview 
+
+CACHE TRACER takes a set of candidate reseller endpoints as input and turns pairwise cache observations into a global cache-reach structure through five steps (Figure 3). P ROFILE 
+
+first collects a lightweight latency profile for each endpoint and uses it to prioritize the order in which endpoint pairs are tested. For each selected pair, F LOOD plants a fresh prompt through one endpoint until its cache state covers the endpoint’s routing mass at the resolution defined in Section II-C. P ROVE 
+
+then probes the second endpoint with a prefix ladder and records how much of its routing mass can reuse the state planted by F LOOD . C LASSIFY repeats this measurement in both directions and combines the two directional outcomes to classify the pair as equivalent cache reach, strict containment, partial sharing, no observed sharing, or inconclusive. Finally, BUILD GRAPH schedules these pairwise measurements across all endpoints and assembles their outcomes into the recovered cache-reach structure. 
+
+B. PROFILE : prioritizing potentially adjacent pairs 
+
+Goal. CACHE TRACER need to avoid measuring a pair when its containment relation is already implied by relations discov-ered earlier. For example, if A ≺ B and B ≺ C are discovered before (A, C ) is tested, then A ≺ C is already implied and the pair can be skipped. If (A, C ) is tested first, however, that measurement has already incurred its request cost. P ROFILE 
+
+therefore provides a lightweight heuristic for prioritizing pairs that are more likely to expose short-range relations first, 4allowing C ACHE TRACER to prune more redundant long-range tests later. 
+
+Procedure and outcomes. PROFILE works in two stages: 
+
+① Latency ranking. PROFILE sends one short stream-ing request with prompt Reply with exactly OK. 
+
+(L ATENCY TEST function in Algorithm 4) to each endpoint and records its time to first token (TTFT). We use TTFT only as a coarse proxy for path length: additional forwarding and gateway processing can increase response latency, so endpoints with nearby positions in the TTFT ranking are treated as more plausible candidates for nearby relations. § III-F sorts all successfully profiled endpoints by TTFT in Line 1 of Algorithm 4. 
+
+② Pair ordering. Given the ranked endpoint list E =(e1, . . . , e N ), we use P AIRS BYINCREASING STRIDE (in Al-gorithm 4) function to construct candidate pairs by increasing rank distance in Algorithm 4, §III-F. It first considers pairs one position apart, (e1, e 2), (e2, e 3), . . . ; then pairs two posi-tions apart, (e1, e 3), (e2, e 4), . . . ; and continues with increasing stride. For example, for a ranking (A, B, C, D ), the candi-date order begins with (A, B ), (B, C ), (C, D ), followed by 
+
+(A, C ), (B, D ), and finally (A, D ). Thus, P ROFILE does not decide whether two endpoints are related; it only changes which pairs are tested earlier. 
+
+C. FLOOD : covering one endpoint’s cache reach 
+
+Goal. FLOOD plants a fresh prompt to certain endpoint without being able to list the cache domains behind it. Under assump-tion 2, F LOOD works by continuing to send the same prompt repeatedly until the termination condition is met (Algorithm 1, line 5). At our setting δ = 0 .05 , F LOOD can stop (line 2) when any uncovered routes together carry less than 5% of the traffic. 
+
+FLOOD parameters. FLOOD (Algorithm 1) stops after Nflood 
+
+consecutive hits (line 2), aborts after 1000 total attempts or eight consecutive transport errors (line 3), and then starts two staggered low-rate workers to keep the planted state warm during probing (line 13). We choose Nflood directly from the target resolution δ = 0 .05 and significance level 
+
+α = 0 .05 . Under Assumption 2, successful requests during a flood sample the same routing distribution. If at least a δ
+
+fraction of A’s routing mass were still uncovered, i.e., qA ≥ δ,then the probability that the next request is a hit is at most 
+
+1 − δ, and the probability of observing n consecutive hits is therefore at most (1 −δ)n. To make such a hit streak occur with probability at most α under qA ≥ δ, we choose the smallest integer n satisfying 
+
+(1 − δ)n ≤ α, or equivalently n ≥ ln α
+
+ln(1 − δ) .
+
+Thus, 
+
+Nflood =
+
+ ln α
+
+ln(1 − δ)
+
+
+
+=
+
+ ln 0 .05 ln 0 .95 
+
+
+
+= 59 .
+
+Hence, observing 59 consecutive hits supports that less than 
+
+5% of A’s routing mass remains uncovered; consequently, no individual uncovered cache domain can account for 5% or more of that routing mass. 
+
+Judging cache hit. Providers report cached tokens at model-specific cache-chunk granularity, so a fully cached prompt may still have fewer reported cached tokens than its total length. We therefore count a response as a hit (line 9) when 
+
+cached_tokens ≥ | p| − bB ,
+
+where |p| is the length of send prompt p, bB is the cache-chunk length for model B, measured during calibration (§IV-B5). 
+
+Keep cache warm. START STAGGERED KEEP WARM (A, p, w )
+
+(line 13) starts w low-rate background workers that repeatedly send the same planted prompt p through A while P ROVE runs, reducing the chance that the planted cache state expires. In our setting, w = 2 is the calibrated keep-warm concurrency. Empirically, we find that this setting can keep the cache warm without causing the measurement process to fail frequently due to an excessive number of requests. 
+
+Algorithm 1 FLOOD (A, p ): cover A’s cache reach with p.                                                            
+
+> 1: r←0;a←0;e←0
+> 2: while r < N flood do
+> 3: if a= 1000 ∨e= 8 then return FAIL
+> 4: end if
+> 5: o←SEND PROMPT (A, p );a←a+ 1
+> 6: if o=ERROR then e←e+ 1 ;continue
+> 7: end if
+> 8: e←0
+> 9: if o. cached_tokens ≥ | p| − bBthen r←r+ 1
+> 10: else r←0
+> 11: end if
+> 12: end while
+> 13: return START STAGGERED KEEP WARM (A, p, 2)
+
+D. PROVE : directional cache-reach test 
+
+Goal and challenge. After F LOOD plants a fresh prompt through endpoint A, P ROVE measures the directional coverage 
+
+c(A, B ): the probability that a subsequent successful request through B can reuse the cache state planted through A. We use P ROVE to denote the complete directional procedure and 
+
+probe for one cache query issued within it. A naive implementation cannot repeatedly send the same prompt to B. If a probe misses, that request may itself populate the corresponding cache domain; a later probe routed to the same domain could then hit state created by the earlier probe rather than by F LOOD . We call this self-hit (see Figure 4 a). Therefore, after each miss, P ROVE needs to move subsequent probes to cache state that has never been queried through B
+
+itself (Algorithm 2, line 20). 
+
+Prefix ladder. To avoid self-hit, P ROVE uses a ladder of nested prefixes of prompt P:
+
+P[1] ⊂ P [2] ⊂ · · · ⊂ P [Lprobe ].
+
+For example, as illustrated in Figure 4b, let q1 ⊂ q2 ⊂ q3 = P
+
+be increasingly longer prefixes of prompt P . F LOOD sends only the full prompt P through A. Because caching P also 5FLOOD A          
+
+> How many prefixes are there in this sentence?
+> (a) PROVE B: one probe, repeated
+> P
+> (b) PROVE B: prefix ladder probe
+> How many prefixes are there
+> How many prefixes are there
+> How many prefixes
+> How many prefixes are there
+> How many prefixes are there in this sentence
+> SELF -HIT
+> = 0
+> ≤𝑞 1
+> ≤𝑞 1
+> >𝑞 2
+> cached_tokens
+> ≈𝑃
+> routing direction from P from B’s earlier probe plant
+> MISS
+> MISS
+> HIT
+> MISS
+> = 0 Fig. 4. Self-hit and prefix ladder of P ROVE .
+
+prepares the KV-cache chunks shared with its shorter pre-fixes (see §II-A), P ROVE can probe these prefixes through 
+
+B without planting them through A separately. Suppose q1
+
+misses. That request may itself cache q1 in the cache domain to which it is routed. If q2 is later routed to the same domain, it may therefore reuse up to |q1| tokens even though that cache was not planted by F LOOD . We do not count such reuse as a hit: when probing q2, P ROVE requires the returned 
+
+cached_tokens to exceed |q1|. Thus, a cache entry created by the earlier q1 probe cannot by itself make q2 pass the hit test. q3 is therefore a genuine hit because its cached prefix extends beyond q2.Generally, in Algorithm 2, P ROVE starts from the shortest prefix (line 4). After a hit, it safely reuses the current prefix (line 19) because the queried state was already present before that probe. After a miss, the probe has created cache state for that prefix, so P ROVE permanently consumes it and advances to the next longer, previously unqueried prefix (line 20). A timeout also consumes the current prefix (line 13) because the request may have reached the backend and populated the cache even though no response was observed. The prefix stride is chosen larger than the provider’s cache-chunk length bB . Hence, cache state created by a miss at P[ℓ]
+
+cannot satisfy the hit threshold for P[ℓ + 1] .This construction relies on Assumption 2: changing the prefix must not systematically change the routing distribution sampled by the probe. Otherwise, observations from different ladder positions would not characterize the same endpoint-level routing population. Section IV-C2 validates this assump-tion empirically. 
+
+Procedure and outcomes. Algorithm 2 applies the prefix lad-der to obtain a bounded directional measurement. It maintains the number of successful probes n, hits h, misses m, and the current ladder position ℓ (line 4). For a response o to prefix p, I SHIT (line 2) returns true when 
+
+o. cached_tokens ≥ TOKENS (p) − bB ,
+
+allowing for the final provider cache chunk that may be omit-ted from the reported cached-token count. A hit increments h
+
+and keeps the current prefix (line 19); a miss increments m and advances the ladder (line 20). Transport errors do not provide a cache observation (line 11), while a timeout additionally consumes the current prefix because it may have populated cache state (line 13). PROVE returns one of four directional outcomes.  
+
+> •
+
+CONTAINED (line 27) indicates that the observed miss count is sufficiently small to support containment at the target resolution.  
+
+> •
+
+NOOBSERVED (line 22) indicates that no hit was observed before the terminate condition.  
+
+> •
+
+PARTIAL (line 24) indicates that at least one hit established shared cache reach but sufficiently many misses reject containment.  
+
+> •
+
+All other executions, including exhaustion of clean prefixes (line 6) or repeated transport failures (line 8), return I N- 
+
+> CONCLUSIVE
+
+(line 28). 
+
+PROVE parameters. We set the measurement resolution and per-direction significance level to δ = α = 0.05 . Under Assumption 2, successful probes within one F LOOD –P ROVE 
+
+direction are independent samples from the same routing distribution, including when P ROVE advances across different prefixes in the ladder. We choose the following thresholds so that each directional decision has error below α at resolution δ.
+
+① CONTAINED threshold. The C ONTAINED outcome is in-tended to support that the cache state planted through A covers 
+
+B at the target resolution. We allow a small number of misses rather than require a perfect hit trace. For a probe sequence of N successful requests, the probability of observing at most 
+
+m misses is maximized at δ and is therefore bounded by 
+
+Pr[Bin( N, δ ) ≤ m] ≤
+
+> m
+
+X
+
+> k=0
+
+Nk
+
+
+
+δk(1 − δ)N −k.
+
+For a given miss allowance m, we choose the smallest probe budget Nm for which this probability is at most α:
+
+Nm = min {N :
+
+> m
+
+X
+
+> k=0
+
+Nk
+
+
+
+δk(1 − δ)N −k ≤ α}.
+
+Allowing 0, 2, 4, 6, and 8 misses requires respectively 59 , 124 ,
+
+181 , 234 , and 286 successful probes. We choose Mcontain = 4 
+
+as a practical compromise: it tolerates occasional misses while keeping the directional probe sequence below 200 successful requests. Allowing more misses would substantially increase the probe budget, increasing both measurement cost and the time over which the state planted by F LOOD must remain available. This gives 
+
+Nprove = 181 .
+
+Consequently, if P ROVE completes Nprove = 181 successful probes (line 5) with at most Mcontain = 4 misses, it returns CONTAINED (line 27). 
+
+② NOOBSERVED threshold. The N OOBSERVED outcome addresses the opposite question: how many misses without any hit are needed to determine that no shared cache reach carrying at least δ of endpoint B’s routing mass? The probability of 6observing m consecutive misses before the first hit is then at most 
+
+(1 − δ)m.
+
+We therefore choose the smallest integer m such that 
+
+(1 − δ)m ≤ α, 
+
+giving 
+
+Mnohit =
+
+ ln α
+
+ln(1 − δ)
+
+
+
+=
+
+ ln 0 .05 ln 0 .95 
+
+
+
+= 59 .
+
+Thus, if the first Mnohit = 59 successful probes are all misses, P ROVE returns N OOBSERVED (line 22). This outcome supports that no shared cache reach carrying at least δ of 
+
+B’s routing mass was observed. It does not establish that the cache reaches of A and B are disjoint; sharing below the measurement resolution may remain unobserved. 
+
+③ PARTIAL threshold. Once at least one hit has been observed, shared cache reach has been witnessed. The re-maining question is whether the miss rate is too large to support containment at resolution δ. Since our containment definition itself allows up to a δ fraction of B’s routing mass to remain uncovered, observing a small number of misses is still consistent with containment; we therefore cannot return P ARTIAL as soon as the first miss appears. Instead, we reject containment only when the number of misses becomes sufficiently large that such an outcome would be unlikely if containment actually held. With the probe budget fixed at 
+
+Nprove = 181 , we choose the smallest miss count: 
+
+Mpartial = min {m :
+
+> Nprove
+
+X
+
+> k=m
+
+Nprove 
+
+k
+
+
+
+δk(1 − δ)Nprove −k ≤ α}.
+
+Substituting Nprove = 181 and δ = α = 0 .05 gives 
+
+Mpartial = 15 .
+
+Therefore, after at least one hit has established shared cache reach, accumulating Mpartial = 15 misses is sufficient to reject containment at the target resolution, and P ROVE returns PARTIAL (line 24). 
+
+Prefix bounds. Each miss may populate the prefix that it probes and therefore consumes one previously clean ladder position. The longest no-hit decision requires Mnohit = 59 
+
+such prefixes, so we set 
+
+Lprobe = Mnohit = 59 .
+
+A timeout also consumes the current prefix (line 13) because the request may have reached the backend and populated its cache even though no response was received. Timeouts do not contribute to the successful-probe count or to the hit and miss counts (line 17); if they exhaust the clean prefix ladder, P ROVE 
+
+conservatively returns I NCONCLUSIVE (line 6). Other transport errors likewise carry no cache observation and do not enter n, h, or m (line 11). We set Eabort = 8 
+
+consecutive errors (line 8) to tolerate short failure bursts while bounding the time spent on an unavailable endpoint. The model-specific prefix lengths, prefix stride, and cache-chunk length bB are calibrated separately for each measured model (§IV-B). 
+
+Algorithm 2 PROVE (B, P): probing over prefix ladders. 
+
+Require: clean prefix ladder P[1: Lprobe ] and maximum number of successful probes Nprove 
+
+Require: miss boundaries Mcontain , M partial , M nohit and error cap 
+
+Eabort  
+
+> 1:
+
+function ISHIT (o, p ) 
+
+> 2:
+
+return o. cached_tokens ≥ TOKENS (p) − bB 
+
+> 3:
+
+end function  
+
+> 4:
+
+(n, h, m ) ← (0 , 0, 0) ; ℓ ← 1; e ← 0 
+
+> 5:
+
+while n < N prove do  
+
+> 6:
+
+if ℓ > L probe then return (INCONCLUSIVE , (n, h, m ))  
+
+> 7:
+
+end if  
+
+> 8:
+
+if e = Eabort then return (INCONCLUSIVE , (n, h, m ))  
+
+> 9:
+
+end if  
+
+> 10:
+
+o ← SEND PROMPT (B, P[ℓ])  
+
+> 11:
+
+if o ∈ { ERROR , TIMEOUT } then  
+
+> 12:
+
+e ← e + 1  
+
+> 13:
+
+if o = TIMEOUT then ℓ ← ℓ + 1  
+
+> 14:
+
+end if  
+
+> 15:
+
+continue  
+
+> 16:
+
+end if  
+
+> 17:
+
+e ← 0; n ← n + 1  
+
+> 18:
+
+S ← ISHIT (o, P[ℓ])  
+
+> 19:
+
+if S then h ← h + 1  
+
+> 20:
+
+else m ← m + 1 ; ℓ ← ℓ + 1  
+
+> 21:
+
+end if  
+
+> 22:
+
+if h = 0 ∧ m = Mnohit then return 
+
+(NOOBSERVED , (n, h, m ))  
+
+> 23:
+
+end if  
+
+> 24:
+
+if h > 0 ∧ m ≥ Mpartial then return (PARTIAL , (n, h, m ))  
+
+> 25:
+
+end if  
+
+> 26:
+
+end while  
+
+> 27:
+
+if m ≤ Mcontain then return (CONTAINED , (n, h, m ))  
+
+> 28:
+
+else return (INCONCLUSIVE , (n, h, m ))  
+
+> 29:
+
+end if 
+
+E. CLASSIFY : bidirectional pair classification 
+
+One flood–probe direction can support B ⪯ A, but can-not tell whether the reverse containment also holds. C LAS - 
+
+> SIFY
+
+(Algorithm 3, Figure 5 a,b) therefore measures both directions with independent fresh prompts (lines 2–6, run in both orders at lines 9–10):  
+
+> •
+
+Two C ONTAINED outcomes form a cache-reach equiva-lence class (C LONE , line 13).  
+
+> •
+
+One C ONTAINED outcome gives strict containment when the reverse direction rejects containment (lines 14–15);  
+
+> •
+
+A P ARTIAL outcome without containment in either direc-tion records non-directional sharing (line 16).  
+
+> •
+
+Two N OOBSERVED outcomes record no sharing observed at the chosen resolution (line 17).  
+
+> •
+
+Any I NCONCLUSIVE direction leaves the pair unresolved (lines 4, 11). We write X ⇝ Y for the direction that floods X and then probes Y .7(c) G lobal containment order        
+
+> (b) Verdict for the pair (a) Probe both directions
+> FLOOD A, PROVE B
+> FLOOD B, PROVE A
+> equivalent reach
+> containment,
+> partial sharing
+> repeat over
+> candidate pairs
+> global order
+> from the verdicts
+
+𝐴 
+
+𝐵 
+
+𝐷 𝐶 
+
+𝐴  𝐵  
+
+> CLASSIFY
+> BUILDGRAPH Fig. 5. From pairwise probes to a global containment order.
+
+Algorithm 3 CLASSIFY (A, B ): bidirectional classification.  
+
+> 1:
+
+procedure RUN DIRECTION (X, Y ) 
+
+> 2:
+
+P ← FRESH PREFIX LADDER Y (Lprobe ) 
+
+> 3:
+
+KX ← FLOOD (X, P[Lprobe ])  
+
+> 4:
+
+if KX = FAIL then return (INCONCLUSIVE , (0 , 0, 0))  
+
+> 5:
+
+end if  
+
+> 6:
+
+(r, σ ) ← PROVE (Y, P); S TOP (KX ) 
+
+> 7:
+
+return (r, σ ) 
+
+> 8:
+
+end procedure  
+
+> 9:
+
+(rA⇝B , σ A⇝B ) ← RUN DIRECTION (A, B ) 
+
+> 10:
+
+(rB⇝A, σ B⇝A) ← RUN DIRECTION (B, A ) 
+
+> 11:
+
+if rA⇝B = INCONCLUSIVE ∨ rB⇝A = INCONCLUSIVE then return INCONCLUSIVE  
+
+> 12:
+
+end if  
+
+> 13:
+
+if rA⇝B = CONTAINED ∧ rB⇝A = CONTAINED then return 
+
+CLONE  
+
+> 14:
+
+else if rA⇝B = CONTAINED then return (B ≺ A) 
+
+> 15:
+
+else if rB⇝A = CONTAINED then return (A ≺ B) 
+
+> 16:
+
+else if rA⇝B = PARTIAL ∨ rB⇝A = PARTIAL then return 
+
+PARTIAL  
+
+> 17:
+
+else return NOOBSERVED  
+
+> 18:
+
+end if 
+
+Containment vs. supply. Monotonicity (§II-C) gives supply 
+
+⇒ containment: if vx forwards part of its traffic through vy
+
+then P(vy ) ⊆ P (vx). The converse is not available from cache observations. A reported vy ≺ vx is equally consistent with 1) vy being a supplier of vx; and 2) A, B, and C being upstream providers of vx, while B and 
+
+C are upstream providers of vy . In this case, P(vy ) ⊊
+
+P(vx), so the measurement reports E ≺ D even though neither vx nor vy supplies the other. Cache-reach containment is evidence that two endpoints may connect through the same supply chain, but it does not establish a direct supplier relationship between them. 
+
+F. BUILD GRAPH : pruning and global assembly 
+
+Goal. Pairwise measurements produced by C LASSIFY must be combined into a global cache-reach structure. Measuring every candidate pair directly is unnecessary: some contain-ment relations become implied by relations recovered earlier. BUILD GRAPH therefore processes candidate pairs in the order prioritized by P ROFILE prunes implied pairs during measure-ments, and assembles the remaining pairwise outcomes into the recovered structure (Algorithm 4, Figure 5 c). 
+
+Algorithm 4 BUILD GRAPH (L): build cache reach structure.  
+
+> 1:
+
+E ← SORT ({e ∈ L : LATENCY TEST (e)̸ = FAIL }) by TTFT descending  
+
+> 2:
+
+R ← 0; K ← singletons; P ← ∅ ; U ← ∅  
+
+> 3:
+
+Q ← PAIRS BYINCREASING STRIDE (E) 
+
+> 4:
+
+while Q̸ = ∅ do  
+
+> 5:
+
+(i, j ) ← POP (Q) 
+
+> 6:
+
+if HAS PATH (R, i, j ) ∨ HAS PATH (R, j, i ) then  
+
+> 7:
+
+continue  
+
+> 8:
+
+end if  
+
+> 9:
+
+r ← CLASSIFY (E[i], E [j])  
+
+> 10:
+
+if r = ( E[i] ≺ E[j]) then  
+
+> 11:
+
+R[i][ j] ← 1 
+
+> 12:
+
+else if r = ( E[j] ≺ E[i]) then  
+
+> 13:
+
+R[j][ i] ← 1 
+
+> 14:
+
+else if r = CLONE then  
+
+> 15:
+
+K.MERGE (i, j ) 
+
+> 16:
+
+else if r = PARTIAL then  
+
+> 17:
+
+P ← P ∪ { (i, j )} 
+
+> 18:
+
+else  
+
+> 19:
+
+U ← U ∪ { (i, j, r )} 
+
+> 20:
+
+end if  
+
+> 21:
+
+delete from Q every pair whose relation is now implied by 
+
+R 
+
+> 22:
+
+end while  
+
+> 23:
+
+(R, S) ← SHADOW INSERT (R, P) 
+
+> 24:
+
+return (R, K, S, U )
+
+Procedure and outcomes. Algorithm 4 first obtains the TTFT-ranked endpoint list E (line 1) and the ordered candidate-pair list Q (line 3) using the profiling and pair-ordering procedure described in §III-B. It then processes Q
+
+from the front (line 5). For each pair (i, j ) whose relation is not already implied by the current containment graph R
+
+(line 8), B UILD GRAPH invokes C LASSIFY (E[i], E [j]) (line 9) and records the returned outcome. A strict-containment verdict adds the corresponding directed relation to R (lines 11–13); a CLONE verdict merges the two endpoints in the clone partition K (line 15); a P ARTIAL verdict is stored in P for later structural interpretation (line 17); and other unresolved outcomes are recorded in U (line 19). After all candidate pairs have either been measured or pruned, B UILD GRAPH calls SHADOW INSERT to explain remaining non-directional sharing and returns (R, K, S, U ) (line 23). 
+
+Implication pruning. Whenever a newly recovered contain-ment relation is added to R, B UILD GRAPH removes from Q
+
+any remaining pair whose relation is already implied by a path in R (line 21). For example, once A ≺ B and B ≺ C have been recovered, the pair (A, C ) no longer requires a direct measurement. This is why the ordering produced by P ROFILE 
+
+matters: prioritizing plausibly short-range relations increases the chance that longer-range pairs become implied before they are measured. Pruning reduces both request cost and unnecessary cache perturbation; it does not introduce a new 8measurement verdict, since every pruned relation is derived only from relations already stored in R.
+
+Latent witnesses for non-directional sharing. A P ARTIAL 
+
+verdict indicates shared cache reach without containment in either direction. Such sharing may already be explained by a common upper endpoint in the recovered containment structure; otherwise, it may reflect cache reach through an endpoint that is not among the measured endpoints. To repre-sent the latter case, S HADOW INSERT (line 23) constructs an auxiliary graph over unexplained P ARTIAL pairs, enumerates its maximal cliques, and introduces one latent witness for each clique. Cliques may overlap, so one visible endpoint may participate in multiple explanations, but visible endpoints are never merged. These witnesses are explanatory objects rather than identified companies or resellers; Appendix E establishes their non-identifiability, and §IV reports them separately from observed endpoints and containment relations. Appendix A analyzes the foreground request complexity of BUILD GRAPH , while §IV reports the realized measurement cost in our field study. 
+
+Containment order vs. adjacency A relation A ≺ C states only that A’s cache reach is contained in C’s; it does not imply that no intermediate endpoint exists between them. For example, A ≺ B ≺ C also implies A ≺ C. Accordingly, once BUILD GRAPH has recovered A ≺ B and B ≺ C, it can skip directly measuring (A, C ) (line 8). IV. M EASUREMENT & E VALUATION 
+
+In the evaluation, we aim to answer the following research questions (RQs). 
+
+RQ1 Real-world Measurement. What cache-containment topology appears in the real-world reseller ecosystem? How does it vary across models, and what security concerns does it reveal? 
+
+RQ2 Assumption Validation. Are the assumptions for cache observation (§III) consistent with the systems we measured? 
+
+RQ3 Controlled Evaluation. Given known ground truth, how accurately does C ACHE TRACER recover cache sharing and containment, and what can that structure reveal about possible supply relations? Our primary goal is to characterize hidden dependencies among real-world resellers (RQ1). To assess the validity of the underlying measurement methodology, we examine whether the assumptions underlying CACHE TRACER are consistent with the measured systems (RQ2), and evaluate the accuracy of C ACHE TRACER against known ground truth in a controlled environment (RQ3). 
+
+A. Experiment Setup 1) Prompt construction: Each prompt consists of the fixed text Replay exactly OK followed by a nonce string. Because tokenization varies with prompt content, we use the input-token count reported in the response’s usage field to calibrate prompts to the target lengths required by our measurement.                
+
+> TABLE I RESULTS OF CACHE -REACH MEASUREMENTS FOR 636 REAL -WORLD RESELLER ENDPOINT PAIRS .
+> Measurement outcome Pair count Pair share Sharing cache reach 236 37.1%
+> Non-directional (P ARTIAL )168 Directed containment 62 Equivalent reach (C LONE )6No observed relation at 5% resolution 253 39.8% Inconclusive 147 23.1% total 636 100%
+
+2) Reseller selection: RQ1 and RQ2 use the same set of publicly reachable resellers. We identify candidate reseller endpoints from three sources: a FOFA scan for publicly reachable deployments of New API [28], [19], a community-maintained relay directory [29], and TokenAPI Scan’s analysis of relay domains embedded in Claude Code [30]. After deduplication, we manually registered an account at each candidate, confirmed that a test payment was credited, and verified that the endpoint returned a usable cached_tokens 
+
+field. This screening retained 39 endpoints for the in-the-wild measurements. Appendix B records the selected resellers, and our findings apply only to this segment. All requests are ordinary OpenAI-compatible calls from one workstation, with no provider cooperation and no privileged access to any reseller or its telemetry. 
+
+B. RQ1: Real-world Measurement 1) Measurement setup: We apply C ACHE TRACER to these 
+
+39 selected resellers, using gpt-5-nano-2025-08-07 as the measured model. We choose this model rather than a flagship offering for two reasons.  
+
+> •
+
+Undisclosed model substitution has been observed among resellers [14]; we therefore use a low-cost model to reduce the risk that different endpoints serve different underlying models with isolated cache namespaces.  
+
+> •
+
+Its low request cost and latency reduce measurement ex-pense and shorten the campaign, limiting the effect of routing changes during the measurement window. For each measurement, we generate a fresh 16 ,384 -token prompt body and construct a prefix ladder starting at 
+
+1,536 tokens with a 256 -token stride. The initial length ex-ceeds the empirically measured 1,024 -token cache-admission threshold, while the stride exceeds the measured 64 -token cache-chunk length. Because both parameters are specific to gpt-5-nano-2025-08-07 , we recalibrate them before measuring a different model. The 39 endpoints yield 741 unordered candidate pairs. CACHE TRACER measures 636 pairs over 7.2 hours and prunes 
+
+105 during the measurement. 
+
+2) How common is shared cache reach?: Table I shows that 236 /636 measured pairs ( 37 .1% ) produce at least one authentic cross-endpoint hit and a decisive coverage outcome. Under the assumptions examined in RQ2, each such hit 9Shadow Endpoints L1 L2 L3 L4 L5 L6 L7     
+
+> E1 E2 E3 E5 E7 E9 E11 E13 E15 E17 E4 E6 E8 E10 E12 E14 E16 E18 E21 E22 E23 E19 E24 E25 E26 E27 E28 E29 E30 E31 E32 E33 E34 E20 S1 S2 S3 S4 S5 S6 S7 S8 S9 S13 S14 S15 S16 S17 S18 S10 S11 S12 Containment Edge: Adjacent Layers Containment Edge: Skips > 1 Layer Relations out of E2 Edges on a Longest Chain (6 Hops) Shadow Endpoints & Edges Ei
+> 322xAggregate of x CLONE Endpoints Fig. 6. Recovered cache-containment order over 39 real-world reseller endpoints.
+
+provides direct evidence that the two reseller endpoints can reach at least one common cache domain. 
+
+Finding 1. We observe shared cache reach in 236 /636 measured reseller pairs ( 37 .1% ), revealing hidden dependencies within the measured segment of the reseller ecosystem. 
+
+3) Depth and breadth of cache containment: Contracting the six CLONE verdicts merges nine endpoints into four equivalence classes, leaving 34 nodes. The 62 endpoint-level containment verdicts reduce to 58 distinct relations after con-traction. Fig. 6 visualizes the resulting relation graph, which is acyclic and spans seven layers. The graph’s longest chain comprises six containment relations, and its transitive closure contains 115 ordered node pairs. The seven-node chain provides a direct lower bound on cache-containment depth. If each strict containment relation corresponded to a distinct resale hop, the longest chain would be consistent with as many as six resale steps. The topology therefore indicates possible supply-chain depth without mea-suring commercial hop count. 
+
+Finding 2. The observed cache-containment order is at least seven layers deep. This is direct evidence of nested cache reach and indirect evidence that the reseller ecosystem may contain multi-level supply paths. 
+
+The recovered topology is also highly concentrated. The cache reach of E2 is directly contained in those of 24 of the other 33 nodes. Accounting for indirect containment paths, bringing the total to 31 . The next-largest upward closure also contains 18 nodes. Because pairs with no observed relation or inconclusive outcomes contribute no containment edges, this count is conservative. 31 /33 is a lower bound on the number of measured endpoints that can reach the cache domain represented by E2.Table II provides the directional measurement evidence for the 26 directly observed endpoint-level containment relations  
+
+> TABLE II DIRECTIONAL EVIDENCE FOR E2.
+
+Flood source Probe endpoint Hits/Misses Num. of pairs Other endpoint E2 178 /3 24 Other endpoint E2 177 /4 2
+
+E2 Other endpoint 0/59 26 
+
+involving E2. When the counterpart endpoint is flooded and 
+
+E2 is probed, all 26 tests satisfy the containment criterion. In the reverse direction, however, flooding E2 and probing the counterpart yields zero hits across all 59 probes for each pair. Thus E2’s cache domain is reachable through 31 endpoints but carries only a small share of traffic for most of them. This pattern is consistent both with a narrow supplier and with a co-customer exposing one tenancy also used by many other resellers. 
+
+Finding 3. Cache reach is highly concentrated. A certain cache domain is contained in the cache reach of at least 31 of the other 33 clone-contracted nodes. This establishes a conservative lower bound on cache-reach concentration, indicating a potentially concentrated hidden dependency. 
+
+4) Security implications: Cache containment identifies where many nominally independent endpoints can send traffic through the same cache path. Any operator on that path receives the context and participates in serving the completion; a malicious or compromised operator could therefore read prompts or alter returned content, including tool calls. This exposure is particularly consequential for tool-using LLM agents, whose requests may contain retrieved records, persistent memory, inter-agent messages, credentials, and tool arguments. Prior work has demonstrated substantial leakage from agent memory and inter-agent communication, reporting up to 50 .7% leakage of sensitive information despite explicit privacy instructions and 68 .8% leakage in inter-agent messages 10 [31], [32], [33]. The integrity risk is already concrete: a measurement of 428 third-party routers found nine injecting malicious code into agent responses, 17 using researcher-controlled AWS canary credentials, and one using a researcher-controlled private key to drain ETH [15]. In a resale chain, a malicious or compromised upstream can apply the same read-and-rewrite capability to any downstream traffic that traverses it. The depth and concentration we recover therefore imply a potential blast radius larger than any one public endpoint.  
+
+> Finding 4. The recovered topology reveals correlated security exposure across nominally independent resellers. Consequently, a malicious or compromised shared upstream could expose sensitive context or corrupt tool-mediated actions across multiple down-stream endpoints, which turns an upstream compromise from an endpoint-local risk into a cross-reseller security concern.
+
+5) Model dependence: We next examine whether the re-covered cache-containment topology is model-specific. After recalibrating the cache-admission threshold and cache-chunk size for gpt-5.1 , we repeat the measurement on the 44 
+
+endpoint pairs that had a reported containment relation on 
+
+gpt-5-nano-2025-08-07 .The results show that, the recovered cache-containment topology is model-specific. Of these 44 reruns, 22 produce a decisive verdict. Only 2 reproduce the original containment relation; 12 still exhibit shared cache reach but no longer satisfy the containment criterion; and 8 show no detectable sharing at the 5% resolution. The remaining 22 reruns are inconclusive and therefore provide no evidence either for or against cross-model persistence. Fig. 9 in Appendix D shows the two containment relations reproduced across both models.     
+
+> Finding 5. Cache-containment topology is model-dependent. Only
+> 2of the 22 decisive reruns reproduce the corresponding con-tainment relation observed for the original model. The recovered topology should therefore be indexed by model rather than inter-preted as a model-agnostic graph.
+
+A possible explanation. Industry reports suggest that re-sellers source different models through different channels. For flagship models, some pool consumer subscriptions behind reverse proxies that turn logged-in web or client sessions into an API; Antigravity similarly translates Anthropic requests to Google’s Cloud Code API and rotates Google accounts as quotas bind [34], [35]. For low-cost API models, smaller resellers may instead buy token quota from larger relays [36]. These independently assembled upstream pools could produce different cache domains. 
+
+6) Measurement cost: Finally, we examine the practical cost of running C ACHE TRACER over the 39 real-world reseller endpoints. Measuring all candidate pairs requires a large number of repeated probes, because each pair must be tested in both directions and each directional test uses repeated observations to determine whether cache sharing is present. In total, the real-world measurement sends approximately 
+
+1.1 × 10 6 requests over 7.2 hours. This corresponds to about 
+
+42 requests per second on average and approximately 1,730 re-quests for each directly measured pair. These requests include the measurements in both directions, the two 181 -observation probe sequences used for each pair, and the additional requests used to keep relevant cache entries active during measurement. The implication-pruning mechanism further reduces the measurement cost. Among the 741 candidate endpoint pairs, 
+
+105 pairs (14 .2% ) do not need to be measured directly because their containment relations can already be inferred from previously recovered relations. 
+
+C. RQ2: Assumption Validation 
+
+CACHE TRACER identifies cache sharing and containment based on the cache telemetry and hit patterns observed across repeated requests. In this RQ, we verify these assumptions on the same 39 reseller endpoints used in RQ1. 
+
+1) Telemetry integrity: Assumption 1 requires the 
+
+cached_tokens value reported by a reseller to reflect an actual cache hit. We check this by sending cold prompts to all 39 endpoints. Every request uses a fresh nonce and a prompt never previously sent through any endpoint. Areported full-prefix hit therefore cannot be attributed to cache planted by our requests. We send 5,997 distinct cold-prompt requests and obtain 
+
+5,059 usable observations. The results show that three end-points do not return enough usable telemetry for this check. Among the remaining endpoints, we observe 3 false hits, cor-responding to a rate of 5.9×10 −4 (95% CI: [1 .2×10 −4, 1.7×
+
+10 −3]). Repeating the check with refreshed prompts for 1,660 
+
+more observations reproduces one event at one endpoint and none at the other, leaving endpoint-level rates of 1/603 and 
+
+2/1270 . We treat these two endpoints as exceptions and exclude their P ARTIAL verdicts from aggregate sharing results.   
+
+> Finding 6. Cache telemetry is reliable for nearly all measured endpoints. We exclude the two exceptions’ partial-sharing verdicts from aggregate results.
+
+2) Stable routing: Assumption 2 concerns how repeated requests sample the underlying routing paths. In our black-box setting, we cannot observe routing decisions directly. To check its observable consequence, we run B UILD GRAPH on the 39 selected resellers and examine each recovered chain 
+
+A ≺ B ≺ C. For each chain, we independently measure the probability of a hit when probing B after flooding A, probing 
+
+C after flooding B, and probing C after flooding A. If routes from C to A pass through B, the routing model predicts 
+
+Pr[ probe at C hits | flood A]= Pr[ probe at B hits | flood A]
+
+× Pr[ probe at C hits | flood B].
+
+The intuition is that, the fraction of C’s requests that reach 
+
+A should equal the fraction that reach B, multiplied by the fraction of B’s requests that reach A. Each probability is measured with a separate flood and a fresh random prompt. The recovered topology contains 21 such available chains. Fig. 7 compares the predicted and observed probability that 11 0.0 0.2 0.4 0.6 0.8 1.0              
+
+> predicted coverage c(a,b) ⋅ c(b,c)
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> observed coverage  c(a, c)
+> n= 21 chains median |error| = 0.084 Fig. 7. Predicted and observed hit probabilities for 21 A≺B≺Cchains.
+
+a probe at C hits after flooding A. The median absolute deviation is 0.084 , with 14 /21 chains agreeing within 0.10 ;randomly permuting the observed long-range values raises the median deviation to 0.449 . Whole-prompt cache domain pinning would instead make the three randomized floods sample unrelated routing populations and would not produce this agreement. The seven larger deviations show that the assumptions are approximations, not invariants: temporary route changes, quotas, or alternative paths can still make relations unobservable or make the measured probabilities inconsistent. 
+
+Finding 7. Independently measured hit probabilities are broadly consistent with the multiplicative relationship predicted by our routing model. This provides empirical support for stable routing and prefix-invariant selection as reasonable approximations for the measured systems. 
+
+D. RQ3: Controlled Evaluation 
+
+Real-world reseller endpoints provide no observable ground truth about their underlying cache-sharing or supply rela-tionships. To evaluate the accuracy of C ACHE TRACER , we therefore prepare a controlled environment where the complete topology is known by construction. Specifically, we configure eight topologies using indepen-dently isolated cache domains under our own credentials. Relays forward requests through these credentials, allowing us to determine exactly which cache domains each relay can reach and which upstreams are shared. For this controlled environment, we set the cache-chunk length to 32 tokens, the prompt length to 3,481 tokens, the prefix stride to 32 
+
+tokens, and the keep-warm concurrency to 4. The controlled and real-world evaluations use the same relation classifier and topology-assembly logic. 
+
+Experimental topologies. We design the eight topologies to progressively evaluate C ACHE TRACER (Fig. 8).  
+
+> •
+
+T1–T4 cover the four pairwise outcomes returned by CLASSIFY : no observed sharing, equivalent cache reach, strict containment, and sharing without containment.  
+
+> •
+
+T5–T7 evaluate how these pairwise outcomes compose into a chain, fan-in, and a hidden shared ancestor. They are representative three-node compositions.  
+
+> •
+
+T8 is the combined stress case: an eight-node DAG with multiple inputs and outputs, a deeper chain, implication pruning, and two overlapping maximal cliques that must remain separate latent explanations. In T1–T7, each observed endpoint reaches at most four terminal cache domains. T8 uses 12 isolated domains; its deepest endpoints can reach ten of them, while the smallest terminal routing probability is 3/35 ≈ 8.57% , still above the 
+
+5% resolution used by C ACHE TRACER . Every relay also has its own private cache domain, ensuring that shared and private cache reach can be distinguished. 
+
+Results. Fig. 8 compares each configured topology with the topology recovered by C ACHE TRACER . Appendix C reports the per-direction hit/miss counts. The results show that, C A-
+
+> CHE
+
+TRACER correctly recovers all eight configured topolo-gies. For T1–T4, it distinguishes all four pairwise relation classes. In T5, it recovers the two adjacent containment rela-tions and correctly skips the transitive pair through implication pruning. T6 recovers the fan-in structure, where two endpoints are contained in a common containing endpoint. T7 correctly separates the hidden shared upstream of B and C from their common downstream node A. For T8, C ACHE TRACER 
+
+recovers all six direct observed containment relations and both latent explanations, S1 → { B, C, D } and S2 → { C, G }, while pruning eight long-range pairs whose relations are already implied by the recovered order. In this controlled evaluation, each configured supply edge is intentionally aligned with a strict cache-containment relation. Therefore, exact recovery of the containment topology also recovers the configured supply graph in this evaluation. 
+
+Finding 8. CACHE TRACER exactly recovers all 8/8 configured topologies. Across these cases, it correctly distinguishes all four pairwise relation classes and preserves the intended multi-hop composition, fan-in structure, pruning, and overlapping latent-sharing explanations. 
+
+V. D ISCUSSION 
+
+Conservative recovery of cache containment. The cache-containment structure recovered by CACHE TRACER is an under-approximation: every reported relation is supported by directional cache measurements, whereas an unreported rela-tion remains unknown rather than absent. Genuine contain-ment can remain unobserved for many reasons. For example, cache domains carrying less than the measurement resolution 
+
+δ may not produce enough observations to be distinguished reliably; routing may vary during a measurement window because of temporary changes in load balancing, rate limits, health status, fallback, or quota availability, causing repeated requests to sample a different routing mixture from the one that normally serves the endpoint. These effects remove evidence rather than provide evidence for an additional relation. 12 independent  equivalent  one-way  latent fork  chain  fan-in  fork + fan-in  overlapping forks                                  
+
+> S U B S T R U C T U R E S C O M P O S I T E T O P O L O G Y
+> Ti are sub -configurations of T8
+> configured recovered
+> 𝐴 = 𝐵 𝐵 ≺ 𝐴 𝐶 ≺ 𝐵 ≺ 𝐴 𝐵 ≺ 𝐴 ,𝐶 ≺ 𝐴
+> equivalent reach
+> containment
+> latent witness
+> 𝑆 ⇢ {𝐵, 𝐶}
+> 𝐵 ≺ 𝐴 ,𝐶 ≺ 𝐴
+> 𝑆 ⇢ {𝐴, 𝐵}
+> AB
+> A
+> B
+> AB
+> C
+> B
+> A
+> B
+> A
+> C
+> AB
+> S
+> S
+> CB
+> A
+> BDCG
+> A
+> E
+> H
+> F
+> 𝑆 1𝑆 2
+> T1 T2 T3T4T5T6T7T8
+> 𝑅 1𝑅 2
+> S
+> 𝑅 1𝑅 2𝑅 2
+> 𝑅 1
+> 𝑅 2
+> 𝑅 1
+> 𝑅 1
+> 𝑅 2𝑅 1
+> 𝑅 3𝑅 3𝑅 2
+> 𝑅 1
+> S
+> 𝑅 5
+> 𝑅 6
+> 𝑅 8
+> 𝑅 2𝑅 4𝑅 3𝑅 7
+> 𝑆 1𝑆 2
+> 𝑅 1
+> T8
+> T7
+> T5
+> T4T6
+> T1T3Fig. 8. Configured (top) and recovered (bottom) structures for T1–T8.
+
+Cache-reach topology vs. supply chain. As discussed in §III-E, the recovered topology describes relations among the cache reaches observable through reseller endpoints, not the supply graph that connects those resellers. A containment chain is therefore consistent with multi-level resale, but its length should not be interpreted as the number of commercial intermediaries traversed by a request. Similarly, a highly con-tained cache reach indicates concentration of observable cache reach, but does not identify the operator, contract, or exact forwarding path responsible for that concentration. The secu-rity significance of the recovered topology is thus structural: it identifies where nominally independent endpoints expose overlapping or nested cache reach, and hence where a shared upstream component could create correlated confidentiality or integrity exposure, without claiming that a particular supplier relationship or compromise exists. 
+
+Potential mitigations. A stronger design would make re-sellers forwarders rather than trust termination points. One possibility is an end-to-end context protocol , analogous to an authenticated SSH or TLS session, established between the user’s client and the final serving backend through the reseller chain. The client would authenticate the serving back-end and encrypt the prompt context to its key; the backend would decrypt the context only at the final hop and return an encrypted, signed response. The signature should bind a fresh request identifier, the selected model, the response, and any tool-call arguments, and the client should verify it before releasing the response to an agent runtime. Intermediate resellers could still route an opaque envelope and account for usage through backend-signed receipts, but could neither read the prompt context nor silently rewrite the returned content or agent actions. Realizing such a protocol would require provider cooperation and careful support for dynamic routing, streaming, caching, and billing; we leave its design and deployment to future work. VI. R ELATED WORK 
+
+Co-residency detection in the cloud. Cloud side channels established that customers can infer co-residency, exploit the resulting cross-tenant boundary, and revisit placement after provider hardening [37], [38], [39], [40]. We transfer this struc-ture from hardware resources and hypervisors to prefix caches and commercial intermediaries; web dependency measurement motivates the resulting concentration question [41]. 
+
+LLM supply-chain measurement. Audits cover reseller behavior, model substitution, pricing, and malicious gate-ways [15], [18], [16]; routers select efficient backends [42], [43]; and cooperative fingerprints identify models [44]. We instead infer the hidden dependencies of endpoints. 
+
+Prefix-cache and inference side channels. Prefix-cache at-tacks recover content, detect cross-user reuse, and motivate partitioning [22], [45], [46], [47], [48]; broader channels reveal architecture, identity, or activity [49], [50], [51], [52], [53], [54], [55], [56], [57], [58]. We repurpose authentic cache reuse as a relational infrastructure signal rather than a content leak. 
+
+Network tomography. Network tomography infers hidden topology from end-to-end observations [59], [60], [61], [62], [63], [64]. Our planted prefix state replaces packet-path cor-relation but retains its identifiability limit: external traces determine only an equivalence class without extra assumptions or vantage points (Remark III-E, Appendix E). VII. C ONCLUSION 
+
+This paper studies hidden dependencies created by multi-level resale in the LLM API reseller ecosystem. We present CACHE TRACER , an API-only measurement method that ex-ploits prefix-cache reuse to reveal shared cache reach and containment among reseller endpoints. Our measurements on 
+
+39 real-world resellers uncover widespread sharing, deep de-pendency structures, and strong concentration. These findings show that seemingly independent resellers can rely on common hidden upstreams, creating ecosystem-level confidentiality and integrity risks with potentially large blast radii. Our work provides a foundation for more transparent and supply-chain-aware security assessment of LLM API services. 13 ETHICS CONSIDERATIONS 
+
+The measurement used paid credentials on commercial endpoints and issued only synthetic prompts: random padding plus a fresh nonce, containing no user data and no content that could be mistaken for a real workload. It neither attempted nor required the recovery of any other customer’s prompt, and the oracle we use reveals only whether our own prompt was cached. 
+
+Authorization. Every request was issued under accounts the authors registered and paid for, at published rates, through the documented chat-completion interface. We did not bypass authentication, evade rate limits, exploit a software defect, or access any resource an ordinary customer of the same endpoint could not access. What the study does is send a legitimate customer’s own prompts at a legitimate customer’s own rate and read the usage field the endpoint chooses to return. We nonetheless treat the aggregate as a measurement study rather than routine usage, which is why the load bounds below and the disclosure policy exist. 
+
+Load on third parties. Flooding places state in shared caches and consumes capacity, so we bounded it. Safety caps stopped non-converging floods at 1000 requests; sustained errors quar-antined an endpoint. Aggregate load was 1.1 × 10 6 requests over 7.2 hours across 39 endpoints, about one request per second per endpoint, which is within ordinary customer usage for the paid tiers involved. Keep-warm traffic ran at a low fixed rate and was stopped as soon as the corresponding probe direction finished. We paid for all traffic at published rates. 
+
+Disclosure policy. We withhold endpoint identities in this paper. This is a standing policy, fixed before analysis and independent of what the measurement found: a reported con-tainment relation is a statement about infrastructure during one window and for one model, and publishing it under a company name invites reading it as an allegation about a commercial arrangement we did not observe. Appendix B gives each node’s endpoints in redacted form, which preserves the shape of the measurement without naming an operator. REFERENCES [1] W.-L. Chiang, L. Zheng, Y. Sheng, A. N. Angelopoulos, T. Li, D. Li, B. Zhu, H. Zhang, M. I. Jordan, J. E. Gonzalez, and I. Stoica, “Chatbot arena: An open platform for evaluating LLMs by human preference,” in 
+
+Proc. ICML , 2024. [2] C. E. Jimenez, J. Yang, A. Wettig, S. Yao, K. Pei, O. Press, and K. Narasimhan, “SWE-bench: Can language models resolve real-world GitHub issues?” in Proc. ICLR , 2024. [3] Z. Ji, Z. Zhang, C. Xu, Z. Li, Y. Gao, S. Wang, and S.-C. Cheung, “Coding agents are guessing: Measuring action-boundary violations in underspecified devops instructions,” arXiv preprint arXiv:2607.02294 ,2026. [4] A. K. Zhang, N. Perry, R. Dulepet, J. Ji, C. Menders, J. W. Lin, E. Jones, G. Hussein, S. Liu, D. Jasper, P. Peetathawatchai, A. Glenn, V. Sivashankar, D. Zamoshchin, L. Glikbarg, D. Askaryar, M. Yang, T. Zhang, R. Alluri, N. Tran, R. Sangpisit, P. Yiorkadjis, K. Osele, G. Raghupathi, D. Boneh, D. E. Ho, and P. Liang, “Cybench: A framework for evaluating cybersecurity capabilities and risks of language models,” in Proc. ICLR , 2025. [5] Z. Ji, D. Wu, W. Jiang, P. Ma, Z. Li, and S. Wang, “Measuring and augmenting large language models for solving capture-the-flag challenges,” in Proceedings of the 2025 ACM SIGSAC Conference on Computer and Communications Security , 2025, pp. 603–617. [6] S. Hong, M. Zhuge, J. Chen, X. Zheng, Y. Cheng, C. Zhang, J. Wang, Z. Wang, S. K. S. Yau, Z. Lin, L. Zhou, C. Ran, L. Xiao, C. Wu, and J. Schmidhuber, “MetaGPT: Meta programming for a multi-agent collaborative framework,” in Proc. ICLR , 2024. [7] Anthropic, “Claude code: An agentic coding tool,” https://docs. anthropic.com/en/docs/claude-code, 2026, accessed August 2026. [8] OpenClaw contributors, “OpenClaw: An open-source autonomous LLM agent runtime,” https://github.com/openclaw/openclaw, 2026, 385K GitHub stars, accessed August 2026. [9] Z. Ji, D. Wu, W. Jiang, P. Ma, Z. Li, Y. Gao, S. Wang, and Y. Li, “Taming various privilege escalation in llm-based agent systems: A mandatory access control framework,” arXiv preprint arXiv:2601.11893 , 2026. [10] OpenAI, “Supported countries and territories — OpenAI API,” https: //platform.openai.com/docs/supported-countries, 2026, accessed August 2026. [11] ——, “Rate limits — OpenAI platform documentation,” https://platform. openai.com/docs/guides/rate-limits, 2026, accessed August 2026. [12] Menlo Ventures, “OpenRouter now processes more than aquadrillion tokens a year,” https://menlovc.com/perspective/ openrouter-now-processes-more-than-a-quadrillion-tokens-a-year/, 2026, reports a ∼1.5 quadrillion tokens/year run rate as of May 2026. [13] Andreessen Horowitz, “State of AI: An empirical 100 trillion token study with OpenRouter,” https://a16z.com/state-of-ai/, 2025, published December 2025, accessed August 2026. [14] Y. Zhang, Y. Jiang, Z. Chen, M. Backes, X. Shen, and Y. Zhang, “Real money, fake models: Deceptive model claims in shadow APIs,” 2026. [Online]. Available: https://arxiv.org/abs/2603.01919 [15] H. Liu, C. Shou, H. Wen, Y. Chen, R. J. Fang, and Y. Feng, “Your agent is mine: Measuring malicious intermediary attacks on the LLM supply chain,” 2026. [Online]. Available: https://arxiv.org/abs/2604.08407 [16] W. Cai, T. Shi, X. Zhao, and D. Song, “Are you getting what you pay for? Auditing model substitution in LLM APIs,” 2025. [Online]. Available: https://arxiv.org/abs/2504.04715 [17] Y. Fang, Y. Feng, B. Li, and M. Zhou, “KBF: Knowledge boundary as fingerprint for language model and black-box API auditing,” 2026. [Online]. Available: https://arxiv.org/abs/2605.29524 [18] G. Lin, Y. Wan, S. Pei, T. Xu, K. Xu, and G. Xue, “Behavioral consistency and transparency analysis on large language model API gateways,” in Proc. ACM Internet Measurement Conference (IMC), to appear , 2026, arXiv:2604.21083. [Online]. Available: https://arxiv.org/abs/2604.21083 [19] QuantumNous, “New API: An enterprise-grade LLM gateway and resale management system,” https://github.com/QuantumNous/new-api, 2026, 44.8K GitHub stars, accessed August 2026. [20] Q. Song, “One API: LLM API management and redistribution system,” https://github.com/songquanpeng/one-api, 2026, 36.3K GitHub stars, accessed August 2026. [21] L. Zheng, L. Yin, Z. Xie, C. Sun, J. Huang, C. H. Yu, S. Cao, C. Kozyrakis, I. Stoica, J. E. Gonzalez, C. Barrett, and Y. Sheng, “SGLang: Efficient execution of structured language model programs,” in Proc. NeurIPS , 2024. [22] C. Gu, X. L. Li, R. Kuditipudi, P. Liang, and T. Hashimoto, “Auditing prompt caching in language model APIs,” 2025. [Online]. Available: https://arxiv.org/abs/2502.07776 [23] OpenAI, “Prompt caching — OpenAI platform documentation,” https: //platform.openai.com/docs/guides/prompt-caching, 2024, accessed May 2026. [24] Anthropic, “Prompt caching — Anthropic documentation,” https: //docs.anthropic.com/en/docs/build-with-claude/prompt-caching, 2024, accessed May 2026. [25] Microsoft, “Prompt caching with Azure OpenAI service,” https://learn. microsoft.com/en-us/azure/ai-foundry/openai/how-to/prompt-caching, 2024, accessed May 2026. [26] W. Kwon, Z. Li, S. Zhuang, Y. Sheng, L. Zheng, C. H. Yu, J. E. Gonzalez, H. Zhang, and I. Stoica, “Efficient memory management for large language model serving with PagedAttention,” in Proc. SOSP ,2023. [27] BerriAI, “LiteLLM: Call 100+ LLM APIs in the OpenAI format,” https: //github.com/BerriAI/litellm, 2026, 56.0K GitHub stars, accessed August 2026. 
+
+14 [28] Hunan HuaShun Xin’an Technology Co., Ltd., “FOFA search engine,” https://en.fofa.info/about/en, 2026, global cyberspace mapping search engine, accessed August 2026. [29] Community-maintained directory, “Awesome AI API proxy: A curated map of AI API relay stations and LLM gateways,” https://github.com/ howardpen9/awesome-ai-api-proxy, 2026, accessed August 2026. [30] TokenAPI Scan, “Claude code domain list: 147 relay domains em-bedded by anthropic,” https://tokenscanai.com/claude-code-relays, 2026, accessed August 2026. [31] B. Wang, W. He, S. Zeng, Z. Xiang, Y. Xing, J. Tang, and P. He, “Unveiling privacy risks in LLM agent memory,” in 
+
+Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics , 2025, pp. 25 241–25 260. [Online]. Available: https://aclanthology.org/2025.acl-long.1227/ [32] G. Juneja, J. N. S. Pasupulati, A. Albalak, W. Hua, and W. Y. Wang, “MAGPIE: A benchmark for multi-AGent contextual PrIvacy evaluation,” in NeurIPS Workshop on Socially Responsible and Trustworthy Foundation Models , 2025. [Online]. Available: https: //openreview.net/forum?id=vZgdho8Vx0 [33] F. El Yagoubi, G. Badu-Marfo, and R. Al Mallah, “AgentLeak: A benchmark for internal-channel privacy leakage in multi-agent LLM systems,” IEEE Access , vol. 14, pp. 94 960–94 978, 2026. [Online]. Available: https://doi.org/10.1109/ACCESS.2026.3704541 [34] Yicai, “Illegal “AI relay stations”: Do not be blinded by low prices,” https://www.yicai.com/video/103220260.html, 2026, chinese-language industry report, accessed August 2026. [35] Antigravity Claude Proxy contributors, “Antigravity Claude proxy,” https://github.com/badrisnarayanan/antigravity-claude-proxy, 2026, open-source proxy documentation, accessed August 2026. [36] X. Xiao, “Reselling tokens becomes a business as the market fills with “scalpers”,” https://m.21jingji.com/article/20260519/herald/ c61816e7a88ef2712da0ba6239e49034.html, 2026, 21st Century Busi-ness Herald, Chinese-language industry report, accessed August 2026. [37] T. Ristenpart, E. Tromer, H. Shacham, and S. Savage, “Hey, you, get off of my cloud: Exploring information leakage in third-party compute clouds,” in Proc. ACM Conference on Computer and Communications Security (CCS) , 2009, pp. 199–212. [38] Y. Zhang, A. Juels, M. K. Reiter, and T. Ristenpart, “Cross-vm side channels and their use to extract private keys,” in Proc. ACM Conference on Computer and Communications Security (CCS) , 2012, pp. 305–316. [39] M. S. Inci, B. Gulmezoglu, G. Irazoqui, T. Eisenbarth, and B. Sunar, “Seriously, get off my cloud! cross-VM RSA key recovery in a public cloud,” Cryptology ePrint Archive, Paper 2015/898, 2015. [Online]. Available: https://eprint.iacr.org/2015/898 [40] V. Varadarajan, Y. Zhang, T. Ristenpart, and M. Swift, “A placement vulnerability study in multi-tenant public clouds,” in Proc. USENIX Security Symposium , 2015, pp. 913–928. [41] A. Kashaf, V. Sekar, and Y. Agarwal, “Analyzing third party service dependencies in modern web services: Have we learned from the Dyn cyberattack?” in Proc. ACM Internet Measurement Conference (IMC) ,2020, pp. 634–647. [42] L. Chen, M. Zaharia, and J. Zou, “FrugalGPT: How to use large language models while reducing cost and improving performance,” arXiv preprint arXiv:2305.05176 , 2023. [43] I. Ong, A. Almahairi, V. Wu, W.-L. Chiang, T. Wu, J. E. Gonzalez, M. W. Kadous, and I. Stoica, “RouteLLM: Learning to route LLMs with preference data,” 2024. [44] J. Xu, F. Wang, M. D. Ma, P. W. Koh, C. Xiao, and M. Chen, “Instructional fingerprinting of large language models,” in Proc. NAACL ,2024. [45] X. Zheng, H. Han et al. , “InputSnatch: Stealing input in LLM services via timing side-channel attacks,” 2024. [Online]. Available: https://arxiv.org/abs/2411.18191 [46] L. Song, Z. Pang, W. Wang, Z. Wang, X. Wang, H. Chen, W. Song, Y. Jin, D. Meng, and R. Hou, “The early bird catches the leak: Unveiling timing side channels in LLM serving systems,” IEEE Transactions on Information Forensics and Security , vol. 20, pp. 11 431–11 446, 2025. [47] Z. Luo, S. Shao, S. Zhang, L. Zhou, Y. Hu, C. Zhao, Z. Liu, and Z. Qin, “Shadow in the cache: Unveiling and mitigating privacy risks of KV-cache in LLM inference,” in Proc. NDSS , 2026. [48] Z. Pang, W. Wang et al. , “Cache partitioning for mitigating timing side-channel attacks in LLM serving systems,” in Proc. IEEE Int. Conf. on Frontiers Technology of Information and Computer (ICFTIC) , 2024. [49] S. B. Dutta, H. Naghibijouybari, A. Gupta, N. Abu-Ghazaleh, A. Mar-quez, and K. Barker, “Spy in the GPU-box: Covert and side channel attacks on multi-GPU systems,” in Proc. ISCA , 2023. [50] Z. Gao et al. , “I know what you said: Unveiling hardware cache side-channels in local large language model inference,” in Proc. USENIX Security , 2025. [51] N. Carlini, D. Paleka, K. Dvijotham, T. Steinke, J. Hayase, A. F. Cooper, K. Lee, M. Jagielski, M. Nasr, A. Conmy, E. Wallace, D. Rolnick, and F. Tram` er, “Stealing part of a production language model,” in Proc. ICML , 2024. [52] V. Duddu, D. Samanta, D. V. Rao, and V. E. Balas, “Stealing neural networks via timing side channels,” 2018. [53] X. Hu, L. Liang, S. Li, L. Deng, P. Zuo, Y. Ji, X. Xie, Y. Ding, C. Liu, T. Sherwood, and Y. Xie, “DeepSniffer: A DNN model extraction framework based on learning architectural hints,” in Proc. ASPLOS ,2020, pp. 385–399. [54] F. Tram` er, F. Zhang, A. Juels, M. K. Reiter, and T. Ristenpart, “Steal-ing machine learning models via prediction APIs,” in Proc. USENIX Security , 2016, pp. 601–618. [55] H. Naghibijouybari, A. Neupane, Z. Qian, and N. Abu-Ghazaleh, “Rendered insecure: GPU side channel attacks are practical,” in Proc. ACM CCS , 2018. [56] G. McDonald and J. Bar Or, “Whisper leak: A side-channel attack on large language models,” 2025. [57] M. Soleimani, G. Jia, I. Gim, S.-s. Lee, and A. Khandelwal, “Wiretapping LLMs: Network side-channel attacks on interactive LLM services,” Cryptology ePrint Archive, Paper 2025/167, 2025. [Online]. Available: https://eprint.iacr.org/2025/167 [58] Z. Zhang et al. , “NetEcho: From real-world streaming side-channels to full LLM conversation recovery,” 2025. [59] Y. Vardi, “Network tomography: Estimating source-destination traffic in-tensities from link data,” Journal of the American Statistical Association ,vol. 91, no. 433, pp. 365–377, 1996. [60] R. Castro, M. Coates, G. Liang, R. Nowak, and B. Yu, “Network tomography: Recent developments,” Statistical Science , vol. 19, no. 3, pp. 499–517, 2004. [61] R. C´ aceres, N. G. Duffield, J. Horowitz, and D. F. Towsley, “Multicast-based inference of network-internal loss characteristics,” IEEE Transac-tions on Information Theory , vol. 45, no. 7, pp. 2462–2480, 1999. [62] T. Bu, N. Duffield, F. Lo Presti, and D. Towsley, “Network tomography on general topologies,” in Proc. ACM SIGMETRICS , 2002. [63] M. G. Rabbat, M. J. Coates, and R. D. Nowak, “Multiple-source internet tomography,” IEEE Journal on Selected Areas in Communications ,vol. 24, no. 12, pp. 2221–2234, 2006. [64] B. Eriksson, G. Dasarathy, P. Barford, and R. Nowak, “Toward the practical use of network tomography for internet topology discovery,” in Proc. IEEE INFOCOM , 2010, pp. 1–9. [Online]. Available: https://nowak.ece.wisc.edu/tomo10.pdf 
+
+APPENDIX AMEASUREMENT BUDGET AND REQUEST COMPLEXITY 
+
+§III-F describes how C ACHE TRACER assembles pairwise verdicts into a containment order; this appendix analyzes the request cost of that procedure. Let N = |L| and let Bf = 1000 
+
+denote the per-direction flood cap. Profiling requires one request per endpoint. Each invocation of CLASSIFY tests two directions (lines 9–10), and each direction uses at most 
+
+Bf flood requests (line 3) plus Nprove successful P ROVE 
+
+observations (line 5), excluding keep-warm traffic and failed requests. Without implication pruning, B UILD GRAPH invokes CLASSIFY for at most  N
+
+> 2
+
+ endpoint pairs, giving a worst-case foreground request complexity of 
+
+O  N + N 2(Bf + Nprove ) .
+
+When short-range relations are discovered first in a contain-ment chain, the N − 1 adjacent relations can imply all longer-15 E2 E17 E18 Fig. 9. The two cache-containment relations reproduced on both   
+
+> gpt-5-nano-2025-08-07 and gpt-5.1 . Arrows denote cache-reach containment, as in Fig. 6.
+
+range pairs. The number of direct pair measurements then reduces to O(N ), giving foreground complexity 
+
+O (N (Bf + Nprove )) .
+
+The realized request cost depends on how many candidate pairs are pruned and is reported empirically in §IV. APPENDIX BREDACTED ENDPOINT INDEX 
+
+§IV-A2 describes how the measured reseller endpoints were selected. Table III lists the 34 nodes of Fig. 6 with the com-mercial endpoints behind each one. Every domain is redacted to its public suffix and the last character of its registrable label; the remaining characters are replaced by one block each, and subdomain labels are dropped. The redaction preserves what a reader needs to sanity-check the measurement, namely how many distinct operators a node contracts and how their domains are shaped, without naming any of them (§VII). Rows with more than one entry are clone equivalence classes. APPENDIX CDIRECTIONAL EVIDENCE FOR CONTROLLED EVALUATION 
+
+§IV-D evaluates CACHE TRACER on eight configured topologies whose ground truth is known by construction. Table IV reports the per-direction hit/miss counts underlying those results. Each row shows the observations from both FLOOD –P ROVE directions and the resulting relation recovered by C LASSIFY .APPENDIX DCROSS -M ODEL CONTAINMENT RELATIONS 
+
+§IV-B5 evaluates whether the cache-containment relations recovered on gpt-5-nano-2025-08-07 persist when the same endpoint pairs are measured on gpt-5.1 . Among the decisive reruns, only two reproduce the original containment relation. Figure 9 shows these two cases. APPENDIX EINTERPRETING LATENT WITNESSES 
+
+§III-F introduces latent witnesses as part of B UILD GRAPH ;this appendix establishes that they are not identifiable. B UILD -GRAPH may encounter P ARTIAL pairs whose shared cache reach cannot be explained by any observed endpoint already present in the recovered containment structure. To represent such unexplained sharing without attributing it to a specific reseller, S HADOW INSERT introduces latent witnesses. These witnesses are explanatory placeholders only: they are never queried and should not be interpreted as identified upstream services or commercial entities. 
+
+Algorithm 5 SHADOW INSERT (R, P): overlapping latent wit-nesses for unexplained sharing relations.                                                 
+
+> Require: recovered reachability R, partial-pair set P
+> 1: H←(V, ∅)
+> 2: for each (u, v )∈ P do
+> 3: if ¬EXPLAINED BYOBSERVED ANCESTOR (R, u, v )then
+> 4: add {u, v }to H
+> 5: end if
+> 6: end for
+> 7: C ← ALL MAXIMAL CLIQUES (H)of size ≥2
+> 8: for each C∈ C in lexicographic order do
+> 9: sC←NEW WITNESS (C);R[sC][ v]←1for each v∈C
+> 10: end for
+> 11: return (R, {sC})
+
+Why latent witnesses are not identifiable. The observations available to C ACHE TRACER are insufficient to determine the internal structure behind a latent witness. For example, a hidden node that explains a set of visible cache-reach relations could be replaced by a longer forwarding chain, by several co-tenant API surfaces with equivalent cache behavior, or by a combination of the two. As long as the replacement preserves the cache-reach relations observed among the visible endpoints, all P ROFILE , F LOOD , P ROVE , and C LASSIFY out-comes remain unchanged because every measurement begins and ends at a visible endpoint. Consequently, the trace does not determine how many hidden forwarding nodes exist, how they are internally con-nected, or whether two latent witnesses correspond to the same underlying system. We therefore use a latent witness only to record that some observed sharing remains unexplained by the visible containment structure. 
+
+Representing unexplained sharing. Algorithm 5 constructs an auxiliary graph over unexplained PARTIAL pairs and inserts one latent witness for each maximal clique. Using maximal cliques rather than greedily merging endpoints pre-serves overlapping explanations: for example, T8 contains both {B, C, D } and {C, G }, which share endpoint C but should remain distinct structural explanations. A size-two clique simply represents a local pairwise witness; in the field data, all 18 unexplained sharing relations are of this form. Because latent witnesses are not identifiable from the mea-surement trace, neither their number nor their labels should be interpreted as the number or identity of hidden commercial entities. Accordingly, latent witnesses are reported separately and are excluded from all observed-node counts, containment-edge counts, and cache-reach statistics in §IV. 16 TABLE III THE 34 NODES OF FIG . 6, THEIR LAYER , AND THE REDACTED ENDPOINTS THEY STAND FOR . E ACH BLOCK REPLACES ONE CHARACTER OF THE REGISTRABLE DOMAIN LABEL .Node ID Layer Redacted Endpoints Node ID Layer Redacted Endpoints E1 1 i.com E18 3 c.com 
+
+E2 1 c.ai E19 3 i.ai 
+
+E3 2 u.com E20 3 1.online 
+
+E4 2 o.com E21 4 k.com i.com 
+
+E5 2 i.top E22 4 l.com 
+
+E6 2 i.com E23 4 e.ai 
+
+E7 2 y.app E24 5 i.fun 
+
+E8 2 e.cn s.top 
+
+E25 5 l.cn 
+
+E9 2 t.ai E26 5 i.top 
+
+E10 2 j.org E27 5 t.ge 
+
+E11 2 e.ai E28 5 i.top 
+
+E12 2 i.com E29 6 a.com 
+
+E13 2 i.com E30 6 i.host 
+
+E14 2 e.vip i.top i.buzz 
+
+E31 6 u.ai 
+
+E15 3 i.com E32 6 i.com 
+
+E16 3 u.net E33 6 i.com 
+
+E17 3 3.one E34 7 i.com m.link 
+
+TABLE IV DIRECTIONAL EVIDENCE FOR T1–T7. H/M DENOTES THE NUMBERS OF HIT AND MISS OBSERVATIONS AMONG SUCCESSFUL PROBES . X ⇝ Y FLOODS 
+
+X AND PROBES Y .
+
+Topology Endpoint pair Forward H/M Reverse H/M Recovered relation T1 A, B A ⇝ B: 0/59 B ⇝ A: 0/59 No relation T2 A, B A ⇝ B: 179 /2 B ⇝ A: 181 /0 Equivalent T3 A, B A ⇝ B: 180 /1 B ⇝ A: 31 /15 B → A
+
+T4 A, B A ⇝ B: 9/15 B ⇝ A: 14 /15 Latent S → { A, B }
+
+T5 A, B A ⇝ B: 180 /1 B ⇝ A: 42 /15 B → AB, C B ⇝ C: 181 /0 C ⇝ B: 13 /15 C → B
+
+T6 A, B A ⇝ B: 181 /0 B ⇝ A: 5/15 B → AB, C B ⇝ C: 0/59 C ⇝ B: 0/59 No relation 
+
+A, C A ⇝ C: 181 /0 C ⇝ A: 8/15 C → A
+
+T7 A, B A ⇝ B: 180 /1 B ⇝ A: 18 /15 B → AB, C B ⇝ C: 8/15 C ⇝ B: 8/15 Latent S → { B, C }
+
+A, C A ⇝ C: 180 /1 C ⇝ A: 20 /15 C → A
+
+17

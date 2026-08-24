@@ -1,0 +1,39 @@
+{
+  "label": "2026-08-24",
+  "date": "2026-08-24",
+  "generated_at": "2026-08-24T20:34:47",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202608/24/2608.20617v1-dual-cache-latent-space-communication-between-heterogeneous-language-models",
+      "section": "deep",
+      "title_en": "Dual-Cache Latent Space Communication between Heterogeneous Language Models",
+      "authors": "Jiyao Liu, Qi Zhang, Yaoyi Jia, Ziwen Kan, Song Wang",
+      "date": "2026-08-20",
+      "pdf": "https://arxiv.org/pdf/2608.20617v1",
+      "score": "9.0",
+      "evidence": "提出位置无关的共享者缓存池化用于异构 KV 缓存翻译，契合位置无关缓存概念",
+      "tldr": "多智能体LLM需跨模型传递上下文知识，文本通信延迟高且离散。现有潜在协议LCF-X仅压缩共享者缓存，忽视接收器状态。XKV通过学习查询注意力池化双缓存，经层对齐自注意力融合，并用位置解码器按接收器原生KV几何检索，实现高效异构通信。45个设置中达到最高宏分数，精度与速度均优于基线，且仅训练翻译器。",
+      "tags": "query:pic",
+      "abstract_en": "Multi-agent LLM systems split work across models, so answering often requires knowledge that sits in another agent's context: a Sharer has encoded information that a Receiver needs to complete its task. They usually communicate by exchanging text, which puts autoregressive decoding on the critical path and reduces the exchange to a discrete message written without sight of the receiver's state. Recent latent protocols instead translate the sharer's key-value (KV) cache into the receiver's: C2C supports heterogeneous models but requires both to read the same input, while LCF-X removes this shared-context requirement through position-free sharer-cache pooling. Three restrictions remain: LCF-X compresses the sharer alone, supplies the same layer-local summary to every receiver position with no joint cross-layer memory to retrieve from, and assumes matched layer count and KV geometry. We introduce XKV, which lifts all three: learned-query attention pools both caches; self-attention over receiver-aligned layer tokens, with a learned layer map reconciling different depths, mixes the pooled summaries into a compact joint memory; and a shared position decoder lets every raw receiver cache position retrieve its own per-head-gated residual in the receiver's native KV geometry. Both models stay frozen and may differ in family, depth, KV-head count, head dimension, and tokenizer; only the translator is trained. Across 45 dataset-model-pair settings (six heterogeneous and three same-model ordered pairings, five datasets), XKV attains the highest macro score and best average rank, improving on LCF-X on every dataset (by 4.6 exact-match and 4.2 F1 points on ROPES) and surpassing text communication on four of the five, while training 76% fewer parameters and translating a cache pair 10.3x faster (5.8 vs. 59.9 ms); end to end, XKV is 26% faster than LCF-X and 6.8x faster than text communication.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/24/2608.20732v1-uncovering-and-understanding-hidden-dependencies-in-the-llm-api-reseller-ecosystem-via-prefix-cache-side-channels",
+      "section": "quick",
+      "title_en": "Uncovering and Understanding Hidden Dependencies in the LLM API Reseller Ecosystem via Prefix-Cache Side Channels",
+      "authors": "Zimo Ji, Xin Wei, Congying Xu, Wenyuan Jiang, Xin Yang, Zongjie Li, Yudong Gao, Shuai Wang",
+      "date": "2026-08-21",
+      "pdf": "https://arxiv.org/pdf/2608.20732v1",
+      "score": "6.0",
+      "evidence": "利用前缀缓存复用作为侧信道，直接涉及 LLM 服务中的前缀缓存技术",
+      "tldr": "LLM API转售商形成多层不透明供应链，用户请求可能被未披露上游检查或篡改，但现有审计缺乏跨转售商依赖视角。我们提出CacheTracer，利用前缀缓存重用作为侧信道，通过Flood填充缓存和Probe探测重用关系来测量隐藏依赖。实测39个端点、110万请求，发现37.1%端点对共享缓存可达，包含层次达七层且高度集中。这项工作首次揭示转售商生态的隐藏依赖结构，有助于评估大规模安全风险。",
+      "tags": "query:pic",
+      "abstract_en": "LLM API resellers have become an important access layer to modern LLM services. However, multi-level resale creates an opaque supply chain: a user's request may traverse undisclosed upstream resellers, each of which can inspect or modify prompts and responses, inducing ecosystem-level confidentiality and integrity risks. Existing studies audit individual resellers, but provide little visibility into hidden dependencies across resellers. We present CacheTracer, the first API-only measurement of such hidden dependencies. Our key insight is to exploit prefix-cache reuse as a side channel to measure dependency via cache-reach relations. CacheTracer operationalizes this insight with two primitives: Flood populates fresh cache state through one endpoint, and Prove probes whether another can reuse it while excluding probe-created hits.   We then conduct a real-world measurement study with CacheTracer on 39 reseller endpoints, sending 1.1 million API requests across 636 endpoint pairs. Our measurements reveal a deep, concentrated cache-reach structure: 37.1% of measured pairs exhibit shared cache reach, the containment order spans seven layers, and one cache reach is contained within at least 31 of other nodes. We further find that the recovered structure is model-specific. We also evaluate the validity of CacheTracer through both real-world consistency checks and controlled experiments. The results show its high reliability and accuracy. These findings reveal substantial hidden dependencies among seemingly independent API resellers. Such deep and concentrated dependencies can create a large potential blast radius, where a confidentiality or integrity failure along a common upstream path may affect users across multiple downstream resellers.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
