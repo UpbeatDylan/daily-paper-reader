@@ -1,0 +1,249 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-25T20:44:04.781808+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.22704v1",
+      "source": "arxiv",
+      "title": "WnW: Waxing-and-Waning KV Cache for Long-Form Speech LLMs",
+      "abstract": "Long-form audio inputs make the KV cache the dominant memory cost of speech LLMs. Prefill-only KV compression methods permanently discard audio KV positions once evicted, with no pathway to recover them during decoding. We show this is fragile on long-form audio: prefill attention concentrates near the audio start (an attention-sink effect), while decode-time attention distributes broadly, and the two rankings overlap weakly. We propose WnW (Waxing-and-Waning KV cache), which classifies KV-heads into anchor, tidal, and fixed roles via offline calibration. Anchor heads remain on GPU and serve as a decode-time importance observer; tidal heads keep a CPU-resident complement that is recalled chunk-by-chunk based on aggregated anchor-head scores; fixed heads keep only an on-GPU subset, with the rest permanently discarded. On LibriSpeech-Long with two 3B backbones (Voxtral-mini-3b and Qwen2.5-Omni-3B), WnW preserves near-Full-Cache accuracy while keeping only 20% of audio tokens on GPU, where prefill-only baselines fail to terminate. Results generalize across language, task, and domain shifts, and CPU-GPU recall adds little decode-time overhead in our measurements.",
+      "authors": [
+        "Yiming Yao",
+        "Chenyang Lyu",
+        "Xuanfan Ni",
+        "Longyue Wang",
+        "Weihua Luo",
+        "Yazheng Yang",
+        "Jinsong Su"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.SD"
+      ],
+      "published": "2026-08-24T01:48:30+00:00",
+      "link": "https://arxiv.org/pdf/2608.22704v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache classification and CPU-resident recall for long-form speech LLMs, directly addressing KV cache reuse and long-context efficiency",
+      "llm_evidence_cn": "面向长语音LLM的KV缓存头分类与CPU驻留召回，直接涉及KV缓存复用和长上下文效率",
+      "llm_evidence": "面向长语音LLM的KV缓存头分类与CPU驻留召回，直接涉及KV缓存复用和长上下文效率",
+      "canonical_evidence": "面向长语音LLM的KV缓存头分类与CPU驻留召回，直接涉及KV缓存复用和长上下文效率",
+      "llm_tldr_en": "WnW classifies KV heads into anchor, tidal, and fixed roles so CPU-resident audio KV can be recalled chunk-by-chunk during decoding, cutting long-form speech LLM memory costs and enabling KV reuse.",
+      "llm_tldr_cn": "长音频输入使KV缓存成为语音LLM的主要显存开销，现有prefill-only压缩方法一旦逐出音频KV位置就无法在解码时恢复，且prefill注意力的注意力汇聚效应与解码时的分布弱相关。本文提出WnW，通过离线校准将KV头分为锚定、潮汐和固定三类：锚定头驻留GPU并作为重要性观测器，潮汐头在CPU保留补充并基于聚合的锚定分数分块召回，固定头仅保留必要的缓存。实验表明该方法能有效降低长语音解码的显存占用，并在解码阶段恢复重要KV，改善KV缓存复用。其思想可推广到其他长上下文LLM推理场景。",
+      "llm_tldr": "长音频输入使KV缓存成为语音LLM的主要显存开销，现有prefill-only压缩方法一旦逐出音频KV位置就无法在解码时恢复，且prefill注意力的注意力汇聚效应与解码时的分布弱相关。本文提出WnW，通过离线校准将KV头分为锚定、潮汐和固定三类：锚定头驻留GPU并作为重要性观测器，潮汐头在CPU保留补充并基于聚合的锚定分数分块召回，固定头仅保留必要的缓存。实验表明该方法能有效降低长语音解码的显存占用，并在解码阶段恢复重要KV，改善KV缓存复用。其思想可推广到其他长上下文LLM推理场景。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.23296v1",
+      "source": "arxiv",
+      "title": "Sigmoid Attention as a Better Substrate for Learned KV Cache Eviction",
+      "abstract": "Learned KV-cache eviction often faces a soft-to-hard mismatch: during training, differentiable gates typically attenuate token contributions, whereas inference saves memory only when KV entries are physically removed. We ask whether the attention substrate affects this soft-to-hard transition. Using GPT-2-scale Transformers trained on OpenWebText, we run a controlled $2\\times2\\times2$ comparison over attention type, learned gating, and positional encoding. Although sigmoid attention is worse as a dense language model, learned hard eviction changes the useful operating points: sigmoid-gated models delete KV entries with negligible PPL change relative to their own no-eviction references. Under a matched live-cache protocol on the same dense backbones, learned sigmoid gates obtain lower PPL than our H$_2$O and KeyDiff implementations, whereas softmax gates do not uniformly beat these post-hoc methods. The results suggest that attention normalization can substantially affect whether a training-time soft gate transfers cleanly to hard KV deletion.",
+      "authors": [
+        "Isaac",
+        "Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-08-24T14:21:43+00:00",
+      "link": "https://arxiv.org/pdf/2608.23296v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Learned KV cache eviction under different attention substrates, a core KV cache optimization",
+      "llm_evidence_cn": "针对KV缓存淘汰的学习方法，是KV缓存管理的核心优化",
+      "llm_evidence": "针对KV缓存淘汰的学习方法，是KV缓存管理的核心优化",
+      "canonical_evidence": "针对KV缓存淘汰的学习方法，是KV缓存管理的核心优化",
+      "llm_tldr_en": "This paper investigates how attention substrate affects learned KV cache eviction. Using GPT-2-scale transformers, it shows sigmoid attention, though worse as dense LM, makes learned hard eviction delete KV entries with negligible PPL change, improving cache efficiency.",
+      "llm_tldr_cn": "学习型KV缓存淘汰存在训练软门控与推理硬删除之间的失配。本文通过2×2×2受控实验比较注意力类型、门控和位置编码，发现Sigmoid注意力虽然作为稠密语言模型表现较差，但在学习硬淘汰设置下删除KV条目几乎不引起困惑度变化。这一结果表明注意力基础对KV缓存淘汰的软硬转换有重要影响，为高吞吐推理中的缓存优化提供了新方向。",
+      "llm_tldr": "学习型KV缓存淘汰存在训练软门控与推理硬删除之间的失配。本文通过2×2×2受控实验比较注意力类型、门控和位置编码，发现Sigmoid注意力虽然作为稠密语言模型表现较差，但在学习硬淘汰设置下删除KV条目几乎不引起困惑度变化。这一结果表明注意力基础对KV缓存淘汰的软硬转换有重要影响，为高吞吐推理中的缓存优化提供了新方向。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.20280v2",
+      "source": "arxiv",
+      "title": "Which Eviction Policy Should an LLM Cache Use? A Systematic Study Across Workloads, Capacities, and Encoders",
+      "abstract": "Semantic caches reuse an LLM response when the incoming query embedding lies near a cached query, but proposed eviction policies have rarely been compared under one protocol. Using CLEVER, we evaluate FIFO, LRU, LFU, ARC, GDSF, a single-pass streaming adaptation of SISO, and a semantic-redundancy policy across three ordered, deduplicated query corpora, three cache capacities, and two encoders. No evaluated policy improves on LFU by more than 0.041 percentage points in any of the eighteen settings. Replacement is not irrelevant: FIFO and streaming SISO trail LFU by as much as 8.67 and 8.55 points, respectively, at tight capacity.   We explain the missing upside with a conditional packing result. Under exact lookup and insert-on-miss, a newly inserted entry cannot have a resident neighbor within the hit radius, so a geometry-aware eviction rule receives little new redundancy signal. A separate audit exposes a larger problem with the evaluated operating point. At MiniLM's median nearest-neighbor threshold, only 2.1-3.9% of sampled LMSYS and QQP hits are judged answer-substitutable, reducing raw hit rates of 51-60% to quality-adjusted rates of 1.1-2.2%. The cross-encoder study further shows that thresholds do not transfer between embedding models. LFU is the strongest simple default in this protocol; deployment decisions should first establish answer validity and then test sub-point policy differences with exact search.",
+      "authors": [
+        "Yash Kulkarni",
+        "Shubham Harkare",
+        "Arvind Yogesh Suresh Babu"
+      ],
+      "primary_category": "cs.DB",
+      "categories": [
+        "cs.DB",
+        "cs.LG"
+      ],
+      "published": "2026-08-20T17:14:19+00:00",
+      "link": "https://arxiv.org/pdf/2608.20280v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Systematic study of eviction policies for LLM semantic caches, directly relevant to prompt/response caching",
+      "llm_evidence_cn": "系统评估LLM语义缓存的淘汰策略，与提示/响应缓存直接相关",
+      "llm_evidence": "系统评估LLM语义缓存的淘汰策略，与提示/响应缓存直接相关",
+      "canonical_evidence": "系统评估LLM语义缓存的淘汰策略，与提示/响应缓存直接相关",
+      "llm_tldr_en": "Systematically evaluates eight eviction policies for semantic LLM caches across workloads, capacities, and encoders, showing LFU is hard to beat and explaining why using a conditional packing result.",
+      "llm_tldr_cn": "语义缓存通过复用相似查询的LLM响应减少推理开销，但淘汰策略缺乏统一比较。本文基于CLEVER协议评估FIFO、LRU、LFU、ARC、GDSF、流式SISO和语义冗余策略，覆盖三种工作负载、三种容量和两种编码器。结果显示任何策略相对LFU的提升不超过0.041个百分点，而FIFO和流式SISO在小容量下最多落后8.67和8.55个百分点。研究为LLM语义缓存的淘汰策略选择提供了实证依据。",
+      "llm_tldr": "语义缓存通过复用相似查询的LLM响应减少推理开销，但淘汰策略缺乏统一比较。本文基于CLEVER协议评估FIFO、LRU、LFU、ARC、GDSF、流式SISO和语义冗余策略，覆盖三种工作负载、三种容量和两种编码器。结果显示任何策略相对LFU的提升不超过0.041个百分点，而FIFO和流式SISO在小容量下最多落后8.67和8.55个百分点。研究为LLM语义缓存的淘汰策略选择提供了实证依据。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.21265v1",
+      "source": "arxiv",
+      "title": "Memory Augmentation Unlocks Efficient Chain-of-Thought Reasoning",
+      "abstract": "Large language models often rely on Chain-of-Thought (CoT) reasoning to solve complex tasks, but verbose reasoning traces introduce substantial inference overhead. CoT compression shortens generation, yet aggressive compression may disrupt logical coherence and degrade performance. We formalize this trade-off as the \\textit{Context-Generation Substitution Law}, where explicit reasoning context substitutes for part of decode-time generation. Based on this principle, we propose \\textit{Memory-Augmented Compression}, a training-free framework that constructs reusable reasoning memories from historical traces and retrieves them as prefill-side scaffolds. Rather than using raw demonstrations, these memories summarize reusable reasoning patterns, key constraints, and critical operations to compensate for information lost during compression. Experiments show that Memory consistently improves prompt-based Chain-of-Draft (CoD) compression across mathematical reasoning, complex reasoning, and science question answering tasks, yielding accuracy gains of 21.4, 28.0, 29.5, and 6.61 points over CoD on GSM8K, MATH, BBH, and MMLU-Sci, while achieving a 1.14--1.49$\\times$ latency speedup over standard CoT. Memory is also compatible with token-level, reasoning-trace-level, and inference-state compression mechanisms. Further analyzes show that the gains come from relevant reasoning memories rather than simply increasing context length.",
+      "authors": [
+        "Simeng Zhang",
+        "Yilong Chen",
+        "Wenyuan Zhang",
+        "Zhenyu Zhang",
+        "Yao Chen",
+        "Junyuan Shang",
+        "Tingwen Liu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-21T16:22:36+00:00",
+      "link": "https://arxiv.org/pdf/2608.21265v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Reusable reasoning memories retrieved at prefill side reduce decode-time generation, cutting inference latency.",
+      "llm_evidence_cn": "在预填充阶段检索可复用推理记忆，减少解码生成，降低推理延迟",
+      "llm_evidence": "在预填充阶段检索可复用推理记忆，减少解码生成，降低推理延迟",
+      "canonical_evidence": "在预填充阶段检索可复用推理记忆，减少解码生成，降低推理延迟",
+      "llm_tldr_en": "Memory-Augmented Compression formalizes context-generation substitution and replaces part of decode-time CoT generation with retrievable reasoning memories, reducing inference overhead without compromising reasoning.",
+      "llm_tldr_cn": "思维链推理消耗大量生成时间，压缩又易破坏逻辑。该工作提出记忆增强压缩，把历史推理轨迹归纳为可复用记忆，并在预填充阶段检索，从而替代部分解码生成。该训练无关方法在多种任务上验证了能减少生成长度同时保持推理质量，为推理加速提供了一种上下文替代思路。",
+      "llm_tldr": "思维链推理消耗大量生成时间，压缩又易破坏逻辑。该工作提出记忆增强压缩，把历史推理轨迹归纳为可复用记忆，并在预填充阶段检索，从而替代部分解码生成。该训练无关方法在多种任务上验证了能减少生成长度同时保持推理质量，为推理加速提供了一种上下文替代思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.23463v1",
+      "source": "arxiv",
+      "title": "ProxyFormer: A Dual-Stream Proxy Architecture for Ultra-Long Context and High-Resolution Generation",
+      "abstract": "The quadratic growth of attention computation and key-value (KV) cache with respect to sequence length is a central bottleneck for ultra-long-context language models and high-resolution generative models. We propose ProxyFormer, a general dual-stream architecture built upon proxy tokens. In each layer, fine-grained local features are compressed bottom-up into a small set of proxy states; expensive global interactions are performed only in the compressed proxy space; the globally contextualized proxies are then decompressed and injected top-down back into the local stream. Because the local stream persists across layers, fine-grained information that is not captured by one compression step remains accessible for later refinement, alleviating the irreversible information loss of conventional one-shot compression. We further introduce factorized multi-level compression/decompression, layer-wise dynamic compression ratios, asymmetric dual embeddings, and a proxy-only KV-cache inference scheme. On a 16GB GPU with batch size 1, a standard decoder-only model can train sequences of only about 20K tokens, whereas ProxyFormer with a compression ratio of 64 extends the trainable sequence length to about 0.7M. A model trained with a 64K window retains 92%-95% retrieval accuracy on a multi-needle retrieval task with 1,048,576 tokens, and a model trained with an 8K window exceeds 94% accuracy when extrapolated to 256K tokens. Preliminary image-generation experiments demonstrate the feasibility of ProxyFormer for both pixel-space and latent-space flow matching.",
+      "authors": [
+        "Zhongpan Tang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-24T16:31:46+00:00",
+      "link": "https://arxiv.org/pdf/2608.23463v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Proxy tokens compress global interactions to reduce KV cache and attention cost for ultra-long context",
+      "llm_evidence_cn": "通过代理令牌压缩全局交互，降低超长上下文的KV缓存和注意力开销",
+      "llm_evidence": "通过代理令牌压缩全局交互，降低超长上下文的KV缓存和注意力开销",
+      "canonical_evidence": "通过代理令牌压缩全局交互，降低超长上下文的KV缓存和注意力开销",
+      "llm_tldr_en": "ProxyFormer introduces a dual-stream architecture where global interactions happen only in a compressed proxy space, reducing KV cache growth and enabling ultra-long context generation.",
+      "llm_tldr_cn": "注意力和KV缓存的平方增长是超长上下文模型的主要瓶颈。ProxyFormer提出双流代理架构：在每层将细粒度局部特征自底向上压缩成少量代理状态，只在压缩代理空间执行昂贵全局交互，再自顶向下注入局部流。由于局部流跨层保留，未捕获的细节可在后续层修正。该方法为超长上下文生成提供了通用且高效的架构方案，缓解了KV缓存膨胀。",
+      "llm_tldr": "注意力和KV缓存的平方增长是超长上下文模型的主要瓶颈。ProxyFormer提出双流代理架构：在每层将细粒度局部特征自底向上压缩成少量代理状态，只在压缩代理空间执行昂贵全局交互，再自顶向下注入局部流。由于局部流跨层保留，未捕获的细节可在后续层修正。该方法为超长上下文生成提供了通用且高效的架构方案，缓解了KV缓存膨胀。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.21693v1",
+      "source": "arxiv",
+      "title": "Benchmarking Composable Compression Techniques in Mixture-of-Experts LLMs",
+      "abstract": "Mixture-of-Experts (MoE) LLMs scale model capacity efficiently through sparse activation, but their large expert parameter footprint, routing imbalance, and long-context KV-cache growth make deployment difficult on commodity hardware. Practical deployment often requires stacking multiple compression techniques: expert pruning removes redundant experts, weight quantization lowers model memory footprint, and KV-cache compression reduces long-context memory pressure. However, these techniques are typically evaluated in isolation, leaving open how they interact when applied together in realistic deployment pipelines.   In this work, we present MoEXBench, a systematic benchmark for evaluating composable MoE compression as an end-to-end deployment workflow. MoEXBench studies 10 MoE models ranging from 30B to 235B total parameters across standard-attention, hybrid linear-attention, and sliding window attention architectures. It evaluates 20%-50% expert pruning rates, 1 to 16 bit weight-quantization schemes, and multiple KV-cache precision settings, applied both individually and in combination.   MoEXBench introduces an eight-module evaluation suite that jointly measures composable-compression quality, workload and architecture robustness, pruning/quantization/KV cache sensitivity, and deployment efficiency on commodity hardware. Our results reveal non-trivial interactions among compression methods: composable compression cannot be predicted from standalone techniques, compression rate alone does not reliably predict quality loss or runtime gain, expert pruning is the dominant degradation source, and average quality can hide workload and architecture-specific failures. By releasing normalized module scores, compressed artifacts, and reproducible scripts, MoEXBench enables practical accuracy-memory-latency comparison across MoE families and hardware backends.",
+      "authors": [
+        "Afsara Benazir",
+        "Chen Chen",
+        "Rongxiao Qu",
+        "Jiabo Huang",
+        "Jingtao Li",
+        "Lingjuan Lyu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-22T00:01:18+00:00",
+      "link": "https://arxiv.org/pdf/2608.21693v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Benchmarks composable compression including KV-cache compression for long-context MoE inference; relevant to KV cache optimization",
+      "llm_evidence_cn": "针对MoE LLM长上下文KV缓存压缩等可组合压缩技术进行基准评测，与KV缓存优化相关",
+      "llm_evidence": "针对MoE LLM长上下文KV缓存压缩等可组合压缩技术进行基准评测，与KV缓存优化相关",
+      "canonical_evidence": "针对MoE LLM长上下文KV缓存压缩等可组合压缩技术进行基准评测，与KV缓存优化相关",
+      "llm_tldr_en": "MoEXBench systematically benchmarks composable compression techniques for MoE LLMs, including expert pruning, weight quantization, and KV-cache compression, revealing their interactions in deployment workflows.",
+      "llm_tldr_cn": "MoE大模型部署面临专家参数大、路由失衡和长上下文KV缓存增长等挑战，通常需要叠加多种压缩技术，但已有评测孤立进行。MoEXBench提出了系统化基准，将专家剪枝、权重量化和KV缓存压缩等组合到端到端部署流程中评测。通过该基准可以揭示不同压缩技术之间的交互影响，为实际部署选型提供依据。这对长上下文推理中的KV缓存管理和内存优化具有直接参考价值。",
+      "llm_tldr": "MoE大模型部署面临专家参数大、路由失衡和长上下文KV缓存增长等挑战，通常需要叠加多种压缩技术，但已有评测孤立进行。MoEXBench提出了系统化基准，将专家剪枝、权重量化和KV缓存压缩等组合到端到端部署流程中评测。通过该基准可以揭示不同压缩技术之间的交互影响，为实际部署选型提供依据。这对长上下文推理中的KV缓存管理和内存优化具有直接参考价值。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
