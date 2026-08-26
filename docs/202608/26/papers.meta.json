@@ -1,0 +1,69 @@
+{
+  "label": "2026-08-26",
+  "date": "2026-08-26",
+  "generated_at": "2026-08-26T21:09:57",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202608/26/2608.23834v1-minima-kv-retention-preserving-kv-cache-compression-with-mixed-format-paged-attention",
+      "section": "deep",
+      "title_en": "Minima-KV: Retention-Preserving KV Cache Compression with Mixed-Format Paged Attention",
+      "authors": "Sergii Kozyrev, Davyd Maiboroda",
+      "date": "2026-08-24",
+      "pdf": "https://arxiv.org/pdf/2608.23834v1",
+      "score": "9.0",
+      "evidence": "采用保留感知混合格式分页注意力进行KV缓存压缩，直接针对KV缓存复用与长上下文服务。",
+      "tldr": "针对长上下文KV缓存容量/带宽瓶颈，Minima-KV采用混合格式分页注意力：近期/Anchor页保持FP8，旧非Anchor页转为打包TQ3，页面仍可寻址。格式专属核函数计算局部注意力，经全局归一化在线softmax合并，实现异构解码。在Qwen3.6-27B上，活跃KV每token仅18.3KiB，相对BF16压缩3.5x、FP8压缩1.75x；16K RULER匹配密集基线，LongBench v2在16K/32K/64K上仅降0.80/0.60/0.40个百分点，吞吐为对照0.9821x。为不驱逐实时KV页面的压缩提供了实用混合路径。",
+      "tags": "query:pic",
+      "abstract_en": "The key-value (KV) cache is a primary capacity and bandwidth bottleneck in long-context LLM serving. We present Minima-KV, a retention-preserving hierarchy for mixed-format paged attention. Recent and protected Anchor pages remain in FP8, while older non-anchor pages move to packed TQ3; every live-request page remains addressable. Format-specific kernels compute partial attention states and combine them through a globally normalized online-softmax merge, enabling direct heterogeneous decode without a cache-sized dense shadow. Across separate, configuration-bound Qwen3.6-27B profiles on a single 96-GB NVIDIA RTX PRO 6000 Blackwell GPU, deployment accounting reports 18.3 KiB of attention KV per live token, corresponding to 3.50x compression relative to BF16 and 1.75x relative to FP8. A materializing quality profile matches its dense control on 16K RULER needle-in-a-haystack tasks. On the same 503-question LongBench v2 set, measured deltas are -0.80, -0.60, and -0.40 percentage points at 16K, 32K, and 64K. A separate single-pair direct-decode canary with two 59,008-token requests measures 3.625x active-KV compression and 0.9821x throughput relative to its control, routes all 16 full-attention layers without fallback, and retains no dense shadow. These results establish a practical mixed-format path for compressing long-context state without evicting live-request KV pages.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/26/2608.23843v1-puzzlekv-page-wise-low-rank-decomposition-for-kv-cache-compression",
+      "section": "deep",
+      "title_en": "PuzzleKV: Page-Wise Low-Rank Decomposition for KV Cache Compression",
+      "authors": "Zizhong Wang, Jieying Wang, Zhao Zhang, Jiajia Li",
+      "date": "2026-08-24",
+      "pdf": "https://arxiv.org/pdf/2608.23843v1",
+      "score": "9.0",
+      "evidence": "基于页级低秩分解的KV缓存压缩",
+      "tldr": "长上下文推理受限于KV缓存内存，低秩压缩虽可降维但现有方法常依赖固定投影或共享基，难以捕捉细粒度信息。PuzzleKV观察到每个头的KV缓存按固定长度分页后页内具有低秩结构，因此将每页作为独立压缩单元，无需训练和校准。在约60%原始存储下，模型性能保持Full KV的96%以上，结合量化仅用18.7%存储仍保留93%以上性能，为KV压缩提供了高效新思路。",
+      "tags": "query:pic",
+      "abstract_en": "Long-context inference in large language models (LLMs) is increasingly limited by the memory required for the key-value (KV) cache. KV cache compression addresses this problem by reducing the storage cost of previous tokens. Among existing approaches, low-rank compression is particularly attractive because it represents every token in reduced dimensions. Previous low-rank methods typically derive fixed projection spaces from model weights, construct fixed spaces from calibration activations, or construct a shared basis over a broad cache region. Such representations may not capture detailed but important information. We partition each per-head KV cache into fixed-length logical pages and observe substantial low-rank structure within individual pages. Based on this observation, we propose PuzzleKV, a training- and calibration-free method that treats each completed page as an independent compression unit. PuzzleKV decomposes pages within each layer and KV head, computes attention directly over dense and factorized pages, and incrementally compresses newly eligible pages during autoregressive decoding. Experiments across models, context lengths, and benchmarks demonstrate the effectiveness of PuzzleKV under matched storage budgets. At approximately 60% of the original KV cache storage, PuzzleKV achieves more than 96% of Full KV performance across both evaluated models and all benchmark settings, with substantial gains over Global SVD on RULER and competitive performance on LongBench. To achieve a more aggressive compression ratio, PuzzleKV can be further combined with quantization while retaining more than 93% of Full KV performance using only 18.7% of the original storage.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/26/2608.24063v1-viscache-visual-kv-cache-pruning-for-efficient-vision-large-language-model-inference",
+      "section": "deep",
+      "title_en": "VisCache: Visual KV Cache Pruning for Efficient Vision Large Language Model Inference",
+      "authors": "Lyuke Wang, Zhuo Li, Guangxu Zhu",
+      "date": "2026-08-25",
+      "pdf": "https://arxiv.org/pdf/2608.24063v1",
+      "score": "8.0",
+      "evidence": "面向长上下文VLLM推理的视觉KV缓存剪枝，降低计算与内存开销",
+      "tldr": "视觉大模型推理中，视觉键值缓存带来巨大计算和内存开销。现有压缩方法均匀剪枝导致信息损失。本文提出VisCache，无需训练，分两阶段：轻量模型筛选关键帧，再以抛物线层间预算分配与不对称键值更新策略精细剪枝。仅保留19-28%缓存即实现2.35倍加速，性能优于现有基线。",
+      "tags": "query:pic",
+      "abstract_en": "While Vision Large Language Models (VLLMs) have achieved remarkable success in multimodal reasoning, their long-context inference remains prohibitively expensive due to the massive computation and memory overhead of visual Key-Value (KV) caches. Existing KV compression methods often apply uniform pruning across visual tokens and layers, leading to substantial information loss and degraded performance.To address this challenge, we propose \\textbf{VisCache}, a plug-and-play framework for coarse-to-fine \\textbf{Vis}ual KV \\textbf{Cache} pruning without training, which consists of two synergistic stages. First, a lightweight VLM filters temporal redundancy by selectively forwarding semantically informative keyframes. Second, we introduce {PruneKV}, a surgical KV compression algorithm tailored to the attention dynamics of VLLMs. Unlike rigid pruning strategies, PruneKV adopts a parabolic layer-wise budget allocation together with an asymmetric update mechanism that selectively prunes keys while fusing values, thereby preserving critical contextual information. Extensive experiments demonstrate that VisCache substantially improves inference efficiency, achieving up to {2.35$\\times$ speedup} and significant memory reduction while maintaining competitive performance with only {19--28\\%} KV cache retention. VisCache consistently outperforms existing baselines, establishing a new Pareto frontier between efficiency and performance for long-context VLLM inference. Code is available at https://github.com/Wlklk/VisCache",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/26/2608.22963v1-buried-in-textual-debt-context-pruning-with-visual-evidence-preservation-for-mllm-agents",
+      "section": "quick",
+      "title_en": "Buried in Textual Debt: Context Pruning with Visual Evidence Preservation for MLLM Agents",
+      "authors": "Yuchen Huang, Sijia Li, Jun Zhang, Yi R. Fung",
+      "date": "2026-08-24",
+      "pdf": "https://arxiv.org/pdf/2608.22963v1",
+      "score": "6.0",
+      "evidence": "KL引导的上下文剪枝在保留视觉证据的同时移除冗余文本，降低多模态智能体长上下文推理开销",
+      "tldr": "多模态大模型代理在多步推理中累积自生成文本，形成“文本债务”并压制视觉证据。为此提出SPARE框架，利用紧凑任务状态摘要作为诊断上下文，通过反向KL散度（OPSD）判断摘要覆盖度，并借助SFT增强摘要器。在多个视觉工具使用基准上，SPARE在去除37.89%-64.58%推理token的同时取得最高平均精度，有效缓解对自生成语言的过度依赖，恢复对视觉证据的利用。",
+      "tags": "query:pic",
+      "abstract_en": "Multimodal Large Language Models (MLLMs) are increasingly deployed as multi-step agents, where explicit reasoning supports task decomposition and tool coordination but also accumulates self-generated text. Over long trajectories, this text can dominate the context and suppress visual evidence, creating textual debt. We observe that reasoning becomes redundant once task-relevant visual evidence is grounded, while stale hypotheses can misguide later inference when grounding remains uncertain. Pruning must therefore remove redundant text without discarding visual evidence. We propose SPARE, a Kullback--Leibler (KL)-guided framework for pruning accumulated reasoning in multimodal tool-use agents. SPARE uses a compact task-state summary as privileged diagnostic context. For each candidate segment, it replays the same model under the original and summary-conditioned contexts. Reverse-KL divergence from on-policy self-distillation (OPSD) then tests whether the summary sufficiently covers the segment without disrupting future reasoning. We further fine-tune the summarizer with supervised fine-tuning (SFT), enabling more compact summaries, broader coverage, and more aggressive pruning. Across multi-step visual tool-use benchmarks, SPARE achieves the highest average accuracy among pruning methods while removing 37.89--64.58\\% of reasoning tokens. This favorable accuracy--context trade-off shows that reducing textual dominance restores reliance on visual evidence and mitigates over-conditioning on self-generated language.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
