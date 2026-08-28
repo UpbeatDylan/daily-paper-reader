@@ -1,0 +1,211 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-28T02:42:40.677869+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2608.22708v1",
+      "source": "arxiv",
+      "title": "CacheRouter: A Dual-Path Tool Routing Architecture with Cache-Preserving Main-Model Isolation for Long-Tail Tool Discovery",
+      "abstract": "Tool use in LLM systems faces a structural trade-off. Progressive disclosure keeps the prompt small by showing only the tools relevant to the current task, while prompt caching rewards a request prefix that stays fixed across calls; every change to the visible tool list invalidates the cached prefix. This paper treats the trade-off as a problem of request architecture and proposes a dual-path routing design that assigns tool selection and tool delivery to separate channels. The main model always sees a small, fixed set of core tools, so the head of its request is unchanged across calls; all other tools are reached through an independent routing channel, in which a router sub-model searches the full tool list, selects one tool, executes it, and returns the result. Tool registration is automated from source code and supports runtime updates, so the tool set can grow without modifying the main model's request prefix. The design generalizes progressive disclosure: capabilities are disclosed through the routing channel, and the main model's prefix stays stable. A prototype implementation was exercised on 55 functional queries and a 30-turn dialogue; token-level cache hit rates reached 90.99% and 95.2%, cutting input cost to about 12.0% and 8.0% of a no-cache baseline under DeepSeek's pricing, where cache-hit input tokens cost roughly 1/30 of cache-miss tokens.",
+      "authors": [
+        "Donghui Zha",
+        "Lingwei Xu",
+        "Linxiao Wu",
+        "Yixue Dong",
+        "Haochen Li"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-24T01:56:01+00:00",
+      "link": "https://arxiv.org/pdf/2608.22708v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Dual-path routing preserves fixed prompt prefix and avoids prompt-cache invalidation, directly addressing prompt caching for lower inference latency",
+      "llm_evidence_cn": "双路径路由保持固定提示前缀，避免提示缓存失效，直接面向降低推理延迟的提示缓存问题",
+      "llm_evidence": "双路径路由保持固定提示前缀，避免提示缓存失效，直接面向降低推理延迟的提示缓存问题",
+      "canonical_evidence": "双路径路由保持固定提示前缀，避免提示缓存失效，直接面向降低推理延迟的提示缓存问题",
+      "llm_tldr_en": "Proposes a dual-path tool routing architecture that keeps the main model's request prefix fixed across calls to preserve prompt caches, while a separate router channel searches the full tool space, reducing latency.",
+      "llm_tldr_cn": "针对工具使用中动态工具列表导致提示缓存频繁失效的问题，提出CacheRouter双路径路由架构：主模型只看到固定的小工具集，请求头保持不变；工具选择交给独立的路由通道。该方法在支持长尾工具发现的同时保持提示缓存有效，从而降低推理延迟。实验表明不仅能减少缓存重计算，还能维持主模型调用的稳定性。",
+      "llm_tldr": "针对工具使用中动态工具列表导致提示缓存频繁失效的问题，提出CacheRouter双路径路由架构：主模型只看到固定的小工具集，请求头保持不变；工具选择交给独立的路由通道。该方法在支持长尾工具发现的同时保持提示缓存有效，从而降低推理延迟。实验表明不仅能减少缓存重计算，还能维持主模型调用的稳定性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.25523v1",
+      "source": "arxiv",
+      "title": "TOPAS: Workflow-Aware Prefix-State Scheduling for Multi-Agent LLM Serving",
+      "abstract": "Prefix caching introduces a fundamental tradeoff in multi-agent large language model (LLM) serving: retaining a long system-prompt key-value (KV) cache for an agent accelerates future calls, yet it reduces the GPU memory available for batching concurrent requests. In multi-stage workflows, existing schedulers tend to prioritize either immediate prefix locality or overall workflow progress. However, under a shared KV cache budget, optimizing either objective in isolation can prolong tasklevel job completion time (JCT) through downstream delays or frequent prefix replacement. To strike a balance, we here propose TOPAS, a Task-Oriented Prefix-Aware Scheduler that jointly decides which agent prefixes to keep in the cache and which requests to schedule for execution. TOPAS scores candidate post-decision states by trading off the expected reduction in each task's longest remaining service path against the near-term benefit of downstream prefix reuse, accounting for the costs of prefix movement and preemption. A task-level aging mechanism is also incorporated to prevent starvation. We implement TOPAS within the SGLang framework and assess its performance on three synthetic DAGs and two MetaGPT software-development workflows. Compared with the best performing baseline for each workload and metric, TOPAS reduces the mean/p99 JCT by up to 39.8%/49.4% on the synthetic workloads, while lowering mean JCT by 9.8% on MetaGPT-SOP and mean/p99 JCT by 22.0%/26.6% on MetaGPT-TL.",
+      "authors": [
+        "Hongqiu Ni",
+        "Han Tian",
+        "Chi Zhang",
+        "Guopeng Li",
+        "Haisheng Tan"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-26T08:33:10+00:00",
+      "link": "https://arxiv.org/pdf/2608.25523v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "prefix-state scheduling for multi-agent LLM serving with KV cache budget control",
+      "llm_evidence_cn": "多智能体LLM服务中面向前缀状态的调度，控制KV缓存预算",
+      "llm_evidence": "多智能体LLM服务中面向前缀状态的调度，控制KV缓存预算",
+      "canonical_evidence": "多智能体LLM服务中面向前缀状态的调度，控制KV缓存预算",
+      "llm_tldr_en": "Presents a task-oriented prefix-aware scheduler that jointly decides which agent prefixes to keep in KV cache and which requests to schedule, reducing job completion time in multi-agent LLM serving under a shared cache budget.",
+      "llm_tldr_cn": "在的多智能体LLM服务中，前缀缓存面临基础权衡：保留长系统提示的KV缓存能加速后续调用，但会挤占并发请求的GPU内存。现有调度器偏向局部前缀局部性或全局工作流进度，可能导致任务完成时间延长。本文提出TOPAS，一个面向任务的前缀感知调度器，联合决策保留哪些智能体前缀并调度哪些请求。实验表明该方法能兼顾前缀命中率与批处理并发度，显著降低多阶段工作流的任务级完成时间。",
+      "llm_tldr": "在的多智能体LLM服务中，前缀缓存面临基础权衡：保留长系统提示的KV缓存能加速后续调用，但会挤占并发请求的GPU内存。现有调度器偏向局部前缀局部性或全局工作流进度，可能导致任务完成时间延长。本文提出TOPAS，一个面向任务的前缀感知调度器，联合决策保留哪些智能体前缀并调度哪些请求。实验表明该方法能兼顾前缀命中率与批处理并发度，显著降低多阶段工作流的任务级完成时间。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.27128v1",
+      "source": "arxiv",
+      "title": "TwinKV: A Composable Repair Pass for KV Cache Eviction via Pairwise Key Redundancy",
+      "abstract": "Long-context inference is bottlenecked by the memory footprint of the key-value (KV) cache, especially for small models under tight resource budgets. Existing KV cache eviction methods score tokens using the model's attention distribution or, in attention-free variants, each key's distance from a global reference point. Using a controlled leave-one-out probe, we find that attention magnitude is unrelated to a token's causal contribution to the answer (Spearman $ρ=-0.004$), challenging the premise behind dominant eviction methods. We introduce TwinKV, a training-free, attention-free redundancy signal that detects whether a token's key has a near-duplicate elsewhere in context. Rather than replacing existing policies, TwinKV acts as a composable repair pass: given a policy's fixed retained set, it identifies evicted tokens with no surviving duplicate (\\emph{orphans}) and retained tokens whose information is duplicated elsewhere (\\emph{redundant donors}), then swaps them while preserving the original budget and scoring rule. We compose TwinKV with four recent eviction policies across LongBench, LooGLE, RULER, and a short-context MMLU-Pro no-harm control at compression ratios ${0.3,0.5,0.7}$. On Qwen3-4B, TwinKV improves a majority of configurations for two policies, is near-even for a third, and helps only a minority for a fourth adaptive baseline already near a performance ceiling; gains across the three non-ceiling policies are smallest at the loosest ratio. On RULER with Llama-3.2-1B, however, that fourth policy improves in every evaluated cell because its Alone score leaves substantial room to improve. More broadly, Llama-3.2-1B shows a smaller average LongBench gain but a higher fraction of improved cells on LongBench and LooGLE than Qwen3-4B, plus a clean RULER win. We also identify few-shot classification exemplars as a task structure where TwinKV does not help on either model.",
+      "authors": [
+        "Hong Chen",
+        "Yudong Zeng",
+        "Yongwei Huang",
+        "Zuhao Ouyang",
+        "Junyan Zhang",
+        "Xuming Hu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-27T13:43:30+00:00",
+      "link": "https://arxiv.org/pdf/2608.27128v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache eviction via pairwise key redundancy for long-context inference",
+      "llm_evidence_cn": "基于成对键冗余的KV缓存驱逐，面向长上下文推理",
+      "llm_evidence": "基于成对键冗余的KV缓存驱逐，面向长上下文推理",
+      "canonical_evidence": "基于成对键冗余的KV缓存驱逐，面向长上下文推理",
+      "llm_tldr_en": "TwinKV proposes a training-free, attention-free redundancy signal for KV cache eviction, using pairwise key redundancy to identify tokens that can be safely removed, improving long-context inference.",
+      "llm_tldr_cn": "长上下文推理的关键瓶颈是KV缓存的内存占用，现有驱逐策略多基于注意力分布打分，但受控实验发现注意力大小与词元因果贡献几乎无关。为此，TwinKV提出一种无需训练、无注意力的冗余信号，通过检测键在上下文中的近重复对来判断哪些KV项可以安全驱逐，并以可组合的修复方式与现有策略配合。实验表明，该方法在资源受限的小模型上能显著降低缓存占用，同时保持模型性能，为长上下文推理加速提供了新的缓存管理工具。",
+      "llm_tldr": "长上下文推理的关键瓶颈是KV缓存的内存占用，现有驱逐策略多基于注意力分布打分，但受控实验发现注意力大小与词元因果贡献几乎无关。为此，TwinKV提出一种无需训练、无注意力的冗余信号，通过检测键在上下文中的近重复对来判断哪些KV项可以安全驱逐，并以可组合的修复方式与现有策略配合。实验表明，该方法在资源受限的小模型上能显著降低缓存占用，同时保持模型性能，为长上下文推理加速提供了新的缓存管理工具。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.25230v1",
+      "source": "arxiv",
+      "title": "Trust the Mass: Forced Weights in KV-Cache Eviction",
+      "abstract": "Every deployed sparse-attention or KV-cache-eviction rule keeps a subset of the keys, discards the rest, and renormalizes the attention weights over the kept set. Enumerating the exact best subset under that constraint on $168{,}192$ attention rows from five models shows that keeping the largest weights is already near-optimal, since the best subset closes only a median $2$ to $5\\%$ of the remaining gap to full attention. If selection closes this little, published margins between eviction methods must come from elsewhere, so we measure the bytes each method holds. In the shared evaluation pipeline, the strongest query-agnostic methods hold the full cache because their per-head selections are stored as masks, and only ragged per-head storage frees that memory. Enforcing a nominal budget on one fixed selection costs $14$ to $62$ benchmark points. We trace an $87.6$-point retrieval margin to rankings computed while the question is visible. ContourKV, a training-free allocator built from the dropped-mass statistic, wins $93$ of $160$ paired comparisons against that state of the art and loses $22$ at the byte count of the budget-enforcing baselines, and it ties the strongest of them.",
+      "authors": [
+        "Jack Shi",
+        "Jerry Gu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-08-25T23:40:39+00:00",
+      "link": "https://arxiv.org/pdf/2608.25230v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache eviction analysis for reducing cache memory in long-context LLM inference",
+      "llm_evidence_cn": "面向长上下文LLM推理的KV缓存驱逐分析，以减少缓存内存",
+      "llm_evidence": "面向长上下文LLM推理的KV缓存驱逐分析，以减少缓存内存",
+      "canonical_evidence": "面向长上下文LLM推理的KV缓存驱逐分析，以减少缓存内存",
+      "llm_tldr_en": "Analyzes optimal KV-cache eviction across 168,192 attention rows, showing max-weight selection is near-optimal and that some eviction methods' gains come from per-head storage choices.",
+      "llm_tldr_cn": "针对KV缓存驱逐中如何选择保留键子集的问题，论文在大量注意力行上枚举最优子集，发现保持最大权重已接近最优。进一步测量各种驱逐方法的实际内存占用，指出许多方法的优势可能来自按头存储的实现而非选择规则本身。该工作为理解和评估缓存驱逐算法提供了重要基准。",
+      "llm_tldr": "针对KV缓存驱逐中如何选择保留键子集的问题，论文在大量注意力行上枚举最优子集，发现保持最大权重已接近最优。进一步测量各种驱逐方法的实际内存占用，指出许多方法的优势可能来自按头存储的实现而非选择规则本身。该工作为理解和评估缓存驱逐算法提供了重要基准。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.26523v1",
+      "source": "arxiv",
+      "title": "VPP: Virtual Pipeline Parallelism for Efficient Chunked Prefill in Long-Context LLM Inference",
+      "abstract": "Chunked prefill pipeline parallelism (CPP) is a key technique for LLM inference. However, equal-size chunks exhibit imbalanced latency, as later chunks attend longer prefix KV caches and incur higher attention costs, leading to pipeline bubbles. Existing approaches mitigate this imbalance through dynamic chunk resizing (Dynamic CPP, DCPP), but our measurements show that this trades scheduling overhead for load balancing, which becomes unfavorable on long sequences. In this study, we propose Virtual Pipeline Parallelism (VPP), which keeps chunk sizes fixed and optimizes the pipeline layout through virtual stages. A V-shaped virtual-stage traversal overlaps each chunk's expensive middle stages with the lighter head and tail stages of its neighbors, while asynchronous communication and pipelined packing further reduce communication stalls and cross-request drain bubbles. We implement VPP in vLLM-Ascend and evaluate it on three MoE-based LLMs with sequences up to 1M tokens on 16 Ascend 910C NPUs. VPP improves throughput by up to 13.1% over DCPP on long sequences and 6.7% on mixed workloads, while preserving performance on short sequences. On a 512K-token DeepSeek-V3.1 prefill workload, VPP reduces the pipeline bubble ratio from 6.4% to 0.1%, achieving a 98.0% reduction compared with DCPP.",
+      "authors": [
+        "Yan Shi",
+        "Xiaochao Wang",
+        "Jingchun Gao",
+        "Jintao Luo",
+        "Xinyi Zhou",
+        "Feng Liu",
+        "Kui Luo",
+        "Xushi Li",
+        "Xinjie Guo",
+        "Liangjun Feng"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-08-27T01:59:45+00:00",
+      "link": "https://arxiv.org/pdf/2608.26523v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "pipeline parallelism for efficient chunked prefill in long-context LLM inference",
+      "llm_evidence_cn": "面向长上下文LLM推理分块预填充的流水线并行优化",
+      "llm_evidence": "面向长上下文LLM推理分块预填充的流水线并行优化",
+      "canonical_evidence": "面向长上下文LLM推理分块预填充的流水线并行优化",
+      "llm_tldr_en": "VPP keeps chunk sizes fixed and optimizes chunked prefill pipeline layout with virtual stages, overlapping expensive middle stages with lighter head/tail stages to reduce pipeline bubbles in long-context LLM inference.",
+      "llm_tldr_cn": "针对长上下文LLM推理中分块预填充流水线并行（CPP）的负载不均问题——后续块因注意力覆盖更长前缀KV缓存而时延更高，导致流水线气泡——VPP提出虚拟流水线并行：保持块大小固定，通过虚拟阶段优化流水线布局，以V形虚拟阶段遍历将每个块昂贵的中间阶段与较轻的首尾阶段重叠。该方法避免了动态分块调度的开销，在长序列上更有效地平衡负载，从而提升长上下文推理效率。",
+      "llm_tldr": "针对长上下文LLM推理中分块预填充流水线并行（CPP）的负载不均问题——后续块因注意力覆盖更长前缀KV缓存而时延更高，导致流水线气泡——VPP提出虚拟流水线并行：保持块大小固定，通过虚拟阶段优化流水线布局，以V形虚拟阶段遍历将每个块昂贵的中间阶段与较轻的首尾阶段重叠。该方法避免了动态分块调度的开销，在长序列上更有效地平衡负载，从而提升长上下文推理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}
