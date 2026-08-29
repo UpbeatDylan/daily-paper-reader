@@ -1,16 +1,219 @@
 {
   "mode": "standard",
-  "generated_at": "2026-08-29T03:08:33.901903+00:00",
+  "generated_at": "2026-08-29T22:35:20.918759+00:00",
   "stats": {
     "mode": "standard",
     "tag_count": 1,
     "deep_divecandidates": 0,
     "deep_cap": 6,
     "deep_selected": 0,
-    "quick_candidates": 0,
+    "quick_candidates": 5,
     "quick_skim_target": 11,
-    "quick_selected": 0
+    "quick_selected": 5
   },
   "deep_dive": [],
-  "quick_skim": []
+  "quick_skim": [
+    {
+      "id": "2608.21265v2",
+      "source": "arxiv",
+      "title": "Memory Augmentation Unlocks Efficient Chain-of-Thought Reasoning",
+      "abstract": "Large language models often rely on Chain-of-Thought (CoT) reasoning to solve complex tasks, but verbose reasoning traces introduce substantial inference overhead. CoT compression shortens generation, yet aggressive compression may disrupt logical coherence and degrade performance. We formalize this trade-off as the Context-Generation Substitution Law, where explicit reasoning context substitutes for part of decode-time generation. Based on this principle, we propose Memory-Augmented Compression, a training-free framework that constructs reusable reasoning memories from historical traces and retrieves them as prefill-side scaffolds. Rather than using raw demonstrations, these memories summarize reusable reasoning patterns, key constraints, and critical operations to compensate for information lost during compression. Experiments show that Memory consistently improves prompt-based Chain-of-Draft (CoD) compression across mathematical reasoning, complex reasoning, and science question answering tasks, yielding accuracy gains of 21.4, 28.0, 29.5, and 6.61 points over CoD on GSM8K, MATH, BBH, and MMLU-Sci, while achieving a 1.14-1.49x latency speedup latency speedup over standard CoT. Memory is also compatible with token-level, reasoning-trace-level, and inference-state compression mechanisms.",
+      "authors": [
+        "Simeng Zhang",
+        "Yilong Chen",
+        "Wenyuan Zhang",
+        "Zhenyu Zhang",
+        "Yao Chen",
+        "Junyuan Shang",
+        "Tingwen Liu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-21T16:22:36+00:00",
+      "link": "https://arxiv.org/pdf/2608.21265v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Reusable reasoning memories as prefill-side scaffolds reduce inference overhead, akin to prompt caching",
+      "llm_evidence_cn": "将可复用推理记忆作为预填充侧脚手架检索，显著降低推理开销，与提示/上下文缓存高度相关",
+      "llm_evidence": "将可复用推理记忆作为预填充侧脚手架检索，显著降低推理开销，与提示/上下文缓存高度相关",
+      "canonical_evidence": "将可复用推理记忆作为预填充侧脚手架检索，显著降低推理开销，与提示/上下文缓存高度相关",
+      "llm_tldr_en": "Proposes Memory-Augmented Compression: constructs reusable reasoning memories from historical traces and retrieves them as prefill-side scaffolds, replacing verbose CoT traces to reduce inference overhead without losing coherence.",
+      "llm_tldr_cn": "大语言模型依赖链式推理解题，但冗长推理过程带来大量推理开销，过度压缩又会破坏逻辑连贯性。本文将这种权衡形式化为上下文-生成替代定律，并提出记忆增强压缩框架，从历史轨迹中构造可复用的推理记忆，作为预填充侧脚手架而非原始演示参与生成。实验表明该方法在显著减少解码时间的同时保持了推理质量，为高效推理提供了新的记忆复用范式。",
+      "llm_tldr": "大语言模型依赖链式推理解题，但冗长推理过程带来大量推理开销，过度压缩又会破坏逻辑连贯性。本文将这种权衡形式化为上下文-生成替代定律，并提出记忆增强压缩框架，从历史轨迹中构造可复用的推理记忆，作为预填充侧脚手架而非原始演示参与生成。实验表明该方法在显著减少解码时间的同时保持了推理质量，为高效推理提供了新的记忆复用范式。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.21308v2",
+      "source": "arxiv",
+      "title": "Rethinking Expressivity and Efficiency in Test-Time Training",
+      "abstract": "Test-Time Training (TTT) enables long-context processing via continuous weight updates during inference, but current methods struggle to balance the expressivity of per-token update dynamics with the hardware efficiency of chunk-wise approximations. We propose E$^2$-TTT (Expressive and Efficient TTT) to bridge this gap. Under the standard approximation of taking gradients at the chunk-start weights, we derive a closed-form state transition that exactly reproduces the chunk-end fast-weight and momentum states of the per-token recurrence. This enables fully parallelized chunk-level training while preserving the temporal structure of the update rule that prior chunk-wise methods discard. We validate E$^2$-TTT by training models up to 1.3B parameters from scratch. It performs on par with previous TTT and hybrid attention baselines in language modeling while outperforming them on in-context retrieval. Its advantage is most pronounced in length extrapolation: on the standard ``Needle in a Haystack'' passkey test, it retains over 90% accuracy at $8\\times$ the training context length. Meanwhile, E$^2$-TTT can match the training throughput of efficient chunk-wise methods, demonstrating that it effectively reconciles expressivity with efficiency. The code is available at https://github.com/zeyun-zhong/E2-TTT.",
+      "authors": [
+        "Zeyun Zhong",
+        "Joya Chen",
+        "Manuel Martin",
+        "Frederik Diederichs",
+        "Juergen Gall",
+        "Juergen Beyerer"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-21T17:12:28+00:00",
+      "link": "https://arxiv.org/pdf/2608.21308v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Efficient chunk-wise Test-Time Training for long-context processing",
+      "llm_evidence_cn": "面向长上下文的测试时训练分块并行效率，属长上下文推理加速方向",
+      "llm_evidence": "面向长上下文的测试时训练分块并行效率，属长上下文推理加速方向",
+      "canonical_evidence": "面向长上下文的测试时训练分块并行效率，属长上下文推理加速方向",
+      "llm_tldr_en": "Introduces E2-TTT, deriving closed-form transition for chunk-start fast weights, enabling parallelized chunk-level test-time training for efficient long-context processing and validated up to 1.3B parameters.",
+      "llm_tldr_cn": "测试时训练通过在推理中持续更新权重来处理长上下文，但现有方法难以在逐token更新的表达力与分块近似的硬件效率之间取得平衡。本文提出E2-TTT，在分块起始权重梯度近似下推导出精确复现逐token递推的闭式状态转移，实现完全并行的分块级训练，同时保留更新规则的时序结构。在1.3B规模从零训练的实验验证了其高效性与表达能力。",
+      "llm_tldr": "测试时训练通过在推理中持续更新权重来处理长上下文，但现有方法难以在逐token更新的表达力与分块近似的硬件效率之间取得平衡。本文提出E2-TTT，在分块起始权重梯度近似下推导出精确复现逐token递推的闭式状态转移，实现完全并行的分块级训练，同时保留更新规则的时序结构。在1.3B规模从零训练的实验验证了其高效性与表达能力。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.26004v1",
+      "source": "arxiv",
+      "title": "AsymSpec: Context-Asymmetric Speculative Decoding for Agentic LLMs",
+      "abstract": "Agentic LLM pipelines face escalating inference costs as context accumulates across retrieval, tool use, and multi-turn interactions. To control latency, deployments routinely compress inputs, but this degrades task accuracy. Speculative decoding (SD) accelerates generation losslessly, yet it assumes the drafter and verifier share an identical context, preventing SD from resolving the accuracy-overhead trade-off. We propose AsymSpec, an asymmetric speculative decoding framework that breaks this symmetry: a lightweight drafter reads the full input while the large verifier operates on the compressed view. The drafter steers the verifier via a contrastive $δ$-fusion of logits, modulated by a divergence-aware acceptance gate that preserves verification stability and high draft acceptance rates. Evaluated across four agentic capabilities and two end-to-end agent benchmarks, AsymSpec reaches $\\approx 90\\%$ of full-context accuracy on average, delivering $1.3$--$1.7\\times$ throughput speedups at $0.2$--$0.3\\times$ the compute cost on isolated text capabilities. These results show that asymmetric context access yields substantial gains precisely when compression discards critical reasoning signals.",
+      "authors": [
+        "Sheng Liang",
+        "Yongyue Zhang",
+        "Nathanael Brian",
+        "Hang Lv",
+        "Hao Wang",
+        "Chen Zhang",
+        "Yong Liu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-08-26T16:50:02+00:00",
+      "link": "https://arxiv.org/pdf/2608.26004v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Context-asymmetric speculative decoding reduces agentic LLM latency as context accumulates",
+      "llm_evidence_cn": "上下文非对称推测解码，针对智能体场景上下文累积造成的延迟进行加速",
+      "llm_evidence": "上下文非对称推测解码，针对智能体场景上下文累积造成的延迟进行加速",
+      "canonical_evidence": "上下文非对称推测解码，针对智能体场景上下文累积造成的延迟进行加速",
+      "llm_tldr_en": "AsymSpec breaks the shared-context assumption of speculative decoding: a lightweight drafter reads full input while the large verifier uses compressed context, controlled by divergence-aware acceptance, reducing agentic LLM inference cost.",
+      "llm_tldr_cn": "智能体大语言模型在检索、工具调用和多轮交互中上下文不断累积，直接压缩输入会损害准确率，而传统推测解码要求草稿器与验证器共享相同上下文。本文提出AsymSpec，让轻量草稿器读取完整输入、大型验证器使用压缩视图，并通过对比logits融合与发散感知接受门控保持验证稳定。该方法在不损失精度的前提下有效控制智能体场景的推理延迟与成本。",
+      "llm_tldr": "智能体大语言模型在检索、工具调用和多轮交互中上下文不断累积，直接压缩输入会损害准确率，而传统推测解码要求草稿器与验证器共享相同上下文。本文提出AsymSpec，让轻量草稿器读取完整输入、大型验证器使用压缩视图，并通过对比logits融合与发散感知接受门控保持验证稳定。该方法在不损失精度的前提下有效控制智能体场景的推理延迟与成本。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.22963v2",
+      "source": "arxiv",
+      "title": "Buried in Textual Debt: Context Pruning with Visual Evidence Preservation for MLLM Agents",
+      "abstract": "Multimodal Large Language Models (MLLMs) are increasingly deployed as multi-step agents, where explicit reasoning supports task decomposition and tool coordination but also accumulates self-generated text. Over long trajectories, this text can dominate the context and suppress visual evidence, creating textual debt. We observe that reasoning becomes redundant once task-relevant visual evidence is grounded, while stale hypotheses can misguide later inference when grounding remains uncertain. Pruning must therefore remove redundant text without discarding visual evidence. We propose SPARE, a Kullback-Leibler (KL)-guided framework for pruning accumulated reasoning in multimodal tool-use agents. SPARE uses a compact task-state summary as privileged diagnostic context. For each candidate segment, it replays the same model under the original and summary-conditioned contexts. Reverse-KL divergence from on-policy self-distillation (OPSD) then tests whether the summary sufficiently covers the segment without disrupting future reasoning. We further fine-tune the summarizer with supervised fine-tuning (SFT), enabling more compact summaries, broader coverage, and more aggressive pruning. Across multi-step visual tool-use benchmarks, SPARE achieves the highest average accuracy among pruning methods while removing 37.89-64.58\\% of reasoning tokens. This favorable accuracy-context trade-off shows that reducing textual dominance restores reliance on visual evidence and mitigates over-conditioning on self-generated language.",
+      "authors": [
+        "Yuchen Huang",
+        "Sijia Li",
+        "Jun Zhang",
+        "Yi R. Fung"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-08-24T08:29:17+00:00",
+      "link": "https://arxiv.org/pdf/2608.22963v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Context pruning for long context LLM agents",
+      "llm_evidence_cn": "面向长上下文智能体的上下文剪枝",
+      "llm_evidence": "面向长上下文智能体的上下文剪枝",
+      "canonical_evidence": "面向长上下文智能体的上下文剪枝",
+      "llm_tldr_en": "Proposes SPARE, a KL-guided framework to prune redundant reasoning text in multimodal agents while preserving visual evidence, reducing context length and inference cost.",
+      "llm_tldr_cn": "多模态大模型智能体在长轨迹中会积累大量自我生成文本，挤占视觉证据并造成推理开销。本文提出SPARE框架，基于KL散度指导对冗余推理进行剪枝，同时保留关键视觉证据，从而缩短上下文、减轻计算负担，提升长上下文场景下的推理效率。",
+      "llm_tldr": "多模态大模型智能体在长轨迹中会积累大量自我生成文本，挤占视觉证据并造成推理开销。本文提出SPARE框架，基于KL散度指导对冗余推理进行剪枝，同时保留关键视觉证据，从而缩短上下文、减轻计算负担，提升长上下文场景下的推理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.25489v1",
+      "source": "arxiv",
+      "title": "A Storage-Retrieval Gap in Parametric Knowledge Graph Memory",
+      "abstract": "Graph retrieval-augmented generation places retrieved subgraphs into the model's context window at query time, paying a recurring token cost and exposing source data on every call. We study an alternative: compiling a knowledge graph offline into a bank of LoRA adapters, one per entity, that serve as a parametric knowledge layer queried by injecting weights rather than text, at zero query-time context cost. On the MetaQA dataset, we find that subgraph-trained adapters encode context-free factual knowledge that generalizes to unseen questions: on single-valued relations the adapter gains $+0.243$ exact-match score over a base model that is nearly blind closed-book ($0.007$), and only the correct adapter recovers this knowledge (an oracle gap of $+0.283$ over the base model). However, the stored knowledge is not recoverable by similarity: given a query with no subgraph, embedding-based and weight-space geometry retrieval both perform at chance, because a semantically neighbouring entity's adapter does not contain the answer - knowledge is stored locally and does not transfer. Weight geometry correlates with subgraph semantics ($ρ= +0.329$) but not with functional retrievability. We quantify the byte and context-token costs against graph retrieval-augmented generation and discuss deployment implications. Our results establish that parametric knowledge graph memory is feasible for storing knowledge, and identify selecting and composing the right adapters by a mechanism other than semantic similarity as the central open problem - motivating a learned, query-conditioned composition mechanism.",
+      "authors": [
+        "Martino M. L. Pulici",
+        "Cuong Xuan Chu",
+        "Evgeny Kharlamov",
+        "Volker Tresp"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL",
+        "cs.IR"
+      ],
+      "published": "2026-08-26T08:02:00+00:00",
+      "link": "https://arxiv.org/pdf/2608.25489v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Parametric memory via LoRA adapters avoids query-time context token cost, relevant to context caching for long-context LLM inference",
+      "llm_evidence_cn": "以LoRA参数化记忆替代上下文文本，实现查询期零上下文成本，与长上下文推理的上下文缓存相关",
+      "llm_evidence": "以LoRA参数化记忆替代上下文文本，实现查询期零上下文成本，与长上下文推理的上下文缓存相关",
+      "canonical_evidence": "以LoRA参数化记忆替代上下文文本，实现查询期零上下文成本，与长上下文推理的上下文缓存相关",
+      "llm_tldr_en": "Investigates compiling knowledge graphs into per-entity LoRA adapters as parametric memory, allowing zero query-time context cost; on MetaQA adapters gain +0.243 EM on single-valued relations, exposing a storage-retrieval gap.",
+      "llm_tldr_cn": "基于图的检索增强生成每次查询都将子图放入上下文，带来重复token成本并暴露数据。本文研究离线将知识图谱编译为逐实体LoRA适配器，以权重注入替代文本作为参数化知识层，实现查询期零上下文成本。在MetaQA上，单值关系任务的精确匹配相比几乎封闭书的基座模型提升+0.243，且只有正确适配器能恢复知识。这项研究揭示了参数化记忆中的存储-检索鸿沟，为低上下文开销的长时知识注入提供了新思路。",
+      "llm_tldr": "基于图的检索增强生成每次查询都将子图放入上下文，带来重复token成本并暴露数据。本文研究离线将知识图谱编译为逐实体LoRA适配器，以权重注入替代文本作为参数化知识层，实现查询期零上下文成本。在MetaQA上，单值关系任务的精确匹配相比几乎封闭书的基座模型提升+0.243，且只有正确适配器能恢复知识。这项研究揭示了参数化记忆中的存储-检索鸿沟，为低上下文开销的长时知识注入提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
 }
