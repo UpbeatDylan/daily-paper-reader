@@ -1,0 +1,458 @@
+Title: Parser States Already Know: Structure-Conditioned KV Persistence for Structured Generation
+
+URL Source: https://arxiv.org/pdf/2608.28276v1
+
+Published Time: Mon, 31 Aug 2026 00:56:48 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# Parser States Already Know: Structure-Conditioned KV Persistence for Structured Generation 
+
+Linze Wu Xinrui Chen *
+
+Hangzhou Institute for Advanced Study, University of Chinese Academy of Sciences, Hangzhou, China 
+
+{wulinze26, chenxinrui25}@mails.ucas.ac.cn 
+
+Abstract 
+
+Structured generation underpins large language model (LLM) agents that produce JSON, SQL, and function calls, where a single wrong field can cause the downstream action to fail. Constrained decoding already tracks parser transitions to enforce formal validity, and these transitions expose how generated tokens participate in schema-critical decisions such as required fields, arguments, and structural boundaries under the active grammar. Exist-ing KV compression largely leaves this task-relevant structural signal unused. We intro-duce PASK (Parser-Aware Structural KV Per-sistence), which turns parser-derived structure into layer-group-specific KV persistence de-cisions. PASK addresses the mismatch be-tween model-side KV sensitivity and task-level structured risk by using task-error sensitivity to set minimum protection floors and attention-output distortion to allocate residual KV ca-pacity. An offline calibration stage compiles these signals into a persistence policy, leaving only lightweight structure-conditioned lookup online. At a targe total KV budget of 0.33, PASK outperforms the strongest compressed baseline by 17.39 percentage points on average across eight BFCL non-live and Live subcat-egories on Qwen3-4B. In end-to-end serving, PASK achieves up to 2.2× higher throughput and 3.3× lower TPOT, while using 0.53 × the peak GPU memory of Full KV. 
+
+1 Introduction 
+
+Structured generation is central to LLM-based agents that produce JSON, SQL, function calls, and other machine-executable outputs, where a single incorrect field, argument, or function choice can in-validate the downstream action (Geng et al., 2025; Patil et al., 2025). Constrained decoding (Zheng et al., 2024; Dong et al., 2025; Li et al., 2026b) en-forces formal validity by maintaining parser state 
+
+> *Corresponding author.
+
+Figure 1: Motivation for PASK. Parser transitions ex-pose structural responsibility that model-side KV im-portance may fail to capture. 
+
+and masking illegal tokens under a schema, gram-mar, or function signature. Yet each accepted parser transition reveals more than token legality: under the active grammar, it exposes the generated token’s structural role, such as a required key, enum value, argument, boundary, or scaffold token. This information is already available during decoding, but is typically discarded once the legal token set is determined. KV compression decides which generated his-tory remains available to future decoding. Existing policies rely on attention saliency, quantization er-ror, recency, or generic token importance (Liu et al., 2024b; Zhang et al., 2023; Li et al., 2024; Zhou et al., 2025; Jiang and Jin, 2026). Recent work also introduces coarse structural roles for retention in schema-dense input contexts (Mandal, 2026). These signals capture model-side KV importance, but do not directly encode the structural responsi-bility of generated tokens. To our knowledge, no prior KV policy uses token-level parser transitions from constrained decoding to control generated-KV persistence across Transformer layers. This gap creates a distinctive failure mode in structured generation. Model-side KV sensitiv-ity need not reflect task-level structured risk: his-arXiv:2608.28276v1 [cs.LG] 28 Aug 2026 tory with modest numerical influence can still al-ter a later legal function, argument, or field value and change the task outcome. Figure 1 illustrates this mismatch. Model-side importance alone can thus under-protect structurally consequential his-tory. This leads to a simple principle: task-level failure risk determines what must be protected, while model-side distortion determines how the remaining memory is allocated. We introduce PASK (Parser-Aware Structural 
+
+KV Persistence), which turns parser-derived struc-ture into a control signal for generated-KV per-sistence. PASK combines each structural tag with a Transformer layer group and assigns DROP ,
+
+> RETAIN
+
+-LOW , or RETAIN -HIGH . Offline, task-error sensitivity sets protection floors, attention-output distortion ranks residual upgrades, and develop-ment data select the lowest-cost policy within a reli-ability tolerance. The calibrated policy is compiled into a frozen lookup table, leaving only lightweight structure-conditioned decisions and constant-size budget state online. A prompt-side companion ex-tends the same principle to prefill compression. Experiments on BFCL show that PASK substan-tially improves the reliability–efficiency trade-off under compressed inference. At a target total KV budget of 0.33, PASK improves accuracy over the strongest compressed baseline by 17.39 percent-age points on average across eight BFCL subcate-gories on Qwen3-4B. PASK also achieves the high-est overall accuracy among compressed methods on both BFCL non-live and Live with Qwen3-14B. Removing the task-error floor increases the decode budget required to satisfy the same development reliability gate from 50.08% to 98.49%. End-to-end serving further reduces peak memory by about 47.5% relative to Full KV. Our contributions are: • We formulate parser-aware KV persistence for structured generation and, to our knowledge, first use token-level parser transitions to control layer-group-specific generated-KV retention. • We identify a mismatch between model-side KV sensitivity and task-level structured risk, using task-error sensitivity for protection and attention-output distortion for residual KV allocation. • We develop an offline-calibrated, online-lookup mechanism that compiles parser-derived struc-ture, task-level risk, and model-side distortion into a layer-group-specific persistence policy. • Extensive experiments show that PASK consis-tently improves the reliability–efficiency trade-off for compressed structured generation, while ablations validate its key components. 
+
+2 Related Work 
+
+Structured Generation. Structured generation constrains model outputs with schemas, grammars, or function signatures to ensure parseability and ex-ecutability. Constraint engines compile these speci-fications into guided decoding procedures, parser states, or token masks for JSON, function call-ing, and other machine-executable tasks (Willard and Louf, 2023; Zheng et al., 2024; Dong et al., 2025; Li et al., 2026b; Ugare et al., 2025; Beurer-Kellner et al., 2024). Existing benchmarks evalu-ate such systems’ coverage, correctness, and effi-ciency (Geng et al., 2025; Patil et al., 2025; Li et al., 2023). These methods primarily use parser states for token legality, whereas PASK reuses them to guide generated KV persistence. 
+
+KV Compression. KV compression reduces memory through quantization, eviction, selective retention, and cache management. Representative methods include low-bit quantization, attention- or distortion-based token selection, and system-level cache organization (Kwon et al., 2023; Liu et al., 2023, 2024b; Hooper et al., 2024; Lin et al., 2025; Haeri Boroujeni et al., 2026; Sharma et al., 2025; Zhang et al., 2023; Li et al., 2024; Ge et al., 2024; Wu et al., 2025; Behnam et al., 2025; Jo et al., 2026; Liu et al., 2026; Feng et al., 2026; Zweiger et al., 2026). Another line exploits inter-layer re-dundancy or assigns non-uniform budgets across layers, with later methods adapting allocation to tasks and contexts (Liu et al., 2024a; Cai et al., 2024; Zhou et al., 2025). Recent work incorpo-rates distillation, reasoning-stage signals, and agent cache directives (Jiang and Jin, 2026; Ramachan-dran et al., 2026; Ma et al., 2026). Collectively, these methods show that KV importance varies across tokens, layers, and tasks, but they do not encode whether a generated token is a required key, argument name, enum value, or schema boundary. 
+
+Structure-Aware Memory. Recent work in-corporates temporal, semantic, program, and structural-role signals into KV allocation or reten-tion decisions (Shen et al., 2026; Basu, 2026; Chen et al., 2026c,a; Mandal, 2026; Chen et al., 2026b; Li et al., 2026a). This direction moves beyond task-agnostic importance, but existing signals de-rive from attention patterns, program context, or execution heuristics. PASK instead uses parser Figure 2: Overview of PASK. Parser transitions and layer groups index an offline-calibrated table that assigns high-precision retention, low-precision retention, or release to generated KV states. 
+
+transitions from constrained decoding to assign layer-specific persistence actions to generated to-kens under task-risk calibration. 
+
+3 Method 
+
+PASK is an offline-calibrated, online-lookup policy for decode-time KV persistence in structured gener-ation. It reuses parser transitions already produced by constrained decoding to determine how gener-ated KV states persist as future history. The method constructs parser-derived persistence buckets, cali-brates their protection and allocation priorities, and applies the resulting policy through lightweight on-line lookup. 
+
+3.1 Setup and Objective 
+
+Given an input x and a formal constraint G, such as a JSON schema, SQL grammar, function signature, or regular expression, the model generates y1: T
+
+autoregressively. A constrained decoder maintains parser state st and masks tokens outside the legal set Alegal (st). Once yt is accepted, the transition 
+
+st−1
+
+> yt
+
+−→ st is available before its KV states are persisted. Constrained decoding maintains formal validity, while task correctness still depends on selecting the correct function, argument, field value, or executable action within the legal space. For each generated token and layer group c,PASK chooses from A = {R, L, H }, where R,
+
+L, and H denote RELEASE , RETAIN -LOW , and 
+
+> RETAIN
+
+-HIGH , respectively, with R ≺ L ≺ H
+
+and m(R, c ) = 0 < m (L, c ) < m (H, c ). Release removes a KV state only from future long-term attention after the protected recent window. Let πref be the full high-precision reference. We define structured-task risk and normalized decode KV cost as 
+
+Rtask (π) = Er∼D [I[Fail( yπr )]] ,CKV (π) = Er∼D [P 
+
+> t,c
+
+m(aπt,c , c )] 
+
+Er∼D [P 
+
+> t,c
+
+m(H, c )] , (1) where Fail covers incorrect function selection, ar-guments, field values, and execution outcomes. The target reliability–cost problem is 
+
+π⋆α = arg min 
+
+> π∈Πstruct
+
+CKV (π)s.t. Rtask (π) − Rtask (πref ) ≤ α, 
+
+(2) where Πstruct uses only parser-derived structure, layer group, and constant-size budget state online. PASK approximates this target with a calibrated family of structure-conditioned policies. 
+
+3.2 Parser-Derived Persistence Buckets 
+
+Each accepted parser transition is interpreted under the active grammar to obtain a structural tag, which is then combined with a layer group: 
+
+zt = (class t, role t, state t, next t),qt,c = ( zt, c ), c ∈ C . (3) The class identifies broad token types; the role cap-tures schema responsibility such as required fields, enums, SQL predicates, or function arguments; the state describes the current grammar-defined tran-sition status; and the next component indicates whether the parser frontier approaches a critical region. Criticality is determined solely from the active grammar and parser transition, without at-tention statistics, task-risk measurements, or future tokens. The layer groups C capture depth-dependent per-sistence requirements. The same structural role can therefore receive different actions across Trans-former depths, such as low-precision retention in early layers and high-precision retention in later layers. 
+
+3.3 Dual-Metric Offline Calibration 
+
+PASK uses disjoint calibration, development, and test splits. Task-error sensitivity determines the minimum protection of each bucket, while attention-output distortion ranks additional KV al-location above that floor. 
+
+Attention-output distortion. On reference tra-jectories, PASK intervenes on one bucket q = ( z, c )
+
+while keeping all other buckets at H. Let S(q) con-tain subsequent decode positions (r, u ) affected by occurrences of q. The distortion under action a is 
+
+D(q, a ) = X
+
+> ℓ∈c
+
+ES(q)
+
+
+
+max  
+
+> h
+
+ofull  
+
+> ℓ,r,u,h
+
+− oa(q)
+
+> ℓ,r,u,h
+> 22
+
+
+
+.
+
+(4) This measures model-side numerical sensitivity and is used only for residual allocation. 
+
+Task-error sensitivity. Complete generation un-der the same intervention gives 
+
+V (q, a ) = bPfail (q, a ) − bPfail (q, H ),
+
+¯V (q, H ) = 0 , ¯V (q, L ) = max {0, V (q, L )},
+
+¯V (q, R ) = max { ¯V (q, L ), V (q, R )}.
+
+(5) The monotone envelope removes empirical inver-sions caused by finite calibration data and preserves the ordering H ≻ L ≻ R in estimated protection. 
+
+Protection and allocation. Given thresholds τlow 
+
+and τhigh , the calibrated protection floor is 
+
+amin (q) = 
+
+
+
+H, ¯V (q, L ) > τ high ,L, ¯V (q, R ) > τ low ,R, otherwise .
+
+(6) Residual budget is allocated through adjacent up-grades. For a ≺ a′,
+
+ρD(q, a → a′) = [D(q, a ) − D(q, a ′)] +
+
+m(a′, c ) − m(a, c ) , (7) 
+
+Algorithm 1 PASK Offline Calibration 
+
+Require: Dcal , Ddev , C, T , α 
+
+Ensure: Λ, Γ 
+
+> 1:
+
+Q ← Buckets( Dcal , C) 
+
+> 2:
+
+(D, ¯V ) ← Calibrate( Q, Dcal ) 
+
+> 3:
+
+P ← ∅  
+
+> 4:
+
+for all τ ∈ T do  
+
+> 5:
+
+aτ 
+
+> min
+
+← Floor( ¯V ; τ ) 
+
+> 6:
+
+P ← P ∪ GreedyPath( aτ
+
+> min
+
+, ρ D) 
+
+> 7:
+
+end for  
+
+> 8:
+
+Pα ← { Θ ∈ P : ∆ bRdev (Θ) ≤ α} 
+
+> 9:
+
+Θ⋆ ← arg min Θ∈P α bCKV (Θ)  
+
+> 10:
+
+Λ ← Pack(Θ ⋆, a ⋆
+
+> min
+
+, ρ D) 
+
+> 11:
+
+Γ ← Reserve( Dcal , a ⋆
+
+> min
+
+) 
+
+> 12:
+
+return Λ, Γ
+
+where [x]+ = max( x, 0) . Starting from the floors, PASK repeatedly applies the currently eligible ad-jacent upgrade with the largest ρD, producing a nested candidate family. Each candidate is evaluated through complete generation on Ddev , and PASK selects 
+
+Θ⋆ = arg min 
+
+> Θi
+
+bCKV (Θ i)s.t. bRtask (Θ i) − bRtask (πref ) ≤ α. 
+
+(8) The frozen table Λ stores the selected action, cali-brated floor, and adjacent upgrade scores for each bucket. PASK also reserves budget for upcoming pro-tected history. Let Cfuture  
+
+> r,u
+
+be the cumulative floor cost after position u on a calibration trace. For parser state s,
+
+Γ( s) = Qβ
+
+
+
+{Cfuture  
+
+> r,u
+
+: sr,u = s}
+
+
+
+, (9) where Qβ is a fixed empirical quantile. Algorithm 1 summarizes calibration. 
+
+3.4 Structure-Only Online Lookup 
+
+During decode, PASK performs no online impor-tance estimation. For each accepted token, it forms 
+
+qt,c = ( zt, c ) and retrieves the selected action a0
+
+> t,c
+
+,protection floor a−
+
+> t,c
+
+, and adjacent upgrade scores from Λ. With remaining target budget Rt,
+
+at,c = max  
+
+> ⪯
+
+(a0
+
+> t,c
+
+, a −
+
+> t,c
+
+),Bt = max {0, R t − Γ( st)}.
+
+(10) If the initial actions exceed Bt, PASK demotes actions above their floors in ascending distortion Algorithm 2 Online Structure-Only Lookup 
+
+Require: zt, s t, R t, C, Λ, Γ
+
+Ensure: at, R t+1  
+
+> 1:
+
+(a0 
+
+> t
+
+, a− 
+
+> t
+
+, ρt) ← Lookup(Λ , z t, C) 
+
+> 2:
+
+at ← max ⪯(a0 
+
+> t
+
+, a− 
+
+> t
+
+) 
+
+> 3:
+
+Bt ← [Rt − Γ( st)] + 
+
+> 4:
+
+at ← Demote( at, a− 
+
+> t
+
+, B t, ρt) 
+
+> 5:
+
+if Crit( st) then  
+
+> 6:
+
+at ← Promote( at, B t, ρt) 
+
+> 7:
+
+end if  
+
+> 8:
+
+Persist( at) 
+
+> 9:
+
+Rt+1 ← Rt − P 
+
+> c∈C
+
+m(at,c , c ) 
+
+> 10:
+
+return at, R t+1 
+
+loss per saved cost. In critical or lookahead-critical states, unused budget is assigned through eligible promotions in descending ρD. The calibrated floors take priority when the target budget and protection requirement conflict. The online path uses only parser-derived struc-ture, frozen lookup tables, and a constant-size bud-get state. Since the number of layer groups is small and fixed, its per-token adjustment overhead is neg-ligible relative to Transformer decoding. 
+
+3.5 Lightweight Prefill Companion 
+
+For end-to-end settings that compress both prefill and decode KV, we use a lightweight prompt-side companion. Prompt tokens are grouped by input-derived semantic labels, such as protected content, function names, parameter keys, constraints, and schema scaffold, together with their layer group. Offline calibration assigns protection floors and distortion-ranked upgrades using the same princi-ple as above, and the composed prefill policy is selected on Ddev under a separate tolerance αP.The parser-transition policy in Sections 3.2–3.4 governs generated KV states. 
+
+4 Experiments 
+
+We evaluate whether parser-derived structural states can guide KV persistence while preserving structured-generation reliability. We first describe the evaluation protocol, then report task accuracy, serving efficiency, component ablations, and tol-erance sensitivity. Calibration and development data are used for policy construction and selection, whereas the test split is reserved for final evalua-tion. 
+
+4.1 Experimental Setup Models and Datasets. We evaluate PASK on function-calling tasks whose outputs must satisfy executable tool specifications. The evaluation uses the BFCL non-live and live subsets in the current data organization (Patil et al., 2025). We evaluate Qwen3-4B-Instruct-2507 and Qwen3-14B on both subsets to examine whether the reliability–memory trade-off persists across model scales (Yang et al., 2025). We abbreviate the two models as Qwen3-4B and Qwen3-14B. 
+
+Baselines. The main experiments comparison includes Full KV, attention-based H2O (Zhang et al., 2023) and SnapKV (Li et al., 2024), Rock-etKV (Behnam et al., 2025), and the structure-aware TriAxialKV (Shen et al., 2026) and Transac-tional Attention (Basu, 2026) baselines. All meth-ods use the same prompts, decoding settings, and constrained-decoding backend (Dong et al., 2025; Li et al., 2026b). 
+
+Evaluation Protocol. Each benchmark is split into calibration, development, and test subsets. Cal-ibration data estimate the structure-conditioned value floor and distortion statistics, development data select thresholds and budgets, and the test split is reserved for final evaluation. We score each pre-diction using BFCL’s official AST checker (Patil et al., 2025). Category accuracy is the fraction of test instances scored as correct. Within each of the non-live and Live subsets, Overall accuracy is micro-averaged across the four categories, i.e., the total number of AST-correct test instances divided by the total number of test instances. We addition-ally report normalized KV cost, peak GPU memory, throughput, and TPOT. 
+
+Implementation Details. The efficiency study uses Qwen3-4B-Instruct-2507 on NVIDIA L40S and A100 GPUs under matched software and de-coding settings. PASK uses separate prefill and decode targets whose workload-weighted total is approximately B = 0 .33 , while baseline methods use approximately matched total budgets. Full KV has CKV = 1 .00 , with lower values indicating lower normalized KV-cache cost. 
+
+4.2 Main Results 
+
+The main experiment compares PASK with rep-resentative KV compression and structure-aware baselines under the same constrained-decoding set-ting. Table 1 reports accuracy separately on the Model Method BFCL-Non live BFCL-live Simple Multiple Parallel Par.-multiple Overall Simple Multiple Parallel Par.-multiple Overall Qwen3-4B-It  Full KV 95.00 95.00 90.00 84.17 91.83 78.57 74.57 60.00 78.57 75.22 H2O 75.83 81.67 31.67 19.17 56.83 45.45 48.18 0.00 21.43 46.61 SnapKV 85.00 87.50 42.50 35.00 67.00 55.19 59.08 0.00 14.29 56.84 RocketKV 75.42 65.83 33.33 25.00 55.00 48.05 47.24 0.00 28.57 46.49 TriAxialKV 90.42 85.00 70.83 56.67 78.67 62.99 59.08 40.00 0.00 58.57 TransAttn 88.75 64.17 54.17 43.33 67.83 45.45 27.49 0.00 0.00 30.09                                                                                 
+
+> PASK (Ours) 92.08 93.33 80.83 81.67 88.00 74.03 72.20 60.00 50.00 72.01 Qwen3-14B
+> Full KV 96.25 98.33 92.50 81.67 93.00 79.87 75.20 70.00 64.29 75.83 H2O 72.08 85.00 22.50 16.67 53.67 54.55 51.82 0.00 0.00 50.80 SnapKV 82.50 91.67 60.00 55.83 74.50 61.69 66.98 0.00 14.29 64.24 RocketKV 78.33 90.00 30.00 41.67 63.67 55.19 55.13 30.00 42.86 54.62 TriAxialKV 87.92 79.17 77.50 64.17 79.33 68.18 61.14 30.00 0.00 61.04 TransAttn 88.33 83.33 70.00 49.17 75.83 49.35 31.12 0.00 0.00 33.66
+> PASK (Ours) 92.08 94.17 86.67 79.17 88.83 73.38 73.62 30.00 57.14 72.75
+
+Table 1: BFCL test accuracy (%) across models and subsets. Best and second-best results among compressed methods, excluding Full KV, are bolded and underlined, respectively. 
+
+BFCL non-live and Live test splits. 
+
+Task accuracy. Table 1 shows that PASK con-sistently preserves more function-calling accu-racy under compressed inference. On Qwen3-4B BFCL non-live, PASK reaches 88.00% over-all accuracy, only 3.83 percentage points below Full KV (91.83%). Among the reported com-pressed methods, PASK outperforms TriAxialKV (78.67%), TransAttn (67.83%), SnapKV (67.00%), H2O (56.83%), and RocketKV (55.00%). The largest gap appears on the parallel-multiple sub-set, where PASK reaches 81.67%, compared with 56.67% for TriAxialKV and 35.00% for SnapKV. The same pattern holds on Qwen3-4B BFCL Live. PASK achieves 72.01% overall accuracy, com-pared with 75.22% for Full KV and 58.57% for the strongest reported non-PASK compressed base-line. PASK also retains 60.00% accuracy on the parallel subset and 50.00% on parallel-multiple calls, where several compressed baselines degrade sharply. Qwen3-14B shows the same overall trend. The consistent results across Qwen3-4B and Qwen3-14B indicate that the benefit of parser-conditioned KV persistence is maintained as model scale increases. 
+
+Memory. We match methods by total end-to-end KV budget. Prefill and decode allocations may differ across methods.Table 2 reports peak GPU memory for Qwen3-4B-Instruct-2507 under a fixed logical capacity of 229,896 tokens on NVIDIA L40S and A100 GPUs. Savings are computed rela-tive to Full KV on the same GPU. PASK reduces peak process memory from about 40.0 GiB for Full                  
+
+> Method NVIDIA L40S NVIDIA A100 Peak (MiB) Saving Peak (MiB) Saving
+> Full KV 40986 —41008 —SnapKV 25090 38.78% 25086 38.83%
+> PASK (Ours) 21528 47.47% 21536 47.48%
+
+Table 2: Peak GPU memory across serving methods. 
+
+KV to 21.0 GiB, corresponding to a 47.5% reduc-tion, while SnapKV reaches about 24.5 GiB with a 38.8% reduction. . 
+
+Speed. Table 3 reports throughput and TPOT for Qwen3-4B-Instruct-2507 at concurrency c = 8 
+
+with an approximate total KV budget of B = 0 .33 .We evaluate 8K and 32K input contexts with output lengths of 256, 1024, and 2048 tokens on NVIDIA A100 and L40S GPUs. For an 8K-input/1K-output workload, PASK reduces TPOT by 51.6% on A100 and 36.7% on L40S, while increasing throughput by 98.9% and 53.2%, respectively. At 32K input and 1K output, the TPOT reduction reaches 69.8% on A100 and 27.8% on L40S, with throughput gains of 53.6% and 59.3%. The 32K-input/256-token A100 case remains a boundary where PASK trades throughput for lower per-token latency. Per-centages in parentheses are computed relative to Full KV on the same GPU. 
+
+4.3 Ablation Study 
+
+The ablation isolates the two stages of the decode policy under a fixed BFCL protocol with prefill disabled. No-V removes the task-error protection floor and relies only on distortion-ranked upgrades; No-D retains the floor but replaces distortion rank-Input / Output Method NVIDIA A100 NVIDIA L40S TPOT (ms) ↓ Throughput (T/S) ↑ TPOT (ms) ↓ Throughput (T/S) ↑                                                            
+
+> 8k / 256 Full KV 92.73 79.14 65.09 107.26 SnapKV 54.66 120.00 56.80 116.04
+> PASK (Ours) 45.89 (50.5%) 140.16(77.1%) 43.62 (33.0%) 146.15 (36.3%) 8k / 1024 Full KV 89.49 87.26 63.45 121.67 SnapKV 51.29 150.04 52.12 145.01
+> PASK (Ours) 43.28 (51.6%) 173.58 (98.9%) 40.15 (36.7%) 186.45 (53.2%) 32k / 256 Full KV 256.04 25.77 87.85 9.72 SnapKV 103.72 15.32 89.28 17.49
+> PASK (Ours) 84.17 (67.1%) 18.57(-28.0%) 74.52 (15.2%) 21.26 (118.8%) 32k / 1024 Full KV 227.52 33.22 83.94 31.92 SnapKV 89.09 42.44 74.27 48.15
+> PASK (Ours) 68.69 (69.8%) 51.02 (53.6%) 60.58 (27.8%) 50.84 (59.3%) 32k / 2048 Full KV 224.95 34.53 61.09 31.49 SnapKV 97.58 43.37 73.59 51.29
+> PASK (Ours) 67.28 (70.1%) 52.21 (51.0%) 54.87 (10.2%) 52.98 (68.3%)
+
+Table 3: Serving efficiency across input and output lengths.                    
+
+> Variant Decode B↓Test Acc. ↑∆Acc.
+> FullKV 100.00% 91.83% —
+> PASK 50.08% 87.67% −4.16
+> w/o D-ranking 60.67% 87.83% −4.00
+> w/o V-floor 98.49% 90.33% −1.50
+
+Table 4: Decode-policy component ablation. 
+
+ing with a fixed round-robin order. Development selection uses the same inclusive (+5) pp gate as the main protocol, while the test split is reserved for reporting. Table 4 summarizes the comparison, where ∆ denotes the held-out test-accuracy gap to Full KV. The ablation separates reliability protection from residual budget allocation. As shown in Table 4, removing the V-floor increases the decode budget required to satisfy the common development reli-ability gate from 50.08% to 98.49%. Distortion-ranked allocation alone therefore fails to identify a useful compressed operating point under this pro-tocol. Removing D-ranking while retaining the V-floor requires 60.67% decode budget, compared with 50.08% for the full V+D policy. These results support the role of task-error sensitivity in setting protection floors and the role of distortion ranking in allocating residual KV capacity efficiently. 
+
+4.4 Hyperparameter Selection 
+
+We use stage-specific reliability tolerances αD and 
+
+αP to select the decode and prefill policies on the development split. For each tolerance, we scan 
+
+Figure 3: Development-set stage-wise reliability–cost selection. Blue and orange points show decode-only and prefill-only scans, respectively; coincident prefill points correspond to the same selected policy. Stars mark the selected tolerances, αD = 5% and αP = 2% . The axes report the actual stage KV budget normalized to FP16 and the corresponding accuracy on valid cases. 
+
+the candidate policies and select the one with the lowest measured stage KV budget that satisfies the inclusive reliability gate. Figure 3 shows the resulting reliability–cost curves. We use αD = 5% 
+
+for decode and αP = 2% for prefill. The selected prefill policy is then combined with the decode policy for end-to-end evaluation. We further compare three task-error floor thresh-old pairs, denoted by τ = ( τlow , τ high ), under the same development-set selection protocol. Candi-date policies are ordered by Decode B, and the first policy satisfying the inclusive +5 pp relia-bility gate is selected. The first admissible poli-cies require Decode B values of 50.08%, 65.50%, Thresholds Decode B ↓ Dev Acc. (%)       
+
+> (0.5%, 1%) 50.08 %85.5 %(1%, 2%) 65.50% 85.5% (2%, 4%) 68.54% 86.0%
+
+Table 5: Decode-policy selection on the development split under three V-floor threshold families. 
+
+and 68.54% for τ = (0 .5% , 1%) , (1% , 2%) , and 
+
+(2% , 4%) , respectively. We use τ = (0 .5% , 1%) ,which yields the lowest Decode B among the three admissible settings. Table 5 reports the correspond-ing development-set results. All policy-selection decisions are made on the development split before final test evaluation. 
+
+5 Conclusion 
+
+We presented PASK, a parser-aware KV persis-tence framework for constrained structured gener-ation. PASK uses structural information exposed by parser transitions under the active grammar to condition the persistence of generated KV states across Transformer depths. Task-error sensitiv-ity sets minimum protection floors for structure– layer buckets, and attention-output distortion al-locates additional KV capacity above those floors. The resulting offline-calibrated policy requires only lightweight structure-conditioned lookup during de-coding. On BFCL, PASK reaches 88.00% accuracy on Qwen3-4B non-live evaluation at an approxi-mate total KV budget of 0.33, while reducing peak GPU memory by about 47.5% relative to Full KV. The decode-policy ablation supports the separate roles of task-level protection and distortion-based residual allocation. These results show that parser-side structural information already available during constrained decoding can serve as a practical con-trol signal for inference-time KV persistence. 
+
+Limitations 
+
+PASK requires an offline calibration stage to con-struct the structure-conditioned policy table, intro-ducing a one-time preprocessing cost before de-ployment. In addition, the current implementation uses three layer groups and three discrete persis-tence actions for simplicity and efficiency; finer-grained layer partitioning or additional precision levels may provide further flexibility. We leave these extensions to future work. 
+
+References 
+
+Abhinaba Basu. 2026. Transactional attention: Se-mantic sponsorship for KV-cache retention. arXiv preprint arXiv:2604.11288 .Payman Behnam, Yaosheng Fu, Ritchie Zhao, Po-An Tsai, Zhiding Yu, and Alexey Tumanov. 2025. Rock-etKV: Accelerating long-context LLM inference via two-stage KV cache compression. In Forty-second International Conference on Machine Learning .Luca Beurer-Kellner, Marc Fischer, and Martin Vechev. 2024. Guiding llms the right way: Fast, non-invasive constrained generation. arXiv preprint arXiv:2403.06988 .Zefan Cai, Yichi Zhang, Bofei Gao, Yuliang Liu, Yucheng Li, Tianyu Liu, Keming Lu, Wayne Xiong, Yue Dong, Junjie Hu, and Wen Xiao. 2024. Pyra-midKV: Dynamic KV cache compression based on pyramidal information funneling. arXiv preprint arXiv:2406.02069 .Qiujiang Chen, Jing Xiong, Chenyang Zhao, Sidi Yang, and Ngai Wong. 2026a. CodeComp: Structural KV cache compression for agentic coding. arXiv preprint arXiv:2604.10235 .Yeqiu Chen, Ziyan Liu, Zhenxin Huang, Runquan Gui, Hong Wang, and Lei Liu. 2026b. Arborkv: Structure-aware kv cache management for scaling tree-based llm reasoning. In Forty-third International Confer-ence on Machine Learning .Zhirui Chen, Peiyang Liu, and Ling Shao. 2026c. StructKV: Preserving the structural skeleton for scalable long-context inference. arXiv preprint arXiv:2604.06746 .Yixin Dong, Charlie F Ruan, Yaxing Cai, Ziyi Xu, Yi-long Zhao, Ruihang Lai, and Tianqi Chen. 2025. Xgrammar: Flexible and efficient structured genera-tion engine for large language models. Proceedings of Machine Learning and Systems , 7. Yuan Feng, Junlin Lv, Haoyu Guo, Yukun Cao, S Kevin Zhou, and Xike Xie. 2026. CriticalKV: Optimizing KV cache eviction from an output perturbation per-spective. In Forty-third International Conference on Machine Learning .Suyu Ge, Yunan Zhang, Liyuan Liu, Minjia Zhang, Jiawei Han, and Jianfeng Gao. 2024. Model tells you what to discard: Adaptive KV cache compression for LLMs. In International Conference on Learning Representations .Saibo Geng, Hudson Cooper, Michał Moskal, Samuel Jenkins, Julian Berman, Nathan Ranchin, Robert West, Eric Horvitz, and Harsha Nori. 2025. Generat-ing structured outputs from language models: Bench-mark and studies. arXiv e-prints , pages arXiv–2501. Sayed Pedram Haeri Boroujeni, Niloufar Mehrabi, Patrick Woods, Gabriel Hillesheim, and Abolfazl Razi. 2026. Don’t waste bits! adaptive KV-cache quantization for lightweight on-device LLMs. arXiv preprint arXiv:2604.04722 .Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, Michael W. Mahoney, Yakun Sophia Shao, Kurt Keutzer, and Amir Gholami. 2024. KVQuant: To-wards 10 million context length LLM inference with KV cache quantization. In The Thirty-eighth An-nual Conference on Neural Information Processing Systems .Bo Jiang and Sian Jin. 2026. Kvsculpt: Kv cache compression as distillation. arXiv preprint arXiv:2603.27819 .Dongwon Jo, Jiwon Song, Yulhwa Kim, and Jae-Joon Kim. 2026. FastKV: Decoupling of context reduction and KV cache compression for prefill-decoding ac-celeration. In Findings of the Association for Compu-tational Linguistics: ACL 2026 , pages 32167–32186, San Diego, California, United States. Association for Computational Linguistics. Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph E. Gon-zalez, Hao Zhang, and Ion Stoica. 2023. Efficient memory management for large language model serv-ing with PagedAttention. In Proceedings of the 29th Symposium on Operating Systems Principles , pages 611–626. Jinyang Li, Binyuan Hui, Ge Qu, Jiaxi Yang, Binhua Li, Bowen Li, Bailin Wang, Bowen Qin, Ruiying Geng, Nan Huo, Xuanhe Zhou, Chenhao Ma, Guoliang Li, Kevin C. C. Chang, Fei Huang, Reynold Cheng, and Yongbin Li. 2023. BIRD: Can LLM already serve as a database interface? a big bench for large-scale database grounded text-to-SQLs. In Thirty-seventh Conference on Neural Information Processing Sys-tems Datasets and Benchmarks Track .Junjie Li, Jiong Lou, and Jie Li. 2026a. Intentkv: Cross-turn intent-aware kv cache pruning for agent infer-ence. arXiv preprint arXiv:2606.09916 .Linzhang Li, Yixin Dong, Guanjie Wang, Ziyi Xu, Alexander Jiang, and Tianqi Chen. 2026b. Xgrammar-2: Dynamic and efficient structured gen-eration engine for agentic llms. In Proceedings of the ACM Conference on AI and Agentic Systems , pages 1009–1022. Yuhong Li, Yingbing Huang, Bowen Yang, Bharat Venkitesh, Acyr Locatelli, Hanchen Ye, Tianle Cai, Patrick Lewis, and Deming Chen. 2024. SnapKV: LLM knows what you are looking for before gener-ation. In The Thirty-eighth Annual Conference on Neural Information Processing Systems .Yujun Lin, Haotian Tang, Shang Yang, Zhekai Zhang, Guangxuan Xiao, Chuang Gan, and Song Han. 2025. QServe: W4A8KV4 quantization and system co-design for efficient LLM serving. In Proceedings of Machine Learning and Systems .Akide Liu, Jing Liu, Zizheng Pan, Yefei He, Gholam-reza Haffari, and Bohan Zhuang. 2024a. Minicache: KV cache compression in depth dimension for large language models. In The Thirty-eighth Annual Con-ference on Neural Information Processing Systems .Xiang Liu, Zhenheng Tang, Peijie Dong, Zeyu Li, Bo Li, Xuming Hu, and Xiaowen Chu. 2026. Chunkkv: Semantic-preserving kv cache compression for effi-cient long-context llm inference. Advances in Neural Information Processing Systems , 38:28728–28778. Zichang Liu, Aditya Desai, Fangshuo Liao, Weitao Wang, Victor Xie, Zhaozhuo Xu, Anastasios Kyril-lidis, and Anshumali Shrivastava. 2023. Scis-sorhands: Exploiting the persistence of importance hypothesis for llm kv cache compression at test time. 
+
+Advances in Neural Information Processing Systems ,36:52342–52364. Zirui Liu, Jiayi Yuan, Hongye Jin, Shaochen Zhong, Zhaozhuo Xu, Vladimir Braverman, Beidi Chen, and Xia Hu. 2024b. KIVI: A tuning-free asymmetric 2bit quantization for KV cache. In Forty-first Interna-tional Conference on Machine Learning .Bole Ma, Jan Eitzinger, and Harald Köstler. 2026. Ley-line: KV cache directives for agentic inference. arXiv preprint arXiv:2606.01065 .Soumil Mandal. 2026. Adaptive filtering of the KV cache: Diagnosing and correcting structural-role bias in LLM inference. arXiv preprint arXiv:2607.13205 .Shishir G Patil, Huanzhi Mao, Fanjia Yan, Charlie Cheng-Jie Ji, Vishnu Suresh, Ion Stoica, and Joseph E Gonzalez. 2025. The berkeley function calling leader-board (bfcl): From tool use to agentic evaluation of large language models. In Forty-second International Conference on Machine Learning .Akshat Ramachandran, Marina Neseem, Charbel Sakr, Rangharajan Venkatesan, Brucek Khailany, and Tushar Krishna. 2026. ThinKV: Thought-adaptive KV cache compression for efficient reasoning models. In International Conference on Learning Representa-tions .Akshat Sharma, Hangliang Ding, Jianping Li, Neel Dani, and Minjia Zhang. 2025. MiniKV: Pushing the limits of 2-bit KV cache via compression and system co-design for efficient long context inference. In Findings of the Association for Computational Linguistics: ACL 2025 , pages 18506–18523. Hanzhang Shen, Haoran Wu, Yiren Zhao, and Robert Mullins. 2026. TriAxialKV: Toward extreme low-precision KV-cache quantization for agentic infer-ence tasks. arXiv preprint arXiv:2605.17170 .Shubham Ugare, Rohan Gumaste, Tarun Suresh, Gagan-deep Singh, and Sasa Misailovic. 2025. IterGen: Iterative semantic-aware structured LLM generation with backtracking. In International Conference on Learning Representations .Brandon T. Willard and Rémi Louf. 2023. Efficient guided generation for large language models. arXiv preprint arXiv:2307.09702 .Jialong Wu, Zhenglin Wang, Linhai Zhang, Yilong Lai, Yulan He, and Deyu Zhou. 2025. SCOPE: Optimiz-ing key-value cache compression in long-context gen-eration. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Vol-ume 1: Long Papers) , pages 10775–10790, Vienna, Austria. Association for Computational Linguistics. An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, Chengen Huang, Chenxu Lv, and 1 others. 2025. Qwen3 technical report. arXiv preprint arXiv:2505.09388 .Zhenyu Zhang, Ying Sheng, Tianyi Zhou, Tianlong Chen, Lianmin Zheng, Ruisi Cai, Zhao Song, Yuan-dong Tian, Christopher Re, Clark Barrett, Zhangyang Wang, and Beidi Chen. 2023. H2o: Heavy-hitter ora-cle for efficient generative inference of large language models. In Thirty-seventh Conference on Neural In-formation Processing Systems .Lianmin Zheng, Liangsheng Yin, Zhiqiang Xie, Chuyue Sun, Jeff Huang, Cody Hao Yu, Shiyi Cao, Christos Kozyrakis, Ion Stoica, Joseph E. Gonzalez, Clark Barrett, and Ying Sheng. 2024. SGLang: Efficient execution of structured language model programs. In The Thirty-eighth Annual Conference on Neural Information Processing Systems .Xiabin Zhou, Wenbin Wang, Minyan Zeng, Jiaxian Guo, Xuebo Liu, Li Shen, Min Zhang, and Liang Ding. 2025. DynamicKV: Task-aware adaptive KV cache compression for long context LLMs. In Find-ings of the Association for Computational Linguistics: EMNLP 2025 , pages 8042–8057, Suzhou, China. As-sociation for Computational Linguistics. Adam Zweiger, Xinghong Fu, Han Guo, and Yoon Kim. 2026. Fast kv compaction via attention matching. 
+
+arXiv preprint arXiv:2602.16284 .

@@ -1,0 +1,1601 @@
+Title: A Probabilistic Interpretation of KV Cache Eviction
+
+URL Source: https://arxiv.org/pdf/2608.28293v1
+
+Published Time: Mon, 31 Aug 2026 01:11:24 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# A Probabilistic Interpretation of KV Cache Eviction 
+
+Renato Geh 
+
+University of California, Los Angeles 
+
+renatolg@cs.ucla.edu 
+
+Alex Chen 
+
+University of California, Los Angeles 
+
+itisalex@ucla.edu 
+
+Daniel Israel 
+
+University of California, Los Angeles 
+
+disrael@cs.ucla.edu 
+
+Aditya Grover 
+
+University of California, Los Angeles 
+
+adityag@cs.ucla.edu 
+
+Guy Van den Broeck 
+
+University of California, Los Angeles 
+
+guyvdb@cs.ucla.edu 
+
+# Abstract 
+
+The premise and promise of KV (cache) eviction is simple: higher throughput can be achieved by evicting some entries from the KV cache, at a negligible cost to quality. This holds empirically for many existing methods, though most rely on creative heuristics for selecting which entries to drop. Despite recent advances, the problem of KV eviction has remained informal in the literature. This paper aims to properly formalize this problem through the lens of probabilistic reasoning and reveal what can be learned from this perspective. Concretely, we (1) formalize the problem of KV eviction and, unfortunately, prove that it is computationally hard, (2) show that by framing it probabilistically, KV eviction reduces to the problem of expectation estimation, which can be approximated through sampling, (3) show that through this probabilistic interpretation, correcting for evicted entries during decoding—a previously ignored problem—becomes feasible, and (4) reveal that existing methods in the literature are zero-variance biased estimators that can be easily adapted in order to enable decode time correction. In practice, we show that this probabilistic version of KV eviction coupled with decode time correction is more robust to different tasks compared to existing eviction methods and achieves competitive performance at the same compression budget. 
+
+# 1 Introduction 
+
+Key-Value (KV) cache compression poses a natural proposition: increase throughput and decrease memory footprint by sacrificing some precision in the KV cache. Popular methods for this utilize quantization [17, 28], compaction [30, 12], eviction [26, 21, 22, 29], inter alia , to shrink down the size of the cache and speed up inference. Among these techniques, KV (cache) eviction presents the simplest solution: given a prompt and the KV cache associated with it, evict some entries of the cache at a (hopefully) negligible cost to generation quality. Despite this simplicity, the problem itself is quite challenging, and existing KV eviction strategies elaborate sophisticated heuristics in order to identify which entries to evict, performing surprisingly well in practice. Although these recent advances are indeed quite impressive, there is a distinct lack of formality in the literature. This paper aims to address this, and in its wake expose key insights on the structure of KV eviction. As a first result, by formalizing KV eviction we reveal that the problem of KV eviction is unfortunately computationally hard. However, through a probabilistic interpretation of the attention mechanism, 
+
+> Preprint. arXiv:2608.28293v1 [cs.CL] 28 Aug 2026 p(V)
+
+z }| {
+
+softmax Q · KT
+
+√d
+
+!| {z }
+
+> ˜p(V)
+
+·V = Ep[V]
+
+pt(V) = [ 
+
+> 1
+
+0.3, 0.1,
+
+> 3
+
+0.4,
+
+> 4
+
+0.2] 
+
+V = [2 .0, 3.0, 1.0, 5.0] 
+
+Top-k:
+
+I = top-k(pt(V)) = {1, 3, 4}
+
+Probabilistic eviction: 
+
+π(vi) = pt(vi) · | vi|
+
+Ptj=1 pt(vj ) · | vj |
+
+u = {u1, u 2, . . . , u m} ∼ πc(vi) = counts of vi in u = [3 , 0, 3, 14] 
+
+I = unique (u) = {1, 3, 4}
+
+t = 4 n = 5 eviction time decode time 
+
+Epn [V] = 2 .1
+
+Ground-truth :
+
+Available :
+
+˜pn(V) = [10 , , 20 , 40 , 10 , 20] 
+
+V = [2 .0, , 1.0, 5.0, 2.0] 
+
+In = {1, 3, 4} ∪ { 5}
+
+Top-k (uncorrected) :
+
+Epn [V|In] = X
+
+> i∈In
+
+˜pn(vi)
+
+P 
+
+> j∈In
+
+˜pn(vj ) · vi ≈ 1.84    
+
+> Bias: unbounded Variance: 0
+
+Probabilistic eviction (corrected) :
+
+μ(V; m) = ˆEpn [VIn ] + E˜pn [Vt+1: n]ˆzIn + zt+1: n
+
+≈ 2.18    
+
+> Bias: O(1/m)Variance: O(1/m)
+
+Figure 1: Correction can attenuate the effects of eviction at decode time. Evicting entries deforms the distribution and biases the expectation, as the normalizing constant is altered by the evicted entries. Existing eviction methods deterministically evict the top-k scored entries, which although zero-variance, may have arbitrarily large bias. Probabilistic eviction addresses this unintended deformation through self-normalized importance sampling, whose error is upper bounded by O(m−1), where m
+
+is the number of samples. eviction can be viewed as a problem of expectation estimation, which is well studied in the statistical methods literature [23]. We then reveal that the usual KV eviction setup ignores the distributional shift that occurs after eviction: because of missing entries, the distribution over all entries is distorted, and therefore so is the expectation. Thus, within this framing an expectation estimator (and KV eviction strategy) aims to achieve low error at decode time by either reducing its bias, variance, or both. Interestingly, most existing KV eviction methods are trivially subsumed within this framework. The common approach in KV eviction is to score entries by using the attention weights and values, and then take the top-k entries according to these scores [21, 29, 22]; this estimator is zero-variance as it is deterministic. However, it can have an arbitrarily large bias. We instead suggest that these scores should be viewed as unnormalized distributions on entries which to evict, allowing us to later reuse them as a proposal distribution to correct for the distortion caused by eviction through self-normalized importance sampling. This is an attractive option because self-normalized importance sampling has reasonable upper bounds on bias and variance [23, 1]. Figure 1 summarizes our approach. In summary, our contributions are as follows: 1. We show that KV eviction is NP -complete (Section 3); 2. We formalize KV eviction as an expectation estimation problem and show an asymptotically correct estimator for the decode time expectation with bounded bias and variance (Sections 4 and 5); 3. We show the interplay of bias versus variance in this estimator and how existing eviction methods are subsumed by this framework (Section 6 and Appendix D); 4. We empirically validate our findings by showing that coupling probabilistic eviction and decode time correction is not only competitive at the same compression budget but is more robust across different tasks (Section 7). 22 Preliminaries 
+
+We start by briefly introducing notation and reviewing the attention mechanism of Vaswani et al. [25] as well as the concepts of KV caching and KV eviction. Throughout this paper, we shall denote random variables (RVs) as single upper case letters (e.g. X, Y, Z ), their values or scalars as single lower case letters (e.g. x, y, z ), sets as bold letters (e.g. X, Y , Z for RVs or x, y, z for values), and sequences or matrices as bold upright lower and upper case letters respectively (e.g. x, y, z for sequences and vectors, and X, Y, Z for matrices). 
+
+Attention. Let K, Q, V ∈ Rn×d be the key, query and value embedding matrices for a particular attention head, where n is the token sequence length and d is the embedding dimension. Attention is computed as 
+
+O := softmax Q · KT
+
+√d
+
+!
+
+· V, (1) where the denominator inside the softmax is often omitted as it is mostly used as a regularizer during training (and here we shall do so as well). This computation ultimately yields a matrix O ∈ Rn×d
+
+corresponding to the attention values for each of the n entries. The key, query and value embeddings for the next layer are then computed as a function of O.
+
+KV caching. The intermediate softmax computation is n × n which can be prohibitively large at longer sequences. Because generation depends only on the next token attention values, it is therefore useful to, instead of fully computing the softmax matrix in Equation (1), compute only the last row of the softmax matrix and cache K and V at each attention head 
+
+o
+
+> 1×d
+
+:= 
+
+> 1×n
+
+softmax 
+
+
+
+Q−11×d
+
+· KT
+
+> d×n
+
+
+
+·
+
+> n×d
+
+V = softmax (
+
+> 1×n
+
+[ ki
+
+> 1×d
+
+· qnd×1
+
+]ni=1 ) ·
+
+> n×d
+
+V ; (2) where here we annotate matrices and vectors with their dimensions for clarity. The cached keys and values k1, k2, . . . , kn and v1, v2, . . . , vn are then reused in the next n + 1 forward pass. 
+
+KV cache eviction. One popular strategy to further speed up computation is to further reduce the softmax computation in Equation (2) to a subset of entries. Let I ⊆ [1 ..n ] be the set of indices of which entries to keep, where here we denote [i..j ] as the set of positive integers in [i, j ]. The KV cache evicted attention of an attention head with kept entries I is given by 
+
+oI := softmax  [ki · qn]i∈I
+
+ · VI , (3) where VI indicates indexing the rows of V with I. The remaining entries not in I are evicted from the cache. This is KV cache eviction. The goal in eviction is to thus select an appropriate I such that downstream performance is (ideally) unaffected or only slightly impacted. We refer the reader to Appendix A for a discussion on related work. Now that we understand the setting and the goal of KV (cache) eviction, we are ready to formalize and study KV eviction. We start by showing its hardness. 
+
+# 3 KV Cache Eviction is Hard 
+
+First and foremost we state the problem, its input and output. 
+
+Problem 1 (KVE VICTION ).Input. Matrices K, Q, V ∈ Qn×d, error ε ∈ Qd, and compression ratio r ∈ (0 , 1) .
+
+Output. Whether there exists a set I ⊂ [1 ..n ] such that |I| = ⌊n · r⌋ and 
+
+softmax  [ki · qn]i∈I
+
+ · VI − softmax ([ ki · qn]ni=1 ) · V ≤ ε. (4) Our reduction is from the P ARTITION problem. 
+
+Problem 2 (P ARTITION ).Input. A sequence of n integers v = ( v1, v 2, . . . , v n).3Output. Whether there exists a set I ⊂ [1 ..n ] such that |I| = ⌊ n 
+
+> 2
+
+⌋ and 
+
+X
+
+> v∈vI
+
+v = X
+
+> u∈vI
+
+u, 
+
+where we here denote vI to mean the values in v not indexed by I.
+
+Theorem 1. KVE VICTION is NP -complete. 
+
+Proof sketch. Without loss of generality, assume n to be even; set d = 1 , r = 1/2, ε = 0 and 
+
+K = Q = 1n×d, where here we denote 1m×n as the all-ones matrix in Qm×n. Hardness follows immediately by simply reducing the expression in Equation (4), which then yields the P ARTITION 
+
+problem, which is NP -hard. If one can solve KVE VICTION for this case, then one can solve any instance of P ARTITION , meaning KVE VICTION is at least as hard as P ARTITION . Membership in 
+
+NP requires some care to ensure that the softmax is computable in Q; still, this operation can be approximated according to the precision of ε. The full reduction and membership proof is stated in Appendix B. The attentive reader might recognize that KVE VICTION is in fact an easier problem compared to real-world KV eviction. In KV eviction, the goal is to preserve the attention head values at decode 
+
+time—i.e. the future time steps after entries have been evicted and are no longer available to compute. Our results show that even preserving the attention head values at eviction time—when we have access to all the ground-truth values—is hard. With this in mind, our goal now is to exploit the structure of KVE VICTION in order to find principled KV eviction approximations. We do so by a probabilistic interpretation of KV eviction, showing that through this lens we obtain a richer space of eviction strategies. 
+
+# 4 A Probabilistic Interpretation of KV Cache Eviction 
+
+A natural yet crucial observation is that the softmax matrix in Equation (1) induces n distributions (one for each row of the matrix) over the n entries represented by each column. The resulting attention value for an attention head is thus a matrix containing the dot product of these probabilities with the values V. This amounts to computing the expectation of V under a distribution pi(V) parameterized by qi and K. It is important to note that this distribution is not over the space of values Rn×d, but rather is a categorical distribution over the n entries (i.e. indices) that map to V.softmax 
+
+
+
+Q · KT 
+
+·V = 
+
+> pi(V)
+
+z }| {
+
+softmax 
+
+
+
+qi · KT  ni=1 ·V =
+
+
+
+> n
+
+X
+
+> j=1
+
+pi(V = vj ) · vj
+
+
+
+> ni=1
+
+= [ Epi [V]] ni=1 
+
+(5) In short, attention is nothing more than computing expectations. When using a KV cache, this further reduces to simply computing a single expectation of a d-dimensional vector on the last row. This provides an interesting framework for KV eviction: Each entry now has a clear distribution associated to it and can—within the setting of KV eviction—be interpreted as the probability distribution of keeping that entry. The goal of KV eviction then becomes to find a subset I that estimates future expectations with least bias and variance. Interestingly, existing eviction methods usually base their eviction decision on computing some score, either from pn(V) or V, and then taking the top-k highest scored entries to keep [9, 21, 29]. This is a zero-variance yet clearly biased estimator (and in fact unboundedly biased), skewing the expectation even at eviction time. A simple and easy solution to achieve unbiasedness at eviction time is to select I according to samples from pn(V). For a given number of samples m taken with replacement from pn(V), I can be chosen as the collection of unique entries in this set of samples. This provides an unbiased eviction estimator at eviction time. In fact, one can use any proposal distribution π in order to probabilistically evict from the cache and later adjust the expectation computation with importance sampling. 4The choice of which proposal to use is open to the user as long as its support covers all entries. In fact, existing top-k score KV eviction methods are easily subsumed in this framework by interpreting these scores as an unnormalized proposal distribution ˜π (Appendix D). Indeed, given a score eviction strategy, there exists an infinite number of proposal distributions whose top-k also correspond to the same top-k of that strategy. Top-k eviction corresponds to computing the expectation conditioned on the k-maximum a posteriori (MAP) states as a proxy for the eviction time expectation, while probabilistic eviction—i.e. sampling from π and choosing all entries which have been sampled at least once—estimates the expectation through importance sampling. So far we have seen that top-k is biased even at eviction time, while probabilistic eviction emerges as an unbiased eviction time alternative. However, this discussion ignores the future; the distribution at later steps will have missing probabilities which can potentially cause further error to future expectations. Thus, a natural question to ask ourselves is: 
+
+Goal. If we evict at time step t, can we correct Eq. (3) for the missing entries at time steps > t ?As we shall see in the next sections, we can make use of the proposal distribution and its samples used in probabilistic eviction to correct decoding. 
+
+# 5 Correcting for Eviction 
+
+Given a sequence of length t, the task of KV eviction is usually to perform eviction on this sequence— i.e. at time step t—and then generate new tokens at future time steps n > t . We shall call time step t
+
+eviction time and any time step after that decode time . While at eviction time we have access to all previous distributions [pi(V)] ti=1 , at decode time n > t we only have access to the kept entries of 
+
+pn(V) (as well as cached keys KI and values VI ). The usual treatment in the literature is to ignore missing entries and compute attention as usual. However, this severely changes the distribution, as this amounts to conditioning the distribution to restricting its support to only kept entries softmax 
+
+
+
+[ki · qn]i∈Int
+
+
+
+·VInt =
+
+"
+
+pn(vi) · vi ∈ Int w
+
+P
+
+> j∈Int
+
+pn(vj )
+
+#ni=1 
+
+·VInt = pn (V|Int )·VInt = Epn [V|Int ] ,
+
+(6) where Int := I ∪ [t + 1 ..n ]—i.e. all the kept entries and all the entries generated after eviction time—, and v·w denotes the Iverson bracket. This means that the contribution of each entry will be excessively boosted or diminished by the normalizing constant proportionally to the probability mass evicted. Furthermore, because K, V and Q are all computed as a function of the attention values of the previous layer, any error—even if small—propagates and is amplified to all following layers and future generations. To correct for this, we utilize self-normalized importance sampling to adjust the probabilities at decode time [20, 15, 23]. This requires we exploit the probabilistic interpretation introduced in Section 4. In summary, given a proposal distribution π at eviction time t, we sample entries from π,record their counts, and evict any entries that have not been sampled. At decode time, we then use π
+
+and the sampled counts to correct for eviction through self-normalized importance sampling. We now describe this process in detail and show that the corrected expectation estimate is asymptotically correct. To do so, let us first properly define the tools we are going to use. 
+
+Definition 1 (Self-normalized importance sampling) . Let ˜p(X) be an unnormalized probability distribution over an RV X that can take n values, p its normalized distribution, and π(X) a proposal distribution also over X. Given m samples from π, the function c(x) maps the value x to the number of times x has been sampled from π. The self-normalized importance sampling estimator for the expectation Ep [X] is 
+
+ˆμ(X; ˜ p, π, m ) := 1
+
+m
+
+> n
+
+X
+
+> i=1
+
+c(xi) ˜p(xi)
+
+> π(xi)1
+> m
+
+Pnj=1 c(xj ) ˜p(xj ) 
+
+> π(xj)
+
+xim→∞ 
+
+= Eπ
+
+ p(X)
+
+π(X) · X
+
+
+
+= Ep [X] . (7) 5Algorithm 1 IMPORTANCE ATTENTION 
+
+Input KV cache K, V ∈ Rn×d, sample counts [c(vi)] i∈I , proposal π, current query qn ∈ Rd.
+
+Output Corrected attention o ∈ Rd 
+
+> 1:
+
+˜pn ← exp 
+
+
+
+qn · KT 
+
+▷ Unnormalized probabilities of non-evicted entries  
+
+> 2:
+
+wi ← c(vi)/(m · π(vi)) , ∀i ∈ [1 ..t ] ▷ Weights to be applied to the unnormalized probabilities  
+
+> 3:
+
+ˆz1: t ← Pti=1 wi · ˜pn(vi) ▷ Normalizing constant for the eviction time entries  
+
+> 4:
+
+zt+1: n ← Pni=t+1 ˜pn(vi) ▷ Normalizing constant for the decode time entries  
+
+> 5:
+
+ˆμ1: t ← Pti=1 wi · ˜pn(vi) · vi ▷ Estimated unnormalized expectation for eviction time  
+
+> 6:
+
+μt+1: n ← Pni=t+1 ˜pn(vi) · vi ▷ Exact unnormalized expectation for decode time  
+
+> 7:
+
+o ← ˆμ1: t+μt+1: n 
+
+> ˆz1: t+zt+1: n
+
+▷ Corrected attention value after normalization  
+
+> 8:
+
+return o
+
+Our goal is to estimate the expectation at decode time n. In order to do so, we slightly massage the expectation into a more appealing expression 
+
+Epn [V] = 
+
+> n
+
+X
+
+> i=1
+
+pn(vi) · vi =
+
+Pti=1 ˜pn(vi) · vi + Pni=t+1 ˜pn(vi) · vi
+
+Pnj=1 ˜pn(vi)= E˜pn [V1: t] + E˜pn [Vt+1: n]
+
+z = Ep(1: t)
+
+> n
+
+[V] · z1: t
+
+z1: t + zt+1: n
+
++ Ep(t+1: n)
+
+> n
+
+[V] · zt+1: n
+
+z1: t + zt+1: n
+
+= Ep(1: t)
+
+> n
+
+[V] · p(T ≤ t) + Ep(t+1: n)
+
+> n
+
+[V] · p(T > t ). (8) We use the superscript to denote the distribution restricted to the support specified by the interval and then renormalized accordingly p(i:k)(X) := [ p(xj )/Pkl=i p(xl)]kj=i. Similarly, Vi:k is used to denote a restriction on the values of V to {vj }kj=i. Lastly, we use z to denote the normalizing constant and correspondingly zi:k := Pkj=i ˜pn(vj ) to mean the normalizing constant for that interval. The final expression in Equation (8) tells us that we may decompose the expectation into two local expectations: before and after eviction, as long as we weigh them appropriately according to p(T ≤ t)
+
+and p(T > t ). The local expectation after eviction Ep(t+1: n)
+
+> n
+
+[V] can be computed exactly: all entries are available. However, the local expectation before eviction contains missing entries and thus needs to be approximated. Indeed, both p(T ≤ t) and p(T > t ) also need to be approximated as their denominator is the normalizing constant z. To do so, we define the following estimator. 
+
+Definition 2 (Attention estimator) . The estimator for corrected attention is given by 
+
+μn(V; m) := ˆ μ(V; ˜ p(1: t) 
+
+> n
+
+, π, m ) · p(T ≤ t) + Ep(t+1: n)
+
+> n
+
+[V] · p(T > t ), (9) where ˆμ is a self-normalized importance sampling estimator that uses the unnormalized distribution 
+
+˜p(1: t) 
+
+> n
+
+as the target distribution and π as the proposal. The probabilities p(T ≤ t) and p(T > t ) are approximated by aggregating the importance weights from μn: ˆz1: t = 1
+
+> m
+
+Ptj=1 c(vj ) ˜pn(vj )  
+
+> π(vj)
+
+.This estimator is asymptotically correct w.r.t. the desired expectation estimand (see Appendix C). 
+
+Proposition 1. If supp (π) ⊇ supp (pn), then lim m→∞ μn(V; m) = Epn [V].Note that although μn(V; m) is still biased for a fixed number of samples m, this only comes from the self-normalized importance sampling estimator, which has both bias and (mean squared) error upper bounded by O(1/m) [1, Theorem 2.1]. In other words, more samples reduce this error significantly. This bias can be further reduced by applying any bias-reducing method for self-normalized importance sampling to μn(V; m) [7]. In contrast to this bound, existing KV eviction methods deterministically keep the top-k entries according to some score on either pt(V) or V and thus are zero-variance yet unboundedly biased [21, 29, 22]. Equipped with Definition 2 and Proposition 1, we can now explicitly construct the correction algorithm for decode time. Algorithm 1 shows how to compute the corrected attention value for a given attention head. Note that here we simplify the algorithm and notation due to space constraints, 60 0.5 10246
+
+> ·10 −2
+> MAE
+
+τ = 1 .00 0.5 1
+
+τ = 2 .00 0.5 1
+
+Compression ratio ( r)
+
+τ = 5 .00 0.5 1
+
+τ = 10 .00 0.5 1
+
+τ = 50 .0   
+
+> Corrected probabilistic H2O ( εcor )Uncorrected probabilistic H2O ( εunc )Top-kH2O ( εtop )
+
+Figure 2: KV eviction is a game of trading bias for variance and vice versa. The plot shows mean absolute error ( y-axis) of the attention values for the first token after an evicted prompt on Llama3 
+
+averaged across all heads (see Appendix E for details) for different compression ratios ( x-axis). Bias and variance are low at lower r, since m (number of samples) is high. As r increases, m decreases, causing variance to increase more than bias. Higher importance weight temperatures τ decrease the variance, causing the error to decrease at extremely high r’s. but one must be careful when computing the corrected probabilities: an entry i is evicted iff c(vi) = 0 ,meaning that ˜pn(vi) will be undefined. Any entry which is missing due to eviction should be properly ignored in the computation. 
+
+Ultimately, the pipeline is as follows: at eviction time t, (1) construct a proposal distribution π(h) for each attention head h, and (2) sample counts [c(h)(vi)] ti=1 . At decode time n, (3) compute attention following Algorithm 1. Some attention has to be paid when dealing with grouped query attention [2]: Because every attention head in a group G = {h1, h 2, . . . , h g } shares the same K and V caches, ingroup eviction and correction have to be consistent. To do so, we use one proposal π(G) per group, ensuring that the support of π(G) contains the support of every attention head distribution by constructing a mixture of each head proposal π(G)(vi) := Pgj=1 αj · π(hj )(vi), where every αj ∈ ∆g−1 comes from the 
+
+(g − 1) -simplex. So far, our contributions have been either theoretical or philosophical. In the next section, we empirically validate probabilistic eviction and correction, studying the role of bias and variance in KV eviction. 
+
+# 6 Bias vs Variance 
+
+Although bias and variance share the same asymptotic upper bounds in self-normalized importance sampling, in practice they may present distinct behaviors [1]. In this section, we show that by decreasing the variance at the cost of more bias, we are able to achieve lower error under certain conditions. To do so, we introduce a temperature scaling parameter τ ∈ [0 , ∞) to the importance weights. We then replace Line 2 in Algorithm 1 with 
+
+wi ← exp 
+
+ 1
+
+τ · log 
+
+ c(vi)
+
+m · π(vi)
+
+ 
+
+, ∀i ∈ [1 ..t ]. (10) When τ = 1 , Equation (10) reduces to the same expression as Line 2; when τ → ∞ , it is equivalent to not applying correction since wi approaches 1. This reduces variance, since the stochasticity comes from the samples of the proposal distribution, which can be amplified by the correction. By suppressing correction, variance is reduced. Temperatures below 1 cause Algorithm 1 to give more importance (i.e. probability mass) to entries in [1 ..t ] compared to decode time entries. Our goal is to show the impact of bias and variance in terms of the mean absolute error (MAE) between the estimated expectation and the ground-truth expectation. Given a prompt x and a first response token y, we compute the KV cache (K, V) on x and apply probabilistic eviction using a proposal π constructed from the scores of the H2O eviction method [29] (see Appendix D for details). This results in an evicted KV cache (KI , VI ). We then compute the average error between 70.2 0 .4 0 .6 0 .8
+
+> 0.2 0.4 0.6 0.8
+> Score ( →)
+
+RULER 
+
+0.2 0 .4 0 .6 0 .8
+
+> 0.3 0.4 0.5 0.6
+
+LongBench 
+
+0.2 0 .4 0 .6 0 .8
+
+> 0 0.5 1
+
+RULER 
+
+0.2 0 .4 0 .6 0 .8
+
+> 0.3 0.4 0.5 0.6
+
+LongBench Compression ratio ( r)        
+
+> πH2O πH2O-h πmin πmin-h H2O K-norm SnapKV StreamingLLM TOVA
+
+Llama3 Qwen3 
+
+Figure 3: Probabilistic eviction achieves competitive performance. Probabilistic eviction with correction performs best at lower to middle ranges, when there are enough samples to achieve a lower variance and bias. Solid lines show our approach, dashed lines show existing eviction methods. the uncorrected oI and ground-truth o attention values εunc , and between the corrected μn(V; m)
+
+and ground-truth attention values εcor across all h attention heads 
+
+εunc := 1
+
+h ·
+
+> h
+
+X
+
+> i=1
+
+o(i) − o(i) 
+
+> I
+
+, εcor := 1
+
+h ·
+
+> h
+
+X
+
+> i=1
+
+o(i) − μ(i) 
+
+> n
+
+(V; m) . (11) Finally, we compute the error εtop between the ground-truth and H2O’s estimation of the attention. In order to provide a fair comparison of εcor and εunc against εtop , we constrain the compression ratio to be the same for every attention head. To do so, for each attention head, we select a number of samples that achieves, on average, the desired compression ratio. In Appendix F, we discuss how this problem relates to the classical coupon collector problem and provide a tractable approximation with negligible error in practice. Figure 2 shows the average errors across compression ratios r ∈ [0 , 1] and temperatures τ ∈{1, 2, 5, 10 , 50 } for Llama3.2-3B [16]; prompt x and first token y are described in Appendix E. Lower compression ratio r implies a higher number of samples m. When m is high, bias and variance are low; when m is extremely low, variance is very high, causing εcor to be much higher than εunc .This is where temperature scaling provides an improvement by reducing the variance at a cost to bias. As the middle ranges of r show, increasing bias when variance is already low harms estimation quality. The εunc curve does not match with εtop because eviction is done stochastically, while H2O greedily evicts the top-k. This shows that even probabilistic eviction by itself allows for less error. As 
+
+r approaches one, the probabilistic choices all collapse to the top-k, which is when εunc and εtop meet. In this section, we showed how correction allows for a trade-off between bias and variance. However, in practice bias plays a much larger role in attention error. This motivates the shift from low-variance high-bias to higher-variance low-bias estimators. As we shall see in the next section, corrected probabilistic eviction tends to produce more robust estimators compared to existing zero-variance unbounded bias KV eviction strategies due to reduced bias. 
+
+# 7 Robustness 
+
+In this section, we show that zero-variance estimators suffer from a heuristic misalignment, where the fixed bias introduced by these heuristics can cause catastrophic failures in certain tasks. To do so, we compare probabilistic eviction against four popular existing KV eviction methods: StreamingLLM [26], SnapKV [21], TOVA [22] and H2O [29]. All of these methods are implemented in KVPress, which we use for evaluation and our own implementation [10]. We evaluate Llama3.2-3B [16] and 
+
+Qwen3-4B [27] on two standard KV eviction benchmark datasets: LongBench [3] and RULER [18]. Due to compute constraints, we evaluate RULER on a subset of 130 examples and on all instances of the HotpotQA, QASPER and TriviaQA splits of LongBench whose context prompt is shorter than 
+
+3,000 tokens. 80.2 0 .4 0 .6 0 .8
+
+> 0.7 0.8 0.9
+> Win score ( →)
+
+RULER 
+
+0.2 0 .4 0 .6 0 .8
+
+> 0.7 0.8 0.9
+
+LongBench 
+
+0.2 0 .4 0 .6 0 .8
+
+> 0.6 0.8 1
+
+RULER 
+
+0.2 0 .4 0 .6 0 .8
+
+> 0.6 0.8
+
+LongBench Compression ratio ( r)        
+
+> πH2O πH2O-h πmin πmin-h H2O K-norm SnapKV StreamingLLM TOVA
+
+Llama3 Qwen3 
+
+Figure 4: Probabilistic eviction can make eviction more robust for different tasks. Win score val-ues for four proposals ( πH2O , π H2O-h , π min , π min-h ) and five top-k estimators (H2O, K-norm, SnapKV, StreamingLLM, TOVA). πmin-h achieves best ranking across datasets and models, showing more robustness when minimizing variance and lowering bias. To evaluate probabilistic eviction, we propose four different proposal distributions: πmin , πmin-h , πH2O 
+
+and πH2O-h which we formally define in Appendix H and provide proper probabilistic semantics. Intuitively, πmin computes the minimum variance proposal distribution for the last query at eviction time t, πH2O computes a probabilistic version of H2O where scores are normalized and used as the proposal distribution, πmin-h computes the minimum-variance proposal for a distribution where all previous time steps are marginalized and weighted by a harmonic prior hj , and πH2O-h computes H2O with a harmonic prior hj .In these experiments, we constrain the compression ratio at the global level: given a compression ratio r, we choose a number of samples m such that, on average, the aggregated compression ratio of all KV caches is r. This is achieved by a similar mechanism to the one for locally constraining each attention head to a specific compression ratio. Section F.1 shows how this can be done and Section F.2 provides empirical evidence that the error between the achieved compression ratio and target compression ratio is, in practice, insignificant. Although the overall compression ratio is fixed, every attention head will adaptively choose a suitable compression ratio depending on its distribution. This allows for attention heads that require a lower compression ratio to automatically consume the budget of heads that do not. Interestingly, this results in compression ratios that follow a pattern of lower compression at lower layers, and higher at higher layers (see Section I.3 and Figure 9). This is in agreement with the findings of Cai et al. [6], which suggest that allocating more budget to lower layers and less to higher is preferable. Figure 3 shows the average total score in LongBench and RULER for the four previously mentioned proposals and five top-k existing eviction methods. This is computed by averaging the score at each split, weighing them by the fraction of examples in that split and then adding all of these weighted scores together. The average score of each split is given by a scorer function suited to that split 
+
+fsplit : L∗ → [0 , 1] that takes in the text generated by the (KV evicted) LLM and attributes a number in 
+
+[0 , 1] . For example, HotpotQA uses F1 as the scorer function, while the NIAH (needle-in-a-haystack) split of RULER uses exact string matching. Results show that probabilistic eviction and correction achieve better performance or are at least as competitive as the state-of-the-art. Because these average total scores aggregate over many tasks, they can hide the behavior of eviction methods for certain tasks. For example, on Llama3 StreamingLLM ranks first on the QuestionAnswer split, yet dead last in MultiKey-NIAH (see Figure 5). Similarly, on Qwen3 K-norm is consistently in the top-3 on the MultiKey-NIAH split, yet last in CommonWords (see Figure 6). To account for these catastrophic failures, we measure the pairwise win scores of each method. Specifically, we assign a rank from 0 to n − 1 to each method based on how well it performs compared to the other 
+
+n − 1 methods. The method with the lowest score gets a rank of 0, while the method with the highest score gets a rank of n − 1. If multiple methods achieve the same score, they are all given the rank corresponding to a win against the other tied methods. Ranking is repeated for all the examples in the task, after which the ranks are normalized by the number of examples in the task to ensure all tasks contribute equally. We refer to the normalized average rank across tasks as the win score .9Figure 4 shows the win score for each proposal and eviction method. Notably, πmin-h consistently ranks at the top, showing that it is most robust compared to other methods. Probabilistic eviction tends to do better at low to middle ranges, as there are enough samples to decrease the bias and variance. However, even at higher compression it performs competitively against other eviction methods. Note that when the compression ratio is extremely high (i.e. close to 1.0), all methods do equally poorly, as most of the prompt has been evicted. This is shown as most, if not all, curves increasing in Figure 4, as ties are also rewarded in this scoring. 
+
+# 8 Conclusion 
+
+The goal of this paper was to formalize KV cache eviction and in doing so find principled KV eviction estimators. As a result, we showed that KV eviction is NP -complete, and revealed that through a probabilistic interpretation KV eviction is nothing more than an expectation estimation problem. In our quest to characterize this, we found that existing KV eviction methods are zero-variance yet unbounded bias estimators and that a good KV eviction strategy should reduce bias and variance in order to best approximate future expectations. To this end, we proposed a self-normalized importance sampling estimator with reasonable upper bounds on both bias and variance. We then empirically showed that this class of estimators achieves competitive performance against state-of-the-art eviction methods yet are more robust at different tasks. This paper opens up an exciting and promising avenue to developing new KV eviction estimators. We hope that framing KV eviction as an estimation problem and connecting the field of statistical methods with KV cache eviction generates fruitful new research not only within KV eviction but also across other KV cache compression techniques. 
+
+# References 
+
+[1] S. Agapiou, O. Papaspiliopoulos, D. Sanz-Alonso, and A. M. Stuart. Importance Sampling: Intrinsic Dimension and Computational Cost. Statistical Science , 32(3):405 – 431, 2017. doi: 10.1214/17-STS611. URL https://doi.org/10.1214/17-STS611 .[2] J. Ainslie, J. Lee-Thorp, M. de Jong, Y. Zemlyanskiy, F. Lebron, and S. Sanghai. GQA: Training generalized multi-query transformer models from multi-head checkpoints. In H. Bouamor, J. Pino, and K. Bali, editors, Proceedings of the 2023 Conference on Empir-ical Methods in Natural Language Processing , pages 4895–4901, Singapore, Dec. 2023. Association for Computational Linguistics. doi: 10.18653/v1/2023.emnlp-main.298. URL 
+
+https://aclanthology.org/2023.emnlp-main.298/ .[3] Y. Bai, X. Lv, J. Zhang, H. Lyu, J. Tang, Z. Huang, Z. Du, X. Liu, A. Zeng, L. Hou, Y. Dong, J. Tang, and J. Li. Longbench: A bilingual, multitask benchmark for long context understanding, 2024. URL https://arxiv.org/abs/2308.14508 .[4] A. S. Bianchessi, Y. C. Aguirre, R. C. Barros, and L. S. Kupssinskü. Bayesian attention mechanism: A probabilistic framework for positional encoding and context length extrapolation. In The Fourteenth International Conference on Learning Representations , 2026. URL https: //openreview.net/forum?id=dXJB9O8fLd .[5] R. P. Brent and P. Zimmermann. Modern Computer Arithmetic . Cambridge Monographs on Applied and Computational Mathematics. Cambridge University Press, 2010. [6] Z. Cai, Y. Zhang, B. Gao, Y. Liu, Y. Li, T. Liu, K. Lu, W. Xiong, Y. Dong, J. Hu, and W. Xiao. PyramidKV: Dynamic KV cache compression based on pyramidal information funneling. In 
+
+Second Conference on Language Modeling , 2025. URL https://openreview.net/forum? id=ayi7qezU87 .[7] G. Cardoso, S. Samsonov, A. Thin, E. Moulines, and J. Olsson. Br-snis: Bias reduced self-normalized importance sampling. In S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh, editors, Advances in Neural Information Processing Systems , volume 35, pages 716– 729. Curran Associates, Inc., 2022. URL https://proceedings.neurips.cc/paper_files/ paper/2022/file/04bd683d5428d91c5fbb5a7d2c27064d-Paper-Conference.pdf .[8] A. Chen, R. Geh, A. Grover, G. V. d. Broeck, and D. Israel. The pitfalls of kv cache compression. 
+
+arXiv preprint arXiv:2510.00231 , 2025. 10 [9] A. Devoto, Y. Zhao, S. Scardapane, and P. Minervini. A simple and effective L2 norm-based strategy for KV cache compression. In Y. Al-Onaizan, M. Bansal, and Y.-N. Chen, editors, 
+
+Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing ,pages 18476–18499, Miami, Florida, USA, Nov. 2024. Association for Computational Lin-guistics. doi: 10.18653/v1/2024.emnlp-main.1027. URL https://aclanthology.org/2024. emnlp-main.1027/ .[10] A. Devoto, M. Jeblick, and S. Jégou. Expected attention: Kv cache compression by estimating attention from future queries distribution. arXiv preprint arXiv:2510.00636 , 2025. URL 
+
+https://arxiv.org/abs/2510.00636 .[11] P. Erd˝ os and A. Rényi. On a classical problem of probability theory. Magyar Tudományos Akadémia Matematikai Kutató Intézetének K˝ ozleményei , 1961. URL https://www.renyi.hu/ ~p_erdos/1961-09.pdf .[12] S. Eyuboglu, R. Ehrlich, S. Arora, N. Guha, D. Zinsley, E. Liu, W. Tennien, A. Rudra, J. Zou, A. Mirhoseini, and C. Re. Cartridges: Lightweight and general-purpose long context represen-tations via self-study, 2025. URL https://arxiv.org/abs/2506.06266 .[13] Y. Feng, J. Lv, Y. Cao, X. Xie, and S. K. Zhou. Ada-KV: Optimizing KV cache eviction by adaptive budget allocation for efficient LLM inference. In The Thirty-ninth Annual Conference on Neural Information Processing Systems , 2026. URL https://openreview.net/forum? id=tcisuhGsQZ .[14] P. Flajolet, D. Gardy, and L. Thimonier. Birthday paradox, coupon collectors, caching al-gorithms and self-organizing search. Discrete Applied Mathematics , 39(3):207–229, 1992. ISSN 0166-218X. doi: https://doi.org/10.1016/0166-218X(92)90177-C. URL https://www. sciencedirect.com/science/article/pii/0166218X9290177C .[15] J. Geweke. Bayesian inference in econometric models using monte carlo integration. Econo-metrica , 57(6):1317–1339, 1989. ISSN 00129682, 14680262. URL http://www.jstor.org/ stable/1913710 .[16] A. Grattafiori, A. Dubey, A. Jauhri, A. Pandey, A. Kadian, A. Al-Dahle, A. Letman, A. Mathur, A. Schelten, A. Vaughan, A. Yang, A. Fan, A. Goyal, A. Hartshorn, A. Yang, A. Mitra, A. Sravankumar, A. Korenev, A. Hinsvark, A. Rao, A. Zhang, A. Rodriguez, A. Gregerson, A. Spataru, B. Roziere, B. Biron, B. Tang, B. Chern, C. Caucheteux, C. Nayak, C. Bi, C. Marra, C. McConnell, C. Keller, C. Touret, C. Wu, C. Wong, C. C. Ferrer, C. Nikolaidis, D. Allonsius, D. Song, D. Pintz, D. Livshits, D. Wyatt, D. Esiobu, D. Choudhary, D. Mahajan, D. Garcia-Olano, D. Perino, D. Hupkes, E. Lakomkin, E. AlBadawy, E. Lobanova, E. Dinan, E. M. Smith, F. Radenovic, F. Guzmán, F. Zhang, G. Synnaeve, G. Lee, G. L. Anderson, G. Thattai, G. Nail, G. Mialon, G. Pang, G. Cucurell, H. Nguyen, H. Korevaar, H. Xu, H. Touvron, I. Zarov, I. A. Ibarra, I. Kloumann, I. Misra, I. Evtimov, J. Zhang, J. Copet, J. Lee, J. Geffert, J. Vranes, J. Park, J. Mahadeokar, J. Shah, J. van der Linde, J. Billock, J. Hong, J. Lee, J. Fu, J. Chi, J. Huang, J. Liu, J. Wang, J. Yu, J. Bitton, J. Spisak, J. Park, J. Rocca, J. Johnstun, J. Saxe, J. Jia, K. V. Alwala, K. Prasad, K. Upasani, K. Plawiak, K. Li, K. Heafield, K. Stone, K. El-Arini, K. Iyer, K. Malik, K. Chiu, K. Bhalla, K. Lakhotia, L. Rantala-Yeary, L. van der Maaten, L. Chen, L. Tan, L. Jenkins, L. Martin, L. Madaan, L. Malo, L. Blecher, L. Landzaat, L. de Oliveira, M. Muzzi, M. Pasupuleti, M. Singh, M. Paluri, M. Kardas, M. Tsimpoukelli, M. Oldham, M. Rita, M. Pavlova, M. Kambadur, M. Lewis, M. Si, M. K. Singh, M. Hassan, N. Goyal, N. Torabi, N. Bashlykov, N. Bogoychev, N. Chatterji, N. Zhang, O. Duchenne, O. Çelebi, P. Alrassy, P. Zhang, P. Li, P. Vasic, P. Weng, P. Bhargava, P. Dubal, P. Krishnan, P. S. Koura, P. Xu, Q. He, Q. Dong, R. Srinivasan, R. Ganapathy, R. Calderer, R. S. Cabral, R. Stojnic, R. Raileanu, R. Maheswari, R. Girdhar, R. Patel, R. Sauvestre, R. Polidoro, R. Sumbaly, R. Taylor, R. Silva, R. Hou, R. Wang, S. Hosseini, S. Chennabasappa, S. Singh, S. Bell, S. S. Kim, S. Edunov, S. Nie, S. Narang, S. Raparthy, S. Shen, S. Wan, S. Bhosale, S. Zhang, S. Vandenhende, S. Batra, S. Whitman, S. Sootla, S. Collot, S. Gururangan, S. Borodinsky, T. Herman, T. Fowler, T. Sheasha, T. Georgiou, T. Scialom, T. Speckbacher, T. Mihaylov, T. Xiao, U. Karn, V. Goswami, V. Gupta, V. Ramanathan, V. Kerkez, V. Gonguet, V. Do, V. Vogeti, V. Albiero, V. Petrovic, W. Chu, W. Xiong, W. Fu, W. Meers, X. Martinet, X. Wang, X. Wang, X. E. Tan, X. Xia, X. Xie, X. Jia, X. Wang, Y. Goldschlag, Y. Gaur, Y. Babaei, Y. Wen, 11 Y. Song, Y. Zhang, Y. Li, Y. Mao, Z. D. Coudert, Z. Yan, Z. Chen, Z. Papakipos, A. Singh, A. Srivastava, A. Jain, A. Kelsey, A. Shajnfeld, A. Gangidi, A. Victoria, A. Goldstand, A. Menon, A. Sharma, A. Boesenberg, A. Baevski, A. Feinstein, A. Kallet, A. Sangani, A. Teo, A. Yunus, A. Lupu, A. Alvarado, A. Caples, A. Gu, A. Ho, A. Poulton, A. Ryan, A. Ramchandani, A. Dong, A. Franco, A. Goyal, A. Saraf, A. Chowdhury, A. Gabriel, A. Bharambe, A. Eisenman, A. Yazdan, B. James, B. Maurer, B. Leonhardi, B. Huang, B. Loyd, B. D. Paola, B. Paranjape, B. Liu, B. Wu, B. Ni, B. Hancock, B. Wasti, B. Spence, B. Stojkovic, B. Gamido, B. Montalvo, C. Parker, C. Burton, C. Mejia, C. Liu, C. Wang, C. Kim, C. Zhou, C. Hu, C.-H. Chu, C. Cai, C. Tindal, C. Feichtenhofer, C. Gao, D. Civin, D. Beaty, D. Kreymer, D. Li, D. Adkins, D. Xu, D. Testuggine, D. David, D. Parikh, D. Liskovich, D. Foss, D. Wang, D. Le, D. Holland, E. Dowling, E. Jamil, E. Montgomery, E. Presani, E. Hahn, E. Wood, E.-T. Le, E. Brinkman, E. Arcaute, E. Dunbar, E. Smothers, F. Sun, F. Kreuk, F. Tian, F. Kokkinos, F. Ozgenel, F. Caggioni, F. Kanayet, F. Seide, G. M. Florez, G. Schwarz, G. Badeer, G. Swee, G. Halpern, G. Herman, G. Sizov, Guangyi, Zhang, G. Lakshminarayanan, H. Inan, H. Shojanazeri, H. Zou, H. Wang, H. Zha, H. Habeeb, H. Rudolph, H. Suk, H. Aspegren, H. Goldman, H. Zhan, I. Damlaj, I. Molybog, I. Tufanov, I. Leontiadis, I.-E. Veliche, I. Gat, J. Weissman, J. Geboski, J. Kohli, J. Lam, J. Asher, J.-B. Gaya, J. Marcus, J. Tang, J. Chan, J. Zhen, J. Reizenstein, J. Teboul, J. Zhong, J. Jin, J. Yang, J. Cummings, J. Carvill, J. Shepard, J. McPhie, J. Torres, J. Ginsburg, J. Wang, K. Wu, K. H. U, K. Saxena, K. Khandelwal, K. Zand, K. Matosich, K. Veeraraghavan, K. Michelena, K. Li, K. Jagadeesh, K. Huang, K. Chawla, K. Huang, L. Chen, L. Garg, L. A, L. Silva, L. Bell, L. Zhang, L. Guo, L. Yu, L. Moshkovich, L. Wehrstedt, M. Khabsa, M. Avalani, M. Bhatt, M. Mankus, M. Hasson, M. Lennie, M. Reso, M. Groshev, M. Naumov, M. Lathi, M. Keneally, M. Liu, M. L. Seltzer, M. Valko, M. Restrepo, M. Patel, M. Vyatskov, M. Samvelyan, M. Clark, M. Macey, M. Wang, M. J. Hermoso, M. Metanat, M. Rastegari, M. Bansal, N. Santhanam, N. Parks, N. White, N. Bawa, N. Singhal, N. Egebo, N. Usunier, N. Mehta, N. P. Laptev, N. Dong, N. Cheng, O. Chernoguz, O. Hart, O. Salpekar, O. Kalinli, P. Kent, P. Parekh, P. Saab, P. Balaji, P. Rittner, P. Bontrager, P. Roux, P. Dollar, P. Zvyagina, P. Ratanchandani, P. Yuvraj, Q. Liang, R. Alao, R. Rodriguez, R. Ayub, R. Murthy, R. Nayani, R. Mitra, R. Parthasarathy, R. Li, R. Hogan, R. Battey, R. Wang, R. Howes, R. Rinott, S. Mehta, S. Siby, S. J. Bondu, S. Datta, S. Chugh, S. Hunt, S. Dhillon, S. Sidorov, S. Pan, S. Mahajan, S. Verma, S. Yamamoto, S. Ramaswamy, S. Lindsay, S. Lindsay, S. Feng, S. Lin, S. C. Zha, S. Patil, S. Shankar, S. Zhang, S. Zhang, S. Wang, S. Agarwal, S. Sajuyigbe, S. Chintala, S. Max, S. Chen, S. Kehoe, S. Satterfield, S. Govindaprasad, S. Gupta, S. Deng, S. Cho, S. Virk, S. Subramanian, S. Choudhury, S. Goldman, T. Remez, T. Glaser, T. Best, T. Koehler, T. Robinson, T. Li, T. Zhang, T. Matthews, T. Chou, T. Shaked, V. Vontimitta, V. Ajayi, V. Montanez, V. Mohan, V. S. Kumar, V. Mangla, V. Ionescu, V. Poenaru, V. T. Mihailescu, V. Ivanov, W. Li, W. Wang, W. Jiang, W. Bouaziz, W. Constable, X. Tang, X. Wu, X. Wang, X. Wu, X. Gao, Y. Kleinman, Y. Chen, Y. Hu, Y. Jia, Y. Qi, Y. Li, Y. Zhang, Y. Zhang, Y. Adi, Y. Nam, Yu, Wang, Y. Zhao, Y. Hao, Y. Qian, Y. Li, Y. He, Z. Rait, Z. DeVito, Z. Rosnbrick, Z. Wen, Z. Yang, Z. Zhao, and Z. Ma. The llama 3 herd of models, 2024. URL 
+
+https://arxiv.org/abs/2407.21783 .[17] C. Hooper, S. Kim, H. Mohammadzadeh, M. W. Mahoney, Y. S. Shao, K. Keutzer, and A. Gholami. Kvquant: Towards 10 million context length llm inference with kv cache quantization. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, editors, Advances in Neural Information Processing Sys-tems , volume 37, pages 1270–1303. Curran Associates, Inc., 2024. doi: 10.52202/ 079017-0040. URL https://proceedings.neurips.cc/paper_files/paper/2024/file/ 028fcbcf85435d39a40c4d61b42c99a4-Paper-Conference.pdf .[18] C.-P. Hsieh, S. Sun, S. Kriman, S. Acharya, D. Rekesh, F. Jia, Y. Zhang, and B. Ginsburg. Ruler: What’s the real context size of your long-context language models?, 2024. URL 
+
+https://arxiv.org/abs/2404.06654 .[19] R. Z. (https://math.stackexchange.com/users/299698/robert z). Expected number of non-empty boxes. Mathematics Stack Exchange. URL https://math.stackexchange.com/q/1950447 .URL:https://math.stackexchange.com/q/1950447 (version: 2016-10-02). [20] T. Kloek and H. K. van Dijk. Bayesian estimates of equation system parameters: An application of integration by monte carlo. Econometrica , 46(1):1–19, 1978. ISSN 00129682, 14680262. URL http://www.jstor.org/stable/1913641 .12 [21] Y. Li, Y. Huang, B. Yang, B. Venkitesh, A. Locatelli, H. Ye, T. Cai, P. Lewis, and D. Chen. Snapkv: Llm knows what you are looking for before generation. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, editors, Advances in Neural Information Processing Systems , volume 37, pages 22947–22970. Curran Associates, Inc., 2024. doi: 10.52202/079017-0722. URL https://proceedings.neurips.cc/paper_files/ paper/2024/file/28ab418242603e0f7323e54185d19bde-Paper-Conference.pdf .[22] M. Oren, M. Hassid, N. Yarden, Y. Adi, and R. Schwartz. Transformers are multi-state RNNs. In Y. Al-Onaizan, M. Bansal, and Y.-N. Chen, editors, Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing , pages 18724–18741, Miami, Florida, USA, Nov. 2024. Association for Computational Linguistics. doi: 10.18653/v1/2024.emnlp-main. 1043. URL https://aclanthology.org/2024.emnlp-main.1043/ .[23] A. B. Owen. Monte Carlo theory, methods and examples . https://artowen.su.domains/mc/ ,2013. [24] R. Singh and C. L. Buckley. Attention: Marginal probability is all you need?, 2023. URL 
+
+https://arxiv.org/abs/2304.04556 .[25] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, L. u. Kaiser, and I. Polosukhin. Attention is all you need. In I. Guyon, U. V. Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett, editors, Advances in Neural Information Processing Systems , volume 30. Curran Associates, Inc., 2017. URL https://proceedings.neurips. cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf .[26] G. Xiao, Y. Tian, B. Chen, S. Han, and M. Lewis. Efficient streaming language models with attention sinks. In B. Kim, Y. Yue, S. Chaudhuri, K. Fragkiadaki, M. Khan, and Y. Sun, editors, International Conference on Learning Representations , volume 2024, pages 21875–21895, 2024. URL https://proceedings.iclr.cc/paper_files/paper/2024/ file/5e5fd18f863cbe6d8ae392a93fd271c9-Paper-Conference.pdf .[27] A. Yang, A. Li, B. Yang, B. Zhang, B. Hui, B. Zheng, B. Yu, C. Gao, C. Huang, C. Lv, C. Zheng, D. Liu, F. Zhou, F. Huang, F. Hu, H. Ge, H. Wei, H. Lin, J. Tang, J. Yang, J. Tu, J. Zhang, J. Yang, J. Yang, J. Zhou, J. Zhou, J. Lin, K. Dang, K. Bao, K. Yang, L. Yu, L. Deng, M. Li, M. Xue, M. Li, P. Zhang, P. Wang, Q. Zhu, R. Men, R. Gao, S. Liu, S. Luo, T. Li, T. Tang, W. Yin, X. Ren, X. Wang, X. Zhang, X. Ren, Y. Fan, Y. Su, Y. Zhang, Y. Zhang, Y. Wan, Y. Liu, Z. Wang, Z. Cui, Z. Zhang, Z. Zhou, and Z. Qiu. Qwen3 technical report, 2025. URL 
+
+https://arxiv.org/abs/2505.09388 .[28] A. Zandieh, M. Daliri, M. Hadian, and V. Mirrokni. Turboquant: Online vector quantization with near-optimal distortion rate. In The Fourteenth International Conference on Learning Representations , 2026. URL https://openreview.net/forum?id=tO3ASKZlok .[29] Z. Zhang, Y. Sheng, T. Zhou, T. Chen, L. Zheng, R. Cai, Z. Song, Y. Tian, C. Ré, C. Barrett, Z. A. Wang, and B. Chen. H2o: Heavy-hitter oracle for efficient generative inference of large language models. In A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, and S. Levine, editors, 
+
+Advances in Neural Information Processing Systems , volume 36, pages 34661–34710. Cur-ran Associates, Inc., 2023. URL https://proceedings.neurips.cc/paper_files/paper/ 2023/file/6ceefa7b15572587b78ecfcebb2827f8-Paper-Conference.pdf .[30] A. Zweiger, X. Fu, H. Guo, and Y. Kim. Fast kv compaction via attention matching, 2026. URL 
+
+https://arxiv.org/abs/2602.16284 .
+
+# A Related Work 
+
+KV eviction has received significant interest for the purpose of speeding up inference in large language models. Following the taxonomy given by Chen et al. [8], we categorize KV eviction methods as position-based, attention-based, embedding-based, and hybrid. The most notable examples of each respectively are StreamingLLM [26], TOVA [22], K-norm [9], and SnapKV [21]. All these methods can be framed as top-k score eviction methods with zero variance and unbounded bias. The problem of correcting for the distortion caused by eviction has not been, as far as we know, properly addressed, 13 although it has been recognized in the literature: Zhang et al. [29] acknowledge the issue in passing, while in contemporary work, Zweiger et al. [30] identify this problem but only as a motivation for KV cache compaction, a more compute-intensive strategy for KV cache compression. The probabilistic interpretation of attention as expectation has previously appeared in the literature as a Bayesian perspective to attention [24, 4], although with no connection to KV eviction. 
+
+# B Hardness 
+
+Theorem 1. KVE VICTION is NP -complete. 
+
+Proof. We first show hardness. We shall reduce from the P ARTITION problem. Assume n is even (without loss of generality); set d = 1 , r = 12 , ε = 0 and K = Q = 1n×d, where here we denote 
+
+1m×n as the all-ones matrix in Qm×n, and similarly 1n as the all-one vector in Qn. Thus, the problem boils down to deciding whether softmax  1|I|
+
+ · VI = softmax (1n) · V.
+
+Note that the softmax terms on the left and on the right are equivalent to uniform distributions over 
+
+|I| and n elements respectively. Thus, we may rewrite the above equation (after expanding the matrix multiplications) as 1
+
+⌊ n 
+
+> 2
+
+⌋ · X
+
+> v∈VI
+
+v = 1
+
+n · X
+
+> u∈V
+
+u. 
+
+From the previous equation, it follows immediately that 
+
+X
+
+> v∈VI
+
+v = X
+
+> u∈VI
+
+u. 
+
+We have thus shown that any instance of KVE VICTION is at least as hard as any instance of PARTITION . Since P ARTITION is NP -hard, KVE VICTION is also NP -hard. We now show membership in NP . The main issue is computing the softmax function in a Turing machine. We invoke Brent and Zimmermann [5], where the authors show how to compute exponents and division up to arbitrary precision in time polynomial in the number of bits. In our case, the number of bits needed is directly specified by ε, meaning that one only needs to compute the softmax up to the precision of parameter ε. Thus, it suffices to define the verifier to be Equation (4), which can be done in time polynomial in the precision of ε, n and d. Therefore KVE VICTION is in NP and so is NP -complete. 
+
+# C Correctness 
+
+Proposition 1. If supp (π) ⊇ supp (pn), then lim m→∞ μn(V; m) = Epn [V].
+
+Proof. We want to show that 
+
+lim  
+
+> m→∞
+
+ˆμ (V; ˜ pn, π, m ) · ˆz1: t
+
+ˆz1: t + zt+1: n
+
++ Ep(t+1: n)
+
+> n
+
+[V] · zt+1: n
+
+ˆz1: t + zt+1: n
+
+= Epn [V] . (12) The first thing to note is that both Ep(t+1: n)
+
+> n
+
+[V] and zt+1: n can be computed exactly as we have access to [˜ pn(vi)] ni=t+1 . Thus, we need to show that both (i) ˆμ (V; ˜ pn, π, m ) and (ii) ˆz1: t correctly compute the desired estimands in expectation. We first show (i) 
+
+lim  
+
+> m→∞
+
+ˆμ (V; ˜ pn, π, m ) = lim  
+
+> m→∞
+> 1
+> m
+
+· Pmi=1 ˜pn(v(i)) 
+
+> π(v(i))
+
+· v(i)1 
+
+> m
+
+· Pmi=1 ˜pn(v(i))
+
+> π(v(i))
+
+= lim  
+
+> m→∞
+> 1
+> m
+
+· Pti=1 c(vi) · ˜pn(vi) 
+
+> π(vi)
+
+· vi 
+
+> 1
+> m
+
+· Pti=1 c(vi) · ˜pn(vi)
+
+> π(vi)
+
+(13) 
+
+=
+
+Pti=1 π(vi) · ˜pn(vi) 
+
+> π(vi)
+
+· vi
+
+Pti=1 π(vi) · ˜pn(vi)
+
+> π(vi)
+
+= Ep(1: t)
+
+> n
+
+[V] · zz = Ep(1: t)
+
+> n
+
+[V] , (14) 14 where the superscript v(i) indicates the i-th sampled entry from π and the step from (13) to (14) is due to our assumption of supp (π) ⊇ supp (pn).The same applies to (ii) 
+
+lim  
+
+> m→∞
+
+ˆz1: t = lim 
+
+> m→∞
+
+1
+
+m ·
+
+> m
+
+X
+
+> i=1
+
+˜pn(v(i))
+
+π(v(i)) = lim 
+
+> m→∞
+
+1
+
+m ·
+
+> t
+
+X
+
+> i=1
+
+c(vi) · ˜pn(vi)
+
+π(vi) =
+
+> t
+
+X
+
+> i=1
+
+π(vi) · ˜pn(vi)
+
+π(vi) = z1: t.
+
+(15) Now that we have shown convergence of these estimators, equality follows directly 
+
+lim  
+
+> m→∞
+
+μn(V; m) = Ep(1: t)
+
+> n
+
+[V]· z1: t
+
+z +Ep(t+1: n)
+
+> n
+
+[V]· zt+1: n
+
+z = E˜p(1: t)
+
+> n
+
+[V] + E˜p(t+1: n)
+
+> n
+
+[V]
+
+z = Epn [V] .
+
+(16) 
+
+# D Score-based Eviction Methods as Probabilistic Eviction Policies 
+
+Any eviction method based on scores can easily be subsumed by probabilistic eviction. In fact, there exists an infinite number of proposal distributions that share the same top-k as the score strategy. In this section we show a few examples and how they can be turned into proposal distributions. 
+
+StreamingLLM. StreamingLLM selects the first four entries and a rolling window of the last k KV cache entries to keep, and evicts the rest. Any proposal distributions that have the first four and last k
+
+entries as modes are obviously equivalent in terms of their top-k modes; for example, a mixture of any monotonically increasing distribution with a distribution whose support consists of the first four entries. 
+
+H2O. H2O scores are based on the probabilities p(V) and computed as score H2O (vi) := 
+
+> n
+
+X
+
+> j=1
+
+pj (vi). (17) Intuitively, each column in the softmax matrix is summed out. A proposal distribution can be achieved by simply normalizing these scores 
+
+πH2O (vi) = score H2O (vi)
+
+Pnj=1 score H2O (vj ) . (18) 
+
+K-norm. The K-norm scores are computed from the negative L2 norm of the V matrix. This gives an n-dimensional vector, with a score for each entry score knorm (vi) = ∥vi∥2 =
+
+vuut dX
+
+> j=1
+
+v2 
+
+> ij
+
+.
+
+Because V may contain negative numbers, we apply a softmax instead of the usual normalization. Thus, the proposal distribution for K-norm is defined as 
+
+πknorm (vi) = exp ( score knorm (vi)) 
+
+Ptj=1 exp ( score knorm (vj )) . (19) 
+
+TOVA. Scores are given by the average pt(V) (i.e. the last query’s distribution) across all heads in a layer. Let hL = {h1, h 2, . . . , h l} be the set of all attention heads in a given layer L. The score for each attention head hx ∈ hL is given by score TOVA 
+
+
+
+v(hx)
+
+> i
+
+
+
+:= 1
+
+l ·
+
+> l
+
+X
+
+> i=1
+
+pt(vi). (20) The proposal distribution for TOVA is 
+
+πTOVA (vi) = score TOVA (vi)
+
+Pnj=1 score TOVA (vj ) . (21) 15 SnapKV. The process of obtaining the SnapKV scores is more involved and requires computing an average pooling of p(V) for a given kernel and window size. In short, SnapKV computes a column average of p(V) similar to H2O, applies a 1-dimensional pooling on this tensor, and then averages this again at the same dimension. We define the proposal distribution for SnapKV to be the normalized scores across entries, similar to the previous proposals. 
+
+D.1 Adjusting the Proposal Distribution 
+
+Any of these proposals can be equipped with other mechanisms for adjusting these probabilities. As an example, it is possible to apply a temperature scaling factor τ on these proposal distributions 
+
+πτ (vi) = exp   1 
+
+> τ
+
+· score (vi)Ptj=1 exp   1 
+
+> τ
+
+· score (vj )
+
+in order to decrease variance, or mix the proposal with a uniform in order to decrease bias 
+
+π′(vi) = α · π(vi) + (1 − α) · 1
+
+t , where α ∈ [0 , 1] .
+
+# E Prompt and Question for MAE Error 
+
+The prompt x consists of the tokenization of the following text: The Roman Empire was one of the largest and most enduring political entities in ancient history, reaching its greatest extent under Emperor Trajan in 117 CE when it spanned from Britain to Mesopotamia. Rome evolved from a monarchy to a republic before Julius Caesar’s assassination in 44 BCE precipitated civil wars. Augustus emerged victorious and became the first emperor in 27 BCE, initiating a period of relative peace known as the Pax Romana. Roman law, architecture, and administrative practices shaped European civilization for centuries. Latin, the language of the Romans, evolved into the Romance languages including French, Spanish, Italian, Portuguese, and Romanian. The western empire collapsed in 476 CE, while the eastern half survived as the Byzantine Empire for nearly a thousand more years. While the first token y is given by the first element in the tokenized sequence of the following string: Who was the first Roman emperor? 
+
+# F On the Relationship Between Number of Samples and Compression Ratio 
+
+It is often useful, at a practical level, to control how much of the KV cache is evicted. For example, a practitioner might want to preserve as much generation quality given their GPU memory budget. This materializes as a so-called compression ratio r that describes the percentage of compression of a KV cache: when r = 0 , no entries are evicted, r = 0 .5 indicates that half of the KV cache is evicted, and 
+
+r = 1 means all of the entries are evicted. The probabilistic eviction procedure described in Section 4 makes no such distinction: given a number of samples m, it automatically sets a compression ratio based on the number of unique entries it has sampled. This problem is probabilistic in nature: in order to set an r, one would require finding an m s.t. a compression ratio of r is achieved on average. 
+
+Problem 3 (E XPECTED SAMPLES ).Input. Sequence length n, proposal π, target compression ratio r∗ ∈ [0 , 1) , error tolerance ε ≥ 0.
+
+Output. An m ∈ N such that 
+
+|Eπ [J(m)] − j∗| ≤ ε, (22) where j∗ = (1 − r∗) · n, and J(m) is a random variable denoting the number of unique values sampled after drawing m samples with replacement from π.This can be reduced from the classical Erd˝ os and Rényi coupon collector problem [11]. 16 Problem 4 (Coupon Collector’s Problem—CCP [11]) .Input. Set of coupons a = {a1, a 2, . . . , a n}, each with probability p(A = ai) of being issued, and a target number of unique coupons j∗ ∈ N.
+
+Output. The expectation of the number of coupons that need to be drawn from a with replacement until at least j∗ unique coupons are sampled. In the KV eviction setting, the n sequence positions correspond to coupons, sampling from π
+
+corresponds to drawing coupons with probabilities p(A = ai), the number of samples m corresponds to the number of draws, and j∗ is the number of distinct sampled positions/values. As these probabilities are discrete, the solution [14] is 
+
+E[m] = 
+
+> j∗−1
+
+X
+
+> q=0
+
+(−1) j∗−1−q
+
+n − q − 1
+
+n − j∗
+
+ X
+
+> |s|=q
+
+11 − ρs
+
+ , (23) where the inner sum is over all subsets s ⊆ { 1, . . . , n } with |s| = q, and ρs = P 
+
+> i∈s
+
+p(A = ai).
+
+Complexity. Evaluating Equation (23) naively requires exponential time. 
+
+Proof. Let α = ( −1) j∗−1−q  n−q−1
+
+> n−j∗
+
+ and β = P  
+
+> |s|=q11−ρs
+
+. Equation (23) can now be written as 
+
+E[m] = 
+
+> j∗−1
+
+X
+
+> q=0
+
+αβ. (24) The amortized complexity of evaluating α is O(1) if we use a lookup table. For β, there are  nq
+
+
+
+subsets s such that |s| = q, and each subset sums over q probabilities. As n increases and q varies, evaluating β scales exponentially. Therefore, evaluating Equation (23) naïvely requires at least 
+
+exponential time. Although Equation (23) gives us the exact solution we need, it is computationally infeasible to compute it in the naïve way. In fact, as far as we know, this problem has not been shown to either be in P or NP -hard. Our conjecture is that Problem 4 is in fact intractable, and thus cannot be computed exactly in polynomial time. To solve Problem 3 efficiently, we consider a different approach. Intuitively, we do not need to know the exact number of samples m ∈ R≥0 to draw j∗ unique values. For the purposes of KVE VICT , m
+
+is a non-negative integer, which reduces the search space massively, especially given a suitable upper bound. Therefore, we can utilize a trial and error approach optimized by binary search. Instead of obtaining m directly given n, π, and r∗, we repeatedly guess what m should be and (quickly) verify if/how our guess ˆm needs to be updated for the next guess by comparing the expected number of unique values sampled Eπ [J( ˆ m)] to the target j∗.
+
+Theorem 2. Algorithm 2 solves Problem 3 (E XPECTED SAMPLES ) with error |Eπ [J(m)] − j∗| ≤ ε,where ε = 0 .5; assuming full support on π.
+
+Proof. 
+
+1. We first show that line 6 in Algorithm 2 gives us the expected number of unique values sampled [19] 
+
+Eπ [J(m)] = 
+
+> n
+
+X
+
+> i=1
+
+(1 − (1 − π(vi)) m) . (25) Let Ji be the indicator random variable for position i: Ji = 1 if vi is sampled, 0 otherwise. For the i-th position, 
+
+Eπ [Ji(m)] = p(Ji = 1) = 1 − (1 − π(vi)) m. (26) 17 Algorithm 2 EXPECTED SAMPLES 
+
+Input Sequence length n, proposal distribution π(v) = [ π(v1), π (v2), ..., π (vn)] , target compres-sion ratio r∗ ∈ [0 , 1] , and error tolerance ε = 0 .5.
+
+Output A non-negative integer m such that |Eπ [J(m)] − j∗| ≤ ε, where j∗ = (1 − r∗) · n, and 
+
+J(m) is the random variable denoting the number of unique values sampled after drawing m
+
+samples with replacement from π. 
+
+> 1:
+
+j∗ ← (1 − r∗) · n ▷ Target number of unique values sampled  
+
+> 2:
+
+α ← 10 12 ▷ Large constant; existence of a valid α is guaranteed  
+
+> 3:
+
+low ← 0, high ← α ▷ by Part 2 of Theorem 2  
+
+> 4:
+
+while low ≤ high do ▷ Binary search  
+
+> 5:
+
+ˆm ← ⌊ (low + high ) ÷ 2⌋ 
+
+> 6:
+
+Eπ [J( ˆ m)] ← Pni=1 
+
+ 1 − (1 − π(vi)) ˆm ▷ Expected number of unique values sampled  
+
+> 7:
+
+if |Eπ [J( ˆ m)] − j∗| ≤ ε then ▷ Target j∗ reached  
+
+> 8:
+
+m ← ˆm 
+
+> 9:
+
+break  
+
+> 10:
+
+else if Eπ [J( ˆ m)] < j ∗ then  
+
+> 11:
+
+low ← ˆm + 1  
+
+> 12:
+
+else  
+
+> 13:
+
+high ← ˆm − 1 
+
+> 14:
+
+return m
+
+We want the total expected number of unique values sampled J(m) = Pni=1 Ji. By linearity of expectation, 
+
+Eπ [J(m)] = Eπ [J1(m)+ J2(m)+ · · · +Jn(m)] = 
+
+> n
+
+X
+
+> i=1
+
+Eπ [Ji(m)] = 
+
+> n
+
+X
+
+> i=1
+
+(1 − (1 − π(vi)) m) .
+
+(27) 2. We show that i) Eπ [J(m)] is non-decreasing in m and ii) that there exists a finite upper bound 
+
+α such that Eπ [J(α)] ≥ j∗.i) Each term (1 −(1 −π(vi)) m) is non-decreasing in m as π(vi) ∈ (0 , 1] implies (1 −π(vi)) m ∈
+
+[0 , 1) , making (1 − π(vi)) m non-increasing. Hence, Eπ [J(m)] is non-decreasing in m.ii) Assuming π has full support ( π(vi) > 0 for all i), since each (1 − π(vi)) < 1, we have 
+
+(1 − π(vi)) m → 0 as m → ∞ , so Eπ [J(m)] → n ≥ j∗. Hence, a finite α with Eπ [J(α)] ≥ j∗
+
+always exists. In practice, we simply set α = 10 12 rather than computing α from π, which suffices in all realistic settings. 3. Finally, we show |Eπ [J(m)] − j∗| ≤ ε, where ε = 0 .5. The difference between consecutive number of samples m ∈ Z is given by 
+
+Eπ [J(m + 1)] − Eπ [J(m)] = 
+
+> n
+
+X
+
+> i=1
+
+ 1 − (1 − π(vi)) m+1  −
+
+> n
+
+X
+
+> i=1
+
+(1 − (1 − π(vi)) m) (28) 
+
+=
+
+> n
+
+X
+
+> i=1
+
+ (1 − (1 − π(vi)) m+1 ) − (1 − (1 − π(vi)) m) (29) 
+
+=
+
+> n
+
+X
+
+> i=1
+
+ (1 − π(vi)) m − (1 − π(vi)) m+1  (30) 
+
+=
+
+> n
+
+X
+
+> i=1
+
+(1 − π(vi)) m(1 − (1 − π(vi))) = 
+
+> n
+
+X
+
+> i=1
+
+(1 − π(vi)) mπ(vi). (31) Because 0 < π (vi) ≤ 1 ∀ i = 1 ...n , (1 − π(vi)) m ≤ 1. Therefore, 18 Eπ [J(m + 1)] − Eπ [J(m)] = 
+
+> n
+
+X
+
+> i=1
+
+(1 − π(vi)) mπ(vi) ≤
+
+> n
+
+X
+
+> i=1
+
+π(vi) = 1 . (32) We now prove by strong induction that for every j∗ ∈ [0 , Eπ [J(m)]] , there exists m′ ≤ m with 
+
+|Eπ [J(m′)] − j∗| ≤ 0.5.
+
+Base case (m = 0 ). Eπ [J(0)] = 0 , so the only j∗ in [0 , 0] is j∗ = 0 , and |Eπ [J(0)] − 0| = 0 ≤
+
+0.5.
+
+Inductive step . Assume that the claim holds for all m′ < m . Let j∗ ∈ [0 , Eπ [J(m)]] .• If j∗ ≤ Eπ [J(m − 1)] , there must be some m′ ≤ m − 1 with |Eπ [J(m′)] − j∗| ≤ 0.5
+
+following the assumption. • If j∗ ∈  Eπ [J(m − 1)] , Eπ [J(m)] , then 
+
+(Eπ [J(m)] − j∗)
+
+| {z } 
+
+> ≥0
+
++ ( j∗ − Eπ [J(m − 1)]) 
+
+| {z } 
+
+> ≥0
+
+= Eπ [J(m)] − Eπ [J(m − 1)] ≤ 1, (33) so at least one term is ≤ 0.5, meaning either m or m − 1 satisfies the bound. 
+
+Conclusion . By strong induction, for every j∗ ∈ [0 , Eπ [J(m)]] , there exists m′ ≤ m with 
+
+|Eπ [J(m′)] − j∗| ≤ 0.5.
+
+Remark 1. Theorem 2 assumes π has full support, which holds in practice as softmax assigns some probability to every token. However, if attention is highly peaked, there can be many vi
+
+where π(vi) ≈ 0, causing these tokens to be rarely sampled. As such, achieving low compression ratios (large j∗) may require an impractically large m. While this is theoretically an issue, empirically it does not arise at reasonable compression ratios ( r∗ ≥ 0.1), where tokens with near-zero attention weight are inconsequential anyway. 
+
+Complexity. Algorithm 2 is O(n log( α)) .
+
+Proof. Evaluating Eπ [J( ˆ m)] in Equation (25) requires O(n) time as we sum over i = 1 ...n . The binary search is bounded by α, resulting in O(log (α)) complexity. For each trial in binary search, we evaluate Eπ [J( ˆ m)] , so the total complexity is O(nlog (α)) .
+
+F.1 Globally soft constraining the compression ratio 
+
+We now consider the case of constraining the compression ratio at a global level. Before, we set the number of samples m to be such that the compression ratio of an attention head would be on average a target compression ratio r∗. To do this, we needed to be able to compute the expectation Eπ [J(m)] .This can be easily done as we have access to π(vi), as we saw in the previous subsection. However, this is not optimal. By constraining each attention head, we are effectively forcing each attention head to select a possibly unnatural choice of compression ratio; for example, consider the case where the sequence length n = 4 , π = (0 .8, 0.0998 , 0.0001 , 0.0001) and m = 100 : the expected compression ratio for this m is 
+
+1 − Eπ [J(m)] 
+
+n ≈ 1 − 24 = 0 .5.
+
+But if we set a target compression ratio r∗ = 0 .75 , then we require m ≈ 7000 samples in order to achieve this without unbiasing the attention head output (on average). A similar argument can be made to lowering the compression ratio: setting r∗ = 0 .25 requires us to go as low as m = 2 
+
+samples, which can introduce a lot of variance. Thus, an attractive alternative is to (soft) constraint the compression ratio at a global level: instead of per-head, we set a fixed number of samples for all attention heads such that the average compression ratio across all heads 1 is (on average) a target compression ratio r∗. Doing so is easy; we are interested 
+
+> 1This is reasonable since all attention heads have the same size.
+
+19 0.2 0.4 0.6
+
+> Score ( →)
+
+HotpotQA 
+
+> 0.2 0.4
+
+QASPER 
+
+> 0.5 0.6 0.7 0.8
+
+TriviaQA 
+
+> 0.5 1
+> Score ( →)
+
+FrequentWords 
+
+> 0 0.5 1
+
+MultiKey-NIAH 
+
+> 0.5 1
+
+QuestionAnswer 
+
+0.2 0.4 0.6 0.8
+
+> 0 0.5 1
+> Score ( →)
+
+CommonWords 
+
+0.2 0.4 0.6 0.8
+
+> 0 0.5 1
+
+VariableTracking 
+
+0.2 0.4 0.6 0.8
+
+> 0 0.5 1
+
+MultiQuery-NIAH Compression ratio ( r)
+
+πH2O πH2O-h πmin πmin-h H2O K-norm SnapKV StreamingLLM TOVA 
+
+Figure 5: Scores for each individual dataset split on Llama3 . Solid lines show the score for the four proposals defined in Section 7. Dashed lines show the five top-k eviction methods. in the expression E
+
+h 1 
+
+> h
+
+· Phi=1 J(i)(m) x
+
+i
+
+, where J(i)(m) is the number of unique sampled indices for attention head i after m draws and x is the prompt. By linearity of expectation, 
+
+E
+
+"
+
+1
+
+h ·
+
+> h
+
+X
+
+> i=1
+
+J(i)(m) x
+
+#
+
+= 1
+
+h ·
+
+> h
+
+X
+
+> i=1
+
+E
+
+h
+
+J(i)(m) x
+
+i
+
+= 1
+
+h ·
+
+> h
+
+X
+
+> i=1
+
+Eπ(i)
+
+h
+
+J(i)(m) x
+
+i
+
+. (34) Note that the last equality is exactly the same expression we previously computed (we omitted the conditioning on the prompt earlier). Thus, Algorithm 2 can be run at the global level in order to select an adequate number of samples for a target compression ratio by only replacing Eπ [J(m) | x] with Equation (34). 
+
+F.2 Target vs Effective Compression Ratio 
+
+Table 1 empirically shows that when we set the target compression ratio in Algorithm 2, we obtain an effective compression ratio with minimal error. 
+
+# G Experimental Details 
+
+We use the evaluation pipeline and implementations of SnapKV, TOVA, H2O, StreamingLLM, and K-norm available in KVPress v0.5.3 [10]. All experiments are run on two NVIDIA RTX A6000 (48GB) and eight NVIDIA RTX A5000 (24GB). All experiments can be run on a 24GB GPU, taking approximately 3 to 5 seconds to completely run each example in either LongBench or RULER. The full research project required more compute than what is reported in the paper due to preliminary experiments as well as initial experimentation that either contained errors in implementation or were not as competitive. 20 0.2 0.4 0.6
+
+> Score ( →)
+
+HotpotQA 
+
+> 1 · 10 −10.2 0.3 0.4
+
+QASPER 
+
+> 0.6 0.8
+
+TriviaQA 
+
+> 0 0.2 0 .4 0 .6 0 .8 1
+> Score ( →)
+
+FrequentWords 
+
+> 0 0.5 1
+
+MultiKey-NIAH 
+
+> 0 0.5 1
+
+QuestionAnswer 
+
+0.2 0.4 0.6 0.8
+
+> 0 0.5 1
+> Score ( →)
+
+CommonWords 
+
+0.2 0.4 0.6 0.8
+
+> 0 0.5 1
+
+VariableTracking 
+
+0.2 0.4 0.6 0.8
+
+> 0 0.5 1
+
+MultiQuery-NIAH Compression ratio ( r)
+
+πH2O πH2O-h πmin πmin-h H2O K-norm SnapKV StreamingLLM TOVA 
+
+Figure 6: Scores for each individual dataset split on Qwen3 . Solid lines show the score for the four proposals defined in Section 7. Dashed lines show the five top-k eviction methods. 
+
+# H Minimum Variance Proposals and Priors 
+
+We define the following four proposal distributions 
+
+πmin (vi) := pt(vi) · ∥ vi∥
+
+Ptj=1 pt(vj ) · ∥ vj ∥ , πmin-h (vi) := 
+
+Ptj=1 pj (vi) · hj · ∥ vi∥
+
+Ptl=1 
+
+Ptj=1 pj (vl) · hj · ∥ vl∥ , (35) 
+
+πH2O (vi) := 
+
+Ptj=1 pj (vi)
+
+Ptl=1 
+
+Ptj=1 pj (vl) , πH2O-h (vi) := 
+
+Ptj=1 pj (vi) · hj
+
+Ptl=1 
+
+Ptj=1 pj (vl) · hj
+
+; (36) where hj := [( t − j + 1) · H t]−1 and Ht is the t-th harmonic number. In this section, we discuss what exactly are the semantics of these distributions. Proposal πmin is well known folklore result in the statistical methods literature [23]. It is simply the proposal distribution that minimizes the variance for the expectation estimator for the last query attention value, i.e. Ept [V]:Mean effective r (± std) Target r πH2O πH2O-h πmin πmin-h 
+
+0.1 0.0999 ± 0.0003 0.1000 ± 0.0003 0.1000 ± 0.0002 0.0999 ± 0.0003 0.3 0.2999 ± 0.0004 0.3001 ± 0.0004 0.3000 ± 0.0004 0.2999 ± 0.0005 0.5 0.4999 ± 0.0004 0.5000 ± 0.0004 0.5000 ± 0.0004 0.5001 ± 0.0004 0.7 0.6999 ± 0.0004 0.7000 ± 0.0004 0.7000 ± 0.0004 0.7001 ± 0.0004 0.9 0.9000 ± 0.0003 0.9000 ± 0.0002 0.8999 ± 0.0002 0.9000 ± 0.0002 Table 1: Difference between target and effective compression ratio is insignificant for Llama3 on the RULER dataset. Results are similar for Qwen3 and LongBench. 21 0.7 0.8 0.9
+
+> Win score ( →)
+
+τ = 1 τ = 2 τ = 3 τ = 4 τ = 5 0.2 0 .4 0 .6 0 .8
+
+> 0.6 0.8 1
+> Win score ( →)
+
+0.2 0 .4 0 .6 0 .8 0.2 0 .4 0 .6 0 .8 0.2 0 .4 0 .6 0 .8 0.2 0 .4 0 .6 0 .8
+
+Compression ratio ( r)        
+
+> πH2O πH2O-h πmin πmin-h H2O K-norm SnapKV StreamingLLM TOVA
+> Llama3  Qwen3
+
+Figure 7: Importance sampling temperature scaling pairwise win scores. Llama3 (top) and Qwen3 
+
+(bottom) pairwise win scores at different importance sampling temperature scale values τ .the expectation at eviction time. Notably, it is a proposal that uses the values of V in order to choose which entries to evict. None of the top-k eviction methods we compare and study make use of both 
+
+p(V) and V; see Appendix D for a description on how these eviction strategies compute their score. Proposal πmin-h extends this to all distributions {pi(V)}ti=1 . To be precise, recall that the softmax matrix in Equation (5) p(V) at eviction time t (i.e. during the prefilling step) is t × t. The first proposal πmin ignores all of the first [1 ..t − 1] rows, even though they may contain useful information to decide on which entries to evict. We interpret these rows as a random variable T that, when used to condition the probability of eviction, tells you which entries are best to evict. That is, softmax 
+
+
+
+Q · KT 
+
+= [ p(V|T = i)] ti=1 . (37) This assumes that there exists a distribution on T . We interpret this distribution p(T ) as some prior knowledge on how meaningful are each p(V|T = i) as i distances from t. In both πmin-h and π, we set this to 
+
+hj := p(T = j) = 1(t − j + 1) · H t
+
+. (38) The semantics of this prior is simple: we assume that each row has exponentially diminishing impor-tance: we weigh each row according to the following sequence h =
+
+h 1 
+
+> t
+
+, 1 
+
+> t−1
+
+, . . . , 13 , 12 , 1
+
+i
+
+and then normalize to get a probability distribution. The normalizing constant of sequence h is the harmonic number Ht = Ptk=1 1 
+
+> k
+
+, and the probability of each row is p(T = i) = [( t − j + 1) · H h]−1
+
+To then retrieve the probability of each entry p(vi), we marginalize over all possible time steps 
+
+p(vi) = 
+
+> t
+
+X
+
+> j=1
+
+p(vi, T = j) = 
+
+> t
+
+X
+
+> j=1
+
+p(vi|T = j) · p(T = j), (39) which when using p(T = j) = hj for either the minimum variance proposal or the H2O proposal, yields πmin-h and πH2O-h respectively. Note that any distribution for p(T ) is valid and results in a different proposal. In fact, any proposal that ignores the first [1 ..t − 1] rows contains a prior that is degenerated at T = t, with zero probability everywhere else. 
+
+# I Additional Experiments 
+
+In this section, we show additional experiments that supplement the claims in Section 7. 22 0.2 0 .4 0 .6 0 .8
+
+> Score ( →)
+
+τ = 1 τ = 2 τ = 3 τ = 4 τ = 5 0.2 0 .4 0 .6 0 .8
+
+> 0 0.5 1
+> Score ( →)
+
+0.2 0 .4 0 .6 0 .8 0.2 0 .4 0 .6 0 .8 0.2 0 .4 0 .6 0 .8 0.2 0 .4 0 .6 0 .8
+
+Compression ratio ( r)        
+
+> πH2O πH2O-h πmin πmin-h H2O K-norm SnapKV StreamingLLM TOVA
+> Llama3  Qwen3
+
+Figure 8: Importance sampling temperature scaling average total scores. Llama3 (top) and Qwen3 
+
+(bottom) average total scores at different importance sampling temperature scale values τ .
+
+I.1 Per Dataset Split Scores 
+
+We show the eviction scores for each of the four proposals defined in Section 7 and the five top-k
+
+eviction methods—namely, Streaming LLM, SnapKV, TOVA, H2O and K-norm—across all of the splits of LongBench and some of RULER’s. Due to space and time constraints, we only show six out of the 13 different splits in RULER. Figure 5 shows the scores for Llama3 and Figure 6 shows the scores for Qwen3 . In both cases, probabilistic eviction with correction tends to achieve better score performance. Notably, some eviction methods that do well in certain tasks. For example, on Llama3 StreamingLLM ranks first on the QuestionAnswer split, yet dead last in MultiKey-NIAH. Similarly, on Qwen3 K-norm is consistently in the top-3 on the MultiKey-NIAH split, yet last in CommonWords. 
+
+I.2 Importance Sampling Temperature 
+
+To further investigate the trade-off between bias and variance, we apply importance sampling temperature scaling to the same experimental setting as described in Section 7. Figures 7 and 8 show the scores and pairwise win scores of RULER on Llama3 and Qwen3 across temperature values of 
+
+τ ∈ { 1, 2, 3, 4, 5}. The plots show that, in most cases, the decrease in variance was not worth the increase in bias. This suggests that bias is the more important issue to resolve in KV eviction. 
+
+I.3 On the Behavior of Attention Head Compression Ratio 
+
+Given a fixed number of samples m, probabilistic eviction will automatically set the appropriate compression ratio of each head in accordance with that head’s proposal distribution it samples from. This means that different attention heads might have very distinct compression ratios then others. Our findings show that this causes a distinct pattern in the distribution of attention head compression ratios. We find that lower (closer to the input) layers tend to be allocated more of the cache budget, while at higher (closer to the output) layers, less budget. This is a behavior that is reminiscent of Cai et al. [6]’s PyramidKV, where lower layers are given more of the KV cache budget. Figure 9 shows this pattern for different proposal distributions. Notably, πmin-h tends to act more conservatively, while πH2O spikes rapidly at certain layers. 23 0 0.2 0.4 0.6 0.8
+
+> Compression ratio
+
+πmin πmin-h πH2O πH2O-h 
+
+0 10 20 30 
+
+> 0 0.5
+> Compression ratio
+
+0 10 20 30 0 10 20 30 0 10 20 30 
+
+Layers          
+
+> r= 0 .1r= 0 .25 r= 0 .5r= 75 r= 0 .88
+> Llama3  Qwen3
+
+Figure 9: Pattern of average compression ratio per layer when probabilistically evicting. Each solid curve shows the average effective compression ratio when given a target compression ratio r.The target compression ratio is shown as a dashed dark gray line. The average of all points in a solid curve equals to the target r. This pattern shows that lower layers (closer to input) tend to evict less, while higher layers (closer to output) evict more. 
+
+# J Limitations 
+
+The ideal KV eviction method is not only zero-variance but also zero-bias. However, it is unrealistic to achieve this, as to do so, correction would have to be perfect, meaning that it can perfectly recreate the same KV cache from less memory than what was evicted. Our approach is also not perfect: self-normalized importance sampling is biased and has variance greater than zero. However, this estimator has reasonable upper bounds on bias and variance. This is in contrast to deterministic KV eviction methods that do not apply correction: these are zero-variance estimators but their bias is unbounded. The bias of self-normalized importance sampling is upper bounded by O(m−1), where m is the number of samples. This upper bound indicates that if there is less compression, then it will be more accurate—which is usually true for other eviction methods. Note that the inverse is not true: at a reasonable compression ratio, if the distributions at the attention heads are sparse, then the effective number of samples required to achieve a certain precision will be lower, meaning that in those cases even a higher compression ratio can achieve lower error. In terms of implementation, we show that we are able to achieve distinct compression ratios at different heads. This requires a properly optimized KV eviction implementation to compute correction using an efficient sparse tensors implementation. This is addressed by Feng et al. [13], and can be extended to our case. Further, correction requires an additional memory overhead of O(k · h · b) bytes, where k
+
+is the number of kept tokens, h is the total number of attention heads in the LLM, and b is the floating point precision in bytes. Asymptotically, this is dwarfed by the KV cache size itself and not a real concern, as the cache size is O(d · k · h · b), where d is the embedding dimension. 24
