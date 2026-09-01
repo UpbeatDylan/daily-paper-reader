@@ -6,43 +6,56 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-31
-- 运行时间：2026-08-31 23:22:57 UTC
+- 最新运行日期：2026-09-01
+- 运行时间：2026-09-01 22:59:30 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：2
+- 本次总论文数：12
+- 精读区：7
 - 速读区：5
 
 ### 今日简报（AI）
-今日7篇论文聚焦KV缓存优化，含2篇精读与5篇速读，覆盖淘汰、压缩及量化方向。  
-最值得看《Trust the Mass》与《Parser States Already Know》（均8分），分别用强制权重淘汰和结构条件持久化提升缓存效率。  
-建议从精读两篇入手，再速读《DAMP》与《DensityKV》，理解量化与视频生成场景的缓存压缩取舍。
-- 详情：[/202608/31/README](/202608/31/README)
+今日聚焦KV Cache优化，精读7篇、速读5篇，共12篇长上下文推理相关论文。最值得关注WnW与TwinKV，前者提出增减式KV管理，后者用成对冗余提升驱逐效率；速读中SemKV与RouteSparse也值得参考。建议读者优先精读WnW，并留意混合精度量化与输入条件路由的后续应用。
+- 详情：[/202609/01/README](/202609/01/README)
 
 ### 精读区论文标签
-1. [Trust the Mass: Forced Weights in KV-Cache Eviction](/202608/31/2608.25230v2-trust-the-mass-forced-weights-in-kv-cache-eviction)  
-   标签：评分：8.0/10、query:pic
-   evidence：分析KV缓存驱逐规则，指出保留最大注意力权重接近最优，并揭示掩码存储的内存影响，对缓存重用有指导意义
-2. [Parser States Already Know: Structure-Conditioned KV Persistence for Structured Generation](/202608/31/2608.28276v1-parser-states-already-know-structure-conditioned-kv-persistence-for-structured-generation)  
-   标签：评分：8.0/10、query:pic
-   evidence：利用解析器状态指导KV持久化，直接解决结构化生成中的KV缓存复用。
+1. [WnW: Waxing-and-Waning KV Cache for Long-Form Speech LLMs](/202609/01/2608.22704v2-wnw-waxing-and-waning-kv-cache-for-long-form-speech-llms)  
+   标签：评分：9.0/10、query:pic
+   evidence：面向长语音大语言模型解码的增消式KV缓存策略
+2. [TwinKV: A Composable Repair Pass for KV Cache Eviction via Pairwise Key Redundancy](/202609/01/2608.27128v2-twinkv-a-composable-repair-pass-for-kv-cache-eviction-via-pairwise-key-redundancy)  
+   标签：评分：9.0/10、query:pic
+   evidence：针对长上下文推理内存瓶颈的KV缓存驱逐方法
+3. [Strong Drafts Need Compact Memories: Long-Context Speculative Decoding with Compressed KV Cache](/202609/01/2608.30252v1-strong-drafts-need-compact-memories-long-context-speculative-decoding-with-compressed-kv-cache)  
+   标签：评分：9.0/10、query:pic
+   evidence：长上下文推测解码结合压缩KV缓存
+4. [CateKV: On Sequential Consistency for Long-Context LLM Inference Acceleration](/202609/01/2608.30295v1-catekv-on-sequential-consistency-for-long-context-llm-inference-acceleration)  
+   标签：评分：9.0/10、query:pic
+   evidence：面向长上下文推理的混合KV缓存精简，直接针对长上下文缓存加速
+5. [Tail-Replay: Escaping the Curse of Linear Attention in Prefix Caching for Hybrid LLMs](/202609/01/2608.30310v1-tail-replay-escaping-the-curse-of-linear-attention-in-prefix-caching-for-hybrid-llms)  
+   标签：评分：9.0/10、query:pic
+   evidence：支持混合大语言模型无约束token级前缀复用的一种前缀缓存机制
+6. [DASC: Decay-Aware State Compression for Hybrid Linear-Attention Serving](/202609/01/2608.30386v1-dasc-decay-aware-state-compression-for-hybrid-linear-attention-serving)  
+   标签：评分：9.0/10、query:pic
+   evidence：DASC针对混合线性注意力服务中的持久状态进行压缩，解决前缀复用与缓存驱逐问题
+7. [A Universal Context-Reuse Layer for Cross-Model KV Sharing](/202609/01/2608.30963v1-a-universal-context-reuse-layer-for-cross-model-kv-sharing)  
+   标签：评分：9.0/10、query:pic
+   evidence：跨模型KV共享，直接面向LLM推理中的KV缓存复用
 
 ### 速读区论文标签
-1. [DAMP: Decay-Aware Mixed-Precision Recurrent-State Quantization](/202608/31/2608.27513v1-damp-decay-aware-mixed-precision-recurrent-state-quantization)  
-   标签：评分：7.0/10、query:pic
-   evidence：对GDN/KDA模型中的循环状态进行量化，替代KV缓存以减少内存带宽和解码延迟，属于KV缓存优化的最新方法。
-2. [DensityKV: Density-Guided KV Cache Compression for Long Video Generation](/202608/31/2608.27922v1-densitykv-density-guided-kv-cache-compression-for-long-video-generation)  
-   标签：评分：7.0/10、query:pic
-   evidence：提出密度引导的历史KV存储库管理，减少冗余KV覆盖并支持长时一致性
-3. [A Probabilistic Interpretation of KV Cache Eviction](/202608/31/2608.28293v1-a-probabilistic-interpretation-of-kv-cache-eviction)  
-   标签：评分：7.0/10、query:pic
-   evidence：通过概率推理形式化KV缓存驱逐问题，将驱逐归结为期望估计，与KV缓存重用相关。
-4. [Learning-Augmented Heuristics: Simple, yet Smart, Robust and Interpretable Cache Eviction](/202608/31/2608.27975v1-learning-augmented-heuristics-simple-yet-smart-robust-and-interpretable-cache-eviction)  
+1. [SemKV: Semantic Mixed-Precision KV Cache Quantization Guided by the Quality Cliff for Long-Context LLM Inference](/202609/01/2608.28911v1-semkv-semantic-mixed-precision-kv-cache-quantization-guided-by-the-quality-cliff-for-long-context-llm-inference)  
+   标签：评分：8.0/10、query:pic
+   evidence：面向长上下文LLM推理的KV缓存量化
+2. [RouteSparse: Input-Conditional Pattern Routing for Budgeted Long-Context Prefilling](/202609/01/2608.29058v1-routesparse-input-conditional-pattern-routing-for-budgeted-long-context-prefilling)  
+   标签：评分：8.0/10、query:pic
+   evidence：通过输入条件稀疏模式路由加速长上下文预填充
+3. [What It Costs to Compose, Rebuild, and Correct Precomputed Memory](/202609/01/2608.30647v1-what-it-costs-to-compose-rebuild-and-correct-precomputed-memory)  
+   标签：评分：8.0/10、query:pic
+   evidence：研究跨请求复用预计算记忆/KV缓存的正确性与代价
+4. [Faithfulness Is Not Free: Auditing Offline KV-Cache Quantization in Retrieval-Augmented Generation](/202609/01/2608.30996v1-faithfulness-is-not-free-auditing-offline-kv-cache-quantization-in-retrieval-augmented-generation)  
+   标签：评分：8.0/10、query:pic
+   evidence：审计RAG中离线KV缓存量化
+5. [Learning-Augmented Heuristics: Simple, yet Smart, Robust and Interpretable Cache Eviction](/202609/01/2608.27975v1-learning-augmented-heuristics-simple-yet-smart-robust-and-interpretable-cache-eviction)  
    标签：评分：6.0/10、query:pic
-   evidence：提出学习增强的缓存逐出框架，可应用于LLM KV缓存管理
-5. [Sliding-window beats linear attention](/202608/31/2608.28444v1-sliding-window-beats-linear-attention)  
-   标签：评分：6.0/10、query:pic
-   evidence：滑动窗口注意力可减少KV缓存内存并加速长上下文推理
+   evidence：LAH通过学习增强的启发式方法学习缓存驱逐参数，可迁移至包含KV缓存管理在内的一般缓存场景
 
 
 <div class="dpr-home-promo-card">
