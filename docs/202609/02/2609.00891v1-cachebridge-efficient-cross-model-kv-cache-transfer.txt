@@ -1,0 +1,514 @@
+Title: CacheBridge: Efficient Cross-Model KV Cache Transfer
+
+URL Source: https://arxiv.org/pdf/2609.00891v1
+
+Published Time: Wed, 02 Sep 2026 00:57:52 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# CacheBridge: Efficient Cross-Model KV Cache Transfer 
+
+Xingyu Qu † 1 2 Siyuan Lu 1 Zhiyu Chen 3 Sheng Wang 2 Tao Lin 1
+
+## Abstract 
+
+Sharing context between LLMs in a multi-model system requires the receiving model to prefill the shared prefix because KV caches are model-specific. Recent closed-form cross-model KV transfer, hereafter F ULL -H EAD MAPPING , avoids this replay by fitting a training-free affine mapper from source to target caches (Heo et al., 2026). However, its full-head design maps each target KV head from every source KV head in the se-lected layers, making transfer quality sensitive to architectural differences and causing mapper storage and application cost to grow with layer support. To this end, we introduce C ACHE -BRIDGE , which co-designs architecture-indexed mapper support, attention-aligned calibration, and bounded mapper construction while retaining a closed-form affine interface for online deploy-ment. C ACHE BRIDGE restricts each target head to a matched source head, weights reconstruc-tion errors by causal attention sensitivity, and uses a fused GPU kernel to construct weighted sufficient statistics without materializing full ob-servation tensors. Across three transfer direc-tions, C ACHE BRIDGE recovers the two Ministral 3 transfer directions where F ULL -H EAD MAP - 
+
+> PING
+
+loses substantial accuracy while preserving 99.83% mean target retention on Qwen3. On Qwen3 14B → 32B , it reduces mapper storage by 8×, accelerates application by up to 3.0×,matches F ULL -H EAD MAPPING with one tenth of the calibration data, and reduces 500-sequence construction from 92.63 to 8.63 seconds ( 10 .7×). 
+
+## 1. Introduction 
+
+LLM applications increasingly route one interaction across multiple models with different costs, capabilities, or roles (Chen et al., 2024; Ong et al., 2025; Singh et al., 2025; Wu et al., 2023). When control passes between models, the 
+
+> 1
+
+Westlake University. 2Wuhan University. 3Amazon. 
+
+> †
+
+Work conducted during an internship at Westlake University. Contact: <whu-quxy@whu.edu.cn> 
+
+receiver cannot directly reuse the sender’s KV cache be-cause the two models use different internal representations. The receiver must therefore prefill the shared prefix before decoding resumes. This redundant work grows with con-text length and makes prefix-state reuse a first-order latency problem in long-running multi-model applications. Heo et al. (2026) introduce the first training-free approach to cross-model KV transfer. Once fitted, its fixed affine mapper enables online cache transfer without target-side prefill or task-specific adaptation. We refer to this closed-form baseline as FULL -H EAD MAPPING because it maps every target KV head from every source KV head in the selected source layers. The cross-model transfer pipeline distinguishes one-time offline fitting from per-handoff on-line mapping. Offline fitting collects aligned source and target K/V traces, selects source layers, and fits per-target-head affine ridge maps into a reusable artifact. At each handoff, online mapping applies this artifact to the sender cache and materializes a decode-ready target cache. However, the full-head mechanism leaves two questions unresolved: which source heads should explain each tar-get head, and which reconstruction errors matter for the receiver’s continuation. Four observations turn these ques-tions into design requirements. • O1: Full-head transfer is model-sensitive. Under the same 500-sequence protocol and the same eight-by-128 KV interface, F ULL -H EAD MAPPING stays near the Qwen3 32B target (79.2% versus 80.2%) but falls to 52.2% and 44.4% on the two Ministral 3 directions tar-geting 14B (Figure 1a). This contrast indicates that the shared KV interface hides architecture-dependent head correspondence. • O2: KV fit is not a sufficient proxy for continuation quality. Held-out R2 measures coordinate-wise cache re-construction, whereas continuation depends on receiver-composed attention error. Equal KV fit can therefore produce different attention-output drift under different queries (Figure 1b). • O3: F ULL -H EAD MAPPING cost grows with support. 
+
+Figure 1c measures F ULL -H EAD MAPPING application latency for k=2 –26 source layers on Ministral 3 3B →
+
+14B using 50 frozen HellaSwag prefixes. Latency grows nearly linearly with k, approaches target re-prefill at 1arXiv:2609.00891v1 [cs.AI] 1 Sep 2026 CacheBridge: Efficient Cross-Model KV Cache Transfer 
+
+(a) Model-sensitive accuracy. Ministral 3 Qwen3 020 40 60 80 HellaSwag accuracy (%)             
+
+> 52.2 44.4 79.2 Native target 77.2 Native target 77.2 Native target 80.2 3B →14B 8B →14B 14B →32B
+
+(b) Query-conditioned drift. KV Reconstruction Receiver Computation Output Drift Same mapped K/V t₁ t₂ t₃           
+
+> +Δt₄
+> fixed ‖e‖²same R²
+> query-free proxy
+> qA qA K ᵀ→softmax →AV
+> error token
+> low query sensitivity small
+> Δo
+> qB qB K ᵀ→softmax →AV
+> error token
+> high query sensitivity large
+> Δo
+
+(c) Latency grows with support. Ministral 3: 3B → 14B          
+
+> 010 20 30
+> all 26 layers Full-Head Mapping Target re-prefill 24812 16 20 23 26 Selected source layers, k Per-prefix latency (ms)
+
+(d) Fragmented construction. Fixed top-k layers    
+
+> ℓ₁
+> ℓ₂
+> ℓ₃
+> Generic materialization gather XXc wXc small GEMMs Fused panels pack once panels batched GEMM
+
+Figure 1. Four observations motivating C ACHE BRIDGE . (a) With 500 calibration sequences, the same F ULL -H EAD MAPPING 
+
+estimator preserves Qwen3 accuracy but collapses on the two Ministral 3 transfer directions. (b) Equal-norm KV residuals can induce different attention-output drift under different receiver queries. (c) On Ministral 3 3B → 14B , F ULL -H EAD MAPPING application latency grows with selected-layer support and approaches target re-prefill. (d) Generic top-k fitting materializes scattered, centered, and weighted tensors, whereas fused panels stream bounded sufficient-statistics construction. 
+
+k=16 , and exceeds it from k=20 onward. Points beyond the fitted k=20 extend only the operator shape and carry no quality result. • O4: Top-k layer choices fragment mapper construc-tion. Because each target layer selects a different source subset, top-k support creates fragmented gather layouts. A generic fitter repeatedly materializes scattered, cen-tered, and weighted tensors, so memory traffic can domi-nate construction (Figure 1d). Together, O1–O4 identify three coupled failure modes: all-head fan-in mismatches model architecture, coordinate re-gression misses receiver computation, and generic fitting ignores static support. Our key insight is to co-design map-per support, calibration objective, and construction path while keeping online deployment affine. CACHE BRIDGE 
+
+implements this insight through three complementary com-ponents. • S1: H EAD -L OCAL constrains head fan-in. HEAD -LOCAL preserves cross-layer aggregation but restricts each target KV head to one architecture-indexed source-head block. This reduces the coefficient count by the number of source KV heads ( 8× here), lowering mapper storage and affine work. • S2: A TTN -R EPAIR aligns fitting with attention drift. 
+
+ATTN -R EPAIR reweights cache residuals by their first-order effect on receiver attention. An effective-sample-size floor limits weight concentration without changing mapper support or the online interface. • S3: FUSED -F IT makes structured fitting efficient. 
+
+FUSED -F IT uses a new fused GPU kernel to construct weighted sufficient statistics in bounded panels for head-batched matrix multiplication. It preserves the objective, ridge solver, and mapper artifact. Across the three transfer directions, C ACHE BRIDGE recov-ers 20.4 and 31.6 HellaSwag points on the two Ministral 3 directions where F ULL -H EAD MAPPING loses substantial accuracy and preserves 99.83% mean target retention on Qwen3 14B → 32B . On Qwen3, mapper storage falls from 4.296 to 0.538 GB, application is up to 3.0× faster, and 500-sequence mapper construction takes a median of 8.63 seconds under the evaluated setup. 
+
+Our contributions are as follows. 
+
+• We characterize four coupled limitations of F ULL -H EAD 
+
+MAPPING : model-sensitive quality, a mismatch between KV fit and continuation, layer-dependent handoff cost, and fragmented top-k mapper construction. • We introduce C ACHE BRIDGE , which combines H EAD -LOCAL to restore transfer accuracy with an 8× smaller mapper, A TTN -R EPAIR to improve target retention and 2CacheBridge: Efficient Cross-Model KV Cache Transfer Offline fitting · once per model pair Calibration sequences Source + target K/V traces Content-space alignment Source-layer selection Closed-form affine fit Mapper artifact 
+
+> {W, b} + mapper support
+> Deployment boundary Online mapping · per handoff Source KV cache Remove source position Gather selected layers Apply affine maps Apply target position Target KV cache
+
+Figure 2. Cross-model KV transfer pipeline. Offline fitting constructs a reusable affine mapper from aligned source and target K/V traces; online handoff applies the mapper to materialize a decode-ready target KV cache. The deployment boundary separates one-time calibration work from per-handoff computation. 
+
+long-prefix NLL at unchanged online cost, and F USED -FIT to reduce mapper-construction time through a new fused GPU kernel without changing the ridge solution, deployed artifact, or affine online interface. • Across three transfer directions, C ACHE BRIDGE recovers the two Ministral 3 transfer directions where F ULL -H EAD 
+
+MAPPING loses substantial accuracy, preserves Qwen3 quality, reduces the coefficient count by 8×, lowers online cost, and constructs the 500-sequence Qwen3 mapper in a median of 8.63 seconds. 
+
+## 2. Background and Motivation 
+
+2.1. Cross-Model Prefix-State Transfer 
+
+Let source model S have Ls layers, Hs KV heads, and head width ds. Define Lt , H t , d t analogously for target model 
+
+T . At source layer j, token t, and KV head g, the available content-space states are KSj,t,g , V Sj,t,g ∈ Rds . Cross-model transfer predicts KTℓ,t,h , V Tℓ,t,h ∈ Rdt from a calibration corpus and constructs a continuation cache without target-side prefill. Because transfer is directional, each ordered source–target pair requires a separate mapper. For target layer ℓ and head h, we call the set of source KV blocks admitted by the regressor its mapper support .This set is determined by Sℓ and the head fan-in f , the number of source heads admitted from each selected layer. FULL -H EAD MAPPING selects k = |S ℓ| informative layers and sets f = Hs, then concatenates all admitted blocks to predict target keys and values with separate closed-form ridge maps (Heo et al., 2026). Its feature width is therefore 
+
+kH sds per target head. Two architectural signals are visible before calibration. Grouped-query attention partitions query heads into KV groups and exposes an architecture-indexed head-ownership prior (Ainslie et al., 2023). RoPE separates position-dependent rotation from key content (Su et al., 2021). F ULL -HEAD MAPPING uses the latter by removing source RoPE before regression and restoring target RoPE after mapping, so its affine map operates in content coordinates. It does not use the former because every target head still admits every source KV head. The shared cache shape hides different scaling paths. Minis-tral 3 expands the residual stream from 3,072/4,096 to 5,120 dimensions while retaining 32 query heads, eight KV heads, and fixed four-query ownership. Qwen3 instead keeps a 5,120-dimensional residual stream and applies per-head Q/K normalization at both scales (Figure 3). Full-head regression nevertheless treats every source KV block as a candidate predictor for every target head. Although this contrast does not isolate a single cause, it is consistent with full-head regression exploiting scale-specific cross-head correlations that do not survive a change in the residual stream. The interface is gradient-free and avoids target-side prefill, but its objective weights every cache-coordinate residual uniformly. 
+
+2.2. Layerwise Error Propagation in Cache Transfer 
+
+Let zℓ collect the native K/V cache consumed at target layer 
+
+ℓ, and let bzℓ = zℓ + εℓ be its transferred counterpart. For the next decoded token, write the target-layer update as 
+
+hℓ+1 = Fℓ(hℓ, zℓ). Linearizing the transferred execution around the native one gives 
+
+δhℓ+1 = Aℓδhℓ + Bℓεℓ + rℓ , (1) 
+
+∥rℓ∥2 = O (∥δhℓ∥2 + ∥εℓ∥2)2 , (2) where Aℓ = ∂F ℓ/∂ hℓ and Bℓ = ∂F ℓ/∂ zℓ. Let δh(1) out 
+
+denote the first-order output error. If Pℓ is the Jacobian from the output of layer ℓ to the final hidden state, unrolling 3CacheBridge: Efficient Cross-Model KV Cache Transfer Shared KV interface, different residual-width transition Ministral 3: 3B / 8B → 14B SOURCE RESIDUAL WIDTH RECEIVER RESIDUAL WIDTH 3B · 3,072 8B · 4,096 14B · 5,120         
+
+> Width shift
+> 8 × 128 KV · 4 Q / KV
+> 32 query heads
+> Full-head
+> all 8 →each
+> 8 × 128 KV · 4 Q / KV
+> 32 query heads
+> Qwen3: 14B →32B SOURCE RESIDUAL WIDTH RECEIVER RESIDUAL WIDTH 14B · 5,120 32B · 5,120
+> Width preserved
+> 8 × 128 KV · 5 Q / KV
+> per-head Q/K norm
+> Full-head
+> all 8 →each
+> 8 × 128 KV · 8 Q / KV
+> per-head Q/K norm
+
+Figure 3. Architecture contrast for the three evaluated dense-attention transfer directions. Residual-stream bars are scaled by model width; the lower panels show the exposed KV interface and the full-head fan-in used to predict one target head. The shared KV-head count hides different residual-stream scaling paths across model families. 
+
+Equation 1 gives 
+
+δh(1) out =
+
+> Lt
+
+X
+
+> ℓ=1
+
+PℓBℓεℓ ,
+
+∥δh(1) out ∥2 ≤
+
+> Lt
+
+X
+
+> ℓ=1
+
+∥PℓBℓ∥2∥εℓ∥2 . (3) Thus every mapped layer injects an error that is transformed by all downstream receiver computation. Small systematic errors can accumulate even when each cache is accurate in isolation. This propagation exposes a statistical weakness of all-head fan-in. For one target head, the full feature has dimension 
+
+pf = kH sds, while an aligned one-head support has dimen-sion pℓ = kd s. For a ridge design matrix X, the effective degrees of freedom are 
+
+deff (λ; X) = tr X⊤X(X⊤X + λI)−1 ≤ p . (4) Full-head support raises the dimensional ceiling from pℓ
+
+to pf = Hspℓ and can retain weakly identified cross-head directions that do not follow architecture-indexed query ownership. Although these directions can improve coor-dinate fit on the calibration data, their estimation error is injected at every target layer and enters the accumulated drift in Equation 3. The same expansion also shows why coordinate recon-struction is an incomplete objective. Stack the layer errors into ε and the propagated Jacobians into J =[P1B1 , . . . , PLt BLt ]. The first-order final-state drift is 
+
+∥δh(1) out ∥22 = ε⊤J⊤Jε , (5) whereas ordinary KV regression and R2 measure error under an identity metric. The receiver-composed metric depends on the query, attention mass, and downstream layers. This analysis motivates both constraining head support to control the error injected at each layer and aligning calibration with receiver sensitivity. Sections 3.2 and 3.3 instantiate these two choices. 
+
+2.3. Static Support and Construction Complexity 
+
+Mapper support controls both online cost and offline lay-out. With k selected layers and head fan-in f , the non-bias coefficient count over keys and values is 
+
+C(f ) = 2 LtHt(kf d s)dt ,
+
+Work online (T ) = Θ( T C (f )) , (6) for a transferred prefix of length T . Mapper storage is 
+
+Θ( C(f )) . Thus support width directly couples statistical flexibility to the cost of the deployed affine operator. Offline construction has a different bottleneck. The selected sets Sℓ vary across target layers, so a generic fitter repeat-edly gathers noncontiguous source blocks and materializes feature, centered, and weighted tensors. However, these sets and the head assignment are fixed before ridge fitting begins. The solver also consumes only weighted means and covariance sufficient statistics, not the full intermediate observation tensors. The irregular support can therefore be compiled into a static gather schedule and streamed through bounded contiguous panels. Together, the three subsections identify distinct design axes. Mapper support controls estimation and online complexity, receiver propagation determines which reconstruction errors matter, and static support determines how the mapper can be constructed efficiently. Section 3 co-designs these axes without changing the affine deployment interface. 
+
+## 3. Our Approach: C ACHE BRIDGE 
+
+CACHE BRIDGE follows one design principle: co-design mapper support, calibration objective, and construction path for affine online deployment . This principle answers three questions left open by full-head cache regression. HEAD -L OCAL determines which source states may explain each target head , A TTN -R EPAIR determines which recon-struction errors matter to the receiver’s attention compu-tation , and F USED -F IT determines how a new fused GPU kernel constructs the mapper without materializing full ob-servation tensors .Figure 4 shows how these decisions compose within one offline construction path while leaving online deployment affine. Rather than adding three inference stages, the compo-nents modify different parts of the same calibration pipeline. 4CacheBridge: Efficient Cross-Model KV Cache Transfer 
+
+We retain the F ULL -H EAD MAPPING layer selection, RoPE-aware affine interface, and closed-form ridge solver (Heo et al., 2026). HEAD -L OCAL changes mapper support, ATTN -R EPAIR changes calibration weights within that sup-port, and F USED -F IT introduces a new GPU kernel for sufficient-statistics construction. The deployed artifact re-mains a collection of affine maps. 
+
+3.1. Closed-Form Transfer Interface 
+
+For each target layer ℓ, a calibration-only selector fits cen-tered single-source-layer OLS probes under the same head assignment, averages held-in R2 across KV heads and K/V, and ranks source layers. Its first k indices define Sℓ, which all paired estimators use unchanged. The inherited full-head feature concatenates every source KV head from the selected layers, 
+
+xfull  
+
+> ℓ,h,t
+
+= concat j∈S ℓ, g ∈[Hs] ZSj,t,g , pf = kH sds , (7) where Z denotes either K or V . Keys and values use sepa-rate maps. Source RoPE is inverted before fitting and target RoPE is applied after mapping, so the affine map acts in content coordinates. For nonnegative sample weights rescaled to mean one, cen-tered affine ridge solves 
+
+cW = arg min 
+
+> W
+> n
+
+X
+
+> i=1
+
+wi (yi − ¯yw)
+
+− (xi − ¯xw)W 22
+
++ λ∥W∥2 
+
+> F
+
+, (8) 
+
+bb = ¯ yw − ¯xw cW , (9) where λ > 0, ¯xw = n−1 P 
+
+> i
+
+wixi, and ¯yw = n−1 P 
+
+> i
+
+wiyi.With centered row matrices Xc, Yc and Dw = diag( w),
+
+cW = ( X⊤ 
+
+> c
+
+DwXc + λI)−1X⊤ 
+
+> c
+
+DwYc ,
+
+bb = ¯ yw − ¯xw cW . (10) The inherited estimator uses wi = 1 . Section 3.3 introduces nonuniform weights without changing the solver. 
+
+3.2. H EAD -L OCAL —Head-Level Structural Locality 
+
+We replace the all-head mapper support in Equation 7 by 
+
+xlocal  
+
+> ℓ,h,t
+
+= concat j∈S ℓ ZSj,t,a (h) , pℓ = kd s , (11) where a(h) is a deterministic architecture-indexed prior, not a learned correspondence. When source and target expose aligned KV groups, the natural assignment is a(h) = h.Other group-count relationships can be represented by a fixed map derived from architecture metadata. Over both K and V, the non-bias coefficient counts are 
+
+Cfull = 2 LtHt(kH sds)dt , (12) 
+
+Clocal = 2 LtHt(kd s)dt . (13) Hence Cfull /C local = Hs, independent of Ht and the selected-layer count. At a fixed prefix length, the same factor reduces the coefficient payload and leading affine multiply–add count, which lowers mapper storage and coef-ficient traffic during handoff. Realized latency also includes feature gathering, positional transforms, and cache material-ization. 
+
+3.3. A TTN -R EPAIR —Attention-Aligned Calibration 
+
+Section 2.2 shows that KV errors are composed with the receiver Jacobian rather than an identity metric. Computing the complete cross-layer metric in Equation 5 would couple all layers and token positions. We instead fix the mapper support in Equation 11 and approximate its cache-local diagonal using the receiver’s causal attention at selected boundaries. This preserves the statistical and deployment benefits of head-local regression while allocating fitting effort according to receiver sensitivity. For each calibration sequence, let B be a fixed set of causal prefix boundaries. At boundary c ∈ B , the target model’s first future query defines nonnegative key and value sensi-tivities for eligible sampled prefix positions. We normalize them to unit mass for each target layer, head, component, and boundary, then sum the boundaries with equal mass. This construction uses no task labels or downstream evalua-tion examples. For query head u sharing KV head h, let sui = q⊤ 
+
+> u
+
+ki/√d,
+
+aui = softmax( su)i, and ou = P 
+
+> i
+
+aui vi. The local per-turbation is 
+
+∆ou ≈ X
+
+> i
+
+aui ∆vi + X
+
+> i
+
+aui 
+
+q⊤ 
+
+> u
+
+∆ki
+
+√d (vi − ou) . (14) We therefore use squared Jacobian-block traces aggregated over the query heads G(h) that share KV head h:
+
+rVi = X
+
+> u∈G (h)
+
+a2 
+
+> ui
+
+, (15) 
+
+rKi = X
+
+> u∈G (h)
+
+a2
+
+> ui
+
+∥vi − ou∥22
+
+∥qu∥22
+
+d . (16) The V-Jacobian Frobenius norm contains a constant factor equal to the value width, which cancels during per-boundary normalization. We discard off-diagonal Gauss–Newton blocks, including cross-token and K–V terms, and replace each retained block with an isotropic scalar proportional to its trace. The resulting weights define a local first-order surrogate, not the exact attention-output loss. 5CacheBridge: Efficient Cross-Model KV Cache Transfer Offline mapper construction · once per model pair Selected K/V traces         
+
+> fixed top-k layers
+> S1 · Head-Local set one-head fan-in hXlocal · k × 1 blocks S2 · Attn-Repair weight by receiver query qrK, r V→wi S3 · Fused-Fit construct bounded statistics 1
+> μ
+> 2
+> pack →GEMM
+> Ah, Bh · bounded panels Affine mapper artifact {W, bias}
+> + mapper support
+> Fewer Parameters Higher Accuracy Faster Fitting Deployment boundary Online cache mapping · per handoff Source KV
+> selected layers
+> Aligned gather
+> one source head
+> Compact affine map 1/Hs coefficients Target KV
+> decode ready Fast Inference Lower Memory Cost
+
+Figure 4. CACHE BRIDGE mapper construction and deployment. HEAD -L OCAL fixes receiver-aligned mapper support, A TTN -R EPAIR 
+
+derives query-conditioned calibration weights, and F USED -F IT constructs weighted sufficient statistics with bounded fused panels. Online handoff applies only the compact affine mapper, so the added calibration logic does not introduce extra inference stages. 
+
+Let the separately mean-normalized raw weights be ri, with 
+
+n−1 P 
+
+> i
+
+ri = 1 , and define CV 2(r) = n−1 P
+
+> i
+
+(ri − 1) 2.Because these raw weights can be highly concentrated, ap-plying them directly can erase the sample-size advantage of structural regression. We therefore shrink them toward uniform weights. For each layer, head, and component, we use 
+
+wi(α) = 1 + α(ri − 1) , α ∈ [0 , 1] . (17) For these mean-one weights, the Kish effective sample size is 
+
+neff (w) = (P 
+
+> i
+
+wi)2
+
+P 
+
+> i
+
+w2
+
+> i
+
+= n
+
+1 + α2CV 2(r) . (18) Writing τℓ = min( n, 2pℓ), we choose the largest α satisfy-ing neff (w(α)) ≥ τℓ:
+
+α∗ =
+
+
+
+1 , CV 2(r) = 0 ,
+
+min 
+
+(
+
+1,
+
+s
+
+n/τ ℓ − 1CV 2(r)
+
+)
+
+, otherwise . (19) We repeat this computation for every target layer, target KV head, and K/V component. The quantity 2pℓ is a heuristic target that scales the tolerated weight concentration with feature width. The floor controls concentration but does not measure token independence. The resulting weights enter the same centered ridge solve, so A TTN -R EPAIR retains HEAD -L OCAL mapper support, coefficient count, cache interface, and application code. Only the coefficient values differ. 
+
+3.4. F USED -F IT —Bounded Mapper Construction 
+
+HEAD -L OCAL narrows each target head to one block from each selected source layer, but the layer choices vary across target layers. A generic implementation therefore performs irregular gathers and materializes 
+
+X ∈ RHt×n×pℓ , Y ∈ RHt×n×dt ,
+
+followed by separate centered and weighted copies. This re-peated materialization can dominate the smaller regression. The ridge solve needs only weighted means and, for each target head, 
+
+Ah = X
+
+> i
+
+wi,h (xi,h − μxh)( xi,h − μxh)⊤ , (20) 
+
+Bh = X
+
+> i
+
+wi,h (xi,h − μxh)( yi,h − μyh)⊤ . (21) We design and implement a new fused GPU kernel within a two-pass construction path. A fixed reduction tree first obtains weighted means. The second pass traverses obser-vations in bounded chunks. Our kernel gathers the selected head-local blocks, centers and weights them, and writes contiguous per-head panels. Head-batched matrix multipli-cations then accumulate Ah and Bh. For chunk size b, the scratch space is 
+
+O(Htb(2 pℓ + dt)) , (22) in addition to the required sufficient statistics. The existing solver applies 
+
+cWh = ( Ah + λI)−1Bh , bbh = μyh − μxh cWh . (23) Thus the optimized path preserves mapper support, attention weights, regularization, solver policy, coefficient dtype, and serialized mapper schema. 6CacheBridge: Efficient Cross-Model KV Cache Transfer 
+
+## 4. Evaluation 
+
+We evaluate four claims that follow directly from O1–O4. Receiver-aligned head fan-in restores transfer quality on the pairs where F ULL -H EAD MAPPING fails, while using less regression capacity. Attention-aligned calibration improves continuation without improving ordinary KV fit or changing deployment. The smaller mapper reduces handoff storage and application cost, and F USED -F IT executes the irregular top-k layer choices with bounded intermediate memory. 
+
+4.1. Setup Models and calibration. We evaluate three GQA →GQA directions: Ministral 3 3B → 14B , Ministral 3 8B → 14B ,and Qwen3 14B → 32B , with every source and target model exposing eight KV heads. The primary quality com-parison uses 500 FineWeb-Edu (Penedo et al., 2024) se-quences of length 1,024, sampled every four tokens to pro-duce 128,000 token positions. The selected-layer counts are 
+
+k = 20 , 12 , and 8, respectively, and paired methods share calibration rows, selected layers, ridge strength, centering, token sampling, and evaluation examples. 
+
+Mapper configuration. All pairs have equal source and target KV-head counts, so H EAD -L OCAL uses the iden-tity assignment a(h) = h. All ridge fits inherit λ = 0 .01 
+
+from the reference implementation without retuning. A TTN -REPAIR uses 32 fixed, logarithmically spaced boundaries from token 12 through 1,023, and its τℓ = min( n, 2pℓ) con-straint gives token-level floors of 5,120, 3,072, and 2,048 for the three directions. 
+
+Quality metrics. Multiple-choice task subsets— HellaSwag (Zellers et al., 2019), ARC-Challenge, WinoGrande, and MMLU (Hendrycks et al., 2021)—use deterministic systematic sampling, and all paired methods share the same scoring procedure and examples. Target retention is the mean task-wise ratio to the native target. For the Qwen3 attribution study, K/V R2 is accumulated on the same HellaSwag prefixes as accuracy, while NLL uses 16 fixed 4,096-token streams disjoint from the validation subset and a 128-token teacher-forced horizon. 
+
+Handoff and construction timing. System measure-ments use Qwen3 14B → 32B , where mapper-application latency is measured after warmup and excludes source pre-fill, transport, loading, and decoding. Mapper construction runs on four H800s and includes weight staging, sufficient statistics, solve, metadata, and serialization, but excludes upstream trace collection, layer selection, attention-weight construction, evaluation, and scheduler delay. The construc-tion sweep uses nested prefixes of 50, 100, 200, and 500 calibration sequences, with the generic path and F USED -F IT 
+
+using the same mapper support and weights. 
+
+4.2. Transfer Quality and Model Sensitivity 
+
+FULL -H EAD MAPPING and C ACHE BRIDGE use matched calibration and evaluation protocols. The full-head and local input widths per target head are 20,480 versus 2,560, 12,288 versus 1,536, and 8,192 versus 1,024 for the three directions, respectively. Thus H EAD -L OCAL reduces the coefficient count by 8× without changing the selected source layers. 
+
+Ministral recovery. On the two Ministral 3 failure di-rections, C ACHE BRIDGE raises HellaSwag from 52.2% to 72.6% and from 44.4% to 76.0%, recovering 20.4 and 31.6 accuracy points. Whereas F ULL -H EAD MAPPING admits all 64 source–target head edges, H EAD -L OCAL restricts mapper support to the eight architecture-indexed edges. Across the four tasks, mean target retention rises from 65.89% to 88.23% for 3B → 14B and from 59.43% to 97.57% for 8B → 14B .
+
+Qwen3 preservation. On Qwen3, CACHE BRIDGE 
+
+changes HellaSwag, ARC-Challenge, WinoGrande, and MMLU by −1.80 , +0 .20 , +0 .20 , and +1 .76 points rela-tive to F ULL -H EAD MAPPING . Its mean target retention is 99.83%, compared with 99.72% for F ULL -H EAD MAPPING .Together, the Ministral 3 recovery and Qwen3 preservation corroborate receiver-aligned mapper support as a targeted repair rather than a universal accuracy increase. 
+
+Calibration-data efficiency. A separate frozen, matched Qwen3 14B → 32B budget sweep compares nested prefixes of the same calibration stream. With 50 sequences, C ACHE -BRIDGE reaches 99.89% mean target retention (77.20, 63.60, 71.80, and 83.51% on HellaSwag, ARC-Challenge, WinoGrande, and MMLU). F ULL -H EAD MAPPING with 500 sequences reaches 99.44% (78.80, 62.80, 71.80, and 81.40%). On this frozen sweep, C ACHE BRIDGE therefore matches the mean retention of F ULL -H EAD MAPPING with one tenth of the calibration data, although individual task scores remain nonmonotonic across budgets. 
+
+4.3. Structural and Attention Attribution 
+
+We isolate regression capacity, head correspondence, and attention weighting on Qwen3 14B → 32B . A control that applies block PCA to all source heads matches the HEAD -L OCAL coefficient budget. Eight cyclic assignments then keep the same width while shifting the source–target correspondence, with shift zero denoting the architecture-indexed identity assignment. A TTN -R EPAIR then changes only calibration weights under this assignment. 
+
+Aligned support matters. At matched capacity, block PCA lowers primary retention by 13.97 points, and the mean non-identity cyclic assignment lowers it by 15.50 points. Every individual shift is worse than the identity assignment, 7CacheBridge: Efficient Cross-Model KV Cache Transfer 
+
+Table 1. Task-wise target retention across three transfer directions. Each value is transfer accuracy divided by native-target accuracy and reported as a percentage. F ULL -H EAD MAPPING is the baseline of Heo et al. (2026); C ACHE BRIDGE is our method. Bold marks the better transferred result within each pair. C ACHE BRIDGE repairs both Ministral 3 failures while preserving Qwen3 mean retention. Pair Method HellaSwag ARC-C WinoGrande MMLU Mean retention Ministral 3 3B → 14B FULL -H EAD MAPPING (Heo et al., 2026) 67.62 50.91 68.22 76.82 65.89 CACHE BRIDGE (OURS ) 94.04 86.28 92.60 80.00 88.23 
+
+Ministral 3 8B → 14B FULL -H EAD MAPPING (Heo et al., 2026) 57.51 43.60 70.68 65.91 59.43 CACHE BRIDGE (OURS ) 98.45 94.82 99.73 97.27 97.57 
+
+Qwen3 14B → 32B FULL -H EAD MAPPING (Heo et al., 2026) 98.75 104.65 100.00 95.47 99.72 CACHE BRIDGE (OURS ) 96.51 104.98 100.28 97.54 99.83 
+
+Table 2. Attribution study on Qwen3 14B → 32B with 500 calibration sequences. The first three rows are controls or ablations, and CACHE BRIDGE is the final selected configuration. Primary retention is HellaSwag-500 accuracy divided by native-target accuracy. The cyclic mean averages non-identity shifts 1–7. ∆ is measured relative to H EAD -L OCAL -only. The aligned support accounts for most of the gain, while attention weighting further improves retention and NLL. Configuration Primary ret. ∆ K R2 V R2 NLL@4K Block-PCA control 81.30 −13 .97 0.644 0.514 2.943 Cyclic-mean control 79.76 −15 .50 0.620 0.473 3.094 HEAD -L OCAL -only 95.26 0.00 0.678 0.655 2.446 CACHE BRIDGE (final) 96.51 +1.25 0.672 0.654 2.350 -25 -20 -15 -10 -5 50       
+
+> aligned
+> 01234567Cyclic head shift (0 = identity) Target-retention change (pp)
+
+Figure 5. Capacity-matched cyclic head-assignment ablation on Qwen3 14B → 32B . The vertical axis reports the HellaSwag target-retention change, and shift 0 denotes the aligned head as-signment. All non-identity shifts degrade retention, supporting the architecture-indexed head correspondence. 
+
+so compactness alone does not explain the aligned operating point. 
+
+Attention weighting improves continuation. Under the identity assignment, attention weighting changes K/V R2
+
+only from 0.678/0.655 to 0.672/0.654, yet improves primary retention by 1.25 points and reduces NLL@4K from 2.446 to 2.350. Because mapper support, coefficient count, and application code remain unchanged, this comparison iso-lates attention-aligned calibration. The improvement despite nearly unchanged KV R2 confirms that coordinate fit alone is not a sufficient continuation metric. 
+
+4.4. Handoff-Time Efficiency Mapper storage. The one-head fan-in reduces both the coefficient payload and leading affine work by 8×. On Qwen3 14B → 32B , the serialized mapper shrinks from 4.296 to 0.538 GB (Figure 6(a)). Because A TTN -R EPAIR 
+
+changes only coefficient values, C ACHE BRIDGE and H EAD -LOCAL have identical application cost, which we report once. 
+
+Application latency. At prefix lengths 128, 512, and 1,024, F ULL -H EAD MAPPING application takes 21.13, 37.40, and 65.12 ms. H EAD -L OCAL reduces these values to 12.97, 15.91, and 21.66 ms (Figure 6(b)), corresponding to speedups of 1.6×, 2.4×, and 3.0×.These measurements isolate mapper storage and applica-tion from an already available source cache. End-to-end TTFT and throughput, which also include prefill, transport, decoding, and scheduling, remain outside this scope. 
+
+4.5. F USED -F IT Efficiency Construction speedup. FUSED -F IT emits bounded, con-tiguous panels for head-batched matrix multiplication while preserving mapper support, weights, the ridge solve, and the serialized artifact. At 500 sequences, CacheBridge’s FUSED -F IT construction path reduces mapper-construction time by 10 .7×, from 92.63 to a median of 8.63 seconds. Figure 7 shows how this advantage changes as calibration data increase. 8CacheBridge: Efficient Cross-Model KV Cache Transfer (a) Mapper storage      
+
+> 543210
+> 4.296 GB 0.538 GB
+> Full-Head Mapping Head-Local Serialized size (GB)
+> (b) Mapper application
+> Full-Head Mapping Head-Local 70 60 50 40 30 20 10 0
+> 21.13 37.40 65.12 12.97 15.91 21.66
+> 128 512 1,024 Prefix length (tokens) Latency (ms)
+
+Figure 6. Mapper storage and application latency on Qwen3 14B → 32B . Panel (a) reports serialized mapper size, and panel (b) reports mapper-application latency across prefix lengths. The one-head fan-in reduces the deployed coefficient payload and yields larger latency gains at longer prefixes. Generic CacheBridge 100 30 10 3    
+
+> 11.60 s 20.84 s 38.40 s 92.63 s 3.60 s 4.94 s 8.25 s 8.63 s
+> 50 100 200 500 Calibration sequences Time (s, log scale)
+
+Figure 7. Mapper-construction time for Qwen3 14B → 32B on four H800s. CACHE BRIDGE markers show medians with min– max ranges, and the vertical axis is logarithmic. CacheBridge’s fused construction path preserves the fitted mapper while reducing 500-sequence construction time by 10 .7×.
+
+## 5. Related Work 
+
+Closed-form cache transfer. The closest reference finds linear structure across model-family caches and fits RoPE-aware ridge maps for target-prefill reuse (Heo et al., 2026). That work also studies nonlinear rescue, attention diagnos-tics, and latency. We start from its affine interface but ask which connections the estimator should use, which cache errors its objective should prioritize, and how to execute fixed mapper support efficiently. 
+
+Learned latent communication. Cache-to-Cache trains neural projection and fusion modules to communicate se-mantics between models (Fu et al., 2026). Dery et al. learn per-model adapters into a shared KV representation space (Dery et al., 2026). Latent Cache Flow learns a compact shared cache channel for both shared and different contexts (Rossi et al., 2026). Mixture-of-Translators instead uses token-gated translators and target-side trajectory correction across heterogeneous architectures (Lee et al., 2026). Un-like our closed-form affine mapper, these approaches train additional communication modules or shared representation spaces. 
+
+Reuse, repair, and architectural co-design. IAM reuses cross-scale attention patterns but does not transfer KV val-ues (Zhao et al., 2025). Semantic Cache Distillation trans-mits low-rank semantic codes and patches sparse transi-tion layers under a trained loss (Ma et al., 2026). Droid-Speak selectively recomputes sensitive layers across fine-tuned variants with the same architecture (Liu et al., 2026). Activated-LoRA preserves a base-compatible prefix inter-face by controlling when an adapter changes the model (Li et al., 2025). ICaRus co-designs specialized models around a frozen logical cache encoder so their caches are identical by construction (Woo et al., 2026). SmartGen se-lects positions for KV transfer between prefill and decode workers of the same model, addressing transport bandwidth rather than model mismatch (Luo et al., 2026). PRISM co-designs request scheduling with exact-prefix KV reten-tion for same-model prefix reuse (Qu et al., 2026). These systems occupy complementary points in the design space through training, architectural co-design, same-backbone reuse, target-side recomputation, intra-model transport, or prefix-aware scheduling and retention. 
+
+## 6. Limitations 
+
+Our current evaluation has three clear boundaries. 1. Same-family transfer. Each evaluated direction con-nects two models from the same family. Cross-family transfer may expose weaker head correspondence and larger representation shifts than those studied here. 2. Other attention mechanisms. All evaluated models use dense grouped-query attention with matched KV-head counts. We have not established how the support 9CacheBridge: Efficient Cross-Model KV Cache Transfer 
+
+rule generalizes to mismatched head counts or to sparse, sliding-window, linear, and hybrid attention. 3. Multi-turn quality after transfer. We evaluate immedi-ate continuation through multiple-choice accuracy and teacher-forced NLL, but do not measure open-ended multi-turn task quality after transfer-driven decoding. Repeated generation and model handoffs may accumu-late errors that these evaluations do not capture. 
+
+## 7. Conclusion 
+
+Cross-model cache transfer avoids repeated prefill, but FULL -H EAD MAPPING can be model-sensitive, overpro-visioned, and expensive to construct and apply. C ACHE -BRIDGE addresses these limitations by co-designing map-per support, attention-aligned calibration, and mapper con-struction while retaining affine online deployment. H EAD -LOCAL constrains head fan-in, A TTN -R EPAIR aligns the fitting objective with receiver computation, and F USED -FIT absorbs irregular gathers before regular batched matrix multiplication. Across all three transfer directions, C ACHE -BRIDGE reduces the coefficient count by 8× while repairing or preserving transfer quality. On Qwen3 14B → 32B , it further lowers mapper storage and application latency, im-proves long-prefix NLL, and constructs the 500-sequence mapper in a median of 8.63 seconds. These results improve the quality–cost trade-off of closed-form cache transfer with-out adding a learned translator. 
+
+## References 
+
+Ainslie, J., Lee-Thorp, J., de Jong, M., Zemlyanskiy, Y., Lebrón, F., and Sanghai, S. GQA: Training general-ized multi-query transformer models from multi-head checkpoints. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pp. 4895–4901, 2023. Chen, L., Zaharia, M., and Zou, J. FrugalGPT: How to use large language models while reducing cost and im-proving performance. Transactions on Machine Learning Research , 2024. URL https://arxiv.org/abs/ 2305.05176 .Dery, L. M., Yahav, Z., Prior, H., Feng, Q., Shen, J., and Szlam, A. Latent space communication via K-V cache alignment. arXiv preprint arXiv:2601.06123 , 2026. URL 
+
+https://arxiv.org/abs/2601.06123 .Fu, T., Min, Z., Zhang, H., Yan, J., Dai, G., Ouyang, W., and Wang, Y. Cache-to-cache: Direct semantic communi-cation between large language models. In International Conference on Learning Representations , 2026. URL 
+
+https://arxiv.org/abs/2510.03215 .Hendrycks, D., Burns, C., Basart, S., Zou, A., Mazeika, M., Song, D., and Steinhardt, J. Measuring massive multitask language understanding. In International Conference on Learning Representations , 2021. Heo, T., Shafipour, R., Zhao, R., Golub, M., Kamani, M. M., Borkar, R., Chandran, M. T., Zardoshti, P., and Rouhani, B. D. Cross-model KV cache transfer in LLM families: A closed-form linear mapping for pre-fill reuse. arXiv preprint arXiv:2608.03893 , 2026. URL 
+
+https://arxiv.org/abs/2608.03893 .Lee, J.-w., Song, M., Oh, J., Han, S., Park, S., Jang, G., and Lim, S. Mixture-of-translators: Translating KV caches across heterogeneous large language mod-els. arXiv preprint arXiv:2607.28979 , 2026. URL 
+
+https://arxiv.org/abs/2607.28979 .Li, A., Greenewald, K., Parnell, T., and Azizan, N. Effi-cient multi-adapter LLM serving via cross-model KV-cache reuse with activated LoRA. arXiv preprint arXiv:2512.17910 , 2025. URL https://arxiv. org/abs/2512.17910 .Liu, Y., Huang, Y., Yao, J., Feng, S., Gu, Z., Du, K., Li, H., Cheng, Y., Jiang, J., Lu, S., Musu-vathi, M., and Choukse, E. DroidSpeak: KV cache sharing across fine-tuned model variants. In 
+
+23rd USENIX Symposium on Networked Systems Design and Implementation , pp. 319–338, 2026. URL https://www.usenix.org/conference/ nsdi26/presentation/liu-yuhan .Luo, X., Shen, J., Wang, X., and Zhou, Y. SmartGen: Seamless disaggregated LLM inference with selective KV cache transfer. arXiv preprint arXiv:2607.28150 , 2026. URL https://arxiv.org/abs/2607.28150 .Ma, Q., Tang, Z., Cui, H., Yao, Z., and Jia, W. Semantic cache distillation: Efficient state transfer via reuse and selective patching. In International Conference on Ma-chine Learning , 2026. URL https://arxiv.org/ abs/2606.07684 .Ong, I., Almahairi, A., Wu, V., Chiang, W.-L., Wu, T., Gon-zalez, J. E., Kadous, M. W., and Stoica, I. RouteLLM: Learning to route LLMs with preference data. In Inter-national Conference on Learning Representations , 2025. URL https://arxiv.org/abs/2406.18665 .Penedo, G., Kydlíˇ cek, H., Ben Allal, L., Lozhkov, A., Mitchell, M., Raffel, C., von Werra, L., and Wolf, T. The FineWeb datasets: Decanting the web for the finest text data at scale. Advances in Neural Information Process-ing Systems , 37, 2024. URL https://arxiv.org/ abs/2406.17557 .10 CacheBridge: Efficient Cross-Model KV Cache Transfer 
+
+Qu, X., Lin, T., Li, Y., Chen, Z., and Wang, S. PRISM: Fast online LLM serving via scheduling-memory co-design. 
+
+arXiv preprint arXiv:2605.08581 , 2026. URL https: //arxiv.org/abs/2605.08581 .Rossi, M., Raghunath, P., and Wu, E. Latent cache flow: Model-to-model communication without text. arXiv preprint arXiv:2605.22863 , 2026. URL https:// arxiv.org/abs/2605.22863 .Singh, S., Singh, K., and Moturi, P. Fathom-DeepResearch: Unlocking long horizon information retrieval and synthe-sis for SLMs. arXiv preprint arXiv:2509.24107 , 2025. URL https://arxiv.org/abs/2509.24107 .Su, J., Lu, Y., Pan, S., Murtadha, A., Wen, B., and Liu, Y. RoFormer: Enhanced transformer with rotary posi-tion embedding. arXiv preprint arXiv:2104.09864 , 2021. URL https://arxiv.org/abs/2104.09864 .Woo, S., Kil, J., Kim, H., Kim, M., Kim, J., Seo, A., Lee, S., Jo, M., Ryu, J., Park, B., Kwon, S. J., and Lee, D. ICaRus: Identical cache reuse for efficient multi model inference. In International Conference on Learning Representations ,2026. URL https://openreview.net/forum? id=qrMo6R7lOS .Wu, Q., Bansal, G., Zhang, J., Wu, Y., Li, B., Zhu, E., Jiang, L., Zhang, X., Zhang, S., Liu, J., Awadallah, A. H., White, R. W., Burger, D., and Wang, C. AutoGen: Enabling next-gen LLM applications via multi-agent conversation. 
+
+arXiv preprint arXiv:2308.08155 , 2023. URL https: //arxiv.org/abs/2308.08155 .Zellers, R., Holtzman, A., Bisk, Y., Farhadi, A., and Choi, Y. HellaSwag: Can a machine really finish your sentence? In Proceedings of the 57th Annual Meeting of the Asso-ciation for Computational Linguistics , pp. 4791–4800, 2019. Zhao, Y., Li, Z., and Zhao, H. IAM: Efficient infer-ence through attention mapping between different-scale LLMs. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics , pp. 19522–19533, 2025. doi: 10.18653/v1/2025.acl-long.959. URL https://aclanthology.org/2025.acl-long.959/ .11

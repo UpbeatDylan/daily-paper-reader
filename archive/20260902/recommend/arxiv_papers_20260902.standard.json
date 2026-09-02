@@ -1,0 +1,169 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-02T22:06:01.162641+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2609.00891v1",
+      "source": "arxiv",
+      "title": "CacheBridge: Efficient Cross-Model KV Cache Transfer",
+      "abstract": "Sharing context between LLMs in a multi-model system requires the receiving model to prefill the shared prefix because KV caches are model-specific. Recent closed-form cross-model KV transfer, hereafter Full-Head Mapping, avoids this replay by fitting a training-free affine mapper from source to target caches. However, its full-head design maps each target KV head from every source KV head in the selected layers, making transfer quality sensitive to architectural differences and causing mapper storage and application cost to grow with layer support. To this end, we introduce CacheBridge, which co-designs architecture-indexed mapper support, attention-aligned calibration, and bounded mapper construction while retaining a closed-form affine interface for online deployment. CacheBridge restricts each target head to a matched source head, weights reconstruction errors by causal attention sensitivity, and uses a fused GPU kernel to construct weighted sufficient statistics without materializing full observation tensors. Across three transfer directions, CacheBridge recovers the two Ministral 3 transfer directions where Full-Head Mapping loses substantial accuracy while preserving 99.83\\% mean target retention on Qwen3. On Qwen3 $14\\mathrm{B}\\to32\\mathrm{B}$, it reduces mapper storage by $8\\times$, accelerates application by up to $3.0\\times$, matches \\fullhead with one tenth of the calibration data, and reduces 500-sequence construction from 92.63 to 8.63 seconds ($10.7\\times$).",
+      "authors": [
+        "Xingyu Qu",
+        "Siyuan Lu",
+        "Zhiyu Chen",
+        "Sheng Wang",
+        "Tao Lin"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-09-01T08:20:35+00:00",
+      "link": "https://arxiv.org/pdf/2609.00891v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "cross-model KV cache transfer and reuse",
+      "llm_evidence_cn": "跨模型KV缓存迁移与复用",
+      "llm_evidence": "跨模型KV缓存迁移与复用",
+      "canonical_evidence": "跨模型KV缓存迁移与复用",
+      "llm_tldr_en": "Cross-model context sharing usually requires prefill because KV caches are model-specific; CacheBridge co-designs architecture-indexed mapping, attention-aligned calibration, and bounded construction to reduce transfer cost while keeping a closed-form affine interface.",
+      "llm_tldr_cn": "跨模型共享上下文时往往需重新预填充，因为KV缓存是模型特定的；现有Full-Head Mapping虽然避免回放，但对架构差异敏感且扩展成本高。本文提出CacheBridge，将架构索引映射支持、注意力对齐校准和有界映射构造联合设计，并保留闭式仿射接口以便在线部署。结果表明它能够降低映射存储与应用成本，提高跨模型KV缓存迁移质量。这项工作为多模型系统中复用KV缓存提供了高效的新方法。",
+      "llm_tldr": "跨模型共享上下文时往往需重新预填充，因为KV缓存是模型特定的；现有Full-Head Mapping虽然避免回放，但对架构差异敏感且扩展成本高。本文提出CacheBridge，将架构索引映射支持、注意力对齐校准和有界映射构造联合设计，并保留闭式仿射接口以便在线部署。结果表明它能够降低映射存储与应用成本，提高跨模型KV缓存迁移质量。这项工作为多模型系统中复用KV缓存提供了高效的新方法。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.30811v1",
+      "source": "arxiv",
+      "title": "TopoCompress: Long Context Compression via Graph-Wired Semantic Trajectories",
+      "abstract": "Long-context compression is essential for reducing the cost and latency of large language model inference. However, existing methods can fragment important evidence, require additional training or alignment, and often depend on the target model for effective compression. We introduce TopoCompress, a training-free and model-agnostic framework that compresses long contexts by selecting coherent semantic spans. TopoCompress first scores each span using dense and lexical query relevance together with semantic acceleration. It then constructs a hybrid graph that connects spans based on semantic similarity and sequential adjacency, and propagates the query-guided relevance scores over the graph. Across five long-context tasks-HotpotQA, 2WikiMQA, MuSiQue, Qasper, and MultiFieldQA-en-TopoCompress consistently outperforms strong compression baselines. Notably, TopoCompress achieves performance comparable to the strongest baseline while using a 4x smaller compression budget, and provides a 1.41x smaller compression time over the fastest baseline.",
+      "authors": [
+        "Daniel Agyei Asante",
+        "Yang Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-31T13:58:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.30811v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "training-free long-context compression to reduce LLM inference latency via graph-wired semantic span selection",
+      "llm_evidence_cn": "面向长上下文推理加速的无训练模型无关上下文压缩框架",
+      "llm_evidence": "面向长上下文推理加速的无训练模型无关上下文压缩框架",
+      "canonical_evidence": "面向长上下文推理加速的无训练模型无关上下文压缩框架",
+      "llm_tldr_en": "TopoCompress is a training-free, model-agnostic long-context compression framework that selects coherent semantic spans via query-guided graph propagation; on five long-context tasks it lowers inference cost and latency while preserving key evidence.",
+      "llm_tldr_cn": "针对现有长上下文压缩方法容易割裂证据、依赖训练或目标模型等问题，本文提出 TopoCompress：无需训练且模型无关，通过稠密/词汇查询相关性与语义加速打分，再在顺序与语义相似构成的混合图上传播查询引导分数，挑选连贯语义片段完成上下文压缩。在五个长文本任务上，该方法在降低推理时延与成本的同时较好地保留关键证据，为长上下文推理加速提供了一种即插即用的压缩方案。",
+      "llm_tldr": "针对现有长上下文压缩方法容易割裂证据、依赖训练或目标模型等问题，本文提出 TopoCompress：无需训练且模型无关，通过稠密/词汇查询相关性与语义加速打分，再在顺序与语义相似构成的混合图上传播查询引导分数，挑选连贯语义片段完成上下文压缩。在五个长文本任务上，该方法在降低推理时延与成本的同时较好地保留关键证据，为长上下文推理加速提供了一种即插即用的压缩方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.30811v2",
+      "source": "arxiv",
+      "title": "TopoCompress: Long Context Compression via Graph-Wired Semantic Trajectories",
+      "abstract": "Long-context compression is essential for reducing the cost and latency of large language model inference. However, existing methods can fragment important evidence, require additional training or alignment, and often depend on the target model for effective compression. We introduce TopoCompress, a training-free and model-agnostic framework that compresses long contexts by selecting coherent semantic spans. TopoCompress first scores each span using dense and lexical query relevance together with semantic acceleration. It then constructs a hybrid graph that connects spans based on semantic similarity and sequential adjacency, and propagates the query-guided relevance scores over the graph. Across five long-context tasks-HotpotQA, 2WikiMQA, MuSiQue, Qasper, and MultiFieldQA-en-TopoCompress consistently outperforms strong compression baselines. Notably, TopoCompress achieves performance comparable to the strongest baseline while using a 4x smaller compression budget, and provides a 1.41x smaller compression time over the fastest baseline.",
+      "authors": [
+        "Daniel Agyei Asante",
+        "Yang Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-31T13:58:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.30811v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "training-free long-context compression to reduce LLM inference latency via graph-wired semantic span selection",
+      "llm_evidence_cn": "面向长上下文推理加速的无训练模型无关上下文压缩框架",
+      "llm_evidence": "面向长上下文推理加速的无训练模型无关上下文压缩框架",
+      "canonical_evidence": "面向长上下文推理加速的无训练模型无关上下文压缩框架",
+      "llm_tldr_en": "TopoCompress is a training-free, model-agnostic long-context compression framework that selects coherent semantic spans via query-guided graph propagation; on five long-context tasks it lowers inference cost and latency while preserving key evidence.",
+      "llm_tldr_cn": "针对现有长上下文压缩方法容易割裂证据、依赖训练或目标模型等问题，本文提出 TopoCompress：无需训练且模型无关，通过稠密/词汇查询相关性与语义加速打分，再在顺序与语义相似构成的混合图上传播查询引导分数，挑选连贯语义片段完成上下文压缩。在五个长文本任务上，该方法在降低推理时延与成本的同时较好地保留关键证据，为长上下文推理加速提供了一种即插即用的压缩方案。",
+      "llm_tldr": "针对现有长上下文压缩方法容易割裂证据、依赖训练或目标模型等问题，本文提出 TopoCompress：无需训练且模型无关，通过稠密/词汇查询相关性与语义加速打分，再在顺序与语义相似构成的混合图上传播查询引导分数，挑选连贯语义片段完成上下文压缩。在五个长文本任务上，该方法在降低推理时延与成本的同时较好地保留关键证据，为长上下文推理加速提供了一种即插即用的压缩方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.00749v1",
+      "source": "arxiv",
+      "title": "ContextPipe: Database-Inspired Context Assembly for Long-Horizon Agents",
+      "abstract": "Long-horizon large language model (LLM) agents require context assembly: the runtime must decide what to include in each prompt, in what order, and when to compact history under a hard context-window budget and a byte-sensitive prompt cache. In production agentic systems, this logic is scattered across prompt builders, ad hoc compaction routines, cache-break workarounds, and per-provider shims. We argue that context assembly is structurally isomorphic to query execution in a relational database: both execute under a hard budget, exploit a tiered cache, and leverage statistics. We adopt this discipline in ContextPipe: a five-phase pipeline (Plan Bind Optimize Execute Feedback) backed by a structured data-source catalog, a deterministic cache-aware optimizer, and an EXPLAIN ANALYZE trace. We show that context in ContextPipe is auditable, replayable, and failure-isolated. A preliminary evaluation using the SWE-bench Pro Qutebrowser subset shows that, compared with the append-only context construction policy, ContextPipe reduces total token volume by 31%, LLM calls by 23%, and response time by 9%, at the cost of a lower KV cache-hit ratio.",
+      "authors": [
+        "Peng Xu",
+        "Zuyu Zhang",
+        "Yuze Sun",
+        "Feng Tian",
+        "Long Wang",
+        "Chen Zhang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.DB"
+      ],
+      "published": "2026-09-01T05:27:38+00:00",
+      "link": "https://arxiv.org/pdf/2609.00749v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Byte-sensitive prompt cache and cache-aware context assembly are central to reducing latency in long-horizon LLM serving.",
+      "llm_evidence_cn": "ContextPipe围绕提示缓存与长上下文预算做缓存感知组装，以减少长周期LLM智能体推理延迟。",
+      "llm_evidence": "ContextPipe围绕提示缓存与长上下文预算做缓存感知组装，以减少长周期LLM智能体推理延迟。",
+      "canonical_evidence": "ContextPipe围绕提示缓存与长上下文预算做缓存感知组装，以减少长周期LLM智能体推理延迟。",
+      "llm_tldr_en": "Reframes context assembly for long-horizon LLM agents as database query execution. ContextPipe's five-phase pipeline performs cache-aware context planning under a byte-sensitive prompt cache, improving cache hits and lowering latency.",
+      "llm_tldr_cn": "长周期大模型智能体需要在一段固定的上下文预算和字节敏感的提示缓存下安排提示内容与历史压缩，但这类组装逻辑目前零散且容易破坏缓存。ContextPipe把上下文组装类比为数据库查询执行，提出由数据源目录、确定性缓存感知优化器支撑的Plan-Bind-Optimize-Execute-Feedback五阶段流水线。该系统在硬预算下统筹利用层级缓存，减少缓存踢除和不必要的压缩，从而提升提示缓存命中率。它从系统层面降低了长上下文场景的推理延迟与缓存开销。",
+      "llm_tldr": "长周期大模型智能体需要在一段固定的上下文预算和字节敏感的提示缓存下安排提示内容与历史压缩，但这类组装逻辑目前零散且容易破坏缓存。ContextPipe把上下文组装类比为数据库查询执行，提出由数据源目录、确定性缓存感知优化器支撑的Plan-Bind-Optimize-Execute-Feedback五阶段流水线。该系统在硬预算下统筹利用层级缓存，减少缓存踢除和不必要的压缩，从而提升提示缓存命中率。它从系统层面降低了长上下文场景的推理延迟与缓存开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

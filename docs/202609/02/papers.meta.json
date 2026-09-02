@@ -1,0 +1,69 @@
+{
+  "label": "2026-09-02",
+  "date": "2026-09-02",
+  "generated_at": "2026-09-02T22:10:10",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202609/02/2609.00891v1-cachebridge-efficient-cross-model-kv-cache-transfer",
+      "section": "deep",
+      "title_en": "CacheBridge: Efficient Cross-Model KV Cache Transfer",
+      "authors": "Xingyu Qu, Siyuan Lu, Zhiyu Chen, Sheng Wang, Tao Lin",
+      "date": "2026-09-01",
+      "pdf": "https://arxiv.org/pdf/2609.00891v1",
+      "score": "9.0",
+      "evidence": "跨模型KV缓存迁移与复用",
+      "tldr": "跨模型KV缓存共享需接收方重新prefill，全头闭式映射虽免重放，但将每目标头耦合全部源头，精度受架构差异影响，存储与计算成本随层支持增长。CacheBridge提出头匹配、注意力加权与有界构造的闭式映射，在保留零训练部署的同时压缩映射。实验恢复Ministral 3两个失效方向，Qwen3目标保留99.83%；14B→32B上存储降8倍、应用快3倍、构建快10.7倍，并以1/10校准数据达到同等效果。",
+      "tags": "query:pic",
+      "abstract_en": "Sharing context between LLMs in a multi-model system requires the receiving model to prefill the shared prefix because KV caches are model-specific. Recent closed-form cross-model KV transfer, hereafter Full-Head Mapping, avoids this replay by fitting a training-free affine mapper from source to target caches. However, its full-head design maps each target KV head from every source KV head in the selected layers, making transfer quality sensitive to architectural differences and causing mapper storage and application cost to grow with layer support. To this end, we introduce CacheBridge, which co-designs architecture-indexed mapper support, attention-aligned calibration, and bounded mapper construction while retaining a closed-form affine interface for online deployment. CacheBridge restricts each target head to a matched source head, weights reconstruction errors by causal attention sensitivity, and uses a fused GPU kernel to construct weighted sufficient statistics without materializing full observation tensors. Across three transfer directions, CacheBridge recovers the two Ministral 3 transfer directions where Full-Head Mapping loses substantial accuracy while preserving 99.83\\% mean target retention on Qwen3. On Qwen3 $14\\mathrm{B}\\to32\\mathrm{B}$, it reduces mapper storage by $8\\times$, accelerates application by up to $3.0\\times$, matches \\fullhead with one tenth of the calibration data, and reduces 500-sequence construction from 92.63 to 8.63 seconds ($10.7\\times$).",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/02/2608.30811v1-topocompress-long-context-compression-via-graph-wired-semantic-trajectories",
+      "section": "deep",
+      "title_en": "TopoCompress: Long Context Compression via Graph-Wired Semantic Trajectories",
+      "authors": "Daniel Agyei Asante, Yang Li",
+      "date": "2026-08-31",
+      "pdf": "https://arxiv.org/pdf/2608.30811v1",
+      "score": "8.0",
+      "evidence": "面向长上下文推理加速的无训练模型无关上下文压缩框架",
+      "tldr": "长上下文压缩对降低大模型推理成本与延迟至关重要，但现有方法易碎片化关键证据、需额外训练或依赖目标模型。本文提出 TopoCompress，一种免训练且模型无关的框架，通过选取连贯语义片段压缩上下文。它先结合稠密、词法相关性与语义加速为片段打分，再构建混合图传播查询引导分数。在五个长上下文任务上，TopoCompress 优于强基线，且用更小压缩预算达到相当性能。",
+      "tags": "query:pic",
+      "abstract_en": "Long-context compression is essential for reducing the cost and latency of large language model inference. However, existing methods can fragment important evidence, require additional training or alignment, and often depend on the target model for effective compression. We introduce TopoCompress, a training-free and model-agnostic framework that compresses long contexts by selecting coherent semantic spans. TopoCompress first scores each span using dense and lexical query relevance together with semantic acceleration. It then constructs a hybrid graph that connects spans based on semantic similarity and sequential adjacency, and propagates the query-guided relevance scores over the graph. Across five long-context tasks-HotpotQA, 2WikiMQA, MuSiQue, Qasper, and MultiFieldQA-en-TopoCompress consistently outperforms strong compression baselines. Notably, TopoCompress achieves performance comparable to the strongest baseline while using a 4x smaller compression budget, and provides a 1.41x smaller compression time over the fastest baseline.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/02/2608.30811v2-topocompress-long-context-compression-via-graph-wired-semantic-trajectories",
+      "section": "deep",
+      "title_en": "TopoCompress: Long Context Compression via Graph-Wired Semantic Trajectories",
+      "authors": "Daniel Agyei Asante, Yang Li",
+      "date": "2026-08-31",
+      "pdf": "https://arxiv.org/pdf/2608.30811v2",
+      "score": "8.0",
+      "evidence": "面向长上下文推理加速的无训练模型无关上下文压缩框架",
+      "tldr": "长上下文压缩对降低大模型推理成本至关重要，但现有方法易碎片化证据且需额外训练或依赖目标模型。TopoCompress提出训练无关、模型无关的框架，通过选择连贯语义跨度实现压缩：先以稠密加词法相关性和语义加速为跨度打分，再构建融合语义相似性与顺序邻接的混合图，传播查询引导分数。在五个长任务上超过强基线，以4倍更小压缩预算达到可比性能，压缩时间比最快基线低1.41倍。",
+      "tags": "query:pic",
+      "abstract_en": "Long-context compression is essential for reducing the cost and latency of large language model inference. However, existing methods can fragment important evidence, require additional training or alignment, and often depend on the target model for effective compression. We introduce TopoCompress, a training-free and model-agnostic framework that compresses long contexts by selecting coherent semantic spans. TopoCompress first scores each span using dense and lexical query relevance together with semantic acceleration. It then constructs a hybrid graph that connects spans based on semantic similarity and sequential adjacency, and propagates the query-guided relevance scores over the graph. Across five long-context tasks-HotpotQA, 2WikiMQA, MuSiQue, Qasper, and MultiFieldQA-en-TopoCompress consistently outperforms strong compression baselines. Notably, TopoCompress achieves performance comparable to the strongest baseline while using a 4x smaller compression budget, and provides a 1.41x smaller compression time over the fastest baseline.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/02/2609.00749v1-contextpipe-database-inspired-context-assembly-for-long-horizon-agents",
+      "section": "quick",
+      "title_en": "ContextPipe: Database-Inspired Context Assembly for Long-Horizon Agents",
+      "authors": "Peng Xu, Zuyu Zhang, Yuze Sun, Feng Tian, Long Wang, Chen Zhang",
+      "date": "2026-09-01",
+      "pdf": "https://arxiv.org/pdf/2609.00749v1",
+      "score": "6.0",
+      "evidence": "ContextPipe围绕提示缓存与长上下文预算做缓存感知组装，以减少长周期LLM智能体推理延迟。",
+      "tldr": "长时程LLM代理的运行时上下文组装受硬窗口与字节级缓存约束，现有实现逻辑散落在补丁和不同供应商适配中。ContextPipe借鉴关系数据库查询执行，提出Plan Bind Optimize Execute Feedback五阶段流水线，配合结构化数据源目录、缓存感知优化器和EXPLAIN ANALYZE追踪。在SWE-bench Pro Qutebrowser子集上，相比追加式策略，总token量下降31%，LLM调用次数减少23%，响应时间缩短9%，代价是KV缓存命中率略降。该结果表明上下文组装可像数据库查询那样被系统优化，同时获得可审计、可重放和故障隔离能力。",
+      "tags": "query:pic",
+      "abstract_en": "Long-horizon large language model (LLM) agents require context assembly: the runtime must decide what to include in each prompt, in what order, and when to compact history under a hard context-window budget and a byte-sensitive prompt cache. In production agentic systems, this logic is scattered across prompt builders, ad hoc compaction routines, cache-break workarounds, and per-provider shims. We argue that context assembly is structurally isomorphic to query execution in a relational database: both execute under a hard budget, exploit a tiered cache, and leverage statistics. We adopt this discipline in ContextPipe: a five-phase pipeline (Plan Bind Optimize Execute Feedback) backed by a structured data-source catalog, a deterministic cache-aware optimizer, and an EXPLAIN ANALYZE trace. We show that context in ContextPipe is auditable, replayable, and failure-isolated. A preliminary evaluation using the SWE-bench Pro Qutebrowser subset shows that, compared with the append-only context construction policy, ContextPipe reduces total token volume by 31%, LLM calls by 23%, and response time by 9%, at the cost of a lower KV cache-hit ratio.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
