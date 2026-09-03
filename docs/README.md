@@ -6,32 +6,41 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-09-02
-- 运行时间：2026-09-02 22:10:05 UTC
+- 最新运行日期：2026-09-03
+- 运行时间：2026-09-03 23:08:48 UTC
 - 运行状态：成功
-- 本次总论文数：4
+- 本次总论文数：7
 - 精读区：3
-- 速读区：1
+- 速读区：4
 
 ### 今日简报（AI）
-今日精读聚焦跨模型KV缓存迁移与长文本压缩，另速读一篇长程智能体上下文组装研究。最值得关注《CacheBridge》（9.0/10），以高效跨模型缓存共享提升推理效率；《TopoCompress》（8.0/10）以图结构压缩长上下文，值得延伸了解。普通读者可优先追踪这两个方向对降低大模型部署成本与长文本处理能力的实际影响。
-- 详情：[/202609/02/README](/202609/02/README)
+今日7篇论文聚焦LLM推理效率，精读2篇高分解码与预填充优化，速读3篇覆盖压缩与缓存策略。最值得关注的是利用注意力稀疏性实现“比Flash更快”的长上下文解码，及输入自适应稀疏预填充CRISP。建议普通读者优先关注这两项技术如何降低单GPU长文本推理成本。
+- 详情：[/202609/03/README](/202609/03/README)
 
 ### 精读区论文标签
-1. [CacheBridge: Efficient Cross-Model KV Cache Transfer](/202609/02/2609.00891v1-cachebridge-efficient-cross-model-kv-cache-transfer)  
-   标签：评分：9.0/10、query:pic
-   evidence：跨模型KV缓存迁移与复用
-2. [TopoCompress: Long Context Compression via Graph-Wired Semantic Trajectories](/202609/02/2608.30811v1-topocompress-long-context-compression-via-graph-wired-semantic-trajectories)  
+1. [Faster Than Flash: Exploiting Attention Sparsity for Efficient Long-Context Decoding](/202609/03/2609.00097v1-faster-than-flash-exploiting-attention-sparsity-for-efficient-long-context-decoding)  
    标签：评分：8.0/10、query:pic
-   evidence：面向长上下文推理加速的无训练模型无关上下文压缩框架
-3. [TopoCompress: Long Context Compression via Graph-Wired Semantic Trajectories](/202609/02/2608.30811v2-topocompress-long-context-compression-via-graph-wired-semantic-trajectories)  
+   evidence：融合内核利用注意力稀疏性加速长上下文解码
+2. [CRISP: Cliff-awaRe Input-adaptive Sparse Prefilling with Structural-Mass-Motivated Routing](/202609/03/2609.01925v1-crisp-cliff-aware-input-adaptive-sparse-prefilling-with-structural-mass-motivated-routing)  
    标签：评分：8.0/10、query:pic
-   evidence：面向长上下文推理加速的无训练模型无关上下文压缩框架
+   evidence：面向长上下文LLM二次复杂度预填充阶段的输入自适应稀疏注意力方法
+3. [HeadWiseKV: Budgeted Per-Head Cache Residency for Hybrid Long-Context Language Models](/202609/03/2609.02029v1-headwisekv-budgeted-per-head-cache-residency-for-hybrid-long-context-language-models)  
+   标签：评分：8.0/10、query:pic
+   evidence：面向混合长上下文LLM的按头KV缓存驻留预算分配与内存压缩
 
 ### 速读区论文标签
-1. [ContextPipe: Database-Inspired Context Assembly for Long-Horizon Agents](/202609/02/2609.00749v1-contextpipe-database-inspired-context-assembly-for-long-horizon-agents)  
+1. [Budget-Aware Compression Pipeline for Single-GPU LLM Inference: Methods, Trade-offs, and Coupling Effects](/202609/03/2608.30076v1-budget-aware-compression-pipeline-for-single-gpu-llm-inference-methods-trade-offs-and-coupling-effects)  
+   标签：评分：7.0/10、query:pic
+   evidence：针对长上下文吞吐与KV缓存压缩的推理优化
+2. [Multi-Turn LLM Conversations under the Least-Recently-Used Policy: Mean-Field Asymptotics and Hit Ratio Approximation](/202609/03/2609.02027v1-multi-turn-llm-conversations-under-the-least-recently-used-policy-mean-field-asymptotics-and-hit-ratio-approximation)  
+   标签：评分：7.0/10、query:pic
+   evidence：面向多轮LLM服务的LRU缓存淘汰命中率分析
+3. [mzCache: On-Device LLM Memory Management under Multitasking](/202609/03/2609.01338v1-mzcache-on-device-llm-memory-management-under-multitasking)  
    标签：评分：6.0/10、query:pic
-   evidence：ContextPipe围绕提示缓存与长上下文预算做缓存感知组装，以减少长周期LLM智能体推理延迟。
+   evidence：移动端多任务内存压力下KV缓存被驱逐后的弹性恢复，避免重新计算KV缓存
+4. [Architecting Conversational Data Systems for Stateless LLM APIs: The Hydration Proxy Pattern](/202609/03/2609.01834v1-architecting-conversational-data-systems-for-stateless-llm-apis-the-hydration-proxy-pattern)  
+   标签：评分：6.0/10、query:pic
+   evidence：通过Hydration代理模式稳定会话语境以改善无状态LLM API的KV缓存利用
 
 
 <div class="dpr-home-promo-card">

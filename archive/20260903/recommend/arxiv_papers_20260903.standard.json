@@ -1,0 +1,293 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-03T23:02:13.053981+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2609.00097v1",
+      "source": "arxiv",
+      "title": "Faster Than Flash: Exploiting Attention Sparsity for Efficient Long-Context Decoding",
+      "abstract": "The development of long-context Large Language Models (LLMs) is constrained by the memory bandwidth bottleneck and quadratic complexity of the attention mechanism during decoding. To overcome the inherent trade-offs between the memory overhead of metadata-based metrics and the computational inefficiency of adaptive selection strategies, we present Faster Flash Decoding (FFD), a novel hardware-algorithm co-design framework designed to break the memory wall in long-context decoding. FFD integrates the selector and computer into a fully fused kernel, replacing external metadata indices with content-aware scanning via low-bit quantization. Furthermore, we introduce the top-delta strategy, which dynamically filters blocks to achieve distribution-adaptive sparsity without global synchronization. Offering a training-free and plug-and-play solution, FFD also enables the reuse of scanning results for computation, achieving up to 11.6x kernel-level speedup and scaling to 256K context length, with 2.37x end-to-end throughput improvement. Empirical validation on RULER and LongBench confirms that FFD maintains model accuracy while delivering high-ratio sparsity, with code available at https://github.com/qluoluo/faster-flash-decoding",
+      "authors": [
+        "Zhigeng Liu",
+        "Zhiyuan Ning",
+        "Ruixiao Li",
+        "Xiaoran Liu",
+        "Yuerong Song",
+        "Min Zhang",
+        "Ziwei He",
+        "Xipeng Qiu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-08-31T15:13:20+00:00",
+      "link": "https://arxiv.org/pdf/2609.00097v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Exploits attention sparsity with a fused kernel to accelerate long-context decoding",
+      "llm_evidence_cn": "融合内核利用注意力稀疏性加速长上下文解码",
+      "llm_evidence": "融合内核利用注意力稀疏性加速长上下文解码",
+      "canonical_evidence": "融合内核利用注意力稀疏性加速长上下文解码",
+      "llm_tldr_en": "FFD breaks the long-context decoding memory wall by fusing block selection and computation into one kernel and using low-bit content-aware scanning with a top-delta dynamic filter instead of metadata indices.",
+      "llm_tldr_cn": "长上下文LLM解码长期受制于内存带宽瓶颈和注意力的二次复杂度。本文提出FFD软硬件协同框架，将块选择器与计算融合进单个内核，以低比特量化的内容感知扫描取代外部元数据索引，并结合top-delta策略动态过滤块。结果表明FFD能显著缓解长上下文解码的内存墙问题，为高效长上下文生成提供了算法与硬件协同的新途径。",
+      "llm_tldr": "长上下文LLM解码长期受制于内存带宽瓶颈和注意力的二次复杂度。本文提出FFD软硬件协同框架，将块选择器与计算融合进单个内核，以低比特量化的内容感知扫描取代外部元数据索引，并结合top-delta策略动态过滤块。结果表明FFD能显著缓解长上下文解码的内存墙问题，为高效长上下文生成提供了算法与硬件协同的新途径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.01925v1",
+      "source": "arxiv",
+      "title": "CRISP: Cliff-awaRe Input-adaptive Sparse Prefilling with Structural-Mass-Motivated Routing",
+      "abstract": "The attention prefilling phase of long-context LLM inference scales quadratically, making self-attention a severe computational bottleneck. Traditional sparse attention methods mitigate this through fixed patterns or offline profiling, but lack the flexibility to adapt to input-dependent attention structure. Recent dynamic methods address this by routing heads to sparse patterns in real-time, but rely on indirect routing proxies with overhead and budget allocation mechanisms that overlook the post-softmax mass hierarchy. We present CRISP (Cliff-awaRe Input-adaptive Sparse Prefilling), which identifies and addresses two structural challenges in this dynamic routing paradigm. First, we show that the routing decision can be read directly off the structure of the proxy attention map. We replace the Jensen-Shannon Divergence (JSD) routing with C_struct, a structural proxy that measures mass at Vertical-Slash compatible positions and reproduces JSD's routing decisions while eliminating both the pooled matmul and subsequent KL divergence overhead. Second, we formalize the post-softmax mass cliff and demonstrate theoretically that strictly cumulative coverage thresholds accumulate O(n) background noise at long contexts. CRISP navigates this via a sink-aware threshold grounded in the noise floor. Empirically, across InfiniteBench, RULER and LongBench on two model families, CRISP is the strongest sparse method overall and matches or exceeds exact dense attention on retrieval-heavy benchmarks, recovering up to +28.0 pp on retrieval tasks over baselines and achieving up to a 5.30x attention speedup at 512k tokens, driven primarily by our O(n) noise elimination during selection while preserving structural integrity.",
+      "authors": [
+        "Huu Huy Nguyen",
+        "Chien Van Nguyen",
+        "Franck Dernoncourt",
+        "Ryan A. Rossi",
+        "Linh Ngo Van",
+        "Jieyang Chen",
+        "Thien Huu Nguyen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-09-01T22:49:46+00:00",
+      "link": "https://arxiv.org/pdf/2609.01925v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Input-adaptive sparse attention to accelerate the quadratic prefill phase of long-context LLMs",
+      "llm_evidence_cn": "面向长上下文LLM二次复杂度预填充阶段的输入自适应稀疏注意力方法",
+      "llm_evidence": "面向长上下文LLM二次复杂度预填充阶段的输入自适应稀疏注意力方法",
+      "canonical_evidence": "面向长上下文LLM二次复杂度预填充阶段的输入自适应稀疏注意力方法",
+      "llm_tldr_en": "CRISP accelerates long-context prefill by directly reading routing decisions from attention and allocating sparse budget by post-softmax mass hierarchy, overcoming indirect routing overhead and poor input adaptivity.",
+      "llm_tldr_cn": "长上下文LLM的注意力预填充阶段复杂度随长度二次增长，是严重计算瓶颈。已有动态稀疏方法依赖间接路由代理且预算分配未考虑softmax后的质量层次。CRISP从输入出发直接读取路由决策，并按结构质量层次分配稀疏预算，使预填充能够自适应特定输入的有注意力结构。该方法在降低预填充开销的同时改善了动态路由的自适应性和效率，为长上下文推理加速提供了新途径。",
+      "llm_tldr": "长上下文LLM的注意力预填充阶段复杂度随长度二次增长，是严重计算瓶颈。已有动态稀疏方法依赖间接路由代理且预算分配未考虑softmax后的质量层次。CRISP从输入出发直接读取路由决策，并按结构质量层次分配稀疏预算，使预填充能够自适应特定输入的有注意力结构。该方法在降低预填充开销的同时改善了动态路由的自适应性和效率，为长上下文推理加速提供了新途径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.02029v1",
+      "source": "arxiv",
+      "title": "HeadWiseKV: Budgeted Per-Head Cache Residency for Hybrid Long-Context Language Models",
+      "abstract": "Long-context inference retains a growing key--value (KV) cache during decoding, which consumes substantial GPU memory and can reduce generation throughput. This bottleneck remains in hybrid language models because their residual global-attention layers can dominate context-dependent cache demand. We study how to allocate this state under an aggregate KV-residency budget. We introduce HeadWiseKV, a training-free framework that compresses the residual global KV caches of hybrid language models while preserving their native local, recurrent, and linear paths. It assigns each physical KV head a static, multilevel history window, making cache demand predictable before serving. We formulate this allocation as a restricted operational rate--distortion problem and propose SeqCalib as the core policy-generation algorithm in HeadWiseKV. SeqCalib processes layers in execution order and conditions each decision on the lower-layer policy used at deployment, thereby accounting for interactions across depth. A grouped-cache runtime materializes the selected policy as actual per-head KV residency rather than a mask over a full cache. We evaluate downstream quality across four hybrid long-context models and study physical residency and serving behavior on Qwen3.6-27B. HeadWiseKV retains near-Full-KV RULER and LoCoMo quality across the evaluated models. In the fixed-model systems study, it reduces sampled peak device memory by 8.59\\% at a 112K context length and extends the largest verified successful context from 114K to 161K.",
+      "authors": [
+        "Renjie Xie",
+        "Juncheng Yang",
+        "Aoting Hu",
+        "Mingxi Zhang",
+        "Liyao Wu",
+        "Zheheng Hong",
+        "Wei Xu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-09-02T02:59:11+00:00",
+      "link": "https://arxiv.org/pdf/2609.02029v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Budgeted per-head KV cache residency management to reduce memory and accelerate hybrid long-context LLM inference",
+      "llm_evidence_cn": "面向混合长上下文LLM的按头KV缓存驻留预算分配与内存压缩",
+      "llm_evidence": "面向混合长上下文LLM的按头KV缓存驻留预算分配与内存压缩",
+      "canonical_evidence": "面向混合长上下文LLM的按头KV缓存驻留预算分配与内存压缩",
+      "llm_tldr_en": "HeadWiseKV introduces training-free budgeted per-head cache residency for hybrid long-context LMs, assigning static multilevel history windows and formulating allocation as a rate-distortion problem to compress residual global KV caches and improve throughput.",
+      "llm_tldr_cn": "长上下文解码中持续增长的KV缓存占用大量GPU显存，混合语言模型的全局注意力残差层成为缓存需求瓶颈。HeadWiseKV提出免训练的按头KV驻留管理，为每个物理KV头设置静态多级历史窗口，并以受限操作率失真问题形式分配聚合驻留预算。该方法在压缩全局KV缓存的同时保留局部、循环和线性路径，使缓存需求在服务前可预测。实验显示能有效减少显存占用并保持或提升推理吞吐，为混合长上下文模型提供预制式的缓存压缩方案。",
+      "llm_tldr": "长上下文解码中持续增长的KV缓存占用大量GPU显存，混合语言模型的全局注意力残差层成为缓存需求瓶颈。HeadWiseKV提出免训练的按头KV驻留管理，为每个物理KV头设置静态多级历史窗口，并以受限操作率失真问题形式分配聚合驻留预算。该方法在压缩全局KV缓存的同时保留局部、循环和线性路径，使缓存需求在服务前可预测。实验显示能有效减少显存占用并保持或提升推理吞吐，为混合长上下文模型提供预制式的缓存压缩方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.30076v1",
+      "source": "arxiv",
+      "title": "Budget-Aware Compression Pipeline for Single-GPU LLM Inference: Methods, Trade-offs, and Coupling Effects",
+      "abstract": "Single-GPU deployment of 70B-parameter language models on an NVIDIA GPU is constrained by device memory, long-context throughput, and engineering integration cost. We cast single-GPU inference as a budget-aware design problem over these three axes and study how pruning, quantization, and KV-cache compression interact under realistic execution. Controlled ablations show that layer-wise pruning makes weight quantization more robust. KV-cache sparsification complements INT8 KV quantization by reducing memory without hurting decoding speed, while static vector quantizers often conflict with dynamic caching. Guided by these coupling results and explicit budget tracking, we assembled a practical pipeline and compressed a 70B model to about 33 GB, sustained about 57 tokens/s on 10k token prompts on a single A40, and kept absolute accuracy within 5% on common and reasoning benchmarks. We contribute design rules and a reproducible evaluation protocol that jointly report quality, memory, and end-to-end speed, and we provide a foundation for automated pipeline search under realistic single-GPU constraints.",
+      "authors": [
+        "Hongyu Yu",
+        "Yifei Shen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-30T22:54:40+00:00",
+      "link": "https://arxiv.org/pdf/2608.30076v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "single-GPU long-context LLM inference with KV-cache compression and coupling effects",
+      "llm_evidence_cn": "针对长上下文吞吐与KV缓存压缩的推理优化",
+      "llm_evidence": "针对长上下文吞吐与KV缓存压缩的推理优化",
+      "canonical_evidence": "针对长上下文吞吐与KV缓存压缩的推理优化",
+      "llm_tldr_en": "Budget-aware compression pipeline for single-GPU LLM inference studies pruning, quantization, and KV-cache compression coupling, enabling a 70B model under memory and throughput budgets.",
+      "llm_tldr_cn": "单GPU部署700亿参数大模型受显存与长上下文吞吐制约，本文把单卡推理建模为预算约束下的设计问题，研究剪枝、量化与KV缓存压缩的相互作用。受控实验发现逐层剪枝使权重量化更稳健，KV缓存稀疏化能补充INT8量化且不损害解码速度。基于这些耦合规律和显式预算跟踪，作者构建了实用压缩流水线并成功压缩70B模型，为单卡长上下文推理提供系统化方案。",
+      "llm_tldr": "单GPU部署700亿参数大模型受显存与长上下文吞吐制约，本文把单卡推理建模为预算约束下的设计问题，研究剪枝、量化与KV缓存压缩的相互作用。受控实验发现逐层剪枝使权重量化更稳健，KV缓存稀疏化能补充INT8量化且不损害解码速度。基于这些耦合规律和显式预算跟踪，作者构建了实用压缩流水线并成功压缩70B模型，为单卡长上下文推理提供系统化方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.01338v1",
+      "source": "arxiv",
+      "title": "mzCache: On-Device LLM Memory Management under Multitasking",
+      "abstract": "On-device mobile Large Language Model (LLM) inference is gaining significant attention. However, mobile devices operate in highly dynamic multitasking environments where users frequently switch between applications. This creates memory pressure, forcing LLM memory (model weights and KV cache) to be evicted by the operating system. When a new inference request arrives, the inference system must restore the evicted memory through slow storage reads or recompute the entire KV cache, severely degrading responsiveness. To address this, we present mzCache, an on-device LLM inference system with specialized memory management for multitasking environments. Under unpredictable memory pressure, mzCache elastically evicts LLM memory and leverages the unified memory of mobile SoCs to enable zero-wait inference on the GPU with concurrent CPU-side restoration. mzCache realizes this through restoration-oriented memory management: LLM memory is partitioned into fine-grained shared buffers to enable partial eviction and restoration with concurrent cross-processor access, while hybrid swap and backward-out eviction policies ensure low-latency restoration from any eviction state. Implemented on llama.cpp and deployed as an Android application, mzCache achieves 2.1-5.5$\\times$ reduction in Time-to-First-Token compared to storage-backed partial offload and demonstrates its effectiveness in real multitasking scenarios.",
+      "authors": [
+        "Hongseung Yu",
+        "Minsung Kim",
+        "Jongseok Park",
+        "Kyunghan Lee"
+      ],
+      "primary_category": "cs.OS",
+      "categories": [
+        "cs.OS",
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-09-01T14:49:20+00:00",
+      "link": "https://arxiv.org/pdf/2609.01338v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "restores evicted KV cache instead of full recompute for on-device LLM inference under multitasking",
+      "llm_evidence_cn": "移动端多任务内存压力下KV缓存被驱逐后的弹性恢复，避免重新计算KV缓存",
+      "llm_evidence": "移动端多任务内存压力下KV缓存被驱逐后的弹性恢复，避免重新计算KV缓存",
+      "canonical_evidence": "移动端多任务内存压力下KV缓存被驱逐后的弹性恢复，避免重新计算KV缓存",
+      "llm_tldr_en": "mzCache provides specialized on-device LLM memory management that elastically evicts and restores weights and KV cache under multitasking pressure, reducing restore cost and improving responsiveness.",
+      "llm_tldr_cn": "端侧大模型推理在用户频繁切换应用时面临内存回收压力，已生成的模型权重和KV缓存可能被系统驱逐，导致新请求需要慢速存储读取或完全重算KV缓存，响应延迟严重。mzCache针对这种多任务场景提供专用内存管理，在不可预测的内存压力下弹性驱逐LLM内存，并利用设备统一内存快速恢复。其设计面向移动端动态环境，目的是在下次推理请求到来时减少缓存重建开销、提升交互响应速度。",
+      "llm_tldr": "端侧大模型推理在用户频繁切换应用时面临内存回收压力，已生成的模型权重和KV缓存可能被系统驱逐，导致新请求需要慢速存储读取或完全重算KV缓存，响应延迟严重。mzCache针对这种多任务场景提供专用内存管理，在不可预测的内存压力下弹性驱逐LLM内存，并利用设备统一内存快速恢复。其设计面向移动端动态环境，目的是在下次推理请求到来时减少缓存重建开销、提升交互响应速度。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.02027v1",
+      "source": "arxiv",
+      "title": "Multi-Turn LLM Conversations under the Least-Recently-Used Policy: Mean-Field Asymptotics and Hit Ratio Approximation",
+      "abstract": "The major workloads in modern large language model (LLM) serving systems have shifted from single-shot LLM calls to multi-turn conversations, where new responses are generated based on the whole conversation history across all previous turns. The hit ratio, i.e., the average fraction of KV caches accessed directly from existing caches stored in high-bandwidth memory (HBM), is hence a crucial metric that governs system performance. Estimating the hit ratio is a highly nontrivial task due to the complex system dynamics, where the KV cache prefixes grow with turns and some must be evicted due to finite memory capacity. We formulate the system as a multi-turn conversation model under the least-recently-used (LRU) policy. Through a mean-field asymptotic framework, we prove that as the conversation arrival rate and the memory capacity grow proportionally to infinity, the hit ratio converges to a closed-form limit. Based on the characterization of the limit, we further propose a practical hit ratio estimator, and validate its accuracy by real LLM serving experiments on the Qwen3-8B model implemented on Ascend NPUs. Our results provide a theoretical foundation for the analysis of multi-turn LLM serving systems and a practical guideline for memory capacity provisioning.",
+      "authors": [
+        "Heyuan Yao",
+        "Chutong Gao",
+        "Yuan Lyu",
+        "Izzy Grosof",
+        "David Simchi-Levi"
+      ],
+      "primary_category": "cs.PF",
+      "categories": [
+        "cs.PF",
+        "math.PR"
+      ],
+      "published": "2026-09-02T02:57:16+00:00",
+      "link": "https://arxiv.org/pdf/2609.02027v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache hit ratio analysis under LRU eviction in multi-turn LLM serving",
+      "llm_evidence_cn": "面向多轮LLM服务的LRU缓存淘汰命中率分析",
+      "llm_evidence": "面向多轮LLM服务的LRU缓存淘汰命中率分析",
+      "canonical_evidence": "面向多轮LLM服务的LRU缓存淘汰命中率分析",
+      "llm_tldr_en": "This paper analyzes KV cache hit ratio in multi-turn LLM serving under LRU eviction, formulating conversation dynamics and presenting a mean-field asymptotic approximation to estimate hit ratio and guide LLM cache policy design.",
+      "llm_tldr_cn": "针对LLM服务中多轮对话场景的KV缓存管理问题，作者以LRU淘汰策略下的多轮会话模型为中心，建立平均场渐近模型来估计缓存命中率。文章刻画了前缀缓存随轮次增长且受有限内存约束的复杂动态，并给出命中率的近似估计方法。研究为LLM缓存容量规划与替换策略提供了理论依据，对KV缓存复用效率的量化分析有参考价值。",
+      "llm_tldr": "针对LLM服务中多轮对话场景的KV缓存管理问题，作者以LRU淘汰策略下的多轮会话模型为中心，建立平均场渐近模型来估计缓存命中率。文章刻画了前缀缓存随轮次增长且受有限内存约束的复杂动态，并给出命中率的近似估计方法。研究为LLM缓存容量规划与替换策略提供了理论依据，对KV缓存复用效率的量化分析有参考价值。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.01834v1",
+      "source": "arxiv",
+      "title": "Architecting Conversational Data Systems for Stateless LLM APIs: The Hydration Proxy Pattern",
+      "abstract": "As enterprise platforms transition to conversational reasoning interfaces, the stateless nature of LLM APIs creates an architectural gap. While statelessness enables horizontal scalability for AI providers, it forces client applications to manage the entire burden of conversational state and semantic memory. The work identifies the Hydration Proxy Pattern, an architecture that decouples session persistence from the reasoning engine. The framework ensures platform sovereignty over conversational data while enabling secure, multi-stage semantic grounding. We further propose the Context Stabilization Mandate to resolve the tradeoff between sovereign state management and KV caching.",
+      "authors": [
+        "Joseph Axisa"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.SE"
+      ],
+      "published": "2026-09-01T20:08:04+00:00",
+      "link": "https://arxiv.org/pdf/2609.01834v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Architecture pattern to stabilize client-side conversational context to improve KV caching in stateless LLM APIs",
+      "llm_evidence_cn": "通过Hydration代理模式稳定会话语境以改善无状态LLM API的KV缓存利用",
+      "llm_evidence": "通过Hydration代理模式稳定会话语境以改善无状态LLM API的KV缓存利用",
+      "canonical_evidence": "通过Hydration代理模式稳定会话语境以改善无状态LLM API的KV缓存利用",
+      "llm_tldr_en": "Identifies the Hydration Proxy Pattern to decouple session persistence from the reasoning engine and proposes the Context Stabilization Mandate to balance state sovereignty with KV cache reuse in stateless LLM APIs.",
+      "llm_tldr_cn": "面向企业会话式系统，提出Hydration代理架构，将会话持久化与推理引擎解耦以解决无状态LLM API的状态管理难题。文章进一步提出Context Stabilization Mandate，通过稳定提示上下文来缓解状态管理主权与KV缓存复用之间的冲突。该模式使平台既能掌控会话数据又能实现安全的多阶段语义接地，同时提升缓存效率，属于工程架构层面的KV缓存优化方案。",
+      "llm_tldr": "面向企业会话式系统，提出Hydration代理架构，将会话持久化与推理引擎解耦以解决无状态LLM API的状态管理难题。文章进一步提出Context Stabilization Mandate，通过稳定提示上下文来缓解状态管理主权与KV缓存复用之间的冲突。该模式使平台既能掌控会话数据又能实现安全的多阶段语义接地，同时提升缓存效率，属于工程架构层面的KV缓存优化方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
