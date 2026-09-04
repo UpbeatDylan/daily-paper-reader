@@ -1,0 +1,228 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-04T21:54:39.030193+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2609.03311v1",
+      "source": "arxiv",
+      "title": "DoPR: Reusable Compressed Document Prefixes for Efficient LLM Reranking",
+      "abstract": "Large language models (LLMs) are effective rerankers, but pointwise reranking repeatedly processes the same document across different queries, causing substantial redundant document-side computation. We propose \\textbf{DoPR}, a compressed document prefix framework that decouples offline document processing from online reranking. DoPR first selects query-independent document representations and converts them into compressed document prefix states, which are precomputed offline and reused whenever the document is retrieved. During online reranking, the model scores each query-document pair by processing only the query and scoring token, with document information supplied by the stored prefix states. This design reduces online cost through both document-side compression and cross-query prefix-state reuse. Experiments on TREC DL, BEIR, and BRIGHT with Qwen3 models from $0.6$B to $8$B show that DoPR achieves up to 8.0$\\times$ online document-side memory reduction and up to 8.04$\\times$ latency speedup, while retaining \\textbf{97.1\\%-99.5\\%} of the average NDCG@10 of matched full-document rerankers.",
+      "authors": [
+        "Beiya Dai",
+        "Yifan Wei",
+        "Guang Yang",
+        "Xing Shi",
+        "Xinbing Wang",
+        "Zhouhan Lin"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR"
+      ],
+      "published": "2026-09-03T03:02:48+00:00",
+      "link": "https://arxiv.org/pdf/2609.03311v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Reusing compressed document prefix states across queries reduces redundant document-side computation in LLM reranking, which is a prefix caching technique.",
+      "llm_evidence_cn": "将文档离线预计算成压缩前缀并在查询间复用，减少LLM重排冗余计算，属前缀缓存技术。",
+      "llm_evidence": "将文档离线预计算成压缩前缀并在查询间复用，减少LLM重排冗余计算，属前缀缓存技术。",
+      "canonical_evidence": "将文档离线预计算成压缩前缀并在查询间复用，减少LLM重排冗余计算，属前缀缓存技术。",
+      "llm_tldr_en": "DoPR compresses document-side states into reusable prefixes before online reranking, so each query-document pair only needs the query and scoring token, avoiding repeated document processing.",
+      "llm_tldr_cn": "基于LLM的点式重排在多个查询间反复编码同一文档，造成大量冗余文档侧计算。DoPR将文档表示离线选择并压缩为可复用的前缀状态，在线重排时只用查询和评分token访问存储的前缀即可评分。实验表明该框架能够显著降低在线计算成本，同时保持重排有效性。其离线解耦与前缀复用思路为LLM重排和检索场景提供了一种高效缓存方案。",
+      "llm_tldr": "基于LLM的点式重排在多个查询间反复编码同一文档，造成大量冗余文档侧计算。DoPR将文档表示离线选择并压缩为可复用的前缀状态，在线重排时只用查询和评分token访问存储的前缀即可评分。实验表明该框架能够显著降低在线计算成本，同时保持重排有效性。其离线解耦与前缀复用思路为LLM重排和检索场景提供了一种高效缓存方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.03430v1",
+      "source": "arxiv",
+      "title": "Random Attention: Rethinking KV Cache Eviction for Efficient Reasoning",
+      "abstract": "Large language models achieve superior performance on tasks that require extended reasoning, but long chains of thought make the KV cache a severe memory bottleneck. Existing KV cache compression methods share one paradigm: score each cached token by some estimate of how much it will matter later, and keep the top-scoring ones. We show that the selection signal contributes almost nothing. Random Attention keeps the prompt and evicts uniformly at random within each attention head, computing no score at all; across four models and six reasoning tasks it matches the strongest prior evictor while serving 32-43% higher throughput than it in vLLM deployment. Controlled experiments explain this by showing that 1) the prompt is the fragile part of the cache, and most of the gap between selectors is just whether their selection signal happened to keep it; 2) the reasoning trace protects itself against eviction with redundancy at two levels, in the text (the model restates what it still needs as it works) and across attention heads (each keeps its own copy of the trace), so once the prompt is safe, a random draw retains enough copies of what the model still needs, and no score is required to pick them. Our code is publicly available at https://github.com/SalesforceAIResearch/Random-Attention.",
+      "authors": [
+        "Heng Wang",
+        "Jielin Qiu",
+        "Wenting Zhao",
+        "Cheng Qian",
+        "Liangwei Yang",
+        "Jiawei Han",
+        "Heng Ji",
+        "Silvio Savarese",
+        "Shelby Heinecke",
+        "Huan Wang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-03T06:38:38+00:00",
+      "link": "https://arxiv.org/pdf/2609.03430v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "accelerates long-output reasoning serving through prompt-preserving random KV cache eviction",
+      "llm_evidence_cn": "用随机KV驱逐加速长思维链推理并提供更高吞吐",
+      "llm_evidence": "用随机KV驱逐加速长思维链推理并提供更高吞吐",
+      "canonical_evidence": "用随机KV驱逐加速长思维链推理并提供更高吞吐",
+      "llm_tldr_en": "Random Attention evicts KV entries uniformly at random when serving long reasoning outputs, preserving only the prompt; across four models and six reasoning tasks it matches top prior evictors while raising vLLM throughput by 32 to 43 percent.",
+      "llm_tldr_cn": "长思维链输出使KV缓存成为严重内存瓶颈，现有压缩方法都依赖重要性打分的启发式。作者发现该选择信号贡献极小，提出Random Attention：仅保留提示词，在每个注意力头内对缓存进行均匀随机驱逐，不计算任何分数。四个模型、六类推理任务上，该方法与最强先前驱逐器效果持平，同时在vLLM部署中提升32%-43%吞吐率，说明提示词才是缓存中最脆弱、最值得保留的部分。",
+      "llm_tldr": "长思维链输出使KV缓存成为严重内存瓶颈，现有压缩方法都依赖重要性打分的启发式。作者发现该选择信号贡献极小，提出Random Attention：仅保留提示词，在每个注意力头内对缓存进行均匀随机驱逐，不计算任何分数。四个模型、六类推理任务上，该方法与最强先前驱逐器效果持平，同时在vLLM部署中提升32%-43%吞吐率，说明提示词才是缓存中最脆弱、最值得保留的部分。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.01084v1",
+      "source": "arxiv",
+      "title": "Hardware Acceleration of Block-Diffusion LLM for Edge Devices",
+      "abstract": "Single-stream (batch-one) edge inference cannot amortize weight traffic across requests. Full-attention diffusion LLMs recompute the entire sequence at every step; native block diffusion makes completed blocks immutable and exactly cacheable, yet refinement still streams prefix KV and FFN weights. We co-design WIFiV-LPDDR, a wide-I/O LPDDR system for precision-tagged reads, BRQ-KV for a canonical low-rank-plus-INT8-residual prefix with query-dependent per-entry precision, and DAT-FFN for drift-mapped canonical replacement, adjacent-stage-corrected low-bit delta, or cached-state carry while keeping live activations unquantized. Both map to an input-stationary mixed-precision systolic array. For the evaluated 1.5B/7B models on modeled Jetson-class platforms, the full stack provides arithmetic-mean energy-reduction factors of 3.79x/3.96x and arithmetic-mean latency speedups of 2.88x/4.44x at the reported DAT-FFN settings; every corresponding compressed model-benchmark score drops by less than one absolute percentage point from its baseline.",
+      "authors": [
+        "Wei-Hsing Huang",
+        "Kiseok Lee",
+        "Ming-Yen Lee",
+        "Weiyu Sun",
+        "Cheng-Jhih Shih",
+        "Gayatri Tanksali",
+        "Arpit Khandelwal",
+        "Pin-Jun Chen",
+        "Yingyan Celine Lin",
+        "Shimeng Yu"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-09-01T11:18:55+00:00",
+      "link": "https://arxiv.org/pdf/2609.01084v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "prefix KV and completed-block caching for LLM inference",
+      "llm_evidence_cn": "LLM推理中前缀KV与块级缓存重用",
+      "llm_evidence": "LLM推理中前缀KV与块级缓存重用",
+      "canonical_evidence": "LLM推理中前缀KV与块级缓存重用",
+      "llm_tldr_en": "Single-stream edge inference of block-diffusion LLMs still streams prefix KV and FFN weights while completed blocks are cacheable; the paper co-designs wide-I/O LPDDR with precision-tagged reads, low-rank plus INT8-residual prefix KV quantization, and FFN delta/cached-state mechanisms to accelerate decoding.",
+      "llm_tldr_cn": "边缘端单流扩散LLM的推理难以摊还权重开销, 全注意力扩散LLM每步重算整个序列, 原生块扩散虽可将已完成块固定并精确缓存, 但精化步骤仍要流式读取前缀KV和FFN权重。作者协同设计了宽I/O LPDDR内存、低秩加INT8残差的前缀KV表示, 以及漂移映射替换/低比特增量/缓存状态继承的FFN处理, 并映射到输入驻留混合精度脉动阵列。对1.5B/7B模型在Jetson级平台的模拟表明该方案能缓解带宽和延迟瓶颈, 为块扩散LLM边缘推理中的前缀KV缓存与硬件加速提供了协同优化路线。",
+      "llm_tldr": "边缘端单流扩散LLM的推理难以摊还权重开销, 全注意力扩散LLM每步重算整个序列, 原生块扩散虽可将已完成块固定并精确缓存, 但精化步骤仍要流式读取前缀KV和FFN权重。作者协同设计了宽I/O LPDDR内存、低秩加INT8残差的前缀KV表示, 以及漂移映射替换/低比特增量/缓存状态继承的FFN处理, 并映射到输入驻留混合精度脉动阵列。对1.5B/7B模型在Jetson级平台的模拟表明该方案能缓解带宽和延迟瓶颈, 为块扩散LLM边缘推理中的前缀KV缓存与硬件加速提供了协同优化路线。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.03235v1",
+      "source": "arxiv",
+      "title": "SGD-KV: Summarization Guided KV Cache Compression",
+      "abstract": "Large language models (LLMs) face severe memory bottlenecks in long-context inference due to the linearly growing size of key-value (KV) caches. Existing KV cache compression techniques typically rely on simple heuristics, overlooking the distinct functional roles of different attention heads. We present SGD-KV (Summarization-Guided KV Cache Compression), a head-aware framework that leverages a novel chunk-summarization diagnostic task to systematically identify and prioritize attention heads specialized in hierarchical information aggregation. Experiments on Qwen2.5-7B-1M and Qwen3-32B across diverse long-context benchmarks demonstrate that SGD-KV achieves state-of-the-art performance with contexts up to 1M tokens, while reducing KV cache memory usage by up to 75%. Our findings show that strategically allocating the KV cache budget based on the summarization score distribution of attention heads yields a superior efficiency-accuracy trade-off for long-context inference.",
+      "authors": [
+        "Zeyu Liu",
+        "Woomin Song",
+        "Xuandi Fu",
+        "Sai Muralidhar Jayanthi",
+        "Vivek Govindan",
+        "Aram Galstyan",
+        "Sravan Babu Bodapati",
+        "Srikanth Ronanki"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-03T00:31:11+00:00",
+      "link": "https://arxiv.org/pdf/2609.03235v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Head-aware summarization-guided KV cache compression reduces memory bottleneck in long-context inference",
+      "llm_evidence_cn": "通过总结诊断划分注意力头功能并进行KV缓存压缩，缓解长上下文推理内存瓶颈",
+      "llm_evidence": "通过总结诊断划分注意力头功能并进行KV缓存压缩，缓解长上下文推理内存瓶颈",
+      "canonical_evidence": "通过总结诊断划分注意力头功能并进行KV缓存压缩，缓解长上下文推理内存瓶颈",
+      "llm_tldr_en": "Proposes SGD-KV, a head-aware KV cache compression method that identifies summarization-specialized heads with chunk-summarization diagnostics, reducing cache memory by up to 75 percent for contexts up to 1M tokens.",
+      "llm_tldr_cn": "长上下文推理时KV缓存随输入线性增长，造成严重内存瓶颈。SGD-KV引入块总结诊断任务，依据注意力头在分层信息聚合中的功能角色将其识别和排序，进而执行头部感知的KV缓存压缩。在Qwen2.5-7B-1M和Qwen3-32B等模型及多种长上下文基准上，该方法将KV缓存内存最多减少75%，同时保持最先进性能。这项工作说明根据头部功能分配压缩预算比统一启发式规则更有效，为长上下文KV缓存优化提供了新工具。",
+      "llm_tldr": "长上下文推理时KV缓存随输入线性增长，造成严重内存瓶颈。SGD-KV引入块总结诊断任务，依据注意力头在分层信息聚合中的功能角色将其识别和排序，进而执行头部感知的KV缓存压缩。在Qwen2.5-7B-1M和Qwen3-32B等模型及多种长上下文基准上，该方法将KV缓存内存最多减少75%，同时保持最先进性能。这项工作说明根据头部功能分配压缩预算比统一启发式规则更有效，为长上下文KV缓存优化提供了新工具。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.03494v1",
+      "source": "arxiv",
+      "title": "GrowPage: On-Demand KV Budgeting for Efficient LLM Reasoning Serving",
+      "abstract": "Long-output reasoning has made the key--value (KV) cache a critical memory bottleneck for efficient LLM serving. Existing KV compression methods usually rely on a predefined per-request budget and adjust only which KV states are retained, leaving the total capacity fixed throughout decoding. However, reasoning workloads exhibit substantial demand variation: different requests require different KV capacities, and the attention demand of an individual request evolves during generation. We introduce \\textbf{GrowPage}, an on-demand KV budgeting framework that treats KV capacity as a runtime resource. GrowPage maintains lightweight dual-timescale query summaries to capture recent and long-term attention behaviors, and uses their relative attention working sets to estimate demand evolution. At each capacity boundary, GrowPage either compresses KV states within the current allocation or acquires an additional physical page when broader demand emerges. By integrating with PagedAttention's page-level memory abstraction, GrowPage preserves continuous batching and prefix caching. Experiments on reasoning benchmarks across multiple models show that GrowPage achieves a superior performance--throughput trade-off over existing approaches.",
+      "authors": [
+        "Qiankun Ma",
+        "Yanjiang Zhou",
+        "Zinan Xiong",
+        "Haofei Wang",
+        "Zhen Song",
+        "Yang Xiang",
+        "Ziyao Zhang",
+        "Hairong Zheng"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-09-03T07:53:05+00:00",
+      "link": "https://arxiv.org/pdf/2609.03494v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "runtime KV budget allocation for long-output reasoning serving, easing KV cache bottleneck",
+      "llm_evidence_cn": "在长输出推理中将KV容量作为运行时资源按需分配",
+      "llm_evidence": "在长输出推理中将KV容量作为运行时资源按需分配",
+      "canonical_evidence": "在长输出推理中将KV容量作为运行时资源按需分配",
+      "llm_tldr_en": "GrowPage treats KV cache capacity as a runtime allocatable resource during long-output reasoning, maintaining dual-timescale query summaries to reflect recent and long-term attention and adjust budgets on demand.",
+      "llm_tldr_cn": "长输出推理中不同请求甚至同一请求在不同阶段的KV容量需求差异很大，现有方法通常把每请求预算固定。GrowPage将KV容量视为运行时资源按需分配，维护近期与长期两尺度查询摘要，依据它们的相对注意力工作集动态调整预算。该方法能更贴合推理工作负载的变化特征，有望在保证质量前提下提升长输出推理服务的吞吐与内存利用率。",
+      "llm_tldr": "长输出推理中不同请求甚至同一请求在不同阶段的KV容量需求差异很大，现有方法通常把每请求预算固定。GrowPage将KV容量视为运行时资源按需分配，维护近期与长期两尺度查询摘要，依据它们的相对注意力工作集动态调整预算。该方法能更贴合推理工作负载的变化特征，有望在保证质量前提下提升长输出推理服务的吞吐与内存利用率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

@@ -6,41 +6,35 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-09-03
-- 运行时间：2026-09-03 23:08:48 UTC
+- 最新运行日期：2026-09-04
+- 运行时间：2026-09-04 22:00:15 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：3
-- 速读区：4
+- 本次总论文数：5
+- 精读区：2
+- 速读区：3
 
 ### 今日简报（AI）
-今日7篇论文聚焦LLM推理效率，精读2篇高分解码与预填充优化，速读3篇覆盖压缩与缓存策略。最值得关注的是利用注意力稀疏性实现“比Flash更快”的长上下文解码，及输入自适应稀疏预填充CRISP。建议普通读者优先关注这两项技术如何降低单GPU长文本推理成本。
-- 详情：[/202609/03/README](/202609/03/README)
+今日5篇论文聚焦LLM推理效率，核心方向为KV缓存压缩与复用。最值得精读《DoPR》的文档前缀重用重排序与《Random Attention》的随机淘汰机制。建议优先阅读这两篇高分论文，再按需扫读速读列表中硬件加速与缓存管理方案。
+- 详情：[/202609/04/README](/202609/04/README)
 
 ### 精读区论文标签
-1. [Faster Than Flash: Exploiting Attention Sparsity for Efficient Long-Context Decoding](/202609/03/2609.00097v1-faster-than-flash-exploiting-attention-sparsity-for-efficient-long-context-decoding)  
+1. [DoPR: Reusable Compressed Document Prefixes for Efficient LLM Reranking](/202609/04/2609.03311v1-dopr-reusable-compressed-document-prefixes-for-efficient-llm-reranking)  
+   标签：评分：9.0/10、query:pic
+   evidence：将文档离线预计算成压缩前缀并在查询间复用，减少LLM重排冗余计算，属前缀缓存技术。
+2. [Random Attention: Rethinking KV Cache Eviction for Efficient Reasoning](/202609/04/2609.03430v1-random-attention-rethinking-kv-cache-eviction-for-efficient-reasoning)  
    标签：评分：8.0/10、query:pic
-   evidence：融合内核利用注意力稀疏性加速长上下文解码
-2. [CRISP: Cliff-awaRe Input-adaptive Sparse Prefilling with Structural-Mass-Motivated Routing](/202609/03/2609.01925v1-crisp-cliff-aware-input-adaptive-sparse-prefilling-with-structural-mass-motivated-routing)  
-   标签：评分：8.0/10、query:pic
-   evidence：面向长上下文LLM二次复杂度预填充阶段的输入自适应稀疏注意力方法
-3. [HeadWiseKV: Budgeted Per-Head Cache Residency for Hybrid Long-Context Language Models](/202609/03/2609.02029v1-headwisekv-budgeted-per-head-cache-residency-for-hybrid-long-context-language-models)  
-   标签：评分：8.0/10、query:pic
-   evidence：面向混合长上下文LLM的按头KV缓存驻留预算分配与内存压缩
+   evidence：用随机KV驱逐加速长思维链推理并提供更高吞吐
 
 ### 速读区论文标签
-1. [Budget-Aware Compression Pipeline for Single-GPU LLM Inference: Methods, Trade-offs, and Coupling Effects](/202609/03/2608.30076v1-budget-aware-compression-pipeline-for-single-gpu-llm-inference-methods-trade-offs-and-coupling-effects)  
+1. [Hardware Acceleration of Block-Diffusion LLM for Edge Devices](/202609/04/2609.01084v1-hardware-acceleration-of-block-diffusion-llm-for-edge-devices)  
    标签：评分：7.0/10、query:pic
-   evidence：针对长上下文吞吐与KV缓存压缩的推理优化
-2. [Multi-Turn LLM Conversations under the Least-Recently-Used Policy: Mean-Field Asymptotics and Hit Ratio Approximation](/202609/03/2609.02027v1-multi-turn-llm-conversations-under-the-least-recently-used-policy-mean-field-asymptotics-and-hit-ratio-approximation)  
+   evidence：LLM推理中前缀KV与块级缓存重用
+2. [GrowPage: On-Demand KV Budgeting for Efficient LLM Reasoning Serving](/202609/04/2609.03494v1-growpage-on-demand-kv-budgeting-for-efficient-llm-reasoning-serving)  
    标签：评分：7.0/10、query:pic
-   evidence：面向多轮LLM服务的LRU缓存淘汰命中率分析
-3. [mzCache: On-Device LLM Memory Management under Multitasking](/202609/03/2609.01338v1-mzcache-on-device-llm-memory-management-under-multitasking)  
+   evidence：在长输出推理中将KV容量作为运行时资源按需分配
+3. [SGD-KV: Summarization Guided KV Cache Compression](/202609/04/2609.03235v1-sgd-kv-summarization-guided-kv-cache-compression)  
    标签：评分：6.0/10、query:pic
-   evidence：移动端多任务内存压力下KV缓存被驱逐后的弹性恢复，避免重新计算KV缓存
-4. [Architecting Conversational Data Systems for Stateless LLM APIs: The Hydration Proxy Pattern](/202609/03/2609.01834v1-architecting-conversational-data-systems-for-stateless-llm-apis-the-hydration-proxy-pattern)  
-   标签：评分：6.0/10、query:pic
-   evidence：通过Hydration代理模式稳定会话语境以改善无状态LLM API的KV缓存利用
+   evidence：通过总结诊断划分注意力头功能并进行KV缓存压缩，缓解长上下文推理内存瓶颈
 
 
 <div class="dpr-home-promo-card">
