@@ -1,0 +1,54 @@
+{
+  "label": "2026-09-06",
+  "date": "2026-09-06",
+  "generated_at": "2026-09-06T21:42:30",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202609/06/2608.29539v1-logo-token-level-dynamic-local-global-attention",
+      "section": "quick",
+      "title_en": "LoGo: Token-Level Dynamic Local-Global Attention",
+      "authors": "Yuqi Pan, Zheng Li, Bohao Tang, Zhen Qin, Guoqi Li",
+      "date": "2026-08-30",
+      "pdf": "https://arxiv.org/pdf/2608.29539v1",
+      "score": "7.0",
+      "evidence": "词元级动态局部-全局注意力降低长上下文注意力计算开销。",
+      "tldr": "长上下文下标准Transformer均匀分配注意力导致计算低效，静态局部-全局混合又缺乏灵活性。LoGo提出token级动态选择：每层所有token先经局部注意力，再以学习门控为少数token激活全上下文全局注意力，用阈值控制器维持预算。多规模实验显示其扩展性与全注意力一致，表现优于全注意力及同预算静态混合，长程检索提升显著。说明学习token级跨度分配能有效优化长上下文的性能-计算权衡。",
+      "tags": "query:pic",
+      "abstract_en": "As context lengths scale, attention increasingly becomes a primary computational bottleneck in large language models. Standard Transformers remain powerful but computationally inefficient, as they allocate the same attention budget to every token regardless of its contextual demand. Existing local-global hybrids provide a more efficient alternative by mixing restricted- and full-context attention, but they typically allocate span statically across layers or heads. To address these limitations, we propose LoGo, a token-level dynamic local-global attention mechanism that uses attention span as a direct proxy for attention budget allocation. Each LoGo layer contains coupled local and global branches: all tokens receive efficient local attention over a restricted context window, while a learned gate activates global attention with full-context access only for tokens requiring long-range information. A threshold-based budget controller maintains a target global ratio without auxiliary losses, and a progressive masking schedule stabilizes training before sparse routing takes effect. We further implement query-sparse Triton kernels that convert reduced global-attention computation into practical speedups. Extensive experiments validate LoGo's effectiveness, showing that it preserves the scaling behavior of full-attention Transformers across model sizes. In controlled comparisons, LoGo improves over the full-attention Transformer and matched-budget static local-global hybrids, with clear gains on long-range retrieval. Analysis further shows that LoGo learns interpretable span allocation patterns. These results suggest that learned token-level span allocation is an effective and scalable way to improve the long-context performance-compute trade-off.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/06/2609.03515v1-what-matters-for-aggressive-decoding-time-kv-eviction-temporal-aggregation-and-ranking-preservation",
+      "section": "quick",
+      "title_en": "What Matters for Aggressive Decoding-Time KV Eviction? Temporal Aggregation and Ranking Preservation",
+      "authors": "Bo Zeng, Yu Zhao, Yefeng Liu, Zhihong Lu, Xuanfan Ni, Xintong Wang",
+      "date": "2026-09-03",
+      "pdf": "https://arxiv.org/pdf/2609.03515v1",
+      "score": "7.0",
+      "evidence": "研究解码期KV驱逐与激进KV缓存压缩，评估时间聚合对长上下文推理加速的影响",
+      "tldr": "解码时KV压缩研究大多关注评分函数，却将跨解码步的时间聚合视为实现细节。本文发现，在激进压缩下，EMA聚合令近似保序的评分（如值范数、熵）在驱逐集层面几乎不可区分，而KeyDiff等会改变排名并造成明显性能退化。作者据此提出EMA式InertiaKV和周期性刷新的InertiaKV-Lazy，并进一步探索无评分解码，即仅使用起始步排名。InertiaKV-Lazy将解码吞吐提升1.34～1.46倍，无评分解码的平均质量变化为+0.03。实验表明时间聚合和排名保持是独立且重要的设计因素，但评分质量依然不可忽略。",
+      "tags": "query:pic",
+      "abstract_en": "Decoding-time KV cache compression research focuses heavily on designing better token scoring functions, while the temporal rule that aggregates scores across decode steps is often treated as an implementation detail. Under aggressive KV compression, we find that exponential-moving-average (EMA) aggregation makes approximately order-preserving scorer modifications largely indistinguishable at the eviction-set level. Value-norm and entropy variants remain highly correlated with attention and produce nearly unchanged retention sets, whereas KeyDiff, key norm, recency, and a learned scorer alter the ranking and degrade substantially. We associate this stability with the evaluated aggregation, which couples layer weighting and temporal retention. Building on this observation, we introduce InertiaKV, an EMA-based decoding-time eviction method, and InertiaKV-Lazy, its periodic-refresh variant, which yields 1.34-1.46x decode throughput relative to full refresh InertiaKV. We also study Score-Free decoding as a separate empirical operating point: it scores the full context once at the first decode step, freezes that ranking, and incurs an average quality change of +0.03 while removing all subsequent scoring. Across six open-weight backbones and the LongBench, LongBench-v2, and RULER benchmarks, the results identify temporal aggregation and ranking preservation as distinct, consequential design factors; they do not imply that scoring quality is irrelevant in general.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/06/2608.30076v2-budget-aware-compression-pipeline-for-single-gpu-llm-inference-methods-trade-offs-and-coupling-effects",
+      "section": "quick",
+      "title_en": "Budget-Aware Compression Pipeline for Single-GPU LLM Inference: Methods, Trade-offs, and Coupling Effects",
+      "authors": "Hongyu Yu, Yifei Shen",
+      "date": "2026-08-30",
+      "pdf": "https://arxiv.org/pdf/2608.30076v2",
+      "score": "6.0",
+      "evidence": "单GPU推理中的KV缓存压缩与长上下文吞吐优化",
+      "tldr": "单GPU部署大型语言模型受显存、长文本吞吐和集成成本制约。本文将推理视为预算感知设计问题，研究剪枝、量化和KV缓存压缩的交互。层间剪枝增强权重量化鲁棒性，KV缓存稀疏化与INT8量化互补，静态向量量化则常与动态缓存冲突。据此构建流水线，将70B模型压缩至约33GB，在单块A40上以10k提示词达到约57 tokens/s，精度损失在5%以内。",
+      "tags": "query:pic",
+      "abstract_en": "Single-GPU deployment of 70B-parameter language models on an NVIDIA GPU is constrained by device memory, long-context throughput, and engineering integration cost. We cast single-GPU inference as a budget-aware design problem over these three axes and study how pruning, quantization, and KV-cache compression interact under realistic execution. Controlled ablations show that layer-wise pruning makes weight quantization more robust. KV-cache sparsification complements INT8 KV quantization by reducing memory without hurting decoding speed, while static vector quantizers often conflict with dynamic caching. Guided by these coupling results and explicit budget tracking, we assembled a practical pipeline and compressed a 70B model to about 33 GB, sustained about 57 tokens/s on 10k token prompts on a single A40, and kept absolute accuracy within 5% on common and reasoning benchmarks. We contribute design rules and a reproducible evaluation protocol that jointly report quality, memory, and end-to-end speed, and we provide a foundation for automated pipeline search under realistic single-GPU constraints.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

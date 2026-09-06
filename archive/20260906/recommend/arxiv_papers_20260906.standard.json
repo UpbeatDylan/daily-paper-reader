@@ -1,0 +1,133 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-06T21:39:57.949060+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.29539v1",
+      "source": "arxiv",
+      "title": "LoGo: Token-Level Dynamic Local-Global Attention",
+      "abstract": "As context lengths scale, attention increasingly becomes a primary computational bottleneck in large language models. Standard Transformers remain powerful but computationally inefficient, as they allocate the same attention budget to every token regardless of its contextual demand. Existing local-global hybrids provide a more efficient alternative by mixing restricted- and full-context attention, but they typically allocate span statically across layers or heads. To address these limitations, we propose LoGo, a token-level dynamic local-global attention mechanism that uses attention span as a direct proxy for attention budget allocation. Each LoGo layer contains coupled local and global branches: all tokens receive efficient local attention over a restricted context window, while a learned gate activates global attention with full-context access only for tokens requiring long-range information. A threshold-based budget controller maintains a target global ratio without auxiliary losses, and a progressive masking schedule stabilizes training before sparse routing takes effect. We further implement query-sparse Triton kernels that convert reduced global-attention computation into practical speedups. Extensive experiments validate LoGo's effectiveness, showing that it preserves the scaling behavior of full-attention Transformers across model sizes. In controlled comparisons, LoGo improves over the full-attention Transformer and matched-budget static local-global hybrids, with clear gains on long-range retrieval. Analysis further shows that LoGo learns interpretable span allocation patterns. These results suggest that learned token-level span allocation is an effective and scalable way to improve the long-context performance-compute trade-off.",
+      "authors": [
+        "Yuqi Pan",
+        "Zheng Li",
+        "Bohao Tang",
+        "Zhen Qin",
+        "Guoqi Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-30T04:05:56+00:00",
+      "link": "https://arxiv.org/pdf/2608.29539v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Token-level dynamic local-global attention reduces long-context attention computation cost.",
+      "llm_evidence_cn": "词元级动态局部-全局注意力降低长上下文注意力计算开销。",
+      "llm_evidence": "词元级动态局部-全局注意力降低长上下文注意力计算开销。",
+      "canonical_evidence": "词元级动态局部-全局注意力降低长上下文注意力计算开销。",
+      "llm_tldr_en": "LoGo uses token-level dynamic attention span as a budget proxy, coupling local and global branches to allocate attention efficiently, reducing long-context inference cost.",
+      "llm_tldr_cn": "上下文变长后，Transformer对所有token分配相同注意力预算，导致计算效率低下。现有局部-全局混合注意力虽然更高效，却按层或头静态划分跨度，难以适配真实需求。LoGo提出词元级动态局部-全局注意力，在一个层内同时设置局部与全局分支，以注意力跨度作为预算分配的代理，动态决定哪些token需要全局关注。该方法能减少冗余的全局注意力操作，为长上下文推理提供更低开销的注意力路径，并保持较好的生成质量。",
+      "llm_tldr": "上下文变长后，Transformer对所有token分配相同注意力预算，导致计算效率低下。现有局部-全局混合注意力虽然更高效，却按层或头静态划分跨度，难以适配真实需求。LoGo提出词元级动态局部-全局注意力，在一个层内同时设置局部与全局分支，以注意力跨度作为预算分配的代理，动态决定哪些token需要全局关注。该方法能减少冗余的全局注意力操作，为长上下文推理提供更低开销的注意力路径，并保持较好的生成质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.30076v2",
+      "source": "arxiv",
+      "title": "Budget-Aware Compression Pipeline for Single-GPU LLM Inference: Methods, Trade-offs, and Coupling Effects",
+      "abstract": "Single-GPU deployment of 70B-parameter language models on an NVIDIA GPU is constrained by device memory, long-context throughput, and engineering integration cost. We cast single-GPU inference as a budget-aware design problem over these three axes and study how pruning, quantization, and KV-cache compression interact under realistic execution. Controlled ablations show that layer-wise pruning makes weight quantization more robust. KV-cache sparsification complements INT8 KV quantization by reducing memory without hurting decoding speed, while static vector quantizers often conflict with dynamic caching. Guided by these coupling results and explicit budget tracking, we assembled a practical pipeline and compressed a 70B model to about 33 GB, sustained about 57 tokens/s on 10k token prompts on a single A40, and kept absolute accuracy within 5% on common and reasoning benchmarks. We contribute design rules and a reproducible evaluation protocol that jointly report quality, memory, and end-to-end speed, and we provide a foundation for automated pipeline search under realistic single-GPU constraints.",
+      "authors": [
+        "Hongyu Yu",
+        "Yifei Shen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-30T22:54:40+00:00",
+      "link": "https://arxiv.org/pdf/2608.30076v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV-cache compression and long-context throughput for single-GPU inference",
+      "llm_evidence_cn": "单GPU推理中的KV缓存压缩与长上下文吞吐优化",
+      "llm_evidence": "单GPU推理中的KV缓存压缩与长上下文吞吐优化",
+      "canonical_evidence": "单GPU推理中的KV缓存压缩与长上下文吞吐优化",
+      "llm_tldr_en": "Casts single-GPU LLM inference as a budget-aware design problem and studies how pruning, quantization and KV-cache compression interact, then assembles a pipeline that compresses a 70B model.",
+      "llm_tldr_cn": "单GPU部署70B模型受显存限制、长上下文吞吐不足和工程集成成本约束。该文将单GPU推理建模为预算感知的三轴设计问题，研究剪枝、量化与KV缓存压缩在实际执行中的交互；通过受控实验发现KV缓存稀疏化与INT8 KV量化互补，静态向量量化器常与动态缓存冲突。基于这些耦合结果组装了实用压缩流水线并对70B模型进行了压缩。这项工作为长上下文吞吐受限的单GPU推理提供了可操作的KV缓存与权重复合优化经验。",
+      "llm_tldr": "单GPU部署70B模型受显存限制、长上下文吞吐不足和工程集成成本约束。该文将单GPU推理建模为预算感知的三轴设计问题，研究剪枝、量化与KV缓存压缩在实际执行中的交互；通过受控实验发现KV缓存稀疏化与INT8 KV量化互补，静态向量量化器常与动态缓存冲突。基于这些耦合结果组装了实用压缩流水线并对70B模型进行了压缩。这项工作为长上下文吞吐受限的单GPU推理提供了可操作的KV缓存与权重复合优化经验。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.03515v1",
+      "source": "arxiv",
+      "title": "What Matters for Aggressive Decoding-Time KV Eviction? Temporal Aggregation and Ranking Preservation",
+      "abstract": "Decoding-time KV cache compression research focuses heavily on designing better token scoring functions, while the temporal rule that aggregates scores across decode steps is often treated as an implementation detail. Under aggressive KV compression, we find that exponential-moving-average (EMA) aggregation makes approximately order-preserving scorer modifications largely indistinguishable at the eviction-set level. Value-norm and entropy variants remain highly correlated with attention and produce nearly unchanged retention sets, whereas KeyDiff, key norm, recency, and a learned scorer alter the ranking and degrade substantially. We associate this stability with the evaluated aggregation, which couples layer weighting and temporal retention. Building on this observation, we introduce InertiaKV, an EMA-based decoding-time eviction method, and InertiaKV-Lazy, its periodic-refresh variant, which yields 1.34-1.46x decode throughput relative to full refresh InertiaKV. We also study Score-Free decoding as a separate empirical operating point: it scores the full context once at the first decode step, freezes that ranking, and incurs an average quality change of +0.03 while removing all subsequent scoring. Across six open-weight backbones and the LongBench, LongBench-v2, and RULER benchmarks, the results identify temporal aggregation and ranking preservation as distinct, consequential design factors; they do not imply that scoring quality is irrelevant in general.",
+      "authors": [
+        "Bo Zeng",
+        "Yu Zhao",
+        "Yefeng Liu",
+        "Zhihong Lu",
+        "Xuanfan Ni",
+        "Xintong Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-09-03T08:17:34+00:00",
+      "link": "https://arxiv.org/pdf/2609.03515v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Decoding-time KV eviction study for aggressive KV cache compression; analyzes temporal aggregation under tight cache budgets for long-context acceleration",
+      "llm_evidence_cn": "研究解码期KV驱逐与激进KV缓存压缩，评估时间聚合对长上下文推理加速的影响",
+      "llm_evidence": "研究解码期KV驱逐与激进KV缓存压缩，评估时间聚合对长上下文推理加速的影响",
+      "canonical_evidence": "研究解码期KV驱逐与激进KV缓存压缩，评估时间聚合对长上下文推理加速的影响",
+      "llm_tldr_en": "Analyzes decoding-time KV cache eviction under aggressive compression, finding temporal aggregation (EMA) makes attention-like scorers interchangeable while ranking-shifting scorers degrade; informs cache-accuracy trade-offs for long-context acceleration.",
+      "llm_tldr_cn": "解码期KV缓存压缩研究通常只关注打分函数，而忽视跨解码步聚合规则的影响。本文发现，在激进压缩下采用指数移动平均聚合后，近似保序的打分修改在驱逐集层面几乎不可区分，而KeyDiff、键范数、最近度等会改变排名的打分器则性能明显下降。该结果表明对于注意力相关的驱逐器，聚合规则稳定了保留集，为设计高压缩率下的KV缓存策略和长上下文推理加速提供重要指导。",
+      "llm_tldr": "解码期KV缓存压缩研究通常只关注打分函数，而忽视跨解码步聚合规则的影响。本文发现，在激进压缩下采用指数移动平均聚合后，近似保序的打分修改在驱逐集层面几乎不可区分，而KeyDiff、键范数、最近度等会改变排名的打分器则性能明显下降。该结果表明对于注意力相关的驱逐器，聚合规则稳定了保留集，为设计高压缩率下的KV缓存策略和长上下文推理加速提供重要指导。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
