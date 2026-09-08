@@ -1,0 +1,100 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-08T22:44:24.258011+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2609.04852v1",
+      "source": "arxiv",
+      "title": "KVMem: Virtualizing Million-Token Agent Workspaces on a Consumer GPU",
+      "abstract": "Modern LLM agents operate in persistent workspaces whose accumulated history can exceed both GPU KV capacity and the model's native context window. Existing systems typically compact older context into summaries or retrieve it later as text, either losing fine-grained execution evidence or repeatedly prefilling content that the model has already processed. We present KVMem, a KV-context virtualization system that preserves overflowed workspace history as paged KV state across GPU memory, host memory, and NVMe. KVMem uses lightweight, model-native attention-space indexes to select relevant historical blocks and materializes a query-dependent execution view bounded by the model's native context window. Extensive evaluations on long-context agent benchmarks spanning histories up to one million tokens, including LongMemEval, MemoryAgentBench, and AgentLongBench, show that KVMem generally achieves higher task utility and greater inference efficiency than compaction-based approaches, the de facto standard for handling context overflow. In the DeepSWE long-context test with Qwen3.8-27B, KVMem improves task success from 43.8% with compaction-only context management to 48.4%.   In our local-deployment evaluation, KVMem runs Qwen3.6/3.8-27B NVFP4 with MTP on an off-the-shelf laptop equipped with a 24\\,GB RTX 5090 Laptop GPU, virtualizing agent workspaces of up to 1M tokens-four times the model's native 256K-token context window. In a single-session setting, KVMem generates $\\sim$50 tokens/s, providing interactive responsiveness for local agent execution. More broadly, by decoupling addressable workspace size from the LLM's native context window, KVMem provides a practical path toward long-running agents whose workspaces can grow beyond that window.",
+      "authors": [
+        "Di Chai",
+        "Leye Wang",
+        "Zeshen Su",
+        "Zhiguo Xia",
+        "Zhihang Yu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-04T08:09:59+00:00",
+      "link": "https://arxiv.org/pdf/2609.04852v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV-context virtualization via paged KV state across GPU memory, host memory and NVMe enables context caching for long-context LLM inference without repeated prefill.",
+      "llm_evidence_cn": "利用分页KV状态将历史存储在GPU、内存和NVMe上，为长上下文LLM推理提供KV上下文缓存，避免重复预填充",
+      "llm_evidence": "利用分页KV状态将历史存储在GPU、内存和NVMe上，为长上下文LLM推理提供KV上下文缓存，避免重复预填充",
+      "canonical_evidence": "利用分页KV状态将历史存储在GPU、内存和NVMe上，为长上下文LLM推理提供KV上下文缓存，避免重复预填充",
+      "llm_tldr_en": "KVMem virtualizes overflowed LLM agent KV context across GPU memory, host memory and NVMe. Attention-space indexes select blocks and compose query-dependent views, so million-token histories fit on consumer GPUs without repeated prefill.",
+      "llm_tldr_cn": "长上下文智能体的历史可能超过GPU KV容量和模型原生窗口，现有摘要或文本检索会丢失证据或重复预填充。KVMem把溢出的工作区历史以分页KV状态保存在GPU、内存和NVMe，利用模型自身的注意空间索引选择相关块，并按查询物化执行视图。在长上下文智能体基准上的评估表明，KVMem能在消费级GPU上支持百万Token级历史。它为超长上下文LLM推理提供了一种KV上下文虚拟化与缓存路径。",
+      "llm_tldr": "长上下文智能体的历史可能超过GPU KV容量和模型原生窗口，现有摘要或文本检索会丢失证据或重复预填充。KVMem把溢出的工作区历史以分页KV状态保存在GPU、内存和NVMe，利用模型自身的注意空间索引选择相关块，并按查询物化执行视图。在长上下文智能体基准上的评估表明，KVMem能在消费级GPU上支持百万Token级历史。它为超长上下文LLM推理提供了一种KV上下文虚拟化与缓存路径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.04774v1",
+      "source": "arxiv",
+      "title": "Adaptive Context Parallelism for Production LLM Serving",
+      "abstract": "As LLM context windows expand and input sequences grow longer, serving systems face increasing computational and memory demands. Context parallelism (CP), which partitions the input sequence across multiple ranks to parallelize the computation, has therefore become increasingly important for efficient LLM serving. However, existing CP-enabled systems either rely on static CP configurations or adjust the CP degree only for active requests or batches. In this paper, we present Vertumnus, an adaptive CP serving system designed for heterogeneous and evolving workloads. At the request level, Vertumnus routes requests among workers with different CP degrees using a placement cost that combines predicted queuing delay, cache-aware prefill time, and GPU-time cost. At the cluster level, Vertumnus adapts the worker composition through seconds-scale split and merge operations as workload demand changes. Vertumnus further introduces a global prefix-cache management policy that coordinates cache placement and replication among workers with the same or different CP degrees, preserving cache locality as request assignments and worker composition change. Experiments on a 64-GPU cluster with public and production workloads show that, under the highest evaluated loads, Vertumnus reduces mean TTFT by up to 28.1% and improves token-weighted SLO attainment by up to 13.3 percentage points over the strongest baseline.",
+      "authors": [
+        "Jiarui Guo",
+        "Rongle Wang",
+        "Peijun Huang",
+        "Zongwei Lv",
+        "Ziqing Wang",
+        "Kan Liu",
+        "Tao Lan",
+        "Lin Qu",
+        "Xiaolin Wang",
+        "Tong Yang"
+      ],
+      "primary_category": "cs.OS",
+      "categories": [
+        "cs.OS"
+      ],
+      "published": "2026-09-04T06:10:15+00:00",
+      "link": "https://arxiv.org/pdf/2609.04774v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Adaptive context parallelism serving system for long-context acceleration",
+      "llm_evidence_cn": "提出自适应上下文并行服务系统加速长上下文推理",
+      "llm_evidence": "提出自适应上下文并行服务系统加速长上下文推理",
+      "canonical_evidence": "提出自适应上下文并行服务系统加速长上下文推理",
+      "llm_tldr_en": "Vertumnus is an adaptive context parallelism serving system routing requests by cache-aware placement cost, improving long-context serving efficiency.",
+      "llm_tldr_cn": "上下文窗口扩大使长序列并行推理需求增加，而静态或仅按请求调整的并行度不适应异构负载。本文提出Vertumnus，在请求级用结合排队延迟、缓存感知预填充时间和GPU时间开销的放置成本进行路由，在集群级根据负载动态调整上下文并行度。该系统面向生产环境提升长上下文推理的吞吐与资源利用率。它属于服务端扩展方案，与具体缓存重用机制正交。",
+      "llm_tldr": "上下文窗口扩大使长序列并行推理需求增加，而静态或仅按请求调整的并行度不适应异构负载。本文提出Vertumnus，在请求级用结合排队延迟、缓存感知预填充时间和GPU时间开销的放置成本进行路由，在集群级根据负载动态调整上下文并行度。该系统面向生产环境提升长上下文推理的吞吐与资源利用率。它属于服务端扩展方案，与具体缓存重用机制正交。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

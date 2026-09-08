@@ -6,29 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-09-07
-- 运行时间：2026-09-07 23:05:59 UTC
+- 最新运行日期：2026-09-08
+- 运行时间：2026-09-08 22:48:43 UTC
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：2
 - 精读区：1
-- 速读区：2
+- 速读区：1
 
 ### 今日简报（AI）
-今日精读提出BeaconKV，以Beacon查询引导键值缓存压缩，显著提升大模型推理效率；速读则揭示量化会放大缓存导致的输出分歧，并给出低秩注意力恢复方案。最值得关注BeaconKV的查询感知压缩思路，以及量化缓存质量与一致性间的矛盾。普通读者可优先了解KV缓存压缩对推理速度的影响，再看量化如何改变模型回答的稳定性。
-- 详情：[/202609/07/README](/202609/07/README)
+今日精读《KVMem》并速读《Adaptive Context Parallelism》，共2篇论文，重点聚焦大模型上下文与显存优化。最值得关注的是KVMem在消费级GPU上实现百万token智能体工作区虚拟化的方案（9.0/10），展现低成本长上下文潜力。建议普通读者优先精读该文，并留意显存调度与上下文并行技术的实际落地场景。
+- 详情：[/202609/08/README](/202609/08/README)
 
 ### 精读区论文标签
-1. [BeaconKV: Key-Value Cache Compression Guided by Beacon Queries for Efficient Large Reasoning Model Inference](/202609/07/2609.04971v1-beaconkv-key-value-cache-compression-guided-by-beacon-queries-for-efficient-large-reasoning-model-inference)  
+1. [KVMem: Virtualizing Million-Token Agent Workspaces on a Consumer GPU](/202609/08/2609.04852v1-kvmem-virtualizing-million-token-agent-workspaces-on-a-consumer-gpu)  
    标签：评分：9.0/10、query:pic
-   evidence：面向大型推理模型长思维链的KV缓存压缩方法
+   evidence：利用分页KV状态将历史存储在GPU、内存和NVMe上，为长上下文LLM推理提供KV上下文缓存，避免重复预填充
 
 ### 速读区论文标签
-1. [Same Request, Different Answer: Quantization Amplifies Cache-Induced Divergence in LLM Serving](/202609/07/2609.04748v1-same-request-different-answer-quantization-amplifies-cache-induced-divergence-in-llm-serving)  
-   标签：评分：7.0/10、query:pic
-   evidence：实证研究默认前缀缓存在权重量化下引起的输出分歧，与缓存服务的稳定性高度相关
-2. [Quality Recovery for Quantized KV Caches via Low-Rank Attention Adaptation](/202609/07/2609.04263v1-quality-recovery-for-quantized-kv-caches-via-low-rank-attention-adaptation)  
+1. [Adaptive Context Parallelism for Production LLM Serving](/202609/08/2609.04774v1-adaptive-context-parallelism-for-production-llm-serving)  
    标签：评分：6.0/10、query:pic
-   evidence：面向内存高效长上下文推理的KV缓存量化与低秩适配
+   evidence：提出自适应上下文并行服务系统加速长上下文推理
 
 
 <div class="dpr-home-promo-card">
