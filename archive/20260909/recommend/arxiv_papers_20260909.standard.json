@@ -1,0 +1,531 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-09T21:33:36.647262+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 9,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 7,
+    "quick_skim_target": 11,
+    "quick_selected": 7
+  },
+  "deep_dive": [
+    {
+      "id": "2609.02737v1",
+      "source": "arxiv",
+      "title": "Language Models Can Control Their Own Attention",
+      "abstract": "Language models spend most of their attention on a small fraction of context, yet they read the entire KV cache to find the few tokens that matter. If the user asks about a previous detail in a 1M-token conversation, global attention layers must scan the full context to generate each token of the reply. A prominent approach mitigates this cost by pre-selecting relevant tokens via lightweight proxy scores, but this extrinsic scoring still incurs O(N) per step. We take an intrinsic approach motivated by the simple question: wouldn't the model already know which parts of the context are relevant? To this end, we introduce Declarative Attention (DA), a protocol that elicits the model to declare where it needs to attend within its chain-of-thought, partitioning generation into three modes: <global> (full context), <focus> (a specific region), and <local> (recent output only). The inference engine parses these declarations like tool calls and skips most of the KV cache read. Under zero-shot evaluation across 15 long-context tasks, DA on off-the-shelf models (Gemma-4-31B, Qwen-3.6-27B) significantly reduces total attended tokens during decoding (52.0%, 31.1%) with modest accuracy drops (1.27pp, 2.75pp) that shrink with model scale. DA unlocks a new axis of sparse attention, with further potential under training-based methods that future work can explore.",
+      "authors": [
+        "Namgyu Ho",
+        "Huzama Ahmad",
+        "Woosung Koh",
+        "Se-Young Yun",
+        "Tal Schuster",
+        "Cicero Nogueira dos Santos"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-09-02T15:43:38+00:00",
+      "link": "https://arxiv.org/pdf/2609.02737v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Declarative Attention protocol lets the LLM declare needed context positions in its chain of thought, avoiding per-token full-KV-cache scans in million-token conversations",
+      "llm_evidence_cn": "提出声明式注意力协议，令模型在思维链中声明需关注的上下文位置，避免超长对话逐token读取整个KV缓存",
+      "llm_evidence": "提出声明式注意力协议，令模型在思维链中声明需关注的上下文位置，避免超长对话逐token读取整个KV缓存",
+      "canonical_evidence": "提出声明式注意力协议，令模型在思维链中声明需关注的上下文位置，避免超长对话逐token读取整个KV缓存",
+      "llm_tldr_en": "Introduces Declarative Attention, where the LLM states its needed attention targets in its own chain of thought, partitioning generation to avoid scanning the entire KV cache each token for ultra-long-context reasoning",
+      "llm_tldr_cn": "超长上下文中模型只注意少数token却要在每个生成token上读取整份KV缓存，外部代理式预选仍需O(N)开销。该工作提出声明式注意力DA，引导模型在思维链中主动声明需要关注的上下文位置，并将生成过程划分为多个按声明执行的注意力阶段。系统利用模型自身对相关性的判断，减少对全量KV缓存的逐token扫描，降低外部选择模块依赖。该方法提供了面向百万级token对话的模型自指挥式高效注意力路径。",
+      "llm_tldr": "超长上下文中模型只注意少数token却要在每个生成token上读取整份KV缓存，外部代理式预选仍需O(N)开销。该工作提出声明式注意力DA，引导模型在思维链中主动声明需要关注的上下文位置，并将生成过程划分为多个按声明执行的注意力阶段。系统利用模型自身对相关性的判断，减少对全量KV缓存的逐token扫描，降低外部选择模块依赖。该方法提供了面向百万级token对话的模型自指挥式高效注意力路径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.05764v1",
+      "source": "arxiv",
+      "title": "Interface-Aware KV Cache Quantization for Dense On-Chip NVM in Long-Context LLM Decoding",
+      "abstract": "The key-value (KV) cache is the dominant memory bottleneck in long-context large language model (LLM) decoding: every step reads it entirely, so decoding is memory-bandwidth bound. Holding a quantized KV cache in dense on-chip non-volatile memory (NVM) removes the off-chip transfer. Existing KV quantization methods, however, were designed for GPU-style memory systems: KIVI attaches per-group metadata, adding about 25% to the stored KV cache; KVQuant keeps sparse full-precision outliers that a dense array cannot hold in place. This paper examines what these structures cost when the KV cache resides in NVM behind fixed-range converters, and designs a quantization scheme matched to that interface. The architecture stores the quantized KV cache in dense on-chip NVM, uses a small static analog crossbar only for the fixed rotation, and keeps attention in on-chip digital logic. A randomized rotation and per-vector normalization give every coordinate the same range, so one fixed codebook for keys and one for values, each shared across all tokens of the corresponding tensor type, serve the entire KV cache. The codebook thresholds are programmed once as the read converter's reference levels, enabling fixed-range digitization with no per-token converter reconfiguration. Dequantization is a sixteen-entry lookup and one norm multiply; the only per-vector metadata is one scalar, about 3%. Across models from 3B to 14B and contexts to 32k tokens, the four-bit KV cache maintains accuracy under storage and crossbar noise simulated at realistic device levels. KIVI and KVQuant remain more accurate in software; the advantage of our format lies at the memory interface: 3.1-3.6x lower KV read energy than both mapped to the same NVM, and 8x lower metadata overhead than KIVI. The contribution is a KV quantization co-designed with the NVM memory interface rather than a new accuracy record.",
+      "authors": [
+        "Jiahao Zheng",
+        "Yifan Qin",
+        "Xiaobo Sharon Hu",
+        "Yiyu Shi"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.AI"
+      ],
+      "published": "2026-09-04T22:58:21+00:00",
+      "link": "https://arxiv.org/pdf/2609.05764v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Interface-aware KV cache quantization for dense on-chip NVM in long-context decoding",
+      "llm_evidence_cn": "长上下文解码中面向片上NVM的接口感知KV缓存量化",
+      "llm_evidence": "长上下文解码中面向片上NVM的接口感知KV缓存量化",
+      "canonical_evidence": "长上下文解码中面向片上NVM的接口感知KV缓存量化",
+      "llm_tldr_en": "Analyzes existing KV quantization for long-context decoding and designs a quantization scheme matched to dense on-chip NVM to reduce memory-bandwidth pressure.",
+      "llm_tldr_cn": "长上下文解码中KV缓存每一步被完整读取，成为显存带宽瓶颈，但现有量化方法面向GPU存储体系而难以直接用于密集NVM。论文剖析KIVI、KVQuant等方案在固定范围转换器下的开销，并设计接口感知的量化方案，让量化后KV直接存储于片上NVM。方法避免逐组元数据与稀疏高精度异常值，移除片外传输，缓解带宽压力。这项工作为长上下文解码的缓存存储提供了面向未来存储器架构的设计思路。",
+      "llm_tldr": "长上下文解码中KV缓存每一步被完整读取，成为显存带宽瓶颈，但现有量化方法面向GPU存储体系而难以直接用于密集NVM。论文剖析KIVI、KVQuant等方案在固定范围转换器下的开销，并设计接口感知的量化方案，让量化后KV直接存储于片上NVM。方法避免逐组元数据与稀疏高精度异常值，移除片外传输，缓解带宽压力。这项工作为长上下文解码的缓存存储提供了面向未来存储器架构的设计思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.05821v1",
+      "source": "arxiv",
+      "title": "CONDUIT: A Unified Residual-Stream Restoration Framework for KV Cache Reuse in Vision-Language Models",
+      "abstract": "Vision-language models (VLMs) often answer new questions about recurring visual content, where reusing the key-value (KV) cache can avoid re-encoding expensive visual prefixes. Exact-prefix reuse, however, fails when the same visual content appears under a changed prefix. Selective recomputation can recover quality under a small visual-token budget, but only when the right stale tokens are refreshed. Raw-attention selection can waste budget on high-attention tokens with small value-norm proxy scores and on query-irrelevant images. To address these failure modes, we propose CONDUIT, a training-free refresh policy that unifies single- and multi-image reuse as residual-stream restoration. Building on norm-weighted attention, CONDUIT ranks cached visual tokens using cached-key query attention and an accessible pre-output cached-value-norm proxy, then applies empirical image-level relevance amplification before one global selection. With one image, the coefficient is one and the rule reduces to intra-image token selection. The method preserves model architecture and weights, adding only a single query-conditioned scoring pass at inference. At a 10% refresh budget, CONDUIT achieves 97.0-99.5% of the corresponding full-prefill five-dataset average across three VLM backbones and leads budgeted methods on average; on the MMLongBench-Doc latency subset, it uses 13.5% of full-prefill FLOPs and achieves a 2.99x time-to-first-token speedup.",
+      "authors": [
+        "Pengan Chen",
+        "Kaisheng Zheng",
+        "Liang Hong",
+        "Lixia Yi",
+        "Jiyue Jiang",
+        "Jiayang Chen",
+        "Yixuan Wang",
+        "Yimin Fan",
+        "Xinyuan Liu",
+        "Jiayi Li",
+        "Zhanqiu Zhang",
+        "Yiwen Guo",
+        "Yu Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.CV"
+      ],
+      "published": "2026-09-05T02:34:16+00:00",
+      "link": "https://arxiv.org/pdf/2609.05821v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache reuse under changed visual prefix; residual-stream restoration refresh policy",
+      "llm_evidence_cn": "在前缀变化时复用视觉前缀KV缓存，用残差流恢复策略刷新陈旧token",
+      "llm_evidence": "在前缀变化时复用视觉前缀KV缓存，用残差流恢复策略刷新陈旧token",
+      "canonical_evidence": "在前缀变化时复用视觉前缀KV缓存，用残差流恢复策略刷新陈旧token",
+      "llm_tldr_en": "CONDUIT unifies KV-cache reuse in VLMs as residual-stream restoration; a norm-weighted attention refresh policy selectively recomputes stale visual tokens so reuse works under changed prefixes and small token budget.",
+      "llm_tldr_cn": "视觉语言模型复用KV缓存能避免重复编码昂贵的视觉前缀，但当相同视觉内容以变化前缀出现时精确前缀复用失效。论文提出CONDUIT把单图与多图KV复用统一为残差流恢复，在范数加权注意力指导下选择需要刷新的陈旧token，无需训练即可在较小视觉token预算内恢复质量。实验表明CONDUIT优于原始注意力选择与常规选择性重算，为前缀漂移场景下的多模态KV缓存复用提供了稳健方案。",
+      "llm_tldr": "视觉语言模型复用KV缓存能避免重复编码昂贵的视觉前缀，但当相同视觉内容以变化前缀出现时精确前缀复用失效。论文提出CONDUIT把单图与多图KV复用统一为残差流恢复，在范数加权注意力指导下选择需要刷新的陈旧token，无需训练即可在较小视觉token预算内恢复质量。实验表明CONDUIT优于原始注意力选择与常规选择性重算，为前缀漂移场景下的多模态KV缓存复用提供了稳健方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.06940v1",
+      "source": "arxiv",
+      "title": "Unified AI Gateway: A Framework for Joint Model Routing and KV Cache Management",
+      "abstract": "Large language model (LLM) inference increasingly spans models that differ in size, capability, price, and provider. This shift creates two costs for developers. One is the integration cost of choosing among and switching between many models. The other is the inference cost of rebuilding a KV cache when it is unavailable or incompatible with the selected model. We define and analyze the Unified AI Gateway as a system setting for an edge-deployed AI traffic hub. It coordinates model routing, KV cache management, and compute placement across end devices, edge resources, and cloud model services. At request time, the gateway jointly selects a target model, an execution site, and a KV cache action under task-quality, latency, cost, and resource constraints. In parallel, background cache-management actions optimize KV cache placement, replication, retrieval, and lifecycle decisions for subsequent requests. We synthesize existing evidence on KV cache reuse, compression, cross-model mapping, distributed storage, and transfer, and discuss the remaining challenges of integrating these capabilities into one system. Across eight typical workload profiles, our workload-level analytical simulation reports TTFT speedups of 1.25$\\times$--13.28$\\times$ and input-cost benefits of 1.20$\\times$--6.16$\\times$.",
+      "authors": [
+        "Jiaxun Lu",
+        "Xiang Zhang",
+        "Yunfeng Shao"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-07T02:21:39+00:00",
+      "link": "https://arxiv.org/pdf/2609.06940v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Joint model routing and KV cache action selection to reuse caches across LLM providers",
+      "llm_evidence_cn": "联合模型路由与KV缓存动作选择，在多个大模型间复用或重建缓存",
+      "llm_evidence": "联合模型路由与KV缓存动作选择，在多个大模型间复用或重建缓存",
+      "canonical_evidence": "联合模型路由与KV缓存动作选择，在多个大模型间复用或重建缓存",
+      "llm_tldr_en": "Proposes Unified AI Gateway, an edge-deployed hub that jointly chooses model, execution site, and KV cache action to avoid costly KV cache rebuilds when switching LLMs.",
+      "llm_tldr_cn": "论文针对多模型推理中因切换模型而需重建KV缓存的高成本问题，提出统一AI网关这一边端部署的推理流量中枢。网关在请求时协同决策目标模型、执行位置与KV缓存动作，避免不可用或不兼容缓存带来的重建开销。通过联合优化模型路由与缓存管理，降低集成成本与延迟、资源开销。这项工作为跨模型KV缓存管理的系统化设计提供了新思路。",
+      "llm_tldr": "论文针对多模型推理中因切换模型而需重建KV缓存的高成本问题，提出统一AI网关这一边端部署的推理流量中枢。网关在请求时协同决策目标模型、执行位置与KV缓存动作，避免不可用或不兼容缓存带来的重建开销。通过联合优化模型路由与缓存管理，降低集成成本与延迟、资源开销。这项工作为跨模型KV缓存管理的系统化设计提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.07175v1",
+      "source": "arxiv",
+      "title": "Enabling High-Bandwidth Flash for Generative Recommendation Serving with Write-Aware KV Cache Policy",
+      "abstract": "Generative recommendation (GR) systems increasingly leverage user-level KV cache reuse to avoid recomputing long user histories. However, the growing KV cache capacity and bandwidth requirements introduce new challenges for memory system. High-Bandwidth Flash (HBF) provides a promising solution by offering substantially higher capacity than HBM while approaching HBM-class read bandwidth, enabling larger scale KV cache retention and improved serving throughput. Yet conventional Least-Recently-Used (LRU) KV cache management tightly couples KV cache writes with cache misses, generating excessive write traffic that rapidly exhausts flash endurance. In this work, we evaluate a write-aware KV cache policy based on admission-controlled LRU-K for HBF-based GR serving. By filtering low-reuse users before cache admission, LRU-K decouples KV cache writes from misses and significantly reduces unnecessary writes. We develop an analytical model to characterize GR serving performance, KV cache write traffic, and HBF lifetime, and evaluate performance across diverse memory systems and GR workloads. Our results show that HBF-based systems achieve 3.8 to 4.7 times higher throughput than HBM-only systems. Moreover, LRU-K extends HBF lifetime from about one year under conventional LRU to over six years with a moderate K=10, while maintaining comparable or even slightly improved throughput. These results highlight the importance of write aware KV cache policy for sustainable HBF-based GR serving.",
+      "authors": [
+        "Danni Peng",
+        "Kai Wu",
+        "Tianyu Zuo",
+        "Pengfei Xia",
+        "Hui Zang"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-09-07T08:07:14+00:00",
+      "link": "https://arxiv.org/pdf/2609.07175v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "User-level KV cache reuse and a write-aware cache admission/eviction policy for LLM serving throughput",
+      "llm_evidence_cn": "针对生成式推荐中的用户级KV缓存复用，提出写感知的缓存准入淘汰策略以优化推理服务吞吐",
+      "llm_evidence": "针对生成式推荐中的用户级KV缓存复用，提出写感知的缓存准入淘汰策略以优化推理服务吞吐",
+      "canonical_evidence": "针对生成式推荐中的用户级KV缓存复用，提出写感知的缓存准入淘汰策略以优化推理服务吞吐",
+      "llm_tldr_en": "Generative recommendation serving heavily reuses user-level KV caches; this paper proposes a write-aware KV cache policy for high-bandwidth flash to decouple writes from misses, reducing write traffic and improving throughput.",
+      "llm_tldr_cn": "生成式推荐服务通过复用用户级KV缓存来避免长用户历史的重复计算，但面向高带宽闪存的传统LRU管理会产生过多写入并损耗设备寿命。本文提出写感知的KV缓存准入与淘汰策略，将缓存写入与缓存未命中解耦，以大幅减少闪存写流量。实验表明该方法在提供更大缓存驻留容量的同时改善服务吞吐，是针对新存储硬件的KV缓存管理优化方向。",
+      "llm_tldr": "生成式推荐服务通过复用用户级KV缓存来避免长用户历史的重复计算，但面向高带宽闪存的传统LRU管理会产生过多写入并损耗设备寿命。本文提出写感知的KV缓存准入与淘汰策略，将缓存写入与缓存未命中解耦，以大幅减少闪存写流量。实验表明该方法在提供更大缓存驻留容量的同时改善服务吞吐，是针对新存储硬件的KV缓存管理优化方向。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.07237v1",
+      "source": "arxiv",
+      "title": "CEDAR: Error-Bounded Residual Routing for Efficient Long-Context Attention",
+      "abstract": "Post-hoc sparse attention accelerates long-context prefill by routing each query to a small set of token-level interactions. Hard selection, however, assigns zero probability to every omitted chunk: a routing miss cannot be recovered, and a fixed expansion budget spends the same work on easy and ambiguous queries. We introduce Coarse-to-fine Error-aware Dynamic Attention Routing (CEDAR), a coarse-to-fine method that keeps the language model frozen while preserving global coverage. Each semantic chunk contributes a cheap key--value summary to a residual attention path; chunks with high estimated approximation error are then expanded to exact token attention. Exact and summarized contributions are combined in a single softmax normalization, so refinement replaces, rather than duplicates, coarse evidence. We derive an output-error bound governed by within-chunk key/value dispersion and use it to allocate a variable refinement budget. A controlled clustered-attention study shows that residual summaries reduce reconstruction error by more than 98% relative to hard dropping at equal exact-chunk budgets. Experiments on long-context benchmarks demonstrate that CEDAR recovers most of the quality lost by hard sparse routing while maintaining approximately $3\\times$ kernel speedup at 128K context.",
+      "authors": [
+        "Siyu Li",
+        "Dong Wang",
+        "Jie Zhou",
+        "Wei Li",
+        "Yang Xu",
+        "Sijie Song"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-07T08:56:47+00:00",
+      "link": "https://arxiv.org/pdf/2609.07237v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Error-bounded residual routing for fast long-context attention",
+      "llm_evidence_cn": "面向快速长上下文注意力的误差有界残差路由",
+      "llm_evidence": "面向快速长上下文注意力的误差有界残差路由",
+      "canonical_evidence": "面向快速长上下文注意力的误差有界残差路由",
+      "llm_tldr_en": "CEDAR accelerates long-context prefill by coarse-to-fine residual routing: each semantic chunk contributes a cheap key-value summary, and high-error chunks are expanded to exact token attention.",
+      "llm_tldr_cn": "长上下文预填充的二次方注意力成本依然高昂，现有硬路由稀疏注意力一旦选错小块便无法恢复。CEDAR采用由粗到细的误差感知动态路由：每个语义块先提供廉价的键值摘要，再依据估计近似误差对高风险块展开精确记号注意力，并统一softmax归一化。既保留全局覆盖又显著降低预填充开销，且无需改动语言模型权重。整体上为动态稀疏注意力提供了误差有界的路由新方案。",
+      "llm_tldr": "长上下文预填充的二次方注意力成本依然高昂，现有硬路由稀疏注意力一旦选错小块便无法恢复。CEDAR采用由粗到细的误差感知动态路由：每个语义块先提供廉价的键值摘要，再依据估计近似误差对高风险块展开精确记号注意力，并统一softmax归一化。既保留全局覆盖又显著降低预填充开销，且无需改动语言模型权重。整体上为动态稀疏注意力提供了误差有界的路由新方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.07966v1",
+      "source": "arxiv",
+      "title": "MetaKV: Adaptive KV Cache Compression for Constrained LLM Inference",
+      "abstract": "Key--value (KV) cache compression is an effective way to reduce the memory overhead of large language model (LLM) inference, particularly for long-context workloads. However, existing compression methods make different trade-offs among accuracy, inference latency, and peak KV cache memory utilization, making a single fixed configuration unsuitable across different prompts and resource constraints. We introduce MetaKV, an adaptive framework that selects a KV cache compression configuration for each input prompt based on user-specified latency and peak memory budgets. MetaKV uses lightweight prediction models to estimate the end-to-end latency, peak memory, and probability of a correct response for each candidate configuration, and selects the configuration that best satisfies the latency-memory constraints while preserving accuracy. We evaluate MetaKV across ten configurations from three representative KV cache compression methods, KVQuant, H$_2$O, and RocketKV, together with an uncompressed FP16 configuration, on four datasets covering mathematics, science, commonsense reasoning, and reading comprehension. Across a wide range of latency and peak memory constraints, MetaKV consistently outperforms the best static configuration, improving constrained success rate (CSR), the fraction of prompts answered correctly while satisfying both constraints, by approximately 0.07 on average and up to 0.135. These results demonstrate the benefit of adapting KV cache compression to individual prompts and latency-memory constraints. Code is available at https://github.com/MichaelWang0505/MetaKV.git",
+      "authors": [
+        "Michael Wang",
+        "Keith Li",
+        "Roozbeh Bostandoost"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-07T20:44:23+00:00",
+      "link": "https://arxiv.org/pdf/2609.07966v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Adaptive selection of KV cache compression configuration per prompt under latency and memory budgets for long-context inference",
+      "llm_evidence_cn": "面向长上下文在延迟和内存预算下逐提示词自适应选择KV压缩配置",
+      "llm_evidence": "面向长上下文在延迟和内存预算下逐提示词自适应选择KV压缩配置",
+      "canonical_evidence": "面向长上下文在延迟和内存预算下逐提示词自适应选择KV压缩配置",
+      "llm_tldr_en": "MetaKV adaptively chooses a KV cache compression configuration per input prompt with lightweight models that estimate latency, peak memory and correctness under user-specified budgets, tackling long-context LLM inference overhead.",
+      "llm_tldr_cn": "KV缓存压缩能缓解LLM推理内存开销但不同方法在精度、延迟和峰值缓存占用上各有取舍，单一固定配置无法适配多样提示和资源约束。MetaKV提出自适应框架，根据用户给定延迟和峰值内存预算，用轻量预测模型估计每个候选配置的端到端延迟、峰值内存和正确响应概率并选出配置。实验表明其在满足资源约束前提下提升长上下文推理的效率与准确性。",
+      "llm_tldr": "KV缓存压缩能缓解LLM推理内存开销但不同方法在精度、延迟和峰值缓存占用上各有取舍，单一固定配置无法适配多样提示和资源约束。MetaKV提出自适应框架，根据用户给定延迟和峰值内存预算，用轻量预测模型估计每个候选配置的端到端延迟、峰值内存和正确响应概率并选出配置。实验表明其在满足资源约束前提下提升长上下文推理的效率与准确性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2609.05707v1",
+      "source": "arxiv",
+      "title": "Intra-Prompt Parallel Decoding for Common-Context Question Answering",
+      "abstract": "In common-context question answering (CCQA) tasks, multiple input questions share a common context to base their answers from. However, Large Language Models typically generate each answer using an independent prompt. While existing batching and caching techniques help improve parallelism and reduce repeated computations, the separation of questions across prompts limits the achievable speedup, as modern GPUs are underutilized due to a memory bottleneck during attention. We present Intra-Prompt Parallel Decoding (IPPD), a novel inference method that answers multiple common-context questions in parallel within a single prompt. IPPD directly addresses the bottleneck by efficiently sharing both memory and computation during the attention process, as the next token for every question is decoded in a single inference step. IPPD uses virtual position IDs and attention mask manipulation to generate the same output as standard prompting without requiring fine-tuning or any changes to the LLM architecture. Since all parallelism occurs within a prompt, IPPD is fully compatible with batched inference, even when each prompt features a different context. Our experiments show that IPPD delivers up to 7X the effective throughput as standard decoding without quality degradation, and outperforms prefix caching with PagedAttention in most settings.",
+      "authors": [
+        "Theodore Glavas",
+        "Nikhita Vedula",
+        "Dushyanta Dhyani",
+        "Antonios Valkanas",
+        "Yilun Zhu",
+        "Shervin Malmasi"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-04T20:25:52+00:00",
+      "link": "https://arxiv.org/pdf/2609.05707v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Shares common-context prompt within one prompt, bypassing repeated prompt caching/attention cost",
+      "llm_evidence_cn": "把共享上下文问题合并到单条提示中并行解码，减少公共上下文重复计算与缓存压力",
+      "llm_evidence": "把共享上下文问题合并到单条提示中并行解码，减少公共上下文重复计算与缓存压力",
+      "canonical_evidence": "把共享上下文问题合并到单条提示中并行解码，减少公共上下文重复计算与缓存压力",
+      "llm_tldr_en": "IPPD answers multiple common-context questions inside one prompt, sharing attention memory and computation across decodes and reducing repeated processing of the shared context compared with independent prompts.",
+      "llm_tldr_cn": "许多问答任务共享同一长上下文，但LLM仍对每个问题生成独立提示，导致公共上下文被重复计算并限制GPU利用率。论文提出Intra-Prompt Parallel Decoding，把多个共享上下文的问题放进同一条提示并行解码，使注意力的内存与计算得以跨任务共享。相较已有批处理和缓存手段，该方法可避免跨提示重复计算并提升解码吞吐，为共享上下文场景的推理加速提供新思路。",
+      "llm_tldr": "许多问答任务共享同一长上下文，但LLM仍对每个问题生成独立提示，导致公共上下文被重复计算并限制GPU利用率。论文提出Intra-Prompt Parallel Decoding，把多个共享上下文的问题放进同一条提示并行解码，使注意力的内存与计算得以跨任务共享。相较已有批处理和缓存手段，该方法可避免跨提示重复计算并提升解码吞吐，为共享上下文场景的推理加速提供新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.08131v1",
+      "source": "arxiv",
+      "title": "Jacap: Robust KV Cache Eviction via Jacobian-Based Nonlinear Information Capacity Preservation",
+      "abstract": "Key-value (KV) cache eviction is essential for scaling long-context inference in Large Language Models. However, existing policies predominantly rely on empirical heuristics, lacking a rigorous characterization of token utility under the inherently nonlinear softmax attention mechanism. In this work, we rethink KV cache eviction through the lens of local information geometry, modeling the attention process as a nonlinear Gaussian communication channel. By performing a first-order Taylor expansion of the attention mapping, we derive the Jacobian Information Capacity, a novel objective that explicitly captures query relevance, softmax sensitivity, and structural diversity. Guided by this theory, we introduce Jacap, a capacity-aware eviction method that utilizes softmax-aware importance weighting and statistical leverage scores for subset selection. Extensive experiments across diverse architectures and benchmarks demonstrate that \\textsc{Jacap} delivers superior performance in most scenarios, particularly in high-compression regimes.",
+      "authors": [
+        "Jiaming Yang",
+        "Chenwei Tang",
+        "Liangli Zhen",
+        "Chenyang Zhang",
+        "Jiancheng Lv"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-08T02:08:57+00:00",
+      "link": "https://arxiv.org/pdf/2609.08131v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Jacap proposes Jacobian-based information capacity preservation for KV cache eviction, directly supporting efficient long-context LLM inference",
+      "llm_evidence_cn": "用雅可比信息容量目标指导KV缓存驱逐，直接服务长上下文LLM推理中的KV缓存优化",
+      "llm_evidence": "用雅可比信息容量目标指导KV缓存驱逐，直接服务长上下文LLM推理中的KV缓存优化",
+      "canonical_evidence": "用雅可比信息容量目标指导KV缓存驱逐，直接服务长上下文LLM推理中的KV缓存优化",
+      "llm_tldr_en": "KV cache eviction is essential for long-context inference but heuristic-driven. JaCap models attention as a nonlinear Gaussian channel and derives a Jacobian information capacity objective for eviction, capturing query relevance and structural diversity.",
+      "llm_tldr_cn": "KV缓存驱逐对扩展大语言模型长上下文推理至关重要，但现有策略过度依赖经验启发式，缺少在softmax注意力非线性机制下刻画token效用的理论依据。本文将注意力过程建模为非线性高斯通信信道，并对注意力映射做一阶泰勒展开，推导出雅可比信息容量这一目标函数，显式结合查询相关性、softmax敏感性与结构多样性。基于该目标提出的Jacap策略可在压缩KV缓存时更有原则地保留关键token，为长上下文推理中的缓存驱逐提供了可解释的几何信息理论框架。",
+      "llm_tldr": "KV缓存驱逐对扩展大语言模型长上下文推理至关重要，但现有策略过度依赖经验启发式，缺少在softmax注意力非线性机制下刻画token效用的理论依据。本文将注意力过程建模为非线性高斯通信信道，并对注意力映射做一阶泰勒展开，推导出雅可比信息容量这一目标函数，显式结合查询相关性、softmax敏感性与结构多样性。基于该目标提出的Jacap策略可在压缩KV缓存时更有原则地保留关键token，为长上下文推理中的缓存驱逐提供了可解释的几何信息理论框架。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2609.06498v1",
+      "source": "arxiv",
+      "title": "DFlow: Enabling Verifier Information Flow in Block Diffusion Speculative Decoding",
+      "abstract": "Block diffusion speculative decoding improves LLM inference efficiency by proposing a block of future tokens in parallel and verifying them with a single forward pass through the target model. However, existing methods retain only the accepted prefix and discard the rejected suffix, preventing the computation spent on these positions from benefiting subsequent drafting rounds and forcing the drafter to repeatedly reconstruct representations for future tokens from scratch. We observe that rejection only determines whether a proposed token can be committed, while the verifier representations at rejected positions can still provide useful information for subsequent predictions. Based on this observation, we propose DFlow, a simple yet effective framework that enables verifier information to flow across drafting rounds. DFlow reuses the hidden states produced by the target verifier for the rejected suffix to guide subsequent drafting without additional target computation. To effectively learn this information flow across drafting rounds, we introduce a self-condition train strategy that feeds verifier representations from earlier predictions back into subsequent predictions. Experiments on Qwen3 models across diverse benchmarks demonstrate that DFlow consistently improves draft quality and acceptance length over DFlash.",
+      "authors": [
+        "Yaojie Zhang",
+        "Linfeng Zhang",
+        "Bin Cui",
+        "Xupeng Miao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-06T09:25:56+00:00",
+      "link": "https://arxiv.org/pdf/2609.06498v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Reuses verifier representations from rejected positions across drafting rounds in block diffusion speculative decoding, a KV-cache-like reuse that avoids recomputation",
+      "llm_evidence_cn": "在块扩散投机解码中将被拒绝位置的验证器表示跨轮重用以避免重复计算，体现KV信息复用思想",
+      "llm_evidence": "在块扩散投机解码中将被拒绝位置的验证器表示跨轮重用以避免重复计算，体现KV信息复用思想",
+      "canonical_evidence": "在块扩散投机解码中将被拒绝位置的验证器表示跨轮重用以避免重复计算，体现KV信息复用思想",
+      "llm_tldr_en": "DFlow lets block-diffusion speculative decoding reuse verifier representations from rejected positions in later drafting rounds, preventing repeated from-scratch reconstruction of future-token representations",
+      "llm_tldr_cn": "块扩散投机解码能并行提出未来词元块并一次前向验证，但已有方法只保留被接受前缀、丢弃被拒绝后缀，导致后续草稿反复从头重建表示。DFlow观察到拒绝只决定能否提交，被拒绝位置的验证器表示仍可辅助后续预测，因此将这些位置的中间信息传递到后续起草轮。该设计在保留并行验证低延迟优势的同时减少重复构造未来表示的开销，进一步提升投机解码效率。该思路表明投机采样可与表示级缓存复用有效结合。",
+      "llm_tldr": "块扩散投机解码能并行提出未来词元块并一次前向验证，但已有方法只保留被接受前缀、丢弃被拒绝后缀，导致后续草稿反复从头重建表示。DFlow观察到拒绝只决定能否提交，被拒绝位置的验证器表示仍可辅助后续预测，因此将这些位置的中间信息传递到后续起草轮。该设计在保留并行验证低延迟优势的同时减少重复构造未来表示的开销，进一步提升投机解码效率。该思路表明投机采样可与表示级缓存复用有效结合。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.08566v1",
+      "source": "arxiv",
+      "title": "BIO-MEMART: Biometric-Aware KV Cache Memory for Multi-User LLM Agents",
+      "abstract": "KV cache is evolving from a serving optimization into an external memory substrate for long-term LLM agents. In a shared multi-user deployment, however, reusable KV blocks introduce a missing access-control question: semantic relevance alone cannot determine whether a memory block is authorized for the current physical user. We propose Bio-MemArt, a biometric-aware KV-cache memory framework for multi-user LLM agents. Bio-MemArt attaches a normalized biometric template to each stored KV memory block, filters the shared memory pool with the current user's biometric probe, and then runs the original MemArt retrieval and KV reuse pipeline only inside the authorized candidate pool. This design preserves latent-space retrieval, direct cache reuse, and decoupled position encoding while adding physical-user access control to shared KV memory. We evaluate Bio-MemArt under Owner and Non-owner query conditions on long-term dialogue QA with face and palmprint benchmarks. Across face benchmarks, the average owner and non-owner biometric success rates are 95.71% and 0.86%; across palmprint benchmarks, they are 97.60% and 2.00%. In the efficiency study, average prefill tokens drop from 18,781.96 under full-context prompting to 28.57 with Bio-MemArt, showing that biometric gating preserves the low-token operating regime of KV-cache memory.",
+      "authors": [
+        "Yanhong Qian",
+        "Xuanying He",
+        "Qingguo Meng",
+        "Shihao Ding",
+        "Xingbo Dong",
+        "Zhe Jin"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-09-08T10:56:17+00:00",
+      "link": "https://arxiv.org/pdf/2609.08566v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Attaches biometric templates to reusable KV blocks and filters authorized blocks before KV reuse in multi-user LLM agents",
+      "llm_evidence_cn": "为可复用KV块附加生物特征模板，在多用户智能体授权范围内执行KV缓存复用",
+      "llm_evidence": "为可复用KV块附加生物特征模板，在多用户智能体授权范围内执行KV缓存复用",
+      "canonical_evidence": "为可复用KV块附加生物特征模板，在多用户智能体授权范围内执行KV缓存复用",
+      "llm_tldr_en": "Bio-MemArt enforces biometric-based access control in shared KV-cache memory by tagging KV blocks with biometric templates and filtering the candidate pool before retrieval and direct cache reuse for multi-user LLM agents.",
+      "llm_tldr_cn": "KV缓存正从推理优化演变为长期LLM智能体的外部记忆，但在多用户共享部署中，可复用的KV块缺少访问控制，仅凭语义相关性无法判断授权。Bio-MemArt为每个KV记忆块附加归一化生物特征模板，先用当前用户的生物特征探针过滤共享记忆池，再仅在授权候选池内执行MemArt检索和KV复用流程。该方法在保留潜在空间检索和直接缓存复用能力的同时实现了多用户环境下的安全隔离，为KV记忆的共享复用提供了访问控制方案。",
+      "llm_tldr": "KV缓存正从推理优化演变为长期LLM智能体的外部记忆，但在多用户共享部署中，可复用的KV块缺少访问控制，仅凭语义相关性无法判断授权。Bio-MemArt为每个KV记忆块附加归一化生物特征模板，先用当前用户的生物特征探针过滤共享记忆池，再仅在授权候选池内执行MemArt检索和KV复用流程。该方法在保留潜在空间检索和直接缓存复用能力的同时实现了多用户环境下的安全隔离，为KV记忆的共享复用提供了访问控制方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2609.06663v1",
+      "source": "arxiv",
+      "title": "ECOKV: Geometry-Aware KV Cache Eviction via Complementary Diversity Metrics",
+      "abstract": "Although multimodal Large Language Models (MLLMs) excel in diverse tasks, their scalability remains limited by the memory and computational overhead of KV cache storage. Recent KV cache eviction approaches incorporate a cosine similarity-based diversity metric with importance metrics to selectively retain critical key-value pairs. However, cosine similarity involves normalization that discards magnitude information, and it often yields uniformly high similarity values across layers due to the anisotropy property of hidden representations. In our study ECOKV, we rigorously deconstruct the capabilities of existing diversity metrics. Moving beyond simple measurement, we propose a geometry-aware composite metric that jointly leverages Euclidean distance and cosine similarity to capture token diversity from complementary perspectives. Furthermore, we use these two metrics to estimate the redundancy level of each attention head, allowing adaptive weighting between diversity and importance scores during token selection. Finally, we demonstrate that the observation window commonly employed to preserve recent tokens can be substantially reduced, thereby allocating more cache capacity to informative tokens and yielding consistent improvements. Extensive experiments demonstrate that ECOKV achieves state-of-the-art performance under various compression ratios and can be seamlessly integrated with existing KV cache eviction methods. We further analyze the relationship between importance and diversity, and examine redundancy patterns across layers and attention heads.",
+      "authors": [
+        "Chin Ting Hsu",
+        "Yu-Syuan Xu",
+        "Ling Zou",
+        "Hsien-Kai Kuo",
+        "Wen-Huang Cheng"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-09-06T15:13:48+00:00",
+      "link": "https://arxiv.org/pdf/2609.06663v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Geometry-aware composite diversity metrics for KV cache eviction in multimodal LLMs; fits the KV-cache optimization theme but not position-independent caching specifically",
+      "llm_evidence_cn": "提出几何感知复合多样性度量改进多模态大模型的KV缓存驱逐，属于KV缓存优化主题但未涉及位置无关复用",
+      "llm_evidence": "提出几何感知复合多样性度量改进多模态大模型的KV缓存驱逐，属于KV缓存优化主题但未涉及位置无关复用",
+      "canonical_evidence": "提出几何感知复合多样性度量改进多模态大模型的KV缓存驱逐，属于KV缓存优化主题但未涉及位置无关复用",
+      "llm_tldr_en": "Multimodal LLMs require large KV caches. ECOKV replaces cosine-similarity diversity with a geometry-aware composite metric that incorporates Euclidean distance, preserving structurally diverse key-value pairs during eviction.",
+      "llm_tldr_cn": "多模态大语言模型在多样任务上表现优秀，但KV缓存存储会带来显存与计算开销，现有驱逐方法将基于余弦相似度的多样性度量与重要性分数结合以保留关键键值对。余弦相似度归一化会丢弃幅值信息，且隐藏表示的各向异性使多层结果都呈现高相似度。ECOKV系统解构已有多样性度量，提出联合利用欧氏距离的几何感知复合度量，更准确地刻画键值对的结构多样性。该方法有助于多模态LLM在更高缓存压缩率下保持生成质量，为KV驱逐的度量设计提供了可迁移方案。",
+      "llm_tldr": "多模态大语言模型在多样任务上表现优秀，但KV缓存存储会带来显存与计算开销，现有驱逐方法将基于余弦相似度的多样性度量与重要性分数结合以保留关键键值对。余弦相似度归一化会丢弃幅值信息，且隐藏表示的各向异性使多层结果都呈现高相似度。ECOKV系统解构已有多样性度量，提出联合利用欧氏距离的几何感知复合度量，更准确地刻画键值对的结构多样性。该方法有助于多模态LLM在更高缓存压缩率下保持生成质量，为KV驱逐的度量设计提供了可迁移方案。",
+      "llm_tags": [
+        "query:pic:composite"
+      ],
+      "matched_query_tag": "query:pic:composite",
+      "matched_query_text": "Papers central to 每日检索与PIC/position-independent KV cache优化相关的最新论文, especially work that connects or combines: position independent caching for LLM inference acceleration; KV cache reuse in large language model inference; prefix caching techniques for LLM inference; prompt caching for reducing inference latency; context caching for long context LLM inference; long context inference acceleration methods; How does position independent caching improve long context inference?; What are the latest methods for KV cache reuse in LLM inference?.",
+      "matched_requirement_id": "req-composite-pic",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.06702v1",
+      "source": "arxiv",
+      "title": "PARSER: Read in Parallel, Reason in Depth for Long-Context LLM Agents",
+      "abstract": "Sequential memory agents process long documents by reading chunks one after another while maintaining a compact memory state, coupling document traversal to reasoning depth. This coupling introduces sensitivity to evidence placement and ties inference latency linearly to document length. We introduce PARSER, which decouples reading from reasoning. A bank of lightweight subagents each bound to a single chunk read the entire document in parallel, while a lead agent reasons in depth through iterative scatter--gather rounds: at each round it broadcasts a query to all subagents, aggregates the returned evidence, and formulates a deeper follow-up query conditioned on what has been found so far. This decoupled design concentrates all learnable behavior in the lead agent, which is optimized with reinforcement learning, while the subagents remain frozen off-the-shelf models. On multi-hop QA with contexts ranging from 7K to 896K tokens, PARSER with a 4B backbone outperforms the strongest sequential memory baseline by 5.7 points on average and by 12.0 points at 896K tokens. Scaling to a 9B backbone, PARSER surpasses DeepSeek-V4-Pro by 6.3 points. Controlled experiments confirm that PARSER is robust to perturbations in evidence position, order, and distance, conditions that cause large accuracy swings in sequential methods, while reducing inference latency by up to 11x.",
+      "authors": [
+        "Kun Li",
+        "Zexuan Qiu",
+        "Tianhua Zhang",
+        "Irwin King",
+        "Helen Meng"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-06T16:19:01+00:00",
+      "link": "https://arxiv.org/pdf/2609.06702v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Parallel subagent reading and iterative scatter-gather reasoning decouple document traversal from inference depth, reducing latency of long-context LLM agents",
+      "llm_evidence_cn": "通过并行分块读取与散射-聚合迭代推理，解耦顺序读取和推理深度，降低长上下文LLM智能体的时延",
+      "llm_evidence": "通过并行分块读取与散射-聚合迭代推理，解耦顺序读取和推理深度，降低长上下文LLM智能体的时延",
+      "canonical_evidence": "通过并行分块读取与散射-聚合迭代推理，解耦顺序读取和推理深度，降低长上下文LLM智能体的时延",
+      "llm_tldr_en": "PARSER decouples reading from reasoning in long-context agents: lightweight subagents read document chunks in parallel while a lead agent runs iterative scatter-gather queries, avoiding latency growing linearly with document length",
+      "llm_tldr_cn": "顺序记忆的长上下文智能体需逐块读取长文档并维护紧凑记忆，使时延随文档长度线性增长且受证据位置影响。PARSER将文档分块后交给一组轻量子代理并行阅读，主导代理通过多轮散射-聚合查询深入推理，每轮广播查询、汇总证据、形成更深的追问。该设计使阅读阶段高度并行、推理阶段按需迭代，从根本上缓解长文档场景的顺序开销，为长上下文LLM智能体提供了更高效的架构。",
+      "llm_tldr": "顺序记忆的长上下文智能体需逐块读取长文档并维护紧凑记忆，使时延随文档长度线性增长且受证据位置影响。PARSER将文档分块后交给一组轻量子代理并行阅读，主导代理通过多轮散射-聚合查询深入推理，每轮广播查询、汇总证据、形成更深的追问。该设计使阅读阶段高度并行、推理阶段按需迭代，从根本上缓解长文档场景的顺序开销，为长上下文LLM智能体提供了更高效的架构。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
