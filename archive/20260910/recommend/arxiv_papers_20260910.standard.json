@@ -1,0 +1,253 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-10T21:19:56.544514+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2609.07008v1",
+      "source": "arxiv",
+      "title": "RedKnot-MLA: Multi-Head Offline-Online Reuse for DeepSeek-V4 Long-Context Serving",
+      "abstract": "Multi-head latent attention (MLA) exposes many logical query heads through one packed latent KV stream. This representation is memory efficient, but it removes the physical per-head cache boundary assumed by conventional head-wise reuse. We present our system, a DeepSeek-V4 realization of RedKnot's head-aware reuse principle. Each immutable document is processed offline at canonical position zero; certified Local-head contributions are retained as MLA-Off. At serving time, query-side RoPE relocation restores the document's request position, a small Global-head set and protected Local token rows are recomputed as MLA-Online, and the two paths are merged before a single shared output projection. The packed MLA latent is never split. DeepSeek-V4-Flash uses 37 reusable layers and a 56/8 Local/Global partition, giving a 75.29% analytic logical head-row ceiling; the Pro-0813 profile uses 55 layers and 112/16 heads, giving 78.89%. Frozen Flash operating points show hot-artifact TTFT speedups of 2.02-3.84x. At 256K, the archived three-dataset study reports an aggregate F1 change of +3.24 percentage points, an EM change of +4.16 points, and a 78.7-79.5% analytic major-operator arithmetic saving, while one dataset decreases by 2.81 F1 points. A separate author-reported 256K hot-artifact QPS measurement is approximately 2.0x; because its raw concurrency trace is not included in this bundle, we mark it as preliminary rather than archived evidence. We describe the factorization, position repair, token-row closure, sparse-MoE support, TP8 integration, and the measurement boundaries needed to interpret these results.",
+      "authors": [
+        "Yang Liu",
+        "Zhaokai Luo",
+        "Huayi Jin",
+        "Ruozhou He",
+        "Chenchen Hong",
+        "Mingxiao Ma",
+        "Biao Zhang",
+        "Zhiyong Wang",
+        "Boyu Wang",
+        "Guanjie Chen",
+        "Yifei Liu",
+        "Tao Xie",
+        "Junhao Hu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-09-07T03:59:33+00:00",
+      "link": "https://arxiv.org/pdf/2609.07008v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "position-independent offline KV cache reuse with RoPE relocation for long-context serving",
+      "llm_evidence_cn": "面向长上下文服务的RoPE重定位位置无关离线KV缓存复用",
+      "llm_evidence": "面向长上下文服务的RoPE重定位位置无关离线KV缓存复用",
+      "canonical_evidence": "面向长上下文服务的RoPE重定位位置无关离线KV缓存复用",
+      "llm_tldr_en": "MLA packs many logical heads into one latent KV stream, removing per-head cache boundaries. RedKnot-MLA enables position-independent document reuse by processing offline at canonical position zero and restoring request positions via query-side RoPE relocation.",
+      "llm_tldr_cn": "多头潜在注意力用一条打包的潜在KV流承载多个逻辑查询头，虽节省内存，却消除了传统逐头复用所依赖的物理缓存边界。本文提出RedKnot-MLA，在DeepSeek-V4上实现文档位置无关的复用：每篇文档离线在规范位置零处理，保留经认证的本地头贡献，服务时通过查询侧RoPE重定位恢复请求位置，并重算少量全局头后合并两路输出。打包的MLA潜在表示始终不被拆分。该工作将位置无关的KV缓存复用扩展到MLA架构，为长上下文服务提供高效方案。",
+      "llm_tldr": "多头潜在注意力用一条打包的潜在KV流承载多个逻辑查询头，虽节省内存，却消除了传统逐头复用所依赖的物理缓存边界。本文提出RedKnot-MLA，在DeepSeek-V4上实现文档位置无关的复用：每篇文档离线在规范位置零处理，保留经认证的本地头贡献，服务时通过查询侧RoPE重定位恢复请求位置，并重算少量全局头后合并两路输出。打包的MLA潜在表示始终不被拆分。该工作将位置无关的KV缓存复用扩展到MLA架构，为长上下文服务提供高效方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.10266v1",
+      "source": "arxiv",
+      "title": "KVShareArena: KV-Cache Reuse Across Contexts and Model Checkpoints",
+      "abstract": "LLM serving systems already reuse KV caches, but only when the reused text sits at the very start of the prompt. Two growing workloads break this condition: a retrieval-augmented generation server assembles a different set of retrieved chunks for every query, and a multi-agent coordinator reads reports written by other agents. Reused inside a new prompt, a cache carries the wrong positions and never attended to the other sources. The cache may also have been written by a different checkpoint of the same model family, which changes the stored values. Repair methods for such caches have appeared in three separate communities, each measured on its own terms, and existing benchmarks test only exact-prefix reuse, where nothing is lost. KVShareArena benchmarks KV-cache reuse across prompt contexts and model checkpoints on retrieved chunks and agent reports. It scores every method by the fraction of the gap it recovers between no cache and full recomputation, and charges compute, memory, and per-request latency with the cache in hand, reporting the one-time cost of building a cache separately. We find that correcting positions, which needs no recomputation, is enough until a question needs several sources at once. There, only methods that pay, by re-encoding part of the cache or by training, recover half to two thirds of the gap; unrepaired caches can be worse than no cache. Cache-compression methods that are harmless on a single prompt fall significantly behind position correction on freshly written agent reports. These patterns hold across three model boards. When a different checkpoint wrote the cache, training-free methods are barely affected, while an adapter trained on one checkpoint's caches loses quality. Harness, frozen querysets, and cost accounting ship as a pip package with an automated submission workflow and a public leaderboard.",
+      "authors": [
+        "Xi Shi",
+        "Qian Lou"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-09T14:53:45+00:00",
+      "link": "https://arxiv.org/pdf/2609.10266v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache reuse across contexts with wrong positions",
+      "llm_evidence_cn": "跨上下文且位置错乱的KV缓存复用",
+      "llm_evidence": "跨上下文且位置错乱的KV缓存复用",
+      "canonical_evidence": "跨上下文且位置错乱的KV缓存复用",
+      "llm_tldr_en": "KVShareArena benchmarks KV-cache reuse when reused text is not a prefix, covering retrieval-augmented and multi-agent workloads where caches carry wrong positions or come from different checkpoints.",
+      "llm_tldr_cn": "现有LLM服务只在被复用文本位于提示最前面时复用KV缓存，但RAG逐查询拼接不同片段、多智能体读取他人报告等场景打破了这一前提：复用进新提示的缓存位置错乱，也未关注其他来源，且可能来自不同模型检查点。KVShareArena提出跨上下文与跨模型检查点的KV缓存复用基准，统一评测三种社区各自提出的修复方法。该基准揭示现有测试只覆盖精确前缀复用，为位置无关缓存复用提供了更真实的评估。",
+      "llm_tldr": "现有LLM服务只在被复用文本位于提示最前面时复用KV缓存，但RAG逐查询拼接不同片段、多智能体读取他人报告等场景打破了这一前提：复用进新提示的缓存位置错乱，也未关注其他来源，且可能来自不同模型检查点。KVShareArena提出跨上下文与跨模型检查点的KV缓存复用基准，统一评测三种社区各自提出的修复方法。该基准揭示现有测试只覆盖精确前缀复用，为位置无关缓存复用提供了更真实的评估。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.03949v2",
+      "source": "arxiv",
+      "title": "VestigeKV: The NoPE-MLA KV Cache Carries Its Own Sparse-Attention Signal in a Vestigial Branch",
+      "abstract": "A long-lived KV cache must be compressed before the queries that will read it exist. Selection by observed attention collapses there: on a NoPE-MLA model, H2O and SnapKV retrieve 0.00 and 0.33 of needles at 8x compression, because a token's importance has not yet been observed. VestigeKV instead derives a sparse attention pattern from a signal the cache already carries, occupying the sparse-attention literature's one unoccupied quadrant: training-free and query-independent. In NoPE-MLA the 64-dimensional decoupled branch is a vestige of RoPE that training repurposes into a salience channel; reading 11% of each row, it partitions the cache into an attended tier and a GPU-resident archive that no row ever leaves, reachable each step by a certified, query-adaptive trigger. Nothing is trained and cache rows are never quantized, so every quality effect attributes to selection and scheduling. On Kimi Linear 48B, retrieval holds at 1.00 under 8x and 0.96 under 32x from 8k to 65k context, with zero gap to full-row selection, and the recall tier holds 128x at 1.00 (8k). Both tiers stay on the GPU, so the win is speed, not memory: the per-step scan reads ~26% of the bytes dense attention would, and on a two-node sglang deployment the crossover sits at ~40k context, reaching 1.18x at 256k and 1.39x at 496k. The mechanism is exclusive to NoPE: the identical operator on a RoPE MLA collapses to 0.08, query-independent salience exists only without rotation, and query-universal exact merging is provably impossible under RoPE. All thresholds were frozen before their data; 20 archived verdicts and 8 closed routes accompany the paper.",
+      "authors": [
+        "WenJie Fan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-09-03T14:53:20+00:00",
+      "link": "https://arxiv.org/pdf/2609.03949v2",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "query-independent, training-free KV cache compression signal",
+      "llm_evidence_cn": "查询无关、免训练的KV缓存压缩信号",
+      "llm_evidence": "查询无关、免训练的KV缓存压缩信号",
+      "canonical_evidence": "查询无关、免训练的KV缓存压缩信号",
+      "llm_tldr_en": "A long-lived KV cache must be compressed before its queries exist, so attention-based selection fails. VestigeKV derives a training-free, query-independent sparse-attention signal from the cache itself, retrieving needles that H2O and SnapKV miss.",
+      "llm_tldr_cn": "长期存活的KV缓存在查询到来前就需压缩，而基于已观测注意力的选择此时会失效，H2O与SnapKV在NoPE-MLA上8倍压缩时几乎检索不到needle。本文提出VestigeKV，从缓存自身携带的信号推导稀疏注意力模式，实现免训练且与查询无关的压缩。方法将64维解耦分支视为RoPE残余，读取每行11%即可划分被关注层与GPU常驻归档。该方案占据稀疏注意力文献中免训练且查询无关的空白象限，为位置无关KV缓存优化提供新路径。",
+      "llm_tldr": "长期存活的KV缓存在查询到来前就需压缩，而基于已观测注意力的选择此时会失效，H2O与SnapKV在NoPE-MLA上8倍压缩时几乎检索不到needle。本文提出VestigeKV，从缓存自身携带的信号推导稀疏注意力模式，实现免训练且与查询无关的压缩。方法将64维解耦分支视为RoPE残余，读取每行11%即可划分被关注层与GPU常驻归档。该方案占据稀疏注意力文献中免训练且查询无关的空白象限，为位置无关KV缓存优化提供新路径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.09768v1",
+      "source": "arxiv",
+      "title": "Fine-Tuning a KV Cache Concatenation-Aware Model or Recomputing KV Caches? Why Not Both?",
+      "abstract": "In Retrieval-Augmented Generation (RAG) systems, a large number of retrieved chunks are concatenated to form the input context so that users can receive high-quality responses based on external knowledge. As a result, the input context length increases substantially, leading to a larger prefill workload and, in turn, a longer time to first token (TTFT). While previous works that reuse precomputed key-value (KV) caches effectively reduce TTFT for long-context inputs, it remains unclear whether response quality is preserved when the input context becomes very long. In this paper, we propose a combined approach that (i) fine-tunes the model while taking KV cache concatenation into account and (ii) selectively recomputes a subset of the KV caches. By applying both techniques, we demonstrate improved accuracy for long-context inputs. Experiments on the RULER benchmark show that, for a 124k-token input, our method improves the RULER score by 9.7 point over the baseline that recomputes KV caches only. Moreover, TTFT is reduced by 80% compared with full attention.",
+      "authors": [
+        "Fumihiko Tachibana",
+        "Daisuke Miyashita",
+        "Jun Deguchi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-09-09T06:12:39+00:00",
+      "link": "https://arxiv.org/pdf/2609.09768v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "KV cache reuse and selective recomputation for long-context RAG",
+      "llm_evidence_cn": "面向长上下文RAG的KV缓存复用与选择性重算",
+      "llm_evidence": "面向长上下文RAG的KV缓存复用与选择性重算",
+      "canonical_evidence": "面向长上下文RAG的KV缓存复用与选择性重算",
+      "llm_tldr_en": "This paper combines KV-cache-concatenation-aware fine-tuning with selective KV recomputation to cut time-to-first-token for long RAG contexts while preserving response quality.",
+      "llm_tldr_cn": "在RAG系统中，拼接大量检索片段会使输入上下文显著变长，prefill负担加重、首token时延上升；复用预计算KV缓存虽能降低TTFT，但超长上下文下响应质量能否保持仍不清楚。该文提出组合方案：在微调阶段让模型感知KV缓存拼接，并选择性地重算部分KV缓存。结果显示该方法可在降低首token时延的同时维持响应质量，为长上下文RAG的KV缓存复用提供了质量保障思路。",
+      "llm_tldr": "在RAG系统中，拼接大量检索片段会使输入上下文显著变长，prefill负担加重、首token时延上升；复用预计算KV缓存虽能降低TTFT，但超长上下文下响应质量能否保持仍不清楚。该文提出组合方案：在微调阶段让模型感知KV缓存拼接，并选择性地重算部分KV缓存。结果显示该方法可在降低首token时延的同时维持响应质量，为长上下文RAG的KV缓存复用提供了质量保障思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.09823v1",
+      "source": "arxiv",
+      "title": "AMEND: Audited Margins Enable Nonblocking Drops in GPU-PIM LLM Decoding",
+      "abstract": "Autoregressive large language model (LLM) decoding re-reads a growing key-value (KV) cache at every step, so long-context attention is bound by graphics processing unit (GPU) memory bandwidth. Block-sparse attention skips low-contribution KV blocks, but a selector that decides after the current query-key (QK) product, such as max-relative block thresholding (BLASST), still reads every K block, and a processing-in-memory (PIM) filter that decides from the current query places a serial PIM stage on the critical path. We present AMEND, a GPU-PIM attention design that removes both dependencies. AMEND predicts each block's BLASST verdict from margins audited at earlier steps, so the GPU fetches only predicted survivors while near-bank PIM units in high-bandwidth memory (HBM) concurrently score the omitted complement. A stack-level controller merges both observations, updates the predictor, and eagerly generates the next step's mask, so every predicted drop is re-observed without blocking the current token. Operating points are selected offline by constrained Bayesian optimization under a false-drop budget. Across LongBench and RULER runs, AMEND preserves near-baseline task quality; in simulation at batch size 8, it achieves $1.40$-$3.63\\times$ end-to-end decode speedup and 28-66% lower dynamic decode energy than dense attention across 8K-64K contexts.",
+      "authors": [
+        "Zuxiong Tan",
+        "Will Wei-Jen Wang",
+        "Wei Shao",
+        "Ali Karkehabadi",
+        "Houman Homayoun",
+        "Avesta Sasan"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-09-09T07:25:14+00:00",
+      "link": "https://arxiv.org/pdf/2609.09823v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "GPU-PIM design reducing KV cache re-reads for long-context decoding",
+      "llm_evidence_cn": "通过GPU-PIM设计减少KV缓存重读以加速长上下文解码",
+      "llm_evidence": "通过GPU-PIM设计减少KV缓存重读以加速长上下文解码",
+      "canonical_evidence": "通过GPU-PIM设计减少KV缓存重读以加速长上下文解码",
+      "llm_tldr_en": "Autoregressive decoding re-reads the growing KV cache, bottlenecking memory bandwidth; AMEND predicts block-sparse verdicts from audited margins so the GPU fetches only survivors.",
+      "llm_tldr_cn": "针对自回归解码每步重读不断增长的KV缓存、长上下文注意力受限于GPU内存带宽的问题，本文提出GPU-PIM注意力设计AMEND。它利用先前步骤审计得到的边距来预测每个KV块的稀疏判定，使GPU只取回预测保留的块，并移除对当前查询键积与串行PIM阶段的依赖。该方案为长上下文解码的高效稀疏注意力提供了硬件协同新思路。",
+      "llm_tldr": "针对自回归解码每步重读不断增长的KV缓存、长上下文注意力受限于GPU内存带宽的问题，本文提出GPU-PIM注意力设计AMEND。它利用先前步骤审计得到的边距来预测每个KV块的稀疏判定，使GPU只取回预测保留的块，并移除对当前查询键积与串行PIM阶段的依赖。该方案为长上下文解码的高效稀疏注意力提供了硬件协同新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.06663v1",
+      "source": "arxiv",
+      "title": "ECOKV: Geometry-Aware KV Cache Eviction via Complementary Diversity Metrics",
+      "abstract": "Although multimodal Large Language Models (MLLMs) excel in diverse tasks, their scalability remains limited by the memory and computational overhead of KV cache storage. Recent KV cache eviction approaches incorporate a cosine similarity-based diversity metric with importance metrics to selectively retain critical key-value pairs. However, cosine similarity involves normalization that discards magnitude information, and it often yields uniformly high similarity values across layers due to the anisotropy property of hidden representations. In our study ECOKV, we rigorously deconstruct the capabilities of existing diversity metrics. Moving beyond simple measurement, we propose a geometry-aware composite metric that jointly leverages Euclidean distance and cosine similarity to capture token diversity from complementary perspectives. Furthermore, we use these two metrics to estimate the redundancy level of each attention head, allowing adaptive weighting between diversity and importance scores during token selection. Finally, we demonstrate that the observation window commonly employed to preserve recent tokens can be substantially reduced, thereby allocating more cache capacity to informative tokens and yielding consistent improvements. Extensive experiments demonstrate that ECOKV achieves state-of-the-art performance under various compression ratios and can be seamlessly integrated with existing KV cache eviction methods. We further analyze the relationship between importance and diversity, and examine redundancy patterns across layers and attention heads.",
+      "authors": [
+        "Chin Ting Hsu",
+        "Yu-Syuan Xu",
+        "Ling Zou",
+        "Hsien-Kai Kuo",
+        "Wen-Huang Cheng"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-09-06T15:13:48+00:00",
+      "link": "https://arxiv.org/pdf/2609.06663v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache eviction with geometry-aware diversity metrics",
+      "llm_evidence_cn": "几何感知多样性度量的KV缓存驱逐",
+      "llm_evidence": "几何感知多样性度量的KV缓存驱逐",
+      "canonical_evidence": "几何感知多样性度量的KV缓存驱逐",
+      "llm_tldr_en": "Multimodal LLM scalability is limited by KV cache overhead. ECOKV replaces cosine-similarity diversity with a geometry-aware composite metric combining Euclidean distance and importance to select key-value pairs for eviction.",
+      "llm_tldr_cn": "多模态大模型的可扩展性受KV缓存存储与计算开销限制，现有驱逐方法用余弦相似度衡量多样性，但归一化会丢弃幅度信息且因表示各向异性使各层相似度趋于一致。本文提出ECOKV，系统解构现有多样性度量的能力，并设计融合欧氏距离的几何感知复合度量，与重要性度量结合选择性保留关键KV对。实验表明该方法能更有效地区分并保留重要缓存项，提升多模态任务的缓存效率。该工作为多模态LLM的KV缓存驱逐提供了新的度量方案。",
+      "llm_tldr": "多模态大模型的可扩展性受KV缓存存储与计算开销限制，现有驱逐方法用余弦相似度衡量多样性，但归一化会丢弃幅度信息且因表示各向异性使各层相似度趋于一致。本文提出ECOKV，系统解构现有多样性度量的能力，并设计融合欧氏距离的几何感知复合度量，与重要性度量结合选择性保留关键KV对。实验表明该方法能更有效地区分并保留重要缓存项，提升多模态任务的缓存效率。该工作为多模态LLM的KV缓存驱逐提供了新的度量方案。",
+      "llm_tags": [
+        "query:pic:composite"
+      ],
+      "matched_query_tag": "query:pic:composite",
+      "matched_query_text": "Papers central to 每日检索与PIC/position-independent KV cache优化相关的最新论文, especially work that connects or combines: position independent caching for LLM inference acceleration; KV cache reuse in large language model inference; prefix caching techniques for LLM inference; prompt caching for reducing inference latency; context caching for long context LLM inference; long context inference acceleration methods; How does position independent caching improve long context inference?; What are the latest methods for KV cache reuse in LLM inference?.",
+      "matched_requirement_id": "req-composite-pic",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
