@@ -6,41 +6,41 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-09-10
-- 运行时间：2026-09-10 21:24:37 UTC
+- 最新运行日期：2026-09-11
+- 运行时间：2026-09-11 21:44:05 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：4
-- 速读区：2
+- 本次总论文数：7
+- 精读区：2
+- 速读区：5
 
 ### 今日简报（AI）
-- 今日共生成 6 篇推荐（精读 4 篇，速读 2 篇）
-- 精读：《RedKnot-MLA: Multi-Head Offline-Online Reuse for DeepSeek-V4 Long-Context Serving》（9.0/10）, 《KVShareArena: KV-Cache Reuse Across Contexts and Model Checkpoints》（9.0/10）
-- 速读：《AMEND: Audited Margins Enable Nonblocking Drops in GPU-PIM LLM Decoding》（7.0/10）, 《ECOKV: Geometry-Aware KV Cache Eviction via Complementary Diversity Metrics》（6.0/10）
-- 这些结果覆盖了当下较热的方向，建议先看精读区论文的关键问题与方法。
-- 详情：[/202609/10/README](/202609/10/README)
+今日日报精读2篇、速读5篇，重点追踪LLM推理中的KV缓存外部化与内存共享。最值得看的是9.0分的《Building py-kvcache》用NVMe SSD为vLLM做外部KV缓存，以及8.0分的《Composable CXL Memory》把CXL内存做成Kubernetes原生共享内存。普通读者可优先从这两篇切入，理解“KV缓存/内存解耦”如何降低长上下文LLM服务成本，再按兴趣看KV淘汰、智能手术室多智能体和预填充分块等速读。
+- 详情：[/202609/11/README](/202609/11/README)
 
 ### 精读区论文标签
-1. [RedKnot-MLA: Multi-Head Offline-Online Reuse for DeepSeek-V4 Long-Context Serving](/202609/10/2609.07008v1-redknot-mla-multi-head-offline-online-reuse-for-deepseek-v4-long-context-serving)  
+1. [Building py-kvcache: A Performance Characterization of External KV Caching for vLLM with NVMe SSDs](/202609/11/2609.11744v1-building-py-kvcache-a-performance-characterization-of-external-kv-caching-for-vllm-with-nvme-ssds)  
    标签：评分：9.0/10、query:pic
-   evidence：面向长上下文服务的RoPE重定位位置无关离线KV缓存复用
-2. [KVShareArena: KV-Cache Reuse Across Contexts and Model Checkpoints](/202609/10/2609.10266v1-kvsharearena-kv-cache-reuse-across-contexts-and-model-checkpoints)  
-   标签：评分：9.0/10、query:pic
-   evidence：跨上下文且位置错乱的KV缓存复用
-3. [VestigeKV: The NoPE-MLA KV Cache Carries Its Own Sparse-Attention Signal in a Vestigial Branch](/202609/10/2609.03949v2-vestigekv-the-nope-mla-kv-cache-carries-its-own-sparse-attention-signal-in-a-vestigial-branch)  
+   evidence：面向vLLM的外部前缀KV缓存以降低首token时延
+2. [Composable CXL Memory as a Kubernetes-Native Shared Memory for LLM Serving](/202609/11/2609.10790v1-composable-cxl-memory-as-a-kubernetes-native-shared-memory-for-llm-serving)  
    标签：评分：8.0/10、query:pic
-   evidence：查询无关、免训练的KV缓存压缩信号
-4. [Fine-Tuning a KV Cache Concatenation-Aware Model or Recomputing KV Caches? Why Not Both?](/202609/10/2609.09768v1-fine-tuning-a-kv-cache-concatenation-aware-model-or-recomputing-kv-caches-why-not-both)  
-   标签：评分：8.0/10、query:pic
-   evidence：面向长上下文RAG的KV缓存复用与选择性重算
+   evidence：通过共享CXL内存实现跨节点KV缓存复用与前缀缓存
 
 ### 速读区论文标签
-1. [AMEND: Audited Margins Enable Nonblocking Drops in GPU-PIM LLM Decoding](/202609/10/2609.09823v1-amend-audited-margins-enable-nonblocking-drops-in-gpu-pim-llm-decoding)  
+1. [ECOKV: Geometry-Aware KV Cache Eviction via Complementary Diversity Metrics](/202609/11/2609.06663v1-ecokv-geometry-aware-kv-cache-eviction-via-complementary-diversity-metrics)  
    标签：评分：7.0/10、query:pic
-   evidence：通过GPU-PIM设计减少KV缓存重读以加速长上下文解码
-2. [ECOKV: Geometry-Aware KV Cache Eviction via Complementary Diversity Metrics](/202609/10/2609.06663v1-ecokv-geometry-aware-kv-cache-eviction-via-complementary-diversity-metrics)  
+   evidence：通过KV缓存驱逐降低长上下文推理的内存与计算开销
+2. [A Voice-Interactive Multi-Agent System for Smart Operating Rooms: Architecture Design and Key Technologies](/202609/11/2609.11231v1-a-voice-interactive-multi-agent-system-for-smart-operating-rooms-architecture-design-and-key-technologies)  
+   标签：评分：7.0/10、query:pic
+   evidence：KV缓存前缀预热与字节级最长公共前缀复用降低重计算延迟
+3. [Deadline-Aware Adaptive Prefill Chunking for Efficient Large Language Model Serving](/202609/11/2609.07883v1-deadline-aware-adaptive-prefill-chunking-for-efficient-large-language-model-serving)  
    标签：评分：6.0/10、query:pic
-   evidence：几何感知多样性度量的KV缓存驱逐
+   evidence：自适应预填充分块以保障LLM服务逐词延迟
+4. [REVA: Reusable Evidence View Aggregation for Context-Efficient RAG Serving](/202609/11/2609.11209v1-reva-reusable-evidence-view-aggregation-for-context-efficient-rag-serving)  
+   标签：评分：6.0/10、query:pic
+   evidence：可复用证据视图以实现上下文高效RAG服务
+5. [PATTON: Enabling Commodity PIM for Production LLM Serving](/202609/11/2609.11392v1-patton-enabling-commodity-pim-for-production-llm-serving)  
+   标签：评分：6.0/10、query:pic
+   evidence：生产LLM服务中的KV缓存块分配、共享与缓存
 
 
 <div class="dpr-home-promo-card">

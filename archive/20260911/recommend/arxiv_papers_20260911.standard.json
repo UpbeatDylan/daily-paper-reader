@@ -1,0 +1,290 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-11T21:36:56.383938+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2609.11744v1",
+      "source": "arxiv",
+      "title": "Building py-kvcache: A Performance Characterization of External KV Caching for vLLM with NVMe SSDs",
+      "abstract": "Prefix caching can reduce the time to first token (TTFT) of long-context LLM requests by reusing previously computed key-value (KV) states, but for short prefixes or fast GPUs, recomputation can be faster than loading from an external cache. We characterize this tradeoff in vLLM across GPU, CPU, and NVMe tiers using synthetic workloads, long-context benchmarks, production traces, and find that cache performance depends on transfer granularity, intermediate memory use, and when transfers enter the request schedule, not only on device bandwidth. These findings motivate py-kvcache, a vLLM KV Offload connector with asynchronous direct I/O, bounded shared staging, and scheduler-aware preloading, which starts disk reads while requests are still waiting, overlapping with compute. At 80k tokens, py-kvcache loading from disk is 2.0x faster than LMCache, with preloading contributing 1.34x. With GPU, CPU, and disk caching enabled, it is 1.23x faster than LMCache and within approximately 4% of the native vLLM KV Offload implementation. LongBench and SCBench show that these benefits extend to irregular prefix chains and multi-turn workloads. Bailian trace replays improve TTFT on a weaker GPU, but on an H100 the average request falls below the break-even point and GPU memory alone retains enough prefixes. External KV caching should therefore be treated as a setup specific admission decision. The py-kvcacheimplementation is available at: https://github.com/atlarge-research/py-kvcache.",
+      "authors": [
+        "Joseph Kanichai",
+        "Tiziano De Matteis",
+        "Animesh Trivedi"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-09-10T16:00:35+00:00",
+      "link": "https://arxiv.org/pdf/2609.11744v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "external prefix KV caching for vLLM to reduce time to first token",
+      "llm_evidence_cn": "面向vLLM的外部前缀KV缓存以降低首token时延",
+      "llm_evidence": "面向vLLM的外部前缀KV缓存以降低首token时延",
+      "canonical_evidence": "面向vLLM的外部前缀KV缓存以降低首token时延",
+      "llm_tldr_en": "Prefix caching cuts time to first token for long-context LLM requests by reusing computed KV states, but for short prefixes or fast GPUs recomputation can beat loading from external cache. This work characterizes the tradeoff across GPU, CPU and NVMe tiers in vLLM and builds py-kvcache, a scheduler-aware offload connector with asynchronous direct I/O.",
+      "llm_tldr_cn": "前缀缓存可通过复用已计算的KV状态降低长上下文请求的首token时延，但对短前缀或快速GPU而言，重计算可能比从外部缓存加载更快，这一权衡尚缺乏系统刻画。本文在vLLM上跨GPU、CPU与NVMe分层进行性能表征，发现缓存性能取决于传输粒度、中间内存使用与调度时机。基于此提出py-kvcache，实现异步直接I/O与调度感知预取，有效提升外部KV缓存效率。",
+      "llm_tldr": "前缀缓存可通过复用已计算的KV状态降低长上下文请求的首token时延，但对短前缀或快速GPU而言，重计算可能比从外部缓存加载更快，这一权衡尚缺乏系统刻画。本文在vLLM上跨GPU、CPU与NVMe分层进行性能表征，发现缓存性能取决于传输粒度、中间内存使用与调度时机。基于此提出py-kvcache，实现异步直接I/O与调度感知预取，有效提升外部KV缓存效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.10790v1",
+      "source": "arxiv",
+      "title": "Composable CXL Memory as a Kubernetes-Native Shared Memory for LLM Serving",
+      "abstract": "We present a Kubernetes Dynamic Resource Allocation (DRA) driver that makes composable CXL memory a schedulable cluster resource, and evaluate the resulting shared-memory tier for cross-node KV-cache reuse in LLM serving. The driver composes CXL regions on demand, materializes them as DAX devices on each participating host, and injects them into pods under a single Container Device Interface (CDI) name so that pods on different nodes access the same physical region. A shared-memory connector for vLLM/llm-d uses that region as a KV-cache tier with a slot directory embedded inside the shared medium, which eliminates the need for an external metadata service. On a two-node cluster with a 512\\,GiB CXL appliance and Qwen2.5-7B-Instruct, cross-node prefix reuse reduces TTFT by 5.5$\\times$--36.6$\\times$ at an external hit rate of 95.4--99.5\\,\\%, while node-local tiers (GPU prefix caching, CPU-DRAM offload) fall back to full recompute. The sharing gap, defined as the latency ratio between cross-node and same-node reuse, is 1--4\\%, indicating that cross-node reuse incurs little additional latency relative to same-node reuse on our testbed. Both replicas run full engines; the study demonstrates memory disaggregation rather than prefill/decode disaggregation. We report this as a feasibility study rather than a performance evaluation.",
+      "authors": [
+        "Hongjian Fan",
+        "Kevin Zhang",
+        "David Habinsky",
+        "Sean Dykstra"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-09-09T19:52:48+00:00",
+      "link": "https://arxiv.org/pdf/2609.10790v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "cross-node KV-cache reuse and prefix caching via shared CXL memory",
+      "llm_evidence_cn": "通过共享CXL内存实现跨节点KV缓存复用与前缀缓存",
+      "llm_evidence": "通过共享CXL内存实现跨节点KV缓存复用与前缀缓存",
+      "canonical_evidence": "通过共享CXL内存实现跨节点KV缓存复用与前缀缓存",
+      "llm_tldr_en": "A Kubernetes DRA driver turns composable CXL memory into a schedulable shared-memory tier, enabling cross-node KV-cache reuse and prefix caching for vLLM/llm-d without external metadata.",
+      "llm_tldr_cn": "跨节点KV缓存复用缺乏统一的共享内存与元数据管理，限制了LLM服务的缓存效率与扩展性。本文提出Kubernetes DRA驱动，将可组合CXL内存变为集群可调度资源，并以内嵌槽目录的共享内存连接器充当vLLM/llm-d的KV缓存层。在两节点集群与512GiB CXL设备、Qwen2.5-7B上实现了跨节点前缀缓存复用，且无需外部元数据服务。该工作使共享内存成为可调度集群资源，为跨节点KV缓存复用提供了基础设施支持。",
+      "llm_tldr": "跨节点KV缓存复用缺乏统一的共享内存与元数据管理，限制了LLM服务的缓存效率与扩展性。本文提出Kubernetes DRA驱动，将可组合CXL内存变为集群可调度资源，并以内嵌槽目录的共享内存连接器充当vLLM/llm-d的KV缓存层。在两节点集群与512GiB CXL设备、Qwen2.5-7B上实现了跨节点前缀缓存复用，且无需外部元数据服务。该工作使共享内存成为可调度集群资源，为跨节点KV缓存复用提供了基础设施支持。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.06663v1",
+      "source": "arxiv",
+      "title": "ECOKV: Geometry-Aware KV Cache Eviction via Complementary Diversity Metrics",
+      "abstract": "Although multimodal Large Language Models (MLLMs) excel in diverse tasks, their scalability remains limited by the memory and computational overhead of KV cache storage. Recent KV cache eviction approaches incorporate a cosine similarity-based diversity metric with importance metrics to selectively retain critical key-value pairs. However, cosine similarity involves normalization that discards magnitude information, and it often yields uniformly high similarity values across layers due to the anisotropy property of hidden representations. In our study ECOKV, we rigorously deconstruct the capabilities of existing diversity metrics. Moving beyond simple measurement, we propose a geometry-aware composite metric that jointly leverages Euclidean distance and cosine similarity to capture token diversity from complementary perspectives. Furthermore, we use these two metrics to estimate the redundancy level of each attention head, allowing adaptive weighting between diversity and importance scores during token selection. Finally, we demonstrate that the observation window commonly employed to preserve recent tokens can be substantially reduced, thereby allocating more cache capacity to informative tokens and yielding consistent improvements. Extensive experiments demonstrate that ECOKV achieves state-of-the-art performance under various compression ratios and can be seamlessly integrated with existing KV cache eviction methods. We further analyze the relationship between importance and diversity, and examine redundancy patterns across layers and attention heads.",
+      "authors": [
+        "Chin Ting Hsu",
+        "Yu-Syuan Xu",
+        "Ling Zou",
+        "Hsien-Kai Kuo",
+        "Wen-Huang Cheng"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-09-06T15:13:48+00:00",
+      "link": "https://arxiv.org/pdf/2609.06663v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache eviction to cut memory and computation overhead in long-context inference",
+      "llm_evidence_cn": "通过KV缓存驱逐降低长上下文推理的内存与计算开销",
+      "llm_evidence": "通过KV缓存驱逐降低长上下文推理的内存与计算开销",
+      "canonical_evidence": "通过KV缓存驱逐降低长上下文推理的内存与计算开销",
+      "llm_tldr_en": "ECOKV addresses KV cache memory and computation overhead in multimodal LLMs by replacing cosine-similarity diversity with a geometry-aware composite metric that retains critical key-value pairs more effectively.",
+      "llm_tldr_cn": "多模态大模型的可扩展性受限于KV缓存的内存与计算开销，已有驱逐方法依赖余弦相似度多样性度量，但其归一化丢失幅度信息且因表示各向异性导致相似度普遍偏高。本文提出ECOKV，用联合欧氏距离等互补指标的几何感知复合度量替代单一余弦相似度，以更准确地筛选关键键值对。研究系统解构了现有多样性度量的能力，为长上下文推理中的KV缓存压缩提供了更稳健的驱逐准则。",
+      "llm_tldr": "多模态大模型的可扩展性受限于KV缓存的内存与计算开销，已有驱逐方法依赖余弦相似度多样性度量，但其归一化丢失幅度信息且因表示各向异性导致相似度普遍偏高。本文提出ECOKV，用联合欧氏距离等互补指标的几何感知复合度量替代单一余弦相似度，以更准确地筛选关键键值对。研究系统解构了现有多样性度量的能力，为长上下文推理中的KV缓存压缩提供了更稳健的驱逐准则。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.07883v1",
+      "source": "arxiv",
+      "title": "Deadline-Aware Adaptive Prefill Chunking for Efficient Large Language Model Serving",
+      "abstract": "Continuous batching improves large language model (LLM) serving throughput, but long prompt prefills can delay decode iterations and violate inter-token latency objectives. Chunked prefill mitigates this interference, yet its chunk size is normally fixed: small chunks protect decode latency but repeatedly pay launch overhead, while large chunks improve prefill efficiency but create latency spikes. We introduce SLOWeave, an online scheduling method that selects the largest prefill chunk predicted to finish before the earliest active decode deadline. The decision requires no workload-specific chunk-size tuning and is computed by a logarithmic-time search over a monotone iteration-cost model. We prove that, whenever a decode-only iteration is feasible and the cost predictor is accurate, SLOWeave maximizes immediate prefill progress among decisions that preserve every active request's next-token deadline. We evaluate the method in a reproducible event-driven simulator and an iteration-level GPU runtime across chat, mixed-context, long-context, and bursty workloads. Under a 25ms time-per-output-token objective, SLOWeave improves goodput over the strongest fixed-chunk baseline by 39% on mixed requests and 38% on long-context requests. Under a stricter 10ms objective, the gains rise to 3.3$\\times$ and 2.4$\\times$, respectively. These results isolate adaptive chunk sizing as a useful serving primitive and provide an implementation-ready controller for integration with iteration-level LLM runtimes.",
+      "authors": [
+        "Siyu Song",
+        "Qi Bai",
+        "Jinbo Hao",
+        "Kai Li",
+        "Chenchen Wang",
+        "Jiayu Sun"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-07T18:47:57+00:00",
+      "link": "https://arxiv.org/pdf/2609.07883v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "adaptive prefill chunking to meet inter-token latency in LLM serving",
+      "llm_evidence_cn": "自适应预填充分块以保障LLM服务逐词延迟",
+      "llm_evidence": "自适应预填充分块以保障LLM服务逐词延迟",
+      "canonical_evidence": "自适应预填充分块以保障LLM服务逐词延迟",
+      "llm_tldr_en": "SLOWeave selects the largest prefill chunk predicted to finish before the earliest decode deadline, avoiding fixed chunk sizes that either waste launch overhead or spike latency in LLM serving.",
+      "llm_tldr_cn": "连续批处理提升了大模型服务吞吐，但长提示预填充会拖延解码迭代并违反逐词延迟目标，而现有分块预填充使用固定块大小，小块保护解码延迟却反复付出启动开销，大块提升预填充效率却造成延迟尖峰。本文提出在线调度方法SLOWeave，通过单调迭代成本模型上的对数时间搜索，选择能在最早活跃解码截止时间前完成的最大预填充块。该方法无需针对负载调参，为长提示场景下的推理延迟控制提供了自适应方案。",
+      "llm_tldr": "连续批处理提升了大模型服务吞吐，但长提示预填充会拖延解码迭代并违反逐词延迟目标，而现有分块预填充使用固定块大小，小块保护解码延迟却反复付出启动开销，大块提升预填充效率却造成延迟尖峰。本文提出在线调度方法SLOWeave，通过单调迭代成本模型上的对数时间搜索，选择能在最早活跃解码截止时间前完成的最大预填充块。该方法无需针对负载调参，为长提示场景下的推理延迟控制提供了自适应方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.11231v1",
+      "source": "arxiv",
+      "title": "A Voice-Interactive Multi-Agent System for Smart Operating Rooms: Architecture Design and Key Technologies",
+      "abstract": "This paper presents SurgicalRoomAgent, a voice-interactive multi-agent system for smart operating rooms based on large language models (LLMs). The system achieves natural language understanding, device control, intraoperative recording, and surgical report generation through a layered architecture comprising a voice interaction pipeline (wake, ASR, turn detection, agent reasoning, TTS) and an agent core (skill registry, task planner, device manager). Three key technologies are investigated: (1) KV Cache prefix warming for low-latency inference, reducing recomputation overhead from approximately 500 ms to tens of milliseconds via byte-level Longest Common Prefix reuse; (2) streaming partial JSON parsing with early parallel task execution, reducing end-to-end latency by approximately 30%; and (3) progressive skill prompt disclosure, which dynamically filters system prompts based on user role, connected devices, and surgical phase to maximize information density within limited context windows. The system is implemented using the Qwen3-27B model with llama.cpp/sglang inference engines. Experimental analysis demonstrates effective operation within a 16,384-token context limit and multi-device parallel control response times meeting OR real-time requirements.",
+      "authors": [
+        "Tianxiang Zhou"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.HC"
+      ],
+      "published": "2026-09-10T08:29:27+00:00",
+      "link": "https://arxiv.org/pdf/2609.11231v1",
+      "tags": [
+        "keyword:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache prefix warming with byte-level longest common prefix reuse cuts recomputation for low latency",
+      "llm_evidence_cn": "KV缓存前缀预热与字节级最长公共前缀复用降低重计算延迟",
+      "llm_evidence": "KV缓存前缀预热与字节级最长公共前缀复用降低重计算延迟",
+      "canonical_evidence": "KV缓存前缀预热与字节级最长公共前缀复用降低重计算延迟",
+      "llm_tldr_en": "SurgicalRoomAgent is a voice-interactive multi-agent system for smart operating rooms that applies KV cache prefix warming with byte-level longest-common-prefix reuse, cutting recomputation overhead from about 500 ms to tens of milliseconds for low-latency inference.",
+      "llm_tldr_cn": "论文针对智能手术室语音交互中LLM推理重复计算导致高延迟的问题，提出SurgicalRoomAgent分层多智能体系统。该系统采用KV Cache前缀预热技术，通过字节级最长公共前缀复用，将重计算开销从约500毫秒降至数十毫秒。结果表面前缀缓存可有效降低实时交互推理延迟。该工作为前缀缓存与低延迟推理在垂直领域的落地提供了工程范例。",
+      "llm_tldr": "论文针对智能手术室语音交互中LLM推理重复计算导致高延迟的问题，提出SurgicalRoomAgent分层多智能体系统。该系统采用KV Cache前缀预热技术，通过字节级最长公共前缀复用，将重计算开销从约500毫秒降至数十毫秒。结果表面前缀缓存可有效降低实时交互推理延迟。该工作为前缀缓存与低延迟推理在垂直领域的落地提供了工程范例。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.11209v1",
+      "source": "arxiv",
+      "title": "REVA: Reusable Evidence View Aggregation for Context-Efficient RAG Serving",
+      "abstract": "Retrieval-augmented generation (RAG) improves knowledge-intensive large language model (LLM) applications by conditioning generation on retrieved documents, but longer contexts increase latency, key-value (KV) cache memory, and token cost. Post-retrieval compression can reduce this cost, yet existing compressors often operate independently for each query, rely on auxiliary models or rewriting, and introduce online overhead that can offset the benefit of shorter prompts. We revisit RAG compression from a data-mining perspective by aggregating historical query--document--model interactions into reusable evidence views. We first show that modern compressors have unstable gains over simple truncation and can add substantial inference-time latency. We then propose Reusable Evidence View Aggregation (REVA), a framework that mines the target generator's historical attention traces into a document-keyed, budget-agnostic score store. REVA maps token-level attention to readable word units, aggregates importance across repeated document accesses, and renders budget-specific plain-text views that preserve document order and the standard RAG interface. Across four representative benchmarks and modern LLMs, REVA improves generation quality by 1.0--5.8 points over existing advances, while reducing compression overhead by a factor of 5.3 to 15.6, adding less than 40 ms of latency.",
+      "authors": [
+        "Tuan Nguyen",
+        "Qiran Hu",
+        "Banruo Liu",
+        "Khoa D. Doan",
+        "Kok-Seng Wong",
+        "Fan Lai"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL",
+        "cs.IR"
+      ],
+      "published": "2026-09-10T08:14:22+00:00",
+      "link": "https://arxiv.org/pdf/2609.11209v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reusable evidence views for context-efficient RAG serving",
+      "llm_evidence_cn": "可复用证据视图以实现上下文高效RAG服务",
+      "llm_evidence": "可复用证据视图以实现上下文高效RAG服务",
+      "canonical_evidence": "可复用证据视图以实现上下文高效RAG服务",
+      "llm_tldr_en": "Longer RAG contexts raise latency, KV cache memory and token cost; REVA aggregates historical query-document-model interactions into reusable evidence views, avoiding per-query online compression overhead.",
+      "llm_tldr_cn": "针对RAG中更长上下文增加延迟、KV缓存内存与token成本，而现有后检索压缩器逐查询独立、依赖辅助模型并引入在线开销的问题，论文从数据挖掘视角重新审视压缩。它把历史查询-文档-模型交互聚合为可复用证据视图，并指出现代压缩器相对简单截断增益不稳定且增加推理延迟。该方法以可复用视图降低在线压缩开销，为上下文高效的RAG服务提供新范式。",
+      "llm_tldr": "针对RAG中更长上下文增加延迟、KV缓存内存与token成本，而现有后检索压缩器逐查询独立、依赖辅助模型并引入在线开销的问题，论文从数据挖掘视角重新审视压缩。它把历史查询-文档-模型交互聚合为可复用证据视图，并指出现代压缩器相对简单截断增益不稳定且增加推理延迟。该方法以可复用视图降低在线压缩开销，为上下文高效的RAG服务提供新范式。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.11392v1",
+      "source": "arxiv",
+      "title": "PATTON: Enabling Commodity PIM for Production LLM Serving",
+      "abstract": "Processing-in-Memory (PIM) is promising for accelerating memory-bound decode attention, but attention acceleration alone is insufficient for production LLM serving, where engines dynamically allocate, populate, share, cache, and reclaim logical KV cache blocks. Supporting this lifecycle on commodity PIM requires efficient physical memory allocation, block-to-address mapping, and command generation. For the Value cache, these requirements create a fundamental conflict among GEMV efficiency, single-token write efficiency, and memory capacity: GEMV-optimized layouts scatter newly generated Value vectors across rows, making writes costly, while finer-grained memory sharing improves capacity utilization but fragments GEMV reductions. We present PATTON, a PIM runtime that integrates production LLM serving engines with commodity PIM. PATTON introduces hierarchical granule allocation: block-sized Key and Value granules map one-to-one to logical token blocks, fixing their physical placements and commands, while coarser granules group blocks for efficient GEMV execution and memory utilization. A Commit Zone stages partial Value blocks for efficient single-token writes before committing them to GEMV-optimized locations. PATTON tracks these placements to generate KV cache writes and QK-transpose/SV commands. Across attention execution and runtime-induced prefill recomputation, PATTON achieves an average 1.95x speedup and 4.83x higher energy efficiency over evaluated baselines, requires no PIM processing-unit modifications, and maintains a KV cache hit rate comparable to the native GPU KV cache in vLLM.",
+      "authors": [
+        "Hangyeol Kim",
+        "Sanghyun Lee",
+        "Teokkyu Suh",
+        "Joo-Young Kim"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-09-10T11:28:07+00:00",
+      "link": "https://arxiv.org/pdf/2609.11392v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache block allocation, sharing and caching in production LLM serving",
+      "llm_evidence_cn": "生产LLM服务中的KV缓存块分配、共享与缓存",
+      "llm_evidence": "生产LLM服务中的KV缓存块分配、共享与缓存",
+      "canonical_evidence": "生产LLM服务中的KV缓存块分配、共享与缓存",
+      "llm_tldr_en": "PATTON is a PIM runtime for production LLM serving that manages KV cache block allocation, mapping and sharing on commodity processing-in-memory, resolving conflicts among GEMV, write efficiency and capacity.",
+      "llm_tldr_cn": "生产级LLM服务中KV缓存块需动态分配、填充、共享、缓存与回收，仅加速注意力并不足够。本文提出PATTON运行时，解决通用PIM上的物理内存分配、块地址映射与命令生成问题，兼顾GEMV效率、单token写入效率与内存容量。它缓解了GEMV布局与细粒度内存共享之间的根本冲突，使KV缓存生命周期管理在通用PIM上可行。该工作为PIM上生产级LLM服务提供了可用的KV缓存管理运行时支撑。",
+      "llm_tldr": "生产级LLM服务中KV缓存块需动态分配、填充、共享、缓存与回收，仅加速注意力并不足够。本文提出PATTON运行时，解决通用PIM上的物理内存分配、块地址映射与命令生成问题，兼顾GEMV效率、单token写入效率与内存容量。它缓解了GEMV布局与细粒度内存共享之间的根本冲突，使KV缓存生命周期管理在通用PIM上可行。该工作为PIM上生产级LLM服务提供了可用的KV缓存管理运行时支撑。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
