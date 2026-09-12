@@ -1,0 +1,69 @@
+{
+  "label": "2026-09-12",
+  "date": "2026-09-12",
+  "generated_at": "2026-09-12T21:37:15",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202609/12/2609.07306v1-routerelay-event-triggered-cross-layer-route-reuse-for-efficient-dynamic-sparse-attention",
+      "section": "quick",
+      "title_en": "RouteRelay: Event-Triggered Cross-Layer Route Reuse for Efficient Dynamic Sparse Attention",
+      "authors": "Bin Li, Sisi Liu, Chenyang Hu, Chaoyang Zhang, Wei Li, Hui Song",
+      "date": "2026-09-07",
+      "pdf": "https://arxiv.org/pdf/2609.07306v1",
+      "score": "7.0",
+      "evidence": "面向长上下文稀疏注意力的跨层路由复用",
+      "tldr": "动态稀疏注意力逐层重建路由分数矩阵，即使跨层路由变化很小，仍带来额外开销。RouteRelay 复用跨深度路由元数据，仅锚层全量路由，中间层重评上一 top-k 与哨兵块，在保持当前层 QKV 注意力计算的前提下，触发式重路由查询行。实验在低/中/高漂移下重路由 25.0%/55.4%/78.2% 行，仍保持至少 99.99% 路由召回；键块 128 到 1024 时保持 100% 召回并仅评估 38.4–51.6% 分数对。该方法给出稳定性条件、概率界与行选择性 GPU 执行设计，但 CPU 未融合执行仍慢于稠密矩阵乘法。",
+      "tags": "query:pic",
+      "abstract_en": "Dynamic sparse attention reduces long-context prefill cost by routing each query chunk to a small set of key chunks at every Transformer layer. The sparse attention kernel avoids most token interactions, but the router still rebuilds a chunk--chunk score matrix layer after layer, even when the selected routes change little. We introduce RouteRelay, a router-agnostic method that reuses only route metadata across depth while continuing to compute attention with the current layer's queries, keys, and values. Anchor layers perform full routing. Intermediate layers rescore the previous top-$k$ route and a compact sentinel set of near-miss and randomly probed chunks. A query row is rerouted only when a sentinel challenges its weakest selected chunk. We give a top-$k$ stability condition, a probabilistic bound on missed challengers, and a row-selective GPU execution design. In a reproducible empirical evaluation, RouteRelay retains at least 99.99% route recall while rerouting 25.0%, 55.4%, and 78.2% of rows under low, moderate, and high cross-layer drift, respectively. Across routing scales, RouteRelay retains 100.0% recall while evaluating 38.4--51.6% of full-routing score pairs as the key-chunk count grows from 128 to 1024. Its unfused CPU execution remains slower than dense matrix multiplication, exposing row compaction and ledger updates as the main kernel-engineering targets.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/12/2609.11582v1-omnikvquant-kv-cache-quantization-for-omni-llms",
+      "section": "quick",
+      "title_en": "OmniKVQuant: KV Cache Quantization for Omni-LLMs",
+      "authors": "Suho Yoo, Hyunjong Ok, Jongmin Choi, Jihoo Jung, Joon Son Chung",
+      "date": "2026-09-10",
+      "pdf": "https://arxiv.org/pdf/2609.11582v1",
+      "score": "7.0",
+      "evidence": "面向长上下文多模态推理的KV缓存量化",
+      "tldr": "Omni-LLM 需同时理解音频、视频与文本，其 KV cache 显存开销随多模态序列增长而急剧膨胀，但现有 KV cache 量化主要针对纯文本模型，尚未适配多模态缓存。论文以旋转式量化方法 TurboQuant 为例，发现直接迁移会遭遇时序键漂移与异构值几何两类问题。为此提出免训练框架 OmniKVQuant：按输入流的短窗口动态设定 key 量化范围，并按音频、视频、文本等模态分别旋转 value。在 Qwen2.5-Omni 与 Qwen3-Omni 上，该方法实现 2-bit KV cache，在七个音视频基准上大幅保持性能，并配套融合 Triton 解码内核，注意力计算中直接解包 2-bit 缓存，无需构建稠密 FP16 缓存。",
+      "tags": "query:pic",
+      "abstract_en": "As Omni-modal large language models (Omni-LLMs) take in audio, video and text together, their KV cache memory cost grows. KV cache quantization is the de facto approach in text-only LLMs, but its application to Omni-LLMs remains unexplored. In this paper, we analyze how TurboQuant, a representative rotation-based KV cache quantization method, behaves on multimodal caches and identify two critical issues: temporal key drift and heterogeneous value geometry. To address these, we propose OmniKVQuant, a training-free framework that (i) sets the key quantization range over each short window of the input stream; and (ii) rotates values separately per modality. On Qwen2.5-Omni and Qwen3-Omni, OmniKVQuant enables 2-bit KV caches while substantially preserving performance across seven audio-visual benchmarks. We further provide a fused Triton decode kernel that unpacks the 2-bit cache during attention, so no dense FP16 cache is ever built. Code: https://github.com/kaistmm/OmniKVQuant",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/12/2609.05565v1-toward-sustainable-distributed-llm-inference-a-systems-synthesis-and-research-agenda-for-an-energy--carbon--and-cache-aware-llm-d-control-plane",
+      "section": "quick",
+      "title_en": "Toward Sustainable Distributed LLM Inference: A Systems Synthesis and Research Agenda for an Energy-, Carbon-, and Cache-Aware llm-d Control Plane",
+      "authors": "Twinkll Sisodia",
+      "date": "2026-09-03",
+      "pdf": "https://arxiv.org/pdf/2609.05565v1",
+      "score": "6.0",
+      "evidence": "KV缓存复用作为分布式推理控制面关键维度",
+      "tldr": "LLM 可持续性正从训练问题转为服务系统问题，能耗与碳排受负载形态、批处理、KV 缓存复用、预填充/解码放置、硬件与区域碳强度、SLO 等多因素影响。本文不提出新基准，而是系统综合近期工作，提炼可复用设计模式，并为 llm-d 勾勒能源、碳与缓存感知的可持续推理控制平面 SICP。该控制平面在路由与扩缩容时联合优化时延、能耗、碳排、缓存复用、成本与质量，同时把 TTFT/TPOT SLO 作为硬约束。贡献在于连接分散研究，提出以每焦耳/每克 CO2e 的 SLO 达标有效吞吐为指标的评估框架与可复现实验议程。",
+      "tags": "query:pic",
+      "abstract_en": "Large language model (LLM) sustainability is increasingly a serving-systems problem, not only a training problem. In production, energy and carbon impact depend on more than model size: workload shape, batching, key-value (KV) cache reuse, prefill/decode placement, model and accelerator choice, power state, geographic carbon intensity, and service-level objectives (SLOs) all matter. Recent systems papers study many of these factors separately. This paper connects those results and asks a practical engineering question: what do they imply when the decision point is a distributed inference control plane such as llm-d?   The contribution here is synthesis, not a new set of benchmark results. Reported performance, energy, carbon, and cost improvements remain the results of the cited papers and systems. I group the literature into recurring design patterns and use those patterns to sketch a Sustainable Inference Control Plane (SICP) for llm-d. The proposed control plane would consider latency, energy, carbon, cache reuse, serving cost, and quality when routing and scaling, while keeping TTFT/TPOT SLOs as hard constraints. I also outline an evaluation framework based on SLO-satisfied goodput per joule and per gram CO2e, together with a reproducible experimental plan. The main observation from connecting the literature is that sustainable LLM inference is unlikely to come from one \"green\" model or one accelerator; it is more naturally treated as a control problem across model, phase, cache, hardware, replica, region, and time.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/12/2609.06853v1-characterizing-contention-induced-reliability-collapse-in-kv-cache-timing-side-channels-for-multi-tenant-llm-serving",
+      "section": "quick",
+      "title_en": "Characterizing Contention-Induced Reliability Collapse in KV-Cache Timing Side Channels for Multi-Tenant LLM Serving",
+      "authors": "Rana Abu Bakar",
+      "date": "2026-09-06",
+      "pdf": "https://arxiv.org/pdf/2609.06853v1",
+      "score": "6.0",
+      "evidence": "多租户LLM服务中共享KV缓存复用带来的时序侧信道",
+      "tldr": "共享 KV 缓存可提升 LLM 服务效率，却会通过计时侧信道泄露前缀是否已缓存；此前攻击可行性已被验证，但其在多租户真实负载下的可靠性仍不明确。本文在在线共享 LLM 服务系统上开展七组实验，覆盖 vLLM、DeepSeek-R1-Distill-Llama-8B、GB10 及双节点双 GPU 张量并行环境，并考察并发深度方差等负载因素。结果显示，加入两个合成工作进程后 Cohen's d 从 0.7789 降至 0.2109，AUROC 在约 61% 重叠时从 0.650 跌至 0.531 后部分回升；双 GPU 环境也从 3.418 降至 0.511。研究表明，KV 缓存计时攻击可靠性强烈依赖负载状态与服务栈，安静系统测量会高估实际攻击可靠性。",
+      "tags": "query:pic",
+      "abstract_en": "Shared key--value (KV) cache reuse improves large language model (LLM) serving, but it can also create a timing side channel that reveals whether a prefix is already cached. Previous work shows that such attacks are possible, but their reliability under realistic multi-tenant contention is less understood. We study this problem through seven experiments on live shared LLM-serving systems. On a vLLM server running DeepSeek-R1-Distill-Llama-8B on NVIDIA GB10, mean Cohen's d drops from 0.7789 with no synthetic workers to 0.2109 with two workers (t=8.412), while higher worker counts cause no statistically detectable further loss. A 120-run sparse-overlap experiment places the best breakpoint at the boundary of the measured range (tau=0, 95% CI [0.000,0.113]), supporting an ambient-versus-loaded regime change rather than an internal physical threshold. AUROC falls from 0.650 at ambient to 0.531 near 61% overlap and partially recovers to 0.574 at saturation. Concurrency-depth variance is the strongest measured correlate of effect size (r=-0.416) and hit consistency (r=-0.637). An interleaved control preserves the same non-monotonic ordering. The main collapse is also reproduced on a real two-node, two-GPU tensor-parallel vLLM setup, where mean d falls from 3.418 to 0.511 (p<0.01). Two SGLang pilots are statistically inconclusive. Overall, KV-cache timing reliability depends strongly on the load regime and serving stack, and measurements on quiet systems can overestimate operational attack reliability.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

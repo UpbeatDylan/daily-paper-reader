@@ -1,0 +1,168 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-12T21:35:36.451281+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.07306v1",
+      "source": "arxiv",
+      "title": "RouteRelay: Event-Triggered Cross-Layer Route Reuse for Efficient Dynamic Sparse Attention",
+      "abstract": "Dynamic sparse attention reduces long-context prefill cost by routing each query chunk to a small set of key chunks at every Transformer layer. The sparse attention kernel avoids most token interactions, but the router still rebuilds a chunk--chunk score matrix layer after layer, even when the selected routes change little. We introduce RouteRelay, a router-agnostic method that reuses only route metadata across depth while continuing to compute attention with the current layer's queries, keys, and values. Anchor layers perform full routing. Intermediate layers rescore the previous top-$k$ route and a compact sentinel set of near-miss and randomly probed chunks. A query row is rerouted only when a sentinel challenges its weakest selected chunk. We give a top-$k$ stability condition, a probabilistic bound on missed challengers, and a row-selective GPU execution design. In a reproducible empirical evaluation, RouteRelay retains at least 99.99% route recall while rerouting 25.0%, 55.4%, and 78.2% of rows under low, moderate, and high cross-layer drift, respectively. Across routing scales, RouteRelay retains 100.0% recall while evaluating 38.4--51.6% of full-routing score pairs as the key-chunk count grows from 128 to 1024. Its unfused CPU execution remains slower than dense matrix multiplication, exposing row compaction and ledger updates as the main kernel-engineering targets.",
+      "authors": [
+        "Bin Li",
+        "Sisi Liu",
+        "Chenyang Hu",
+        "Chaoyang Zhang",
+        "Wei Li",
+        "Hui Song"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-07T10:23:06+00:00",
+      "link": "https://arxiv.org/pdf/2609.07306v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "cross-layer route reuse for efficient long-context sparse attention",
+      "llm_evidence_cn": "面向长上下文稀疏注意力的跨层路由复用",
+      "llm_evidence": "面向长上下文稀疏注意力的跨层路由复用",
+      "canonical_evidence": "面向长上下文稀疏注意力的跨层路由复用",
+      "llm_tldr_en": "Dynamic sparse attention rebuilds routing scores layer by layer even when routes barely change. RouteRelay reuses route metadata across depth, rescoring only prior top-k and sentinel chunks, cutting long-context prefill overhead.",
+      "llm_tldr_cn": "动态稀疏注意力通过将查询块路由到少量键块来降低长上下文预填充开销，但路由器仍逐层重建块间分数矩阵，即便所选路由变化很小也造成重复计算。本文提出路由器无关的RouteRelay，仅跨深度复用路由元数据，同时仍用当前层的查询、键、值计算注意力，锚层做完整路由，中间层只重打分前top-k与哨兵集合。该方法降低路由开销并保持准确性，加速长上下文推理。",
+      "llm_tldr": "动态稀疏注意力通过将查询块路由到少量键块来降低长上下文预填充开销，但路由器仍逐层重建块间分数矩阵，即便所选路由变化很小也造成重复计算。本文提出路由器无关的RouteRelay，仅跨深度复用路由元数据，同时仍用当前层的查询、键、值计算注意力，锚层做完整路由，中间层只重打分前top-k与哨兵集合。该方法降低路由开销并保持准确性，加速长上下文推理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.05565v1",
+      "source": "arxiv",
+      "title": "Toward Sustainable Distributed LLM Inference: A Systems Synthesis and Research Agenda for an Energy-, Carbon-, and Cache-Aware llm-d Control Plane",
+      "abstract": "Large language model (LLM) sustainability is increasingly a serving-systems problem, not only a training problem. In production, energy and carbon impact depend on more than model size: workload shape, batching, key-value (KV) cache reuse, prefill/decode placement, model and accelerator choice, power state, geographic carbon intensity, and service-level objectives (SLOs) all matter. Recent systems papers study many of these factors separately. This paper connects those results and asks a practical engineering question: what do they imply when the decision point is a distributed inference control plane such as llm-d?   The contribution here is synthesis, not a new set of benchmark results. Reported performance, energy, carbon, and cost improvements remain the results of the cited papers and systems. I group the literature into recurring design patterns and use those patterns to sketch a Sustainable Inference Control Plane (SICP) for llm-d. The proposed control plane would consider latency, energy, carbon, cache reuse, serving cost, and quality when routing and scaling, while keeping TTFT/TPOT SLOs as hard constraints. I also outline an evaluation framework based on SLO-satisfied goodput per joule and per gram CO2e, together with a reproducible experimental plan. The main observation from connecting the literature is that sustainable LLM inference is unlikely to come from one \"green\" model or one accelerator; it is more naturally treated as a control problem across model, phase, cache, hardware, replica, region, and time.",
+      "authors": [
+        "Twinkll Sisodia"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-09-03T21:56:54+00:00",
+      "link": "https://arxiv.org/pdf/2609.05565v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache reuse as a key dimension in distributed inference control plane",
+      "llm_evidence_cn": "KV缓存复用作为分布式推理控制面关键维度",
+      "llm_evidence": "KV缓存复用作为分布式推理控制面关键维度",
+      "canonical_evidence": "KV缓存复用作为分布式推理控制面关键维度",
+      "llm_tldr_en": "This synthesis examines what energy, carbon and cache-aware factors imply for a distributed LLM inference control plane like llm-d, highlighting KV cache reuse, batching and prefill/decode placement as key decision dimensions.",
+      "llm_tldr_cn": "LLM可持续性日益成为服务系统问题，生产中的能耗与碳排不仅取决于模型规模，还受工作负载、批处理、KV缓存复用、预填充/解码放置与地理碳强度等因素影响。本文综合现有系统研究，分析这些因素对分布式推理控制面如llm-d决策的含义，属于系统综述而非新基准。工作梳理出能源、碳与缓存感知的控制面研究议程，强调KV缓存复用等要素的协同优化价值。",
+      "llm_tldr": "LLM可持续性日益成为服务系统问题，生产中的能耗与碳排不仅取决于模型规模，还受工作负载、批处理、KV缓存复用、预填充/解码放置与地理碳强度等因素影响。本文综合现有系统研究，分析这些因素对分布式推理控制面如llm-d决策的含义，属于系统综述而非新基准。工作梳理出能源、碳与缓存感知的控制面研究议程，强调KV缓存复用等要素的协同优化价值。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.11582v1",
+      "source": "arxiv",
+      "title": "OmniKVQuant: KV Cache Quantization for Omni-LLMs",
+      "abstract": "As Omni-modal large language models (Omni-LLMs) take in audio, video and text together, their KV cache memory cost grows. KV cache quantization is the de facto approach in text-only LLMs, but its application to Omni-LLMs remains unexplored. In this paper, we analyze how TurboQuant, a representative rotation-based KV cache quantization method, behaves on multimodal caches and identify two critical issues: temporal key drift and heterogeneous value geometry. To address these, we propose OmniKVQuant, a training-free framework that (i) sets the key quantization range over each short window of the input stream; and (ii) rotates values separately per modality. On Qwen2.5-Omni and Qwen3-Omni, OmniKVQuant enables 2-bit KV caches while substantially preserving performance across seven audio-visual benchmarks. We further provide a fused Triton decode kernel that unpacks the 2-bit cache during attention, so no dense FP16 cache is ever built. Code: https://github.com/kaistmm/OmniKVQuant",
+      "authors": [
+        "Suho Yoo",
+        "Hyunjong Ok",
+        "Jongmin Choi",
+        "Jihoo Jung",
+        "Joon Son Chung"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-09-10T14:14:12+00:00",
+      "link": "https://arxiv.org/pdf/2609.11582v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache quantization for long-context multimodal inference",
+      "llm_evidence_cn": "面向长上下文多模态推理的KV缓存量化",
+      "llm_evidence": "面向长上下文多模态推理的KV缓存量化",
+      "canonical_evidence": "面向长上下文多模态推理的KV缓存量化",
+      "llm_tldr_en": "Omni-LLMs incur large KV cache costs, but text-oriented quantization fails on multimodal caches. OmniKVQuant, a training-free framework, window-wise quantizes keys and rotates values per modality, enabling 2-bit caches on Qwen-Omni models.",
+      "llm_tldr_cn": "全模态大模型同时处理音频、视频与文本，KV缓存内存开销随之增长，而现有KV缓存量化方法主要面向纯文本模型，直接用于多模态缓存会出现时序键漂移与异构值几何问题。本文提出免训练的OmniKVQuant框架，在每个短输入窗口上设定键的量化范围，并按模态分别旋转值。在Qwen2.5-Omni与Qwen3-Omni上实现2比特KV缓存并显著保持性能，将KV量化拓展到全模态长上下文场景。",
+      "llm_tldr": "全模态大模型同时处理音频、视频与文本，KV缓存内存开销随之增长，而现有KV缓存量化方法主要面向纯文本模型，直接用于多模态缓存会出现时序键漂移与异构值几何问题。本文提出免训练的OmniKVQuant框架，在每个短输入窗口上设定键的量化范围，并按模态分别旋转值。在Qwen2.5-Omni与Qwen3-Omni上实现2比特KV缓存并显著保持性能，将KV量化拓展到全模态长上下文场景。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.06853v1",
+      "source": "arxiv",
+      "title": "Characterizing Contention-Induced Reliability Collapse in KV-Cache Timing Side Channels for Multi-Tenant LLM Serving",
+      "abstract": "Shared key--value (KV) cache reuse improves large language model (LLM) serving, but it can also create a timing side channel that reveals whether a prefix is already cached. Previous work shows that such attacks are possible, but their reliability under realistic multi-tenant contention is less understood. We study this problem through seven experiments on live shared LLM-serving systems. On a vLLM server running DeepSeek-R1-Distill-Llama-8B on NVIDIA GB10, mean Cohen's d drops from 0.7789 with no synthetic workers to 0.2109 with two workers (t=8.412), while higher worker counts cause no statistically detectable further loss. A 120-run sparse-overlap experiment places the best breakpoint at the boundary of the measured range (tau=0, 95% CI [0.000,0.113]), supporting an ambient-versus-loaded regime change rather than an internal physical threshold. AUROC falls from 0.650 at ambient to 0.531 near 61% overlap and partially recovers to 0.574 at saturation. Concurrency-depth variance is the strongest measured correlate of effect size (r=-0.416) and hit consistency (r=-0.637). An interleaved control preserves the same non-monotonic ordering. The main collapse is also reproduced on a real two-node, two-GPU tensor-parallel vLLM setup, where mean d falls from 3.418 to 0.511 (p<0.01). Two SGLang pilots are statistically inconclusive. Overall, KV-cache timing reliability depends strongly on the load regime and serving stack, and measurements on quiet systems can overestimate operational attack reliability.",
+      "authors": [
+        "Rana Abu Bakar"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR",
+        "cs.AI"
+      ],
+      "published": "2026-09-06T21:56:29+00:00",
+      "link": "https://arxiv.org/pdf/2609.06853v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "shared KV cache reuse in multi-tenant LLM serving creates timing side channels",
+      "llm_evidence_cn": "多租户LLM服务中共享KV缓存复用带来的时序侧信道",
+      "llm_evidence": "多租户LLM服务中共享KV缓存复用带来的时序侧信道",
+      "canonical_evidence": "多租户LLM服务中共享KV缓存复用带来的时序侧信道",
+      "llm_tldr_en": "Shared KV cache reuse speeds LLM serving but can leak whether a prefix is cached via timing. This work runs seven experiments on live multi-tenant servers and shows attack reliability collapses under contention, quantifying the effect with Cohen's d across worker counts.",
+      "llm_tldr_cn": "共享键值（KV）缓存复用能提升大模型服务效率，但也会形成时序侧信道，暴露某前缀是否已被缓存。已有工作证明此类攻击可行，但其在真实多租户竞争下的可靠性尚不清楚。本文在在线共享LLM服务系统上开展七组实验，发现随合成worker增多，攻击效应量从0.7789降至0.2109，且更多worker并未带来进一步显著损失。该研究刻画了KV缓存复用带来的安全隐患边界，对多租户服务部署具有警示意义。",
+      "llm_tldr": "共享键值（KV）缓存复用能提升大模型服务效率，但也会形成时序侧信道，暴露某前缀是否已被缓存。已有工作证明此类攻击可行，但其在真实多租户竞争下的可靠性尚不清楚。本文在在线共享LLM服务系统上开展七组实验，发现随合成worker增多，攻击效应量从0.7789降至0.2109，且更多worker并未带来进一步显著损失。该研究刻画了KV缓存复用带来的安全隐患边界，对多租户服务部署具有警示意义。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
