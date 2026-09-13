@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-13",
+  "date": "2026-09-13",
+  "generated_at": "2026-09-13T21:29:12",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/13/2609.10441v1-convmem-convolutional-memory-for-long-context-reasoning",
+      "section": "quick",
+      "title_en": "ConvMem: Convolutional Memory for Long-Context Reasoning",
+      "authors": "Hongming Zhang, Zhaozhen Gu, Fengshuo Bai, Ming Hao, Qingyang Zhang, Yuanyuan Wang, Shiyang Tang, Yanna Wang, Bo Xu",
+      "date": "2026-09-09",
+      "pdf": "https://arxiv.org/pdf/2609.10441v1",
+      "score": "6.0",
+      "evidence": "免训练并行长上下文记忆",
+      "tldr": "针对LLM固定上下文限制，以及MemAgent等串行记忆方法高延迟、依赖昂贵RL训练且易过拟合的问题，ConvMem将长上下文推理重构为层次卷积：把带查询的LLM当作卷积核，对文本分段逐层汇总。它引入可配置步幅、跳跃连接与多核卷积，保障证据捕获传播并分解复杂查询。在RULER-HotpotQA和RULER-2WikiMultiHopQA上，该免训练并行框架优于免训练基线，并降低分布外过拟合风险。",
+      "tags": "query:pic",
+      "abstract_en": "While Large Language Models (LLMs) have demonstrated impressive capabilities, they often struggle with extremely long contexts due to fixed context limits. To address this, sequential approaches like MemAgent extend the effective context by reading text in segments and iteratively updating a fixed-size memory. However, this sequential paradigm suffers from high latency and requires costly reinforcement learning (RL) training, which can lead to overfitting on specific datasets. To overcome these limitations, we propose ConvMem, a training-free, highly parallelizable framework that reformulates long-context reasoning as a hierarchical convolution. Inspired by CNNs, ConvMem treats an LLM prompted with a specific query as a convolutional kernel. This kernel summarizes text segments hierarchically, shortening the reasoning path from a linear chain into a logarithmic tree. Specifically, ConvMem integrates \\textit{Configurable Strides} and \\textit{Skip Connections} to ensure robust evidence capture and propagation, while employing \\textit{Multi-Kernel Convolution} to decompose complex queries into disentangled semantic channels. This design not only mitigates error accumulation but also enables massive parallelization across both text segments and reasoning threads. Experiments on RULER-HotpotQA and RULER-2WikiMultiHopQA demonstrate that ConvMem outperforms training-free baselines and avoids the risk of overfitting to parametric priors often observed in RL-trained models on out-of-distribution tasks.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/13/2609.11192v1-flexcomp-one-model-for-every-ratio-in-context-compression",
+      "section": "quick",
+      "title_en": "FlexComp: One Model for Every Ratio in Context Compression",
+      "authors": "Kaiyan Zhao, Zhongtao Miao, Akiko Aizawa, Yoshimasa Tsuruoka",
+      "date": "2026-09-10",
+      "pdf": "https://arxiv.org/pdf/2609.11192v1",
+      "score": "6.0",
+      "evidence": "软上下文压缩缩短上下文以加速LLM推理",
+      "tldr": "软上下文压缩将长上下文压缩为少量记忆token供冻结大模型使用，但现有方法在训练和推理时固定压缩比，每个比需单独训练模型，且对所有输入统一压缩，忽略实际需求差异。FlexComp提出方法无关框架，用Matryoshka式训练按实例采样内存预算K，使单模型支持任意压缩比；推理时按输入选K，可选置信度级联路由或轻量K预测器。在MRQA上，单模型匹配固定比专用模型；级联路由在平均266倍压缩下保留98%以上最温和比精度；K预测器单次压缩解码达158-236倍，F1损失仅0.7；服务规模下KV缓存减半，吞吐提升47%。",
+      "tags": "query:pic",
+      "abstract_en": "Soft context compression condenses a context into a few memory tokens that a frozen LLM consumes in place of the raw text, but existing compressors fix the compression ratio at training and inference: each deployed ratio requires a separately trained model, and the chosen ratio is applied uniformly to all inputs, whose actual needs vary drastically. We propose FlexComp, a method-agnostic framework that decouples the ratio from both training and deployment: Matryoshka-style training samples the memory budget $K$ per instance, turning one model into an any-ratio compressor, and the budget is then chosen per input by: (1) confidence-based cascade routing or (2) a lightweight learned $K$ predictor. Across ICAE, 500xCompressor, and SAC on MRQA, a single FlexComp model matches separately trained fixed-ratio specialists with minimal degradation. Cascade routing preserves over 98% of the mildest ratio's accuracy at up to 266x average compression; the $K$ predictor, in a single compression-decoding pass, reaches 158-236x within 0.7 F1 of the mildest ratio. At serving-scale batch sizes, the $K$ predictor cuts context KV cache by 50% and improves decoding throughput by 47%.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
