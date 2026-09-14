@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-09-14 <!--dpr-date:20260914-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/14/2609.12686v1-residual-vector-based-reconstruction-as-long-context-recall-regardless-of-context-window-size" data-sidebar-item="{&quot;title&quot;: &quot;Residual Vector-based Reconstruction as Long-Context Recall Regardless of Context Window Size&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.12686v1-residual-vector-based-reconstruction-as-long-context-recall-regardless-of-context-window-size&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;以近恒定GPU内存实现长上下文召回&quot;}">Residual Vector-based Reconstruction as Long-Context Recall Regardless of Context Window Size</a>
   * 2026-09-13 <!--dpr-date:20260913-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202609/13/2609.10441v1-convmem-convolutional-memory-for-long-context-reasoning" data-sidebar-item="{&quot;title&quot;: &quot;ConvMem: Convolutional Memory for Long-Context Reasoning&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2609.10441v1-convmem-convolutional-memory-for-long-context-reasoning&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;pic&quot;}], &quot;evidence&quot;: &quot;免训练并行长上下文记忆&quot;}">ConvMem: Convolutional Memory for Long-Context Reasoning</a>

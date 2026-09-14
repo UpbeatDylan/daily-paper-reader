@@ -1,0 +1,55 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-14T22:35:21.266010+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.12686v1",
+      "source": "arxiv",
+      "title": "Residual Vector-based Reconstruction as Long-Context Recall Regardless of Context Window Size",
+      "abstract": "Large language models (LLMs) process long contexts, including long documents and lengthy conversations, but face token-level memory usage that increases proportionally to input length. Although model optimization and lossy prompt compression are widely used, these methods still fail to solve the long-context recall problem beyond pretrained and size-constrained context windows. This paper proposes a long-context recall method that maintains near-constant GPU memory usage as context length increases, without additional training. The main idea is to reconstruct facts using parameter activations in the LLM's feed-forward layers, which store residual vectors representing facts from the source document. Utilizing residual vectors allows the LLM to deterministically reconstruct query relevant facts without referencing the original document, preserving high fidelity and reducing memory usage without fine-tuning weights. Experimental results show that the proposed method enables answering single-fact questions in two-million-token story contexts where previous methods fail.",
+      "authors": [
+        "MyungHoon Ryu",
+        "XinYu Piao",
+        "Jong-Kook Kim"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-09-11T10:31:46+00:00",
+      "link": "https://arxiv.org/pdf/2609.12686v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "long-context recall with near-constant GPU memory",
+      "llm_evidence_cn": "以近恒定GPU内存实现长上下文召回",
+      "llm_evidence": "以近恒定GPU内存实现长上下文召回",
+      "canonical_evidence": "以近恒定GPU内存实现长上下文召回",
+      "llm_tldr_en": "This paper targets long-context recall beyond fixed context windows, where token memory grows with input length. It reconstructs facts from residual vectors stored in feed-forward layer activations, keeping GPU memory near constant without extra training, offering an alternative to lossy prompt compression.",
+      "llm_tldr_cn": "LLM处理长文档与长对话时，token级内存随输入长度线性增长，而模型优化与有损提示压缩仍难以解决超出上下文窗口的长上下文召回问题。本文提出一种无需额外训练的长上下文召回方法，利用LLM前馈层参数激活中存储的残差向量来重构源文档事实。该方法在上下文增长时保持近恒定的GPU内存占用，为长上下文推理与召回提供了一条不同于KV缓存压缩的新路径，具有潜在加速价值。",
+      "llm_tldr": "LLM处理长文档与长对话时，token级内存随输入长度线性增长，而模型优化与有损提示压缩仍难以解决超出上下文窗口的长上下文召回问题。本文提出一种无需额外训练的长上下文召回方法，利用LLM前馈层参数激活中存储的残差向量来重构源文档事实。该方法在上下文增长时保持近恒定的GPU内存占用，为长上下文推理与召回提供了一条不同于KV缓存压缩的新路径，具有潜在加速价值。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

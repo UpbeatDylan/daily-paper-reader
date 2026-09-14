@@ -1,0 +1,24 @@
+{
+  "label": "2026-09-14",
+  "date": "2026-09-14",
+  "generated_at": "2026-09-14T22:36:04",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202609/14/2609.12686v1-residual-vector-based-reconstruction-as-long-context-recall-regardless-of-context-window-size",
+      "section": "quick",
+      "title_en": "Residual Vector-based Reconstruction as Long-Context Recall Regardless of Context Window Size",
+      "authors": "MyungHoon Ryu, XinYu Piao, Jong-Kook Kim",
+      "date": "2026-09-11",
+      "pdf": "https://arxiv.org/pdf/2609.12686v1",
+      "score": "6.0",
+      "evidence": "以近恒定GPU内存实现长上下文召回",
+      "tldr": "大语言模型处理长上下文时，token级显存随输入长度线性增长，现有优化与有损压缩难以解决超出预训练窗口的长上下文召回。本文提出基于前馈层残差向量的长上下文召回方法，无需额外训练，将源文档事实编码为参数激活中的残差向量。查询时可直接重建相关事实，不依赖原始文档，随上下文增长保持近恒定GPU显存。实验表明，该方法能在两百万token故事中回答单事实问题，而此前方法失败。",
+      "tags": "query:pic",
+      "abstract_en": "Large language models (LLMs) process long contexts, including long documents and lengthy conversations, but face token-level memory usage that increases proportionally to input length. Although model optimization and lossy prompt compression are widely used, these methods still fail to solve the long-context recall problem beyond pretrained and size-constrained context windows. This paper proposes a long-context recall method that maintains near-constant GPU memory usage as context length increases, without additional training. The main idea is to reconstruct facts using parameter activations in the LLM's feed-forward layers, which store residual vectors representing facts from the source document. Utilizing residual vectors allows the LLM to deterministically reconstruct query relevant facts without referencing the original document, preserving high fidelity and reducing memory usage without fine-tuning weights. Experimental results show that the proposed method enables answering single-fact questions in two-million-token story contexts where previous methods fail.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
