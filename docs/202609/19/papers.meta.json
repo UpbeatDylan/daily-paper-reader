@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-19",
+  "date": "2026-09-19",
+  "generated_at": "2026-09-19T21:42:28",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/19/2609.16161v1-llm-inference-in-a-flash",
+      "section": "quick",
+      "title_en": "LLM Inference in a Flash!",
+      "authors": "Sebastian Zhao, Minseo Kim, Coleman Hooper, Luca Manolache, Michael W. Mahoney, Yakun Sophia Shao, Kurt Keutzer, Amir Gholami",
+      "date": "2026-09-14",
+      "pdf": "https://arxiv.org/pdf/2609.16161v1",
+      "score": "7.0",
+      "evidence": "近内存计算架构在带宽受限下加速长上下文LLM推理",
+      "tldr": "大模型推理需求正转向长序列与重计算，而内存容量和带宽增长滞后，Compute-in-Flash通过近内存计算和SSD容量成为缓解带宽瓶颈的候选方案。但Flash存内计算缺乏高精度浮点支持且写寿命有限，难以直接部署LLM。本文提出端到端纯整数量化，并设计基于稀疏字典编码的字典式KV缓存压缩，将每个KV向量表示为静态字典向量的线性组合。在Llama-3.1-8B和Qwen-2.5-7B上，方法在精度损失有限的同时把动态KV缓存流量降低15倍，为Flash存内LLM推理提供算法路径。",
+      "tags": "query:pic",
+      "abstract_en": "Large Language Models (LLMs) have shown impressive capabilities across a range of natural language processing tasks, and LLM inference has emerged as a critical workload for enabling downstream applications. The demands of serving LLM inference are becoming increasingly challenging as requests shift toward longer sequences and heavier inference, driven by retrieval-augmented generation, inference-time compute scaling, and long-context applications. Additionally, these challenges are compounded by hardware trends, as memory capacity and communication bandwidth are not scaling as fast as increases in workload complexity. Compute-in-Flash is a promising solution to address memory bandwidth limitations by moving computation close to memory, and to exploit the large capacity of SSD technologies. However, it is challenging to deploy LLMs on these systems as they lack support for high-precision floating point operations and have limited write endurance. In our work, we aim to address these challenges by designing inference algorithms to enable LLM inference on Flash compute-in-memory devices. We present an end-to-end integer-only quantization approach to eliminate expensive floating-point computations. To address the limited write endurance, we design a dictionary-based KV cache compression strategy based on sparse dictionary coding that represents each KV vector as a linear combination of static dictionary vectors. These algorithmic improvements enable us to exploit the benefits of Compute-in-Flash for both model weights and KV cache, and to minimize expensive data transfer operations. Across Llama-3.1-8B and Qwen-2.5-7B, our combined method exhibits limited accuracy degradation while reducing dynamic KV cache traffic by 15$\\times$.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/19/2609.18935v1-long-lived-characters-local-inference-incremental-memory-maintenance-for-game-npcs",
+      "section": "quick",
+      "title_en": "Long-Lived Characters, Local Inference: Incremental Memory Maintenance for Game NPCs",
+      "authors": "Zimu Xu",
+      "date": "2026-09-16",
+      "pdf": "https://arxiv.org/pdf/2609.18935v1",
+      "score": "6.0",
+      "evidence": "修改记忆会使长可复用前缀失效",
+      "tldr": "本地部署的LLM游戏NPC若每次对话都重读全部记忆，成本过高；但仅修改少量记忆又会破坏长可复用前缀，并与对话和其他角色维护争抢算力。作者在量化Qwen混合循环-注意力模型中研究增量记忆维护：删除被取代的KV条目，在真实序列尾生成替换记录，保留循环状态与未变KV。多轮回放、放置消融和注意力诊断显示，真实尾部更新在八轮维护中保持关键状态与历史绑定，放置案例三次重建即达全量重填效果，而槽位保留方案会重复双减法错误。结果支持把角色推理状态视为需持续维护的历史依赖资源，而非最新记忆文本的一次性编码。",
+      "tags": "query:pic",
+      "abstract_en": "A game character should not have to reread its entire life before every conversation. For locally deployed language-model characters, however, revising a few memories can invalidate a long reusable prefix. The resulting preparation cost competes with both foreground dialogue and the maintenance of other characters. This matters especially when dialogue feeds game-defined actions and value judgments: a fluent but incorrect account of who owns an item, or whether a transfer has already happened, can corrupt the input to otherwise deterministic rules. We study incremental memory maintenance for long-lived game NPCs in a quantized Qwen hybrid recurrent-attention model. Our runtime removes superseded attention KV entries, computes replacement records at the true sequence tail, and preserves the continuing recurrent state and unchanged KV. Existing local experiments combine multi-update dialogue replays, fixed-input placement ablations, and attention diagnostics. Independent block composition weakens query-conditioned memory selection without a uniform chunk-initial attention collapse. True-tail updates preserve important current-state and historical bindings across eight scripted maintenance rounds; a placement case recovers the full-refill quantity in three reconstructions, while slot-preserving alternatives repeat a double-subtraction error. Attention-distribution proximity alone does not explain these semantic differences. The results motivate treating a character's inference state as a maintained, history-dependent resource, rather than only a disposable encoding of its latest memory text.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

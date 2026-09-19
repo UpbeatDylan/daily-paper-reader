@@ -1,0 +1,94 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-19T21:41:03.617720+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.16161v1",
+      "source": "arxiv",
+      "title": "LLM Inference in a Flash!",
+      "abstract": "Large Language Models (LLMs) have shown impressive capabilities across a range of natural language processing tasks, and LLM inference has emerged as a critical workload for enabling downstream applications. The demands of serving LLM inference are becoming increasingly challenging as requests shift toward longer sequences and heavier inference, driven by retrieval-augmented generation, inference-time compute scaling, and long-context applications. Additionally, these challenges are compounded by hardware trends, as memory capacity and communication bandwidth are not scaling as fast as increases in workload complexity. Compute-in-Flash is a promising solution to address memory bandwidth limitations by moving computation close to memory, and to exploit the large capacity of SSD technologies. However, it is challenging to deploy LLMs on these systems as they lack support for high-precision floating point operations and have limited write endurance. In our work, we aim to address these challenges by designing inference algorithms to enable LLM inference on Flash compute-in-memory devices. We present an end-to-end integer-only quantization approach to eliminate expensive floating-point computations. To address the limited write endurance, we design a dictionary-based KV cache compression strategy based on sparse dictionary coding that represents each KV vector as a linear combination of static dictionary vectors. These algorithmic improvements enable us to exploit the benefits of Compute-in-Flash for both model weights and KV cache, and to minimize expensive data transfer operations. Across Llama-3.1-8B and Qwen-2.5-7B, our combined method exhibits limited accuracy degradation while reducing dynamic KV cache traffic by 15$\\times$.",
+      "authors": [
+        "Sebastian Zhao",
+        "Minseo Kim",
+        "Coleman Hooper",
+        "Luca Manolache",
+        "Michael W. Mahoney",
+        "Yakun Sophia Shao",
+        "Kurt Keutzer",
+        "Amir Gholami"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-14T18:04:30+00:00",
+      "link": "https://arxiv.org/pdf/2609.16161v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "compute-in-flash architecture to accelerate long-context LLM inference under memory bandwidth limits",
+      "llm_evidence_cn": "近内存计算架构在带宽受限下加速长上下文LLM推理",
+      "llm_evidence": "近内存计算架构在带宽受限下加速长上下文LLM推理",
+      "canonical_evidence": "近内存计算架构在带宽受限下加速长上下文LLM推理",
+      "llm_tldr_en": "As LLM workloads shift toward longer sequences and heavier inference, memory capacity and bandwidth lag behind demand. Compute-in-Flash moves computation close to memory and exploits SSD capacity to relieve bandwidth limits, targeting retrieval-augmented and long-context inference acceleration.",
+      "llm_tldr_cn": "随着检索增强生成、推理时计算扩展与长上下文应用的普及，LLM请求越来越长、推理负载越来越重，而内存容量与通信带宽的增长却跟不上负载复杂度，成为服务瓶颈。作者提出Compute-in-Flash方案，将计算移至靠近内存处，并利用SSD的大容量来缓解内存带宽限制。该架构面向长序列与重推理场景提升推理效率。通过近内存计算与SSD利用，该工作为长上下文LLM推理加速提供了新的硬件协同思路。",
+      "llm_tldr": "随着检索增强生成、推理时计算扩展与长上下文应用的普及，LLM请求越来越长、推理负载越来越重，而内存容量与通信带宽的增长却跟不上负载复杂度，成为服务瓶颈。作者提出Compute-in-Flash方案，将计算移至靠近内存处，并利用SSD的大容量来缓解内存带宽限制。该架构面向长序列与重推理场景提升推理效率。通过近内存计算与SSD利用，该工作为长上下文LLM推理加速提供了新的硬件协同思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.18935v1",
+      "source": "arxiv",
+      "title": "Long-Lived Characters, Local Inference: Incremental Memory Maintenance for Game NPCs",
+      "abstract": "A game character should not have to reread its entire life before every conversation. For locally deployed language-model characters, however, revising a few memories can invalidate a long reusable prefix. The resulting preparation cost competes with both foreground dialogue and the maintenance of other characters. This matters especially when dialogue feeds game-defined actions and value judgments: a fluent but incorrect account of who owns an item, or whether a transfer has already happened, can corrupt the input to otherwise deterministic rules. We study incremental memory maintenance for long-lived game NPCs in a quantized Qwen hybrid recurrent-attention model. Our runtime removes superseded attention KV entries, computes replacement records at the true sequence tail, and preserves the continuing recurrent state and unchanged KV. Existing local experiments combine multi-update dialogue replays, fixed-input placement ablations, and attention diagnostics. Independent block composition weakens query-conditioned memory selection without a uniform chunk-initial attention collapse. True-tail updates preserve important current-state and historical bindings across eight scripted maintenance rounds; a placement case recovers the full-refill quantity in three reconstructions, while slot-preserving alternatives repeat a double-subtraction error. Attention-distribution proximity alone does not explain these semantic differences. The results motivate treating a character's inference state as a maintained, history-dependent resource, rather than only a disposable encoding of its latest memory text.",
+      "authors": [
+        "Zimu Xu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-16T17:09:05+00:00",
+      "link": "https://arxiv.org/pdf/2609.18935v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "revising memories invalidates a long reusable prefix",
+      "llm_evidence_cn": "修改记忆会使长可复用前缀失效",
+      "llm_evidence": "修改记忆会使长可复用前缀失效",
+      "canonical_evidence": "修改记忆会使长可复用前缀失效",
+      "llm_tldr_en": "This paper studies incremental memory maintenance for long-lived game NPCs, where revising a few memories invalidates a long reusable prefix; the runtime removes superseded attention KV entries and computes replacements to cut preparation cost.",
+      "llm_tldr_cn": "本地部署的语言模型游戏角色每次对话都要重读整段人生记忆，而修改少量记忆就会使很长的可复用前缀失效，带来与前台对话竞争的准备开销。本文研究长寿命NPC的增量记忆维护，在量化Qwen混合循环-注意力模型上设计运行时，移除被取代的注意力KV条目并计算替换表示。这样既避免了前缀整体重算，又保证物品归属等事实正确，为可复用前缀与KV维护提供了实用方法。",
+      "llm_tldr": "本地部署的语言模型游戏角色每次对话都要重读整段人生记忆，而修改少量记忆就会使很长的可复用前缀失效，带来与前台对话竞争的准备开销。本文研究长寿命NPC的增量记忆维护，在量化Qwen混合循环-注意力模型上设计运行时，移除被取代的注意力KV条目并计算替换表示。这样既避免了前缀整体重算，又保证物品归属等事实正确，为可复用前缀与KV维护提供了实用方法。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -6,38 +6,31 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-09-18
-- 运行时间：2026-09-18 22:12:08 UTC
+- 最新运行日期：2026-09-19
+- 运行时间：2026-09-19 21:42:25 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：1
-- 速读区：4
+- 本次总论文数：2
+- 精读区：0
+- 速读区：2
 
 ### 今日简报（AI）
-- 今日共生成 5 篇推荐（精读 1 篇，速读 4 篇）
-- 精读：《PrefixBench-H100: Characterizing Prefix Reuse and Time-to-First-Token in H100 LLM Serving》（9.0/10）
-- 速读：《Fathom: Per-Query Read Depth for Sparse Decoding over Offloaded KV Caches》（7.0/10）, 《DeepSeek-V4.1-Flash: Pushing the Limits of KV Cache Compression》（7.0/10）, 《On-Demand Attention: Language Models Know When to Recall》（7.0/10）
-- 这些结果覆盖了当下较热的方向，建议先看精读区论文的关键问题与方法。
-- 详情：[/202609/18/README](/202609/18/README)
+今日速读2篇论文：LLM推理加速方案《LLM Inference in a Flash!》拿下7.0分，另有6.0分的游戏NPC长期记忆增量维护研究《Long-Lived Characters, Local Inference》。
+
+最值得看的是Flash推理优化思路（效率方向）与NPC角色本地化长期记忆维护（游戏AI方向），后者对做对话类应用也有借鉴。
+
+普通读者可优先读7.0分那篇了解LLM推理提速，若关注游戏NPC或长期记忆场景再顺带看第二篇。
+- 详情：[/202609/19/README](/202609/19/README)
 
 ### 精读区论文标签
-1. [PrefixBench-H100: Characterizing Prefix Reuse and Time-to-First-Token in H100 LLM Serving](/202609/18/2609.19657v1-prefixbench-h100-characterizing-prefix-reuse-and-time-to-first-token-in-h100-llm-serving)  
-   标签：评分：9.0/10、query:pic
-   evidence：面向LLM服务的前缀复用与KV缓存复用基准
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Fathom: Per-Query Read Depth for Sparse Decoding over Offloaded KV Caches](/202609/18/2609.17652v2-fathom-per-query-read-depth-for-sparse-decoding-over-offloaded-kv-caches)  
+1. [LLM Inference in a Flash!](/202609/19/2609.16161v1-llm-inference-in-a-flash)  
    标签：评分：7.0/10、query:pic
-   evidence：面向百万token的卸载KV缓存稀疏解码加速
-2. [DeepSeek-V4.1-Flash: Pushing the Limits of KV Cache Compression](/202609/18/2609.19969v1-deepseek-v41-flash-pushing-the-limits-of-kv-cache-compression)  
-   标签：评分：7.0/10、query:pic
-   evidence：面向百万token长上下文推理的KV缓存压缩，缓解HBM与SSD压力
-3. [On-Demand Attention: Language Models Know When to Recall](/202609/18/2609.20734v1-on-demand-attention-language-models-know-when-to-recall)  
-   标签：评分：7.0/10、query:pic
-   evidence：局部优先解码，按需触发全局注意力以降低长上下文解码开销
-4. [D-Quant: Driftable Entropy Coding for KV Cache Quantization](/202609/18/2609.19880v1-d-quant-driftable-entropy-coding-for-kv-cache-quantization)  
+   evidence：近内存计算架构在带宽受限下加速长上下文LLM推理
+2. [Long-Lived Characters, Local Inference: Incremental Memory Maintenance for Game NPCs](/202609/19/2609.18935v1-long-lived-characters-local-inference-incremental-memory-maintenance-for-game-npcs)  
    标签：评分：6.0/10、query:pic
-   evidence：KV cache量化缓解内存带宽瓶颈
+   evidence：修改记忆会使长可复用前缀失效
 
 
 <div class="dpr-home-promo-card">
