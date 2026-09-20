@@ -6,31 +6,22 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-09-19
-- 运行时间：2026-09-19 21:42:25 UTC
+- 最新运行日期：2026-09-20
+- 运行时间：2026-09-20 21:10:50 UTC
 - 运行状态：成功
-- 本次总论文数：2
+- 本次总论文数：0
 - 精读区：0
-- 速读区：2
+- 速读区：0
 
 ### 今日简报（AI）
-今日速读2篇论文：LLM推理加速方案《LLM Inference in a Flash!》拿下7.0分，另有6.0分的游戏NPC长期记忆增量维护研究《Long-Lived Characters, Local Inference》。
-
-最值得看的是Flash推理优化思路（效率方向）与NPC角色本地化长期记忆维护（游戏AI方向），后者对做对话类应用也有借鉴。
-
-普通读者可优先读7.0分那篇了解LLM推理提速，若关注游戏NPC或长期记忆场景再顺带看第二篇。
-- 详情：[/202609/19/README](/202609/19/README)
+> 今日无新推荐，系统未产出可展示论文。
+- 详情：[/202609/20/README](/202609/20/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [LLM Inference in a Flash!](/202609/19/2609.16161v1-llm-inference-in-a-flash)  
-   标签：评分：7.0/10、query:pic
-   evidence：近内存计算架构在带宽受限下加速长上下文LLM推理
-2. [Long-Lived Characters, Local Inference: Incremental Memory Maintenance for Game NPCs](/202609/19/2609.18935v1-long-lived-characters-local-inference-incremental-memory-maintenance-for-game-npcs)  
-   标签：评分：6.0/10、query:pic
-   evidence：修改记忆会使长可复用前缀失效
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">
