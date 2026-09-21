@@ -1,0 +1,209 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-21T22:33:48.955259+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2609.20888v1",
+      "source": "arxiv",
+      "title": "Elastic Threshold Attention: Learned Contextual Sparsity for Long-Context Decoding",
+      "abstract": "Massive KV caches can cause severe memory-bandwidth bottlenecks during long-context decoding. Sparse attention methods mitigate this via selective loading, but that comes at a cost: rigid heuristics drop necessary context, leading to quality degradation. We introduce \\textbf{Elastic Threshold Attention (ETA)}, an end-to-end trainable architecture that achieves hardware-accelerated decoding speed without sacrificing dense model quality. ETA predicts dynamic, contextual thresholds directly from query representations, allowing the model to allocate dense-like context to difficult retrieval or reasoning steps while pruning routine tokens. To learn this policy from scratch without representation collapse, ETA \\emph{multiplicatively suppresses} sub-threshold logits toward zero during training rather than deleting them. Training against this smooth uniform attention floor provides a distributed probability reservoir that \\textbf{causes localized attention sinks on initial tokens to disappear}. It also enables the model to hard-prune uninformative KV blocks at inference time and absorb incidental tokens co-admitted by coarse GPU block selection. As a result, a 1.45B pretrained ETA model rivals dense attention across language modeling, commonsense reasoning, and long-context needle retrieval at $\\approx 85\\%$ training sparsity and $\\approx 38\\%$ active decode density. At inference time, we implement a custom decode kernel in Triton that screens KV blocks in $O(1)$ time using cached geometric-probabilistic bounds, delivering up to $2.5\\times$ wall-clock decode speedups over FlashAttention-2 on sequences up to 512K tokens. Finally, we introduce an offline calibration algorithm for domain-specific deployments that freezes per-head constant thresholds to eliminate predictor overhead, cutting attention compute by an additional $27\\%$.",
+      "authors": [
+        "Themistoklis Haris",
+        "Henry Li",
+        "Maryam Karimzadehgan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-16T23:23:10+00:00",
+      "link": "https://arxiv.org/pdf/2609.20888v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Learned contextual sparsity to accelerate long-context decoding with KV cache",
+      "llm_evidence_cn": "可学习上下文稀疏加速长上下文KV缓存解码",
+      "llm_evidence": "可学习上下文稀疏加速长上下文KV缓存解码",
+      "canonical_evidence": "可学习上下文稀疏加速长上下文KV缓存解码",
+      "llm_tldr_en": "Elastic Threshold Attention targets KV cache memory-bandwidth bottlenecks in long-context decoding by learning dynamic per-query thresholds that prune routine tokens while keeping dense-like context, achieving accelerated decoding without quality loss.",
+      "llm_tldr_cn": "长上下文解码中庞大的KV缓存造成严重的内存带宽瓶颈，而现有稀疏注意力用刚性启发式丢弃必要上下文导致质量下降。论文提出弹性阈值注意力（ETA），从查询表示中预测动态上下文阈值，对常规token剪枝、对困难检索推理步骤保留稠密上下文，并通过乘法抑制策略从零训练该策略。实验表明ETA在不损失稠密模型质量的前提下实现硬件加速解码，为长上下文推理提供了质量与效率兼得的方案。",
+      "llm_tldr": "长上下文解码中庞大的KV缓存造成严重的内存带宽瓶颈，而现有稀疏注意力用刚性启发式丢弃必要上下文导致质量下降。论文提出弹性阈值注意力（ETA），从查询表示中预测动态上下文阈值，对常规token剪枝、对困难检索推理步骤保留稠密上下文，并通过乘法抑制策略从零训练该策略。实验表明ETA在不损失稠密模型质量的前提下实现硬件加速解码，为长上下文推理提供了质量与效率兼得的方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.21172v1",
+      "source": "arxiv",
+      "title": "TierKV: Long-Context On-Device LLMs via Predictive Multi-Tier KV Caching",
+      "abstract": "Large language models (LLMs) are moving onto mobile devices for increasingly diverse workloads over text, images, video, and audio. These applications often require long contexts, making the Key-Value (KV) cache a dominant memory bottleneck because it grows linearly with sequence length and is accessed at every decoding step. Prior work reduces KV-cache footprint through low-rank compression, token eviction, or flash offloading, but the resulting reconstruction overhead, irreversible token loss, or I/O stalls can offset the benefit of saving memory. We present TierKV, a mobile LLM inference framework built on Predictive Multi-Tier Cache Optimization (PMCO). Before decoding starts, PMCO predicts future cache demand from prefill hidden states and jointly assigns tokens to exact, low-rank, and flash-offloaded tiers under the device memory and accuracy budgets. This formulation retains access to the full context, removes the circular dependency of reactive eviction, and admits a closed-form solver that selects tier boundaries and per-layer ranks at runtime. Across eight text, vision, and audio models on three mobile SoCs, TierKV improves prefill throughput by up to 17.6x over existing mobile LLM frameworks, reduces RAM-resident KV cache by 12.5-34%, thereby enabling substantially longer contexts under the same memory budget, while incurring only minor accuracy degradation.",
+      "authors": [
+        "Zhihao Shu",
+        "Md Musfiqur Rahman Sanim",
+        "Jie Hu",
+        "Kun Yuan",
+        "Minghai Qin",
+        "Gagan Agrawal",
+        "Wei Niu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "eess.SY"
+      ],
+      "published": "2026-09-18T00:36:05+00:00",
+      "link": "https://arxiv.org/pdf/2609.21172v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "predictive multi-tier KV caching for long-context on-device LLM inference",
+      "llm_evidence_cn": "面向端侧长上下文推理的预测式多层KV缓存",
+      "llm_evidence": "面向端侧长上下文推理的预测式多层KV缓存",
+      "canonical_evidence": "面向端侧长上下文推理的预测式多层KV缓存",
+      "llm_tldr_en": "On-device long-context LLMs are bottlenecked by the KV cache. TierKV uses Predictive Multi-Tier Cache Optimization to predict future cache demand from prefill states, avoiding reconstruction overhead and I/O stalls.",
+      "llm_tldr_cn": "LLM正迁移到移动设备处理文本、图像、视频与音频等多样负载，长上下文使键值缓存因随序列线性增长且每步解码都需访问而成为主要显存瓶颈。现有低秩压缩、token驱逐与闪存卸载虽可减小占用，却带来重建开销、不可逆token丢失或I/O停顿。本文提出TierKV，一个基于预测式多层缓存优化的移动端推理框架，在解码前从预填充隐状态预测未来缓存需求并进行多层调度。实验表明其能在控制内存的同时减少重建与I/O代价，提升端侧长上下文推理效率。",
+      "llm_tldr": "LLM正迁移到移动设备处理文本、图像、视频与音频等多样负载，长上下文使键值缓存因随序列线性增长且每步解码都需访问而成为主要显存瓶颈。现有低秩压缩、token驱逐与闪存卸载虽可减小占用，却带来重建开销、不可逆token丢失或I/O停顿。本文提出TierKV，一个基于预测式多层缓存优化的移动端推理框架，在解码前从预填充隐状态预测未来缓存需求并进行多层调度。实验表明其能在控制内存的同时减少重建与I/O代价，提升端侧长上下文推理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.17652v3",
+      "source": "arxiv",
+      "title": "Fathom: Per-Query Read Depth for Sparse Decoding over Offloaded KV Caches",
+      "abstract": "When agentic sessions run to a million tokens with many sessions resident at once, the KV cache and the index that ranks it live in host memory, and the scan that ranks all n keys for a top-k step becomes the traffic that bounds decoding. We present Fathom, a key scan in which each query decides how many bits of each key channel to read. The 4-bit K cache is stored channel-major as bit planes, so a prefix of t planes is exactly the channel's t-bit quantizer, and the query spends its bit budget by reverse water-filling over the variance-weighted importance of its channels. At one million tokens on Qwen3-8B a decode step is 1.67x faster in GPU time than with the 136-bit scans of Double Sparsity, Loki and SparQ r=32, and in the same GPU time as SparQ's 68-bit read (r=16) Fathom reads 18% fewer bytes with lower attention error on six of seven model and context settings. On RULER-style tasks every per-token scan matches exact top-k decoding, and on real coding-agent sessions Fathom reaches the step agreement of the most accurate 136-bit scan at 92 bits. The store is the 4-bit K copy a quantized serving stack already holds, and the method is not faster when the index is resident in GPU memory.",
+      "authors": [
+        "Vivek Kalyanarangan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL",
+        "cs.DC"
+      ],
+      "published": "2026-09-15T16:53:01+00:00",
+      "link": "https://arxiv.org/pdf/2609.17652v3",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Per-query read depth sparse decoding over offloaded KV caches for million-token sessions",
+      "llm_evidence_cn": "面向卸载KV缓存的逐查询读取深度稀疏解码",
+      "llm_evidence": "面向卸载KV缓存的逐查询读取深度稀疏解码",
+      "canonical_evidence": "面向卸载KV缓存的逐查询读取深度稀疏解码",
+      "llm_tldr_en": "Presents Fathom, a per-query bit-depth key scan over offloaded KV caches that stores the 4-bit K cache as bit planes and allocates read bits by channel importance, speeding million-token decoding 1.67x.",
+      "llm_tldr_cn": "针对百万token智能体会话中KV缓存与索引驻留主机内存、top-k键扫描成为解码瓶颈的问题，本文提出Fathom逐查询读取深度方案。该方法把4位K缓存按通道以位平面存储，使t个位平面恰为该通道的t位量化器，查询按通道重要性用反向注水分配位预算。在Qwen3-8B百万token下，解码GPU时间比Double Sparsity、Loki与SparQ快1.67倍。该工作显著降低卸载KV缓存上的长上下文解码开销。",
+      "llm_tldr": "针对百万token智能体会话中KV缓存与索引驻留主机内存、top-k键扫描成为解码瓶颈的问题，本文提出Fathom逐查询读取深度方案。该方法把4位K缓存按通道以位平面存储，使t个位平面恰为该通道的t位量化器，查询按通道重要性用反向注水分配位预算。在Qwen3-8B百万token下，解码GPU时间比Double Sparsity、Loki与SparQ快1.67倍。该工作显著降低卸载KV缓存上的长上下文解码开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.17888v1",
+      "source": "arxiv",
+      "title": "Long-Context Demonstration Selection Using State Space Models",
+      "abstract": "We study the problem of demonstration selection, which involves selecting a subset of examples for prepending to a query to a language model. This problem is closely related to in-context learning and language model inference. Since the inference cost of a transformer model scales quadratically with sequence length, the selection problem becomes especially challenging in a long-context scenario. In this paper, we tackle this problem by building on state space models (SSMs), which require only linear inference time given the input. Our approach involves two algorithms. The first learns a small set of SSMs through distillation of a (trained) transformer model. We partition all the layers into consecutive groups. Then for each group, we estimate a separate state space model to replicate the input-output behavior within the adjacent layers. Second, we map the distilled model outputs to a small set of tokens, and apply these embeddings for demonstration selection in downstream applications. We perform extensive experiments in both synthetic and real-world datasets to validate our approach. We demonstrate that the distilled SSMs only incur an approximation error of less than $0.7\\%$ relative to the true output. In downstream evaluation, we show that on several text classification and reasoning tasks, our approach reduces FLOPs by $14.2\\times$ and improves accuracy by $6.48\\%$ relative to baseline demonstration selection methods.",
+      "authors": [
+        "Ziniu Zhang",
+        "Zhenshuo Zhang",
+        "Ruoxuan Xiong",
+        "Gene Cooperman",
+        "Hongyang R. Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-09-15T22:29:22+00:00",
+      "link": "https://arxiv.org/pdf/2609.17888v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "state space models enable linear-time long-context selection and lower inference cost",
+      "llm_evidence_cn": "状态空间模型实现线性时间的长上下文选择并降低推理开销",
+      "llm_evidence": "状态空间模型实现线性时间的长上下文选择并降低推理开销",
+      "canonical_evidence": "状态空间模型实现线性时间的长上下文选择并降低推理开销",
+      "llm_tldr_en": "Long-context demonstration selection is costly because transformer inference scales quadratically; this work distills grouped state space models for linear-time selection.",
+      "llm_tldr_cn": "针对长上下文场景中示例选择因Transformer推理开销随序列长度二次增长而难以扩展的问题，本文提出基于状态空间模型的示例选择方法。作者通过蒸馏训练好的Transformer并按层分组，为每组估计一个独立的小型SSM，从而以线性推理时间完成示例筛选。该方法在降低长上下文推理成本的同时保持选择质量，为长上下文推理加速提供了新思路。",
+      "llm_tldr": "针对长上下文场景中示例选择因Transformer推理开销随序列长度二次增长而难以扩展的问题，本文提出基于状态空间模型的示例选择方法。作者通过蒸馏训练好的Transformer并按层分组，为每组估计一个独立的小型SSM，从而以线性推理时间完成示例筛选。该方法在降低长上下文推理成本的同时保持选择质量，为长上下文推理加速提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.20971v1",
+      "source": "arxiv",
+      "title": "RBS-Attention: Radius-Bounded Sparse Prefill for Long-Context Large Language Models",
+      "abstract": "Long-context large language model inference is increasingly limited by prefill, where dense self-attention processes the entire prompt before generation begins. Sparse block selection can reduce this cost, but a block centroid may hide a highly relevant token among many irrelevant ones. We call this failure mode mean dilution and propose RBS-Attention, a training-free sparse-prefill method with two complementary selection branches. A centroid base branch captures average relevance, while a rescue branch uses the maximum key-block radius and its prompt-, layer-, and head-dependent distribution to identify blocks at risk of underestimation. Independently thresholding the two branches and combining their masks controls the contribution of rescue blocks while preserving regular block-sparse FlashAttention execution. On H100 GPUs, RBS-Attention achieves 20.65$\\times$ standalone prefill-attention speedup, 11.92$\\times$ vLLM prefill-attention speedup, and 5.97$\\times$ end-to-end time-to-first-token speedup at 128K on Qwen3-30B-A3B-Instruct-2507-FP8. On the dense Qwen3-32B model, it obtains 88.65 overall RULER accuracy versus 89.52 for dense attention; LongBench-v2, InfiniteBench, and Video-MME provide additional quality evaluation. Supporting experiments measure actual retention, compare selectors at matched density, and characterize block-size, threshold, and memory behavior. Together, these results support radius-adaptive dual-branch selection as an effective approach to long-context prefill.",
+      "authors": [
+        "Chuxu Song",
+        "Jiuqi Wei",
+        "Zhencan Peng"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-09-17T18:28:29+00:00",
+      "link": "https://arxiv.org/pdf/2609.20971v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "training-free sparse prefill to accelerate long-context LLM inference",
+      "llm_evidence_cn": "免训练稀疏预填充以加速长上下文LLM推理",
+      "llm_evidence": "免训练稀疏预填充以加速长上下文LLM推理",
+      "canonical_evidence": "免训练稀疏预填充以加速长上下文LLM推理",
+      "llm_tldr_en": "Long-context prefill is dominated by dense attention. RBS-Attention is a training-free sparse-prefill method with centroid and radius-bounded rescue branches that mitigate mean dilution, reducing prefill cost while keeping relevant tokens.",
+      "llm_tldr_cn": "长上下文大模型推理的瓶颈日益集中在预填充阶段，稠密自注意力需处理整个提示。稀疏块选择虽可降本，但块质心可能掩盖真正相关的token，形成均值稀释问题。本文提出免训练的RBS-Attention，用质心基分支捕获平均相关性，并用基于最大键块半径的救援分支识别易被低估的块，分别阈值化后合并掩码。该方法在降低预填充开销的同时保留关键token，为长上下文推理加速提供有效手段。",
+      "llm_tldr": "长上下文大模型推理的瓶颈日益集中在预填充阶段，稠密自注意力需处理整个提示。稀疏块选择虽可降本，但块质心可能掩盖真正相关的token，形成均值稀释问题。本文提出免训练的RBS-Attention，用质心基分支捕获平均相关性，并用基于最大键块半径的救援分支识别易被低估的块，分别阈值化后合并掩码。该方法在降低预填充开销的同时保留关键token，为长上下文推理加速提供有效手段。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

@@ -1,0 +1,1045 @@
+Title: Long-Context Demonstration Selection Using State Space Models
+
+URL Source: https://arxiv.org/pdf/2609.17888v1
+
+Published Time: Thu, 17 Sep 2026 00:19:53 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# Long-Context Demonstration Selection Using State Space Models 
+
+Ziniu Zhang 
+
+Northeastern University 
+
+zhang.zini@northeastern.edu 
+
+Zhenshuo Zhang 
+
+Northeastern University 
+
+zhang.zhens@northeastern.edu 
+
+Ruoxuan Xiong 
+
+Emory University 
+
+ruoxuan.xiong@emory.edu 
+
+Gene Cooperman 
+
+Northeastern University 
+
+gene@ccs.neu.edu 
+
+Hongyang R. Zhang 
+
+Northeastern University 
+
+ho.zhang@northeastern.edu 
+
+Abstract 
+
+We study the problem of demonstration selec-tion, which involves selecting a subset of ex-amples for prepending to a query to a language model. This problem is closely related to in-context learning and language model inference. Since the inference cost of a transformer model scales quadratically with sequence length, the selection problem becomes especially challeng-ing in a long-context scenario. In this paper, we tackle this problem by building on state space models (SSMs), which require only linear in-ference time given the input. Our approach in-volves two algorithms. The first learns a small set of SSMs through distillation of a (trained) transformer model. We partition all the layers into consecutive groups. Then for each group, we estimate a separate state space model to replicate the input-output behavior within the adjacent layers. Second, we map the distilled model outputs to a small set of tokens, and ap-ply these embeddings for demonstration selec-tion in downstream applications. We perform extensive experiments in both synthetic and real-world datasets to validate our approach. We demonstrate that the distilled SSMs only incur an approximation error of less than 0.7% 
+
+relative to the true output. In downstream eval-uation, we show that on several text classifica-tion and reasoning tasks, our approach reduces FLOPs by 14 .2× and improves accuracy by 
+
+6.48% relative to baseline demonstration selec-tion methods. 
+
+1 Introduction 
+
+Language models increasingly rely on answering to long-context prompts at inference time (Oncescu et al., 2025). One approach is to condition the model on demonstrations drawn from historical tra-jectories (Xiong, 2025). Specifically, given a query, the goal is to select a subset of k demonstrations from a large candidate pool of size n. This prob-lem is known as demonstration selection , which is closely related to in-context learning (Garg et al., 2022; Zhang et al., 2025b). The challenge in selecting demonstrations is that the effect of one demonstration often depends on which other demonstrations appear with it in the prompt. Evaluating candidate subsets often re-quires repeatedly running the language model on many different prompts (Zhang et al., 2025b). For transformer models, the cost of processing long prompts grows quadratically with the total context length T , where T scales with both the number and length of demonstrations. This creates a compu-tational bottleneck for long-context demonstration selection, since exhaustively evaluating many can-didate subsets is infeasible as k increases. This challenge connects demonstration selection to a broader problem of efficient long-context infer-ence. Existing approaches largely fall into three cat-egories. First, state space models (SSMs) (Gu et al., 2020, 2022; Gu and Dao, 2024) and related hy-brid architectures (Ren et al., 2025; Oncescu et al., 2025) achieve efficient sequence modeling, but typ-ically require retraining the underlying language model. Second, training-free methods accelerate inference by restricting attention to local windows or selected tokens (Xiao et al., 2024, 2025a). Third, other related methods (Mu et al., 2023; Chevalier et al., 2023; Ge et al., 2024) require processing the entire prompt. In this paper, we build on state space models to scale up demonstration selection to long-contexts at inference time. The key idea is to train a group of SSMs to map each candidate subset’s concatenated demonstrations into a small set of tokens. These tokens are computed once per subset and reused across all queries evaluated with that subset. This substantially reduces the cost of evaluating many candidate demonstration subsets. Our algorithm consists of three main components. First, we learn a small number of state space models through distillation. We partition the trans-arXiv:2609.17888v1 [cs.LG] 15 Sep 2026 Query Tokens          
+
+> Problem setup
+> Input: Candidate demonstrations 𝐷
+> 𝑧 !𝑥 !
+> 𝐷 !", 𝐷 #", … ⊆ 𝐷
+> 𝑦 !
+> 𝑧 "𝑥 "𝑦 "
+> …
+> Evaluation: Query, target pairs
+> 𝑞, 𝑦
+> Sample subsets from 𝐷
+> 𝑥 !𝑦 !𝑥 #𝑦 #…
+
+…          
+
+> Concatenated Embeddings
+> Transformer model For each 𝑧 ∈ 𝐷 ,
+> compute affinity Score: )𝜇 𝑧 by averaging over subsets 𝐷′ $
+> containing 𝑧
+> Select top-𝑘
+> demonstrations ranked by  ̂ 𝜇(𝑧)
+> Compute affinity scores Length T
+> State space model
+> h[t+1]= h[t]+ x[t] ĀB#
+> Key Val
+> MLP
+> Transformer model
+> +
+> (Key, value) Hidden states, outputs Learned SSMs Learned SSMs Run inference for each query with concatenated embeddings
+> Stage 1: Learning state space models Stage 2: Demonstration selection
+> Distillation Key-Value Pairs
+
+Figure 1: Overview of our approach: Given a set of candidate demonstrations and query-target pairs from an unknown distribution, our approach learns a set of state space models through distillation from a pretrained model. Then, we use the extracted embeddings from the state space models for demonstration selection. We sample multiple subsets of demonstrations and evaluate the concatenated subset embeddings. We aggregate the subset losses to an affinity score for every demonstration and select the top-k demonstrations ranked by the scores. 
+
+former layers into disjoint groups of consecutive layers and assign one SSM to each group. Each SSM scans the embeddings of the long demonstra-tion prompt into a compact hidden representation, which is then mapped into a small set of key-value states. The output key-value states are then com-bined together as the tokens that transformers can process directly. These tokens serve as a substitute for the original long prompt during inference. Second, we design a demonstration selection algorithm based on subset sampling (Li et al., 2023b,a, 2024a,b; Zhang et al., 2025b). Crucially, this algorithm now runs on top of the (distilled) state space models. We repeatedly sample candi-date subsets and evaluate their predictive perfor-mance using the representation produced by our approach. We then estimate the contribution of each demonstration based on how subsets contain-ing that demonstration perform. Finally, we conduct empirical analyses of the proposed framework. We find that our approach preserves the predictive distribution of the original model with relative error below 0.6% . Across clas-sification and reasoning benchmarks, our approach reduces FLOPs by up to 14 .2× and improves down-stream accuracy by 6.48% over baselines. In summary, we design an algorithm to scale up demonstration selection to long-context inference. First, we build SSMs that map long demonstration prompts into a small set of reusable tokens. Second, we develop an affinity-based subset selection algo-rithm that leverages this representation to evaluate many candidate demonstration subsets. Third, we validate the proposed algorithms on synthetic, classification, and reasoning benchmarks. The code to reproduce our experiments is available at https://github.com/VirtuosoResearch/ Long-context-demonstration-selection .
+
+2 Preliminaries 
+
+We study demonstration selection in constructing a prompt. Let D denote the set of candidate demon-strations of size n. Let (q, y ) ∼ P denote a query-target pair drawn from an unknown distribution. We select a subset D′ ⊆ D containing k demonstra-tions with a fixed ordering for every query. Given a model fW and a loss function ℓ : X × Y → R sup-ported on an input domain X and output domain 
+
+Y, the demonstration (subset) selection problem is defined as the following minimization: 
+
+min   
+
+> D′⊆D:|D′|=k
+
+E(q,y )∼P 
+
+ℓ fW (D′, q ), y  .
+
+For the selected demonstrations D′, we concate-nated them as the input demonstration prompt. Let 
+
+X = [ x1, . . . , x T ]⊤ ∈ RT ×H denote the token em-beddings of the prompt, where T is the total num-ber of tokens and H is the embedding dimension. Since T increases with both the number and length of demonstrations, long-context prompting can pro-duce very large input sequences. In a transformer model, the computational cost of processing the prompt grows quadratically with T because self-attention computes pairwise interactions between all tokens. As a result, evaluating the inference out-come for a large T is computationally expensive. A natural approach for processing long prompts is to use state space models (SSMs), which summa-rize the input sequence through recurrent updates. Given the prompt embeddings X, a discrete SSM updates its state at each token position t as 
+
+ht = ¯Ah t−1 + ¯Bx t, (1) where ht ∈ RN is the N -dimensional state, ¯A ∈
+
+RN ×N is the state-transition matrix, and ¯B ∈
+
+RN ×H maps the token embedding xt into the state space. The SSM processes each token once and has linear complexity in the sequence length T (Gu et al., 2022). Previous work has shown that the HiPPO-LegS matrix provides a structured construction of the state-transition matrix by maintaining an online polynomial projection of the input history (Gu et al., 2020; Gu and Dao, 2024). The state approxi-mates the coefficients of past inputs under a scaled Legendre basis. Lower-order coefficients capture the main structure of the sequence history, and higher-order coefficients represent finer variations. Thus, a finite-dimensional HiPPO state provides a compact summary of a long input sequence. In the in-context learning setting, we hypothe-size that task-relevant information in a large demon-stration set can be preserved by low-order Legendre basis components of the HiPPO matrix. The SSM scans the complete input once. Thus, it can replace a transformer model’s inference for the demonstra-tions and reduce the inference complexity from 
+
+O(T 2) to O(T ).Motivated by these existing results, a natural question is whether one could adapt SSMs to tackle the demonstration subset selection problem. • First, how can we design the SSM for the in-context learning setting? • Second, how can we utilize the SSM for demonstration selection? In the next section, we design algorithms to answer each of the above questions, respectively. 
+
+3 Our Approach 
+
+We build SSMs for efficient long-context inference. First, we present the architecture of the SSMs with theoretical and empirical evidence supporting our hypothesis. We also introduce a distillation pro-cedure for training the SSMs. Then, we propose a demonstration selection method on the embed-dings and use controlled synthetic experiments to evaluate its affinity estimates. 
+
+3.1 Learning the State Space Models 
+
+We design SSMs with the HiPPO-LegS matrix to map long demonstration prompts while preserving the dominant low-order structure of the sequence. In a transformer, the prompt is first processed to construct a layer-wise key-value (KV) cache, where each transformer layer stores key and value repre-sentations for all prompt tokens. These cached representations are later used during decoding. Instead of computing the exact KV cache for the full prompt, we use SSMs to process it. The SSM sequentially scans the prompt and summarizes the long sequence into a compact hidden representa-tion. We partition the m layers of the transformer model f into g disjoint groups of consecutive layers to yield a lower-dimensional target for each group. Each group is assigned an independent SSM that predicts the KV states only for its corresponding group of layers. Specifically, for each layer group Gi for i =1, . . . , g , the SSM processes the prompt embed-dings X and produces a final hidden state h(i) 
+
+> T
+
+∈
+
+RN . A multilayer perceptron f (i) 
+
+> W
+
+then projects h(i)
+
+> T
+
+into a separate pair of key-value states for every transformer layer in the group: 
+
+n  ˜K(l), ˜V (l)o
+
+> l∈Gi
+
+= f (i) 
+
+> W
+
+(h(i) 
+
+> T
+
+(X)) .
+
+For each transformer layer l, the original KV states have shape T × nkv × d, while the projected states have shape nv × nkv × d, where nkv is the number of key-value heads and d is the dimension of each head. The KV states generated from the outputs of all g SSMs are aligned at the same nv token po-sitions and assembled across layer groups to form the layer-wise KV cache of these nv tokens. Thus, the projection preserves the key-value head and head-dimension axes while mapping T tokens to 
+
+nv tokens for a transformer to process directly. To analyze the proposed architecture, we first run the transformer on the complete input prompt using a standard full-attention forward pass and record the resulting key-value states at every layer. We represent the exact transformer KV cache of each layer group Gi by a matrix C(i). This matrix stacks the key and value states from all layers and attention heads in the group, and retains the T token positions as its rows. 
+
+Proposition 3.1. Let {ϕr}Tr=1 be an orthonor-mal discrete Legendre basis along the token di-mension, so that ϕ⊤ 
+
+> r
+
+ϕr′ = 1r=r′ . For each Gi,10 0 10 1 10 2
+
+Frequency index 
+
+> 10 2
+> 10 5
+> Coefficient
+
+Qwen −7B −Instruct   
+
+> Group 0 Group 1 Group 2 Group 3 10 010 110 2
+
+Frequency index 
+
+> 10 0
+> 10 1
+> 10 2
+> Coefficient
+
+Llama −8B −Instruct 
+
+> Group 0 Group 1 Group 2 Group 3
+
+Figure 2: Mean squared discrete Legendre coefficients of KV caches on Qwen-7B-Instruct and Llama-3-8B-Instruct with G=4 layer groups and k=50 demonstra-tions. The coefficients decay rapidly across groups, and the KV cache is dominated by low-order HiPPO-LegS components. 
+
+let C(i) ∈ RT ×Di , where Di is the number of stacked cache features, and c(i) 
+
+> r
+
+:=  C(i)⊤ϕr ∈
+
+RDi , r = 1 , . . . , T . The orthogonal decomposi-tion of C(i) is PTr=1 ϕr
+
+ c(i)
+
+> r
+
+⊤. For N < T , de-fine the orthogonal projection matrix of rank N
+
+onto span {ϕ1, . . . , ϕ N } by ΠN := PNr=1 ϕrϕ⊤ 
+
+> r
+
+∈
+
+RT ×T . It follows that ΠN C(i) = PNr=1 ϕr
+
+ c(i)
+
+> r
+
+⊤
+
+and C(i) − ΠN C(i) = PTr=N +1 ϕr
+
+ c(i)
+
+> r
+
+⊤. There-fore, for any s > 0,
+
+C(i) − ΠN C(i) 2 
+
+> F
+
+≤
+
+> T
+
+X 
+
+> r=N+1
+
+r2s
+
+(N + 1) 2s c(i) 
+
+> r
+> 22
+
+.
+
+This shows that the error stems from Legendre components omitted by the first N modes. When the coefficients are concentrated at low frequen-cies, this tail is small. Increasing the SSM state dimension N retains more components and further reduces the approximation error. The proof is pro-vided in Appendix A. We empirically verify this on Qwen-7B-Instruct and Llama-3-8B-Instruct models with G=4 layer groups and k=50 demonstrations. The rapid co-efficient decay in Figure 2 indicates that a finite-dimensional HiPPO state can retain most of the information in the KV cache. Based on this obser-vation, the SSMs process the entire T -token input using recurrent scans with O(T ) cost for a fixed number of groups. The transformer then processes the resulting nv tokens with a cost of O(n2
+
+> v
+
+). Since 
+
+nv is fixed and nv ≪ T , the total prefix-processing complexity is O(T + n2
+
+> v
+
+) = O(T ). In the next part, we introduce a two-stage distillation method to train the SSMs to produce KV states that pre-serve the original transformer function output. 
+
+Key, value, and output distillation. To train the SSMs, we design a distillation procedure. First, we 
+
+Algorithm 1 Learning SSMs via Key, Value, and Output Distillation 
+
+Input : Embedding and query pairs {X, q }, param-eter initialization Θ = { ¯B(i), W (i)}gi=1 
+
+Require : Groups {Gi}gi=1 , g SSMs each with a fixed ¯A and variable weight matrix ¯B(i) and MLPs 
+
+{f (i) 
+
+> W
+
+}gi=1 , an m-layer transformer, nv, parameters 
+
+λ1, λ 2, and learning rate η
+
+Output : Trained parameters ˆΘ 
+
+> 1:
+
+for each (X, q ) do  
+
+> 2:
+
+Extract {K(l), V (l)}ml=1 from transformer  
+
+> 3:
+
+T ← Length of X 
+
+> 4:
+
+for i ∈ { 1, . . . , g } do  
+
+> 5:
+
+{( ˜K(l), ˜V (l))}l∈Gi ← f (i) 
+
+> W
+
+(h(i) 
+
+> T
+
+(X))  
+
+> 6:
+
+end for  
+
+> 7:
+
+for i ∈ { 1, ..., n v}, l ∈ { 1, . . . , m } do  
+
+> 8:
+
+κ(i,l )1 ← 1 − cos( ˜K(l) 
+
+> i
+
+, Pool( K(l))i) 
+
+> 9:
+
+κ(i,l )2 ← 1 − cos( ˜V (l) 
+
+> i
+
+, Pool( V (l))i) 
+
+> 10:
+
+end for  
+
+> 11:
+
+Θ ← Θ − η∇Θ
+
+  12m
+
+Pml=1 
+
+Pnv
+
+> i=1
+
+(κ(i,l )1 +
+
+κ(i,l )2 ) // Key-value distillation  
+
+> 12:
+
+end for  
+
+> 13:
+
+for each (X, q ) do  
+
+> 14:
+
+for i ∈ { 1, . . . , g } do  
+
+> 15:
+
+{( ˜K(l), ˜V (l))}l∈Gi ← f (i) 
+
+> W
+
+(h(i) 
+
+> T
+
+(X))  
+
+> 16:
+
+end for  
+
+> 17:
+
+(P1, {ψ(l)1 }) ← f (( ˜K, ˜V ), q ) 
+
+> 18:
+
+(P2, {ψ(l)2 }) ← f (X, q ) 
+
+> 19:
+
+L ← λ1DKL (P1∥P2) + λ2
+
+> m
+
+Pml=1 (1 −
+
+cos( ψ(l)1 , ψ (l)2 ))  
+
+> 20:
+
+Θ ← Θ − η∇ΘL // Output distillation  
+
+> 21:
+
+end for  
+
+> 22:
+
+return ˆΘ
+
+align the generated tokens with a valid KV space. Given the m-layer model fW , we extract its exact KV cache {K(l), V (l)}ml=1 . To resolve the length mismatch, we apply pooling to the T states, pro-ducing nv pooled targets Pool( K) and Pool( V ).For the i-th layer group, we keep the HiPPO-LegS transition matrix fixed and train only the SSM in-put projection ¯B(i) and the parameters of the KV projection MLP f (i). We denote all trainable pa-rameters by Θ =  ¯B(i), W (i) gi=1 . The objective is: 
+
+12m
+
+> m
+
+X
+
+> l=1
+> nv
+
+X
+
+> i=1
+
+  
+
+1 − cos 
+
+ ˜K(l) 
+
+> i
+
+, Pool( K(l))i
+
+ 
+
++
+
+
+
+1 − cos 
+
+ ˜V (l) 
+
+> i
+
+, Pool( V (l))i
+
+  
+
+.Next, we train the SSM using joint supervision of outputs and intermediate states to preserve pre-dictive accuracy and positional structure. For a query q, let Pr[ y | ˜K, ˜V , q ] and Pr[ y | X, q ] denote the output distributions of the LLM conditioned on the SSMs’ output and original demonstrations, re-spectively. We denote these two distributions by 
+
+P1 and P2, respectively. We additionally align the corresponding query hidden states ψ(l)1 and ψ(l)2
+
+across all layers. The entire loss objective, denoted by ˆL(Θ) , is: 
+
+λ1DKL (P1∥P2) + λ2
+
+m
+
+> m
+
+X
+
+> l=1
+
+
+
+1 − cos 
+
+
+
+ψ(l)1 , ψ (l)2
+
+ 
+
+.
+
+where λ1 and λ2 adjust the relative weight of the re-spective terms. The entire procedure is summarized in Algorithm 1. To validate the effectiveness of the above dis-tillation procedure, we evaluate Algorithm 1 on multiple tasks using k demonstrations from 50 to 
+
+75 . As shown in Table 1, the relative error between the logits from the full prefix p and tokens ˆp re-mains strictly below 0.7% across all settings. This confirms that Algorithm 1 robustly preserves the original predictive behavior. We defer the omitted result where k = 25 to Table 7 in Appendix B.3. 
+
+3.2 Demonstration Selection Using SSMs 
+
+We now utilize Algorithm 1 for demonstration se-lection. We first introduce a randomized estimator that quantifies the marginal utility of each candi-date via subset sampling. We define the affinity score, μ(z), of a demonstration example z ∈ D as 
+
+−ED′⊆D,z ∈D′ [E(q,y )∼P [ℓ(fW (D′, q ), y )]] .
+
+Thus, μ(z) is the negative expected inference loss averaged over subsets of size k that contain z.To estimate μ(z), we uniformly sample M sub-sets {D′
+
+> 1
+
+, . . . , D ′ 
+
+> M
+
+} from D sized k. Then, we estimate the affinity, denoted by ˆμ(z), as 
+
+−
+
+PMi=1 1z∈D′
+
+> i
+
+P 
+
+> (q,y )∈V
+
+ℓ(fW (D′
+
+> i
+
+, q ), y )
+
+PMi=1 1z∈D′
+
+> i
+
+.
+
+It is possible to show that with M = O(n/ (kϵ 2)) 
+
+sampled subsets, one can reduce the uniform es-timation error down to ϵ (Li et al., 2023b,a). Af-terwards, we rank the candidates by ˆμ(z) and se-lect the k demonstrations with the highest scores. Taken together, we summarize the entire procedure in Algorithm 2. 
+
+Algorithm 2 Demonstration Selection Using SSMs 
+
+Input : Candidate set D, validation set V, subset size k, number of sampled subsets M , parameter initialization Θ
+
+Require : Transformer model f , groups {Gi}gi=1 ,HiPPO-LegS matrix ¯A
+
+Output : k selected demonstrations  
+
+> 1:
+
+ˆΘ ← Algorithm 1  
+
+> 2:
+
+for j ∈ { 1, . . . , M } do  
+
+> 3:
+
+Sample D′ 
+
+> j
+
+⊆ D of size k 
+
+> 4:
+
+X ← Embeddings of D′ 
+
+> j
+> 5:
+
+T ← Length of X 
+
+> 6:
+
+for i ∈ { 1, . . . , g } do  
+
+> 7:
+
+{( ˜K(l), ˜V (l))}l∈Gi ← f (i) 
+
+> W
+
+(hT (X))  
+
+> 8:
+
+end for  
+
+> 9:
+
+˜C ← { ( ˜K(l), ˜V (l))}ml=1  
+
+> 10:
+
+ˆLj ← 1
+
+|V| 
+
+X
+
+> (q,y )∈V
+
+ℓ
+
+
+
+f ( ˜C, q ), y 
+
+ 
+
+> 11:
+
+end for  
+
+> 12:
+
+for z ∈ D do  
+
+> 13:
+
+ˆμ(z) ← − 
+
+PMj=1 1{z∈D′  
+
+> j}
+
+ˆLj
+
+PMj=1 1{z∈D′  
+
+> j}
+> 14:
+
+end for  
+
+> 15:
+
+return Top-k demonstrations according to 
+
+ˆμ(z) for all z ∈ D
+
+A case study of linear functions. To evaluate our algorithm, we adopt the synthetic linear regression setting from Garg et al. (2022) using a two-layer transformer. Both demonstrations and queries are generated via yi = ⟨β(c), x i⟩+ϵi, where each input 
+
+xi ∈ R20 is independently sampled from the stan-dard Gaussian distribution N (0 , Id 20 ). To simulate multiple queries clustering around shared under-lying tasks, each coefficient vector β(c) is drawn randomly from a set of mutually orthogonal an-chors, ensuring strict task decoupling. Finally, we inject independent Gaussian noise ϵi ∼ N (0 , σ 2)
+
+to prevent the model from trivially converging to an exact solution after observing 20 examples. We evaluate the predictive performance of our proposed algorithm against two baseline strategies: random demonstration selection (random-k) and embedding similarity-based selection (top-k). As shown in Figure 3a, our method achieves the lowest estimation error in the linear setting. This predic-tive advantage robustly extends to the non-linear setting, which is a two-layer ReLU network (Fig-ure 3b). Note that the model is trained with 40 data points as demonstrations, thus the error increases Model # Demonstrations SST-2 Poem Sentiment Coin Flip Modular Addition Qwen-1.5B k = 50 2.5±0.1 × 10 −3 1.3±0.1 × 10 −3 1.9±0.5 × 10 −3 1.3±0.1 × 10 −3
+
+k = 75 2.8±0.2 × 10 −3 1.9±0.2 × 10 −3 2.1±0.2 × 10 −3 1.8±0.4 × 10 −3
+
+Qwen-3B k = 50 6.1±0.2 × 10 −3 2.3±0.3 × 10 −3 2.1±0.8 × 10 −3 2.5±0.3 × 10 −3
+
+k = 75 6.3±0.2 × 10 −3 2.9±0.2 × 10 −3 4.1±1.1 × 10 −3 2.1±0.7 × 10 −3
+
+Llama-8B k = 50 2.3±0.1 × 10 −3 2.7±0.1 × 10 −3 1.5±0.5 × 10 −3 3.8±1.0 × 10 −3
+
+k = 75 2.5±0.2 × 10 −3 2.9±0.2 × 10 −3 1.9±0.2 × 10 −3 4.8±0.9 × 10 −3
+
+Table 1: Relative error of the predictive output between the full demonstration prefix p and the tokens ˆp. We vary the number of demonstrations on multiple tasks. Lower values indicate higher fidelity to the original model output. We run three times to compute the mean and standard deviations. 20 40 60 80 
+
+# Samples 
+
+0.01.02.03.0
+
+> Error  Random -k
+> Top -k
+> Ours
+
+(a) Linear Functions 20 40 60 80 
+
+# Samples 
+
+0.01.02.03.0 
+
+> Error  Random -k
+> Top -k
+> Ours
+
+(b) Nonlinear Functions 20 40 60 80 
+
+> # Samples
+
+0123
+
+> FLOPs( ×10 14 ) Not Optimized Optimized
+
+(c) Linear Functions 20 40 60 80 
+
+> # Samples
+
+01234 
+
+> FLOPs( ×10 14 ) Not Optimized Optimized
+
+(d) Nonlinear Functions 
+
+Figure 3: Evaluation of our approach for linear and non-linear functions. The top panel provides a comparison with random-k and top-k selection methods. The lower panel illustrates the computational costs relative to full inference (denoted as not optimized). 
+
+after the number of samples reaches 40 .By leveraging the SSMs during subset evalu-ation, our approach reduces FLOP overhead by 
+
+15 .7× compared to naive inference (Figure 3), en-suring high scalability for massive contexts. 
+
+4 Experiments 
+
+We evaluate our method by addressing the follow-ing three questions. First, how accurately and effi-ciently does Algorithm 1 approximate full-context inference compared with existing methods? Sec-ond, how effective is Algorithm 2 in terms of the accuracy and computational cost of downstream demonstration selection? Third, how well does the learned SSM scale to much longer contexts and transfer across different domains? Through extensive experiments in both text and reasoning datasets, we provide positive answers to all three questions above. Finally, we conduct detailed ablation studies to validate the design of our approach. 
+
+4.1 Experiment Setup Datasets. We evaluate our approach across a di-verse set of downstream tasks with different output formats. SST-2 and Poem Sentiment require cate-gorical sentiment labels. Coin Flip and Edge Exis-tence require binary decisions. Modular Addition requires numerical answers. We further evaluate the accuracy of Algo-rithm 1 on MMLU and GSM8K. MMLU cov-ers knowledge-intensive multiple-choice questions across a broad range of academic and professional subjects, and GSM8K requires the model to gen-erate multi-step reasoning processes and final nu-merical answers. Thus, our evaluation covers both short-output classification tasks and longer-form chain-of-thought reasoning tasks. 
+
+Baselines. Regarding efficient inference meth-ods, we consider full inference (dense), streaming LLM (Xiao et al., 2024), LM-infinite (Han et al., 2024), Gist tokens (Mu et al., 2023), in-context autoencoder (ICAE) (Ge et al., 2024), block-sparse attention (BSA) (Xiao et al., 2025a), and DuoAt-tention (Xiao et al., 2025b) as baselines. Then, we consider baselines that use differ-ent measures to rank the demonstrations. These include random selection (Random-k), selection based on probabilistic relevance rankings (BM25), embedding similarities (top-k), Bayesian refine-ment, and iterative demonstration generation, for example (BRIDGE) (Wan et al., 2025), cross-entropy-based selection with gradient estimation (G RAD CE) (Zhang et al., 2025b). We defer a de-tailed description of datasets, models, and baselines to Appendix B.1. All other implementation details Method Window MMLU Modular Addition GSM8K Length Error FLOPs Memory Error FLOPs Memory Error FLOPs Memory Dense - - 6.53 e15 17 .31 G - 1.05 e15 13 .65 G - 2.59 e15 15 .75 GStreamingLLM 64 1.1% 7.75 e13 15 .90 G 9.2% 1.90 e13 12 .95 G 5.6% 1.26 e14 14 .06 GLM-Infinite 64 1.2% 7.75 e13 15 .91 G 10 .9% 1.91 e13 12 .97 G 5.1% 1.27 e14 14 .06 GGist Tokens 64 7.2% 1.66 e15 14 .45 G 2.9% 7.50 e14 13 .72 G 40 .4% 2.37 e14 14 .43 GICAE 64 16 .5% 3.79 e14 17 .02 G 1.4% 1.36 e14 14 .27 G 0.5% 3.33 e14 14 .87 GDuoAttention 64 2.7% 8.03 e13 16 .24 G 7.7% 1.93 e13 13 .25 G 4.9% 1.31 e14 14 .25 GI2CL - 14 .3% 2.62 e14 15 .89 G 0.7% 8.29 e14 13 .14 G 11 .7% 8.56 e14 13 .86 GBSA ∼ 400 3.1% 7.86 e13 16 .53 G 1.8% 2.31 e13 13 .36 G 2.1% 1.51 e14 14 .31 G
+
+Algorithm 1 16 0.2% 3.49e 13 16 .76 G 0.2% 2.12e 13 13 .27 G 0.1% 8.67e 13 14 .44 G
+
+Table 2: We report the relative error, computational cost (FLOPs), and memory usage on MMLU, Addition datasets, and GSM8K. The relative error is computed against actual inference results. 
+
+Category Sentiment Analysis Math Reasoning Graph Reasoning Dataset SST-2 Poem Sentiment Modular Addition Coin Flip Edge Existence Metric Acc. FLOPs Acc. FLOPs Acc. FLOPs Acc. FLOPs Acc. FLOPs Random-k 74 .7±4.5 1.92 e14 57 .3±4.5 4.17 e14 53 .2±1.7 1.68 e14 55 .3±7.5 2.34 e14 48 .9±3.6 6.55 e14 
+
+BM25 77 .8±1.9 1.92 e14 55 .7±2.8 4.17 e14 58 .3±2.5 1.68 e14 42 .3±1.1 2.34 e14 51 .2±0.6 6.55 e14 
+
+Top-k 88 .9±1.2 1.92 e14 63 .8±1.5 4.17 e14 60 .3±1.1 1.68 e14 45 .5±1.4 2.34 e14 58 .3±1.1 6.55 e14 
+
+Top-k + Alg. 1 88 .7±0.8 9.14 e12 63 .4±1.0 2.17 e13 60 .3±1.1 7.51 e12 45 .4±0.8 9.56 e12 58 .0±1.3 2.72 e13 
+
+GRAD CE 83 .5±0.7 6.71 e13 70 .3±0.9 1.47 e14 64 .5±2.1 5.80 e13 68 .2±0.8 7.80 e13 65 .4±1.3 2.61 e14 
+
+BRIDGE 89 .9±0.3 5.73 e15 73 .3±0.8 7.12 e15 70 .8±1.3 7.01 e15 82 .3±0.6 1.00 e16 76 .3±0.4 2.84 e16 
+
+BRIDGE + Alg. 1 89 .9±0.5 4.93 e14 73 .0±0.9 5.70 e14 70 .1±0.5 5.49 e14 82 .2±0.8 7.22 e14 75 .8±0.8 2.08 e15 
+
+Algorithm 2 95 .9±0.7 4.52e 14 78 .6±1.1 5.23e 14 81 .8±1.2 5.08e 14 85 .3±1.2 6.61e 14 83 .6±0.6 1.81e 15 
+
+Table 3: We report the test accuracy (%) and the computational cost (FLOPs) across five different kinds of datasets. We compare our approach with several existing demonstration selection methods, using 50 demonstrations. We run each experiment with three random seeds to report the standard deviations. 
+
+are deferred to Appendix B. 
+
+4.2 Experiment Results Accuracy and efficiency of Algorithm 1. We evaluate our approach using the Qwen-3B model with 50 demonstrations for MMLU and Modular Addition and 20 for GSM8K. We compute the rel-ative error of the output logits, the computational cost (measured in the number of FLOPs), and the peak memory usage for each baseline. As shown in Table 2, Algorithm 1 reduces the in-ference cost by approximately two orders of magni-tude compared to Dense inference. By compressing the global prefix into 16 tokens, our method main-tains a relative output error below 0.2% across all tasks. Compared to the baseline BSA, our method yields an average error reduction of 2.17% and a 
+
+35 .5% decrease in FLOPs, with minimal memory overhead. We defer the results on the remaining datasets and those using Qwen-1.5B to Table 10 and Table 11. 
+
+Accuracy and efficiency of Algorithm 2. We in-tegrate our approach into existing selection frame-works to assess its compatibility and evaluate it across five datasets. We evaluate the accuracy and FLOPs of the whole pipeline in Algorithm 2. Using the Qwen-3B model with 50 demonstra-tions, Table 3 shows that our approach accelerates existing pipelines, with an average accuracy drop of 0.22% across other baselines. Compared to the baseline, BRIDGE, our approach yields an average accuracy improvement of 6.48% while requiring much fewer FLOPs. We analyze the efficiency of Algorithm 2 in Appendix B.3. 
+
+Length and task generalization. To evaluate length generalization, we test the module, trained solely on 50 demonstrations, on extended contexts containing up to 1000 demonstrations. As shown in Figure 4a, our method maintains stable perfor-mance without additional fine-tuning. When in-creasing the number of demonstrations to 1000 , the relative output error remains below 1.8% across all datasets. We further compare the wall-clock time for pro-cessing a single query with full inference and our approach. As shown in Table 4 on the left, full inference retains the quadratic growth as the con-text becomes longer, while our approach scales 1000 2000 3000     
+
+> k
+> 0.00 0.05 0.10 0.15 0.20 Error
+> SST -2Addition Coin -Flip (a) Length error 1000 2000 3000
+> k
+> 020 40 60 Time (s)  Full Inference Alg .1(b) Runtime scaling
+
+Figure 4: Figure 4a reports the relative output error as the number of demonstrations k increases. Figure 4b reports the wall-clock inference time as k increases. 
+
+approximately linearly. Finally, we evaluate cross-task transfer across SST-2, MMLU, Modular Addition, and GSM8K. When adapting to a new task, we initialize it using the SSM trained on the source task and apply only the second-stage fine-tuning objective to the target task. Table 4 on the right reports the relative error for each source-target pair, where rows indicate the source training tasks and columns indicate the tar-get evaluation tasks. Adaptation takes 65% fewer GPU hours than full training, and the relative error is lower than 1.0% for all task pairs. 
+
+4.3 Ablation Studies 
+
+We conduct ablation studies to examine the main components of our framework. 
+
+Number of groups. First, we study the effects of the HiPPO state dimension and the number of SSM layer groups on SST-2. As shown in Table 4, increasing either value reduces the test loss, but the improvement gradually becomes smaller. In particular, the effect of increasing the HiPPO state dimension largely saturates at 512 .
+
+Number of tokens. Then, we study the effect of the number of tokens, nv, using Qwen-3B with 
+
+50 demonstrations. We vary nv from 2 to 32 and report the output mean squared error (MSE) and the accuracy drop relative to full-context inference. As shown in Table 5, increasing nv generally reduces both metrics. The results become stable at nv = 16 .Thus, we use nv = 16 in the main experiments. 
+
+Empirical sample size scaling. Finally, we study the empirical sample complexity of Algorithm 2. First, we study the empirical sample complexity of the randomized ensemble method using linear functions (Garg et al., 2022). Following the setting SST2 MMLU Add GSM     
+
+> Train
+> SST2 MMLU Add GSM
+> Test
+> 0.3% 0 .3% 0 .4% 0 .4% 0.2% 0 .2% 0 .3% 0 .3% 0.3% 0 .2% 0 .2% 1 .0% 0.4% 0 .3% 1 .0% 0 .1% 124816
+> Groups
+> 64 128 256 512 1024
+> HiPPO Dim . 0.46 0 .43 0 .40 0 .37 0 .34 0.35 0 .33 0 .32 0 .32 0 .31 0.32 0 .31 0 .31 0 .31 0 .30 0.30 0 .30 0 .29 0 .29 0 .29 0.30 0 .30 0 .29 0 .28 0 .28
+
+Table 4: Left: cross-domain transfer error between train-ing and test tasks. Right: test loss under different HiPPO state dimensions and numbers of layer groups. 
+
+of Garg et al. (2022), we construct a mixed can-didate pool containing demonstrations from two distributions, D1 and D2, while sampling all vali-dation queries from D1. We vary both the number of demonstrations from D1 in each subset and the number of subsets sampled by the ensemble. The results show that each subset requires more than 
+
+20 demonstrations from D1 to achieve near-zero validation loss. Moreover, sampling more than 50 
+
+subsets produces a clear separation between the average affinity scores assigned to demonstrations from D1 and D2. Table 6 in Appendix B.3 reports the full results. 
+
+5 Related Work 
+
+Long-context model inference. Work on reduc-ing transformer cost can be grouped into four lines. First, architectural methods use SSMs (Gu et al., 2020, 2022) and hybrid mamba-transformer de-signs (Gu and Dao, 2024; Ren et al., 2025; Oncescu et al., 2025) to achieve linear-time long-sequence modeling. For long-convolution sequence models, the fast Fourier transform (Oncescu et al., 2025) can be utilized to perform exact autoregressive in-ference efficiently. Note that these approaches tar-get alternative architectures and cannot be directly applied to transformer-based generative models. The second line of work (Xiao et al., 2024; Han et al., 2024) limits each query to a sliding win-dow of recent tokens and a few fixed initial to-kens that act as attention sinks at inference time. Third, memory-token methods map long contexts into learned slots (Mu et al., 2023; Chevalier et al., 2023; Ge et al., 2024), but they still need to run a transformer over the original input. Finally, pre-vious works (Yang et al., 2024, 2026; Dao et al., 2022) use blockwise computation to improve hard-ware efficiency for long sequences. Given their insights, we apply the same general strategy to the fixed HiPPO recurrence by combining the state Dataset Metric nv = 2 nv = 4 nv = 16 nv = 32                            
+
+> SST-2 MSE 0.027 0.015 0.006 0.003
+> Accuracy drop 0.07 0.05 0.01 0.01
+> Poem Sentiment MSE 0.010 0.006 0.002 0.002
+> Accuracy drop 0.06 0.05 0.04 0.04
+> GSM8K MSE 0.002 0.001 0.002 0.001
+> Accuracy drop 0.02 0.02 0.01 0.01
+
+Table 5: Varying number of tokens using Qwen-3B with 50 demonstrations. We report the output MSE and the accuracy drop relative to full-context inference on SST-2, Poem Sentiment, and GSM8K.               
+
+> # Subsets 10 50 100 200
+> Samples from D10.22 ±0.04 0.55 ±0.03 0.57 ±0.04 0.56 ±0.03
+> Samples from D20.21 ±0.01 0.52 ±0.04 0.51 ±0.06 0.48 ±0.04
+
+Table 6: To illustrate the scoring mechanism in our random ensemble method, we report the average score of demonstration samples from D1 and D2, given the query set generated from D1. We vary the number of subsets and find that the in-distribution samples always achieve a higher score than out-of-distribution samples. 
+
+updates within each chunk into a single batched operation. 
+
+Demonstration selection and prompt optimiza-tion. In-context learning relies heavily on the quality and structure of the provided demonstra-tions (Min et al., 2022). Traditional selection relies on static embedding retrieval, which ignores the model’s actual output. To capture these combina-torial effects, recent methods incorporate model inference feedback. For instance, Wan et al. (2025) alternate between selecting influential demonstra-tions and using them to regenerate an improved many-shot prompt. Since running the full model on every candidate subset is expensive, Zhang et al. (2025b) estimate subset-level outputs from input gradients and reduce the cost of evaluating many subsets. Another related line of work involves surrogate modeling (Li et al., 2023b), task attribution (Zhang et al., 2025a, 2026), and influence estimation. A theoretical analysis (Yang et al., 2025) shows that the benefit of combining datasets depends jointly on task mismatch and source sample size. Adding more source data can even turn positive transfer into negative transfer. Li et al. (2023b, 2024a) use surrogate modeling to efficiently identify neg-ative transfer among data, and Zhang et al. (2026) use kernel surrogate modeling to estimate affinity. The same goal of estimating interactions among datasets has also been studied for large language models. Gradient-based methods predict the fine-tuning performance of different dataset combina-tions without training a separate model for each combination (Li et al., 2024b), and these estimates can then guide dataset grouping (Li et al., 2025b). Broadly, estimated task affinity can guide not only dataset grouping but also how model components are shared across tasks (Li et al., 2025a). Beyond gradient-based estimation and heuristic scoring, selecting efficient candidate data points connects to the broader literature on experimental design and automated trajectory optimization from historical data (Xiong et al., 2024a,b; Xiong, 2025; Zhang et al., 2025a). It would be interesting to con-nect ideas from this paper to automated trajectory optimization from historical data. 
+
+6 Conclusion 
+
+We address the computational bottleneck of demon-stration selection with SSMs, where many candi-date subsets require repeated transformer inference. We train the SSMs to estimate the transformer out-put for different demonstration subsets. It reduce the inference complexity to linear. Then, we in-troduce a random selection method that compares many subsets and identifies useful demonstrations based on the SSMs inference output. 
+
+Acknowledgment 
+
+Thanks to the anonymous reviewers and the area chair for their constructive feedback. The work of Ziniu Zhang and Zhenshuo Zhang is partially funded by NSF award IIS-2412008, a startup fund from Northeastern University, and Khoury PhD fellowships. References 
+
+Alexis Chevalier, Alexander Wettig, Anirudh Ajith, and Danqi Chen. 2023. Adapting language models to compress contexts. In Conference on Empirical Methods in Natural Language Processing (EMNLP) ,pages 3829–3846. Tri Dao, Dan Fu, Stefano Ermon, Atri Rudra, and Christopher Ré. 2022. Flashattention: Fast and memory-efficient exact attention with io-awareness. 
+
+Advances in Neural Information Processing Systems (NeurIPS) , 35:16344–16359. Shivam Garg, Dimitris Tsipras, Percy S Liang, and Gre-gory Valiant. 2022. What can transformers learn in-context? a case study of simple function classes. 
+
+Advances in Neural Information Processing Systems (NeurIPS) , 35:30583–30598. Tao Ge, Hu Jing, Lei Wang, Xun Wang, Si-Qing Chen, and Furu Wei. 2024. In-context autoencoder for con-text compression in a large language model. In In-ternational Conference on Learning Representations (ICLR) .Albert Gu and Tri Dao. 2024. Mamba: Linear-time sequence modeling with selective state spaces. In 
+
+First conference on language modeling (COLM) .Albert Gu, Tri Dao, Stefano Ermon, Atri Rudra, and Christopher Re. 2020. Hippo: Recurrent memory with optimal polynomial projections. Advances in Neural Information Processing Systems (NeurIPS) ,33. Albert Gu, Karan Goel, and Christopher Re. 2022. Ef-ficiently modeling long sequences with structured state spaces. In International Conference on Learn-ing Representations (ICLR) .Chi Han, Qifan Wang, Hao Peng, Wenhan Xiong, Yu Chen, Heng Ji, and Sinong Wang. 2024. Lm-infinite: Zero-shot extreme length generalization for large language models. In Conference of the North American Chapter of the Association for Computa-tional Linguistics: Human Language Technologies (NAACL-HLT) , pages 3991–4008. Dongyue Li, Haotian Ju, Aneesh Sharma, and Hongyang R Zhang. 2023a. Boosting multitask learn-ing on graphs through higher-order task affinities. In 
+
+Proceedings of the 29th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pages 1213–1222. Dongyue Li, Huy L Nguyen, and Hongyang R. Zhang. 2023b. Identification of negative transfers in multi-task learning using surrogate models. Transactions on Machine Learning Research (TMLR) .Dongyue Li, Aneesh Sharma, and Hongyang R. Zhang. 2024a. Scalable multitask learning using gradient-based estimation of task affinity. In ACM SIGKDD Conference on Knowledge Discovery and Data Min-ing (KDD) , pages 1542–1553. Dongyue Li, Zhenshuo Zhang, Minxuan Duan, Edgar Dobriban, and Hongyang R. Zhang. 2025a. Ef-ficiently learning branching networks for mul-titask algorithmic reasoning. arXiv preprint arXiv:2512.01113 .Dongyue Li, Ziniu Zhang, Lu Wang, and Hongyang R. Zhang. 2024b. Scalable fine-tuning from multiple data sources: A first-order approximation approach. In Findings of the Association for Computational Linguistics: EMNLP 2024 , pages 5608–5623. Dongyue Li, Ziniu Zhang, Lu Wang, and Hongyang R. Zhang. 2025b. Efficient ensemble for fine-tuning language models on multiple datasets. In Annual Meeting of the Association for Computational Lin-guistics (ACL) , pages 25347–25364. Zhuowei Li, Zihao Xu, Ligong Han, Yunhe Gao, Song Wen, Di Liu, Hao Wang, and Dimitris Metaxas. 2025c. Implicit in-context learning. In International Conference on Learning Representations (ICLR) .Sewon Min, Xinxi Lyu, Ari Holtzman, Mikel Artetxe, Mike Lewis, Hannaneh Hajishirzi, and Luke Zettle-moyer. 2022. Rethinking the role of demonstrations: What makes in-context learning work? In Empirical Methods in Natural Language Processing (EMNLP) ,pages 11048–11064. Jesse Mu, Xiang Li, and Noah Goodman. 2023. Learn-ing to compress prompts with gist tokens. Advances in Neural Information Processing Systems (NeurIPS) ,36:19327–19352. Costin-Andrei Oncescu, Sanket Purandare, Stratos Idreos, and Sham M Kakade. 2025. Flash inference: Near linear time inference for long convolution se-quence models and beyond. In International Confer-ence on Learning Representations (ICLR) .Liliang Ren, Yang Liu, Yadong Lu, Yelong Shen, Chen Liang, and Weizhu Chen. 2025. Samba: Simple hy-brid state space models for efficient unlimited context language modeling. In International Conference on Learning Representations (ICLR) .Xingchen Wan, Han Zhou, Ruoxi Sun, and Sercan O Arik. 2025. From few to many: Self-improving many-shot reasoners through iterative optimization and generation. In International Conference on Learning Representations (ICLR) .Emily Xiao, Chin-Jou Li, Yilin Zhang, Graham Neubig, and Amanda Bertsch. 2025a. Efficient many-shot in-context learning with dynamic block-sparse attention. In Annual Meeting of the Association for Computa-tional Linguistics (ACL) , pages 31946–31958. Guangxuan Xiao, Jiaming Tang, Jingwei Zuo, Junxian Guo, Shang Yang, Haotian Tang, Yao Fu, and Song Han. 2025b. Duoattention: Efficient long-context LLM inference with retrieval and streaming heads. In International Conference on Learning Representa-tions (ICLR) .Guangxuan Xiao, Yuandong Tian, Beidi Chen, Song Han, and Mike Lewis. 2024. Efficient streaming lan-guage models with attention sinks. In International Conference on Learning Representations (ICLR) .Ruoxuan Xiong. 2025. Automated experimental design with optimization from historical data simulations. 
+
+Available at SSRN 5126080 .Ruoxuan Xiong, Susan Athey, Mohsen Bayati, and Guido Imbens. 2024a. Optimal experimental de-sign for staggered rollouts. Management Science ,70(8):5317–5336. Ruoxuan Xiong, Alex Chin, and Sean J Taylor. 2024b. Data-driven switchback experiments: Theoretical tradeoffs and empirical bayes designs. arXiv preprint arXiv:2406.06768 .Fan Yang, Hongyang R Zhang, Sen Wu, Christopher Ré, and Weijie J Su. 2025. Precise high-dimensional asymptotics for quantifying heterogeneous trans-fers. Journal of Machine Learning Research (JMLR) ,26(113):1–88. Songlin Yang, Yikang Shen, Kaiyue Wen, Shawn Tan, Mayank Mishra, Liliang Ren, Rameswar Panda, and Yoon Kim. 2026. Path attention: Position encoding via accumulating householder transformations. Ad-vances in Neural Information Processing Systems (NeurIPS) , 38:62220–62247. Songlin Yang, Bailin Wang, Yu Zhang, Yikang Shen, and Yoon Kim. 2024. Parallelizing linear transform-ers with the delta rule over sequence length. Ad-vances in Neural Information Processing Systems (NeurIPS) , 37:115491–115522. Zhenshuo Zhang, Minxuan Duan, Youran Ye, and Hongyang R. Zhang. 2025a. Scalable multi-objective and meta reinforcement learning via gradient estima-tion. arXiv preprint arXiv:2511.12779 .Zhenshuo Zhang, Minxuan Duan, and Hongyang R. Zhang. 2026. Efficient estimation of kernel surro-gate models for task attribution. In International Conference on Learning Representations (ICLR) .Ziniu Zhang, Zhenshuo Zhang, Dongyue Li, Lu Wang, Jennifer Dy, and Hongyang R. Zhang. 2025b. Linear-time demonstration selection for in-context learning via gradient estimation. In Empirical Methods in Natural Language Processing (EMNLP) .A Proof of Proposition 3.1 
+
+Proof. For completeness, the HiPPO-LegS transi-tion matrix used by each layer group is defined as 
+
+¯Ap,q =
+
+
+
+−p(2 p + 1)(2 q + 1) , if p > q, 
+
+−(p + 1) , if p = q, 
+
+0, if p < q, 
+
+(2) Let {ϕr}Tr=1 ⊂ RT denote an orthonormal dis-crete Legendre basis for the token dimension, or-dered by increasing polynomial degree, so 
+
+ϕ⊤ 
+
+> r
+
+ϕr′ = 1{r = r′}.
+
+For each layer group Gi, write C(i) ∈ RT ×Di ,where the rows correspond to token positions and the columns contain the key and value states from all layers and key-value heads in the group. The vector of the r-th HiPPO-LegS coefficients is 
+
+c(i) 
+
+> r
+
+:=  C(i)⊤ϕr ∈ RDi .
+
+Therefore, 
+
+C(i) =
+
+> T
+
+X
+
+> r=1
+
+ϕr
+
+ c(i)
+
+> r
+
+⊤.
+
+Since ΠN projects along the token dimension onto the first N basis functions, ΠN C(i) =PNr=1 ϕr
+
+ c(i)
+
+> r
+
+⊤. The omitted part of the cache is thus 
+
+C(i) − ΠN C(i) =
+
+> T
+
+X 
+
+> r=N+1
+
+ϕr
+
+ c(i)
+
+> r
+
+⊤.
+
+By orthonormality of the basis, 
+
+C(i) − ΠN C(i) 2 
+
+> F
+
+=
+
+> T
+
+X 
+
+> r=N+1
+
+c(i) 
+
+> r
+> 22
+
+. (3) Applying this inequality to each term in (3) gives 
+
+C(i) − ΠN C(i) 2
+
+> F
+
+≤ 1(N + 1) 2sTX 
+
+> r=N+1
+
+r2s c(i) 
+
+> r
+> 22
+
+,
+
+since r2s  
+
+> (N+1) 2s
+
+≥ 1 for r ≥ N + 1 and s > 0. □
+
+B Omitted Experiments 
+
+B.1 Implementation Setup 
+
+Datasets. We evaluate our method on datasets covering several task types, including language understanding, algorithmic reasoning, arithmetic reasoning, and graph reasoning. The number of demonstrations within each task is 1500 .The SST-2 dataset is a binary sentiment classifi-cation benchmark from GLUE, consisting of movie reviews labeled as positive or negative. The Poem Sentiment dataset contains sentiment labels for lines of poetry, with three classes: posi-tive, neutral, and negative. This dataset is used to evaluate sentiment understanding in literary text. Modular Addition is an arithmetic reasoning task in which the model is given two integers a, b ∈{0, . . . , P −1} for a prime P and is asked to predict their sum modulo P , that is, to predict c such that 
+
+a + b ≡ c (mod P ).The Coin Flip dataset is a reasoning task in which the model is given a natural language de-scription of a sequence of fair coin flips and must predict the final outcome, either heads or tails. The Edge Existence dataset from GraphQA is a graph reasoning task in which the model is given an undirected graph and must determine whether a specified edge is present in the graph. The MMLU dataset is a multitask benchmark covering a wide range of subjects, including hu-manities, social sciences, and STEM. It evaluates a model’s ability to perform multiple-choice ques-tion answering across diverse domains. We use the college-level tasks in the evaluation. The GSM8K dataset is a grade-school math rea-soning benchmark consisting of natural language word problems. Each example requires multi-step arithmetic reasoning, and the model is asked to produce the final numerical answer. We use this dataset to evaluate whether Algorithm 1 preserves the reasoning information needed for long-context mathematical inference. 
+
+Models. Our method is a model-agnostic method. In our experiments, we evaluate it on a diverse set of open-source language models that vary in scale and architecture, including Qwen2.5-1.5B-Instruct, Qwen2.5-3B-Instruct, Qwen2.5-7B-Instruct, and Llama-3.1-8B-Instruct. This setup allows us to as-sess the effectiveness and scalability of our method across models with different capacities, training paradigms, and usage settings. 
+
+Training budget. We train our method on a single NVIDIA RTX A6000 GPU. We set the number of virtual tokens to 16 , the SSM state dimension to 
+
+512 , and the number of layer groups to 4. Training for 1 epoch in phase one and 2 epochs in phase two requires 1.15 GPU hours. 
+
+Baselines. We compare Algorithm 1 against full inference, StreamingLLM, LM-Infinite, Block Sparse Attention baselines, and DuoAttention. Then, we compare Algorithm 2 against baselines including BM25, top-k, BRIDGE, G RAD CE. Full Attention serves as our baseline. Every token attends to all preceding tokens, retaining the complete Key-Value cache across all layers and heads. While preserving maximum model ca-pability, its linear memory scaling and quadratic pre-filling cost become prohibitively expensive for large demonstration pools. StreamingLLM (Xiao et al., 2024) exploits the phenomenon of attention sinks, where initial tokens receive disproportionately high attention scores regardless of semantic relevance. It maintains a fixed-size KV cache comprising only these initial sink tokens and a sliding window of recent tokens, evicting all intermediate context. This achieves constant memory usage but inherently degrades performance on tasks requiring fact retrieval from the middle of the input. LM-Infinite (Han et al., 2024) addresses length generalization beyond the model’s pre-training win-dow. To prevent attention degradation from out-of-distribution position indices, it discards tokens outside a prescribed local window and applies a 
+
+Λ-shaped position remapping. This aligns the re-maining tokens’ indices with the training distribu-tion, enabling infinite context processing without fine-tuning. However, similar to StreamingLLM, it suffers from information loss by permanently evicting middle-context tokens. DuoAttention (Xiao et al., 2025b) categorizes attention heads into retrieval heads (attending to ar-bitrary positions) and streaming heads (attending to sinks and recent tokens). During a lightweight iden-tification phase, a trainable gate αi,j is assigned to each KV head and optimized via synthetic passkey-retrieval data. This minimizes output deviation from Full Attention under an ℓ1 sparsity penalty. At deployment, binarized gates selectively apply the StreamingLLM eviction policy exclusively to streaming heads, while retrieval heads retain the complete KV cache. This selectively reduces mem-ory and latency while preserving long-range re-trieval capabilities. ICAE (Ge et al., 2024) compresses the input con-text into a small number of learned memory tokens through an autoencoding objective. It first encodes the original context into compact latent representa-tions, and then conditions the language model on these memory tokens to recover the information needed for downstream generation. Implicit In-context Learning (I2CL) (Li et al., 2025c) moves demonstrations from the token space into the model’s activation space. It extracts a vec-tor from each demonstration, combines these vec-tors in a way that is independent of their order, and injects the resulting context vector into the model’s residual streams during inference. I2CL provides few-shot performance with inference cost close to that of zero-shot prediction. However, constructing its context vector still requires Transformer forward passes over the demonstrations. The top-k method selects the k most similar can-didates based on feature similarity, given a test in-put. We compute the cosine similarity in the top-k
+
+range between the last-layer hidden representations of queries and demonstration examples. The BM25 method utilizes a term frequency-based ranking function to retrieve the top-k candidates whose in-put texts are most relevant to the query, with a focus on lexical overlap rather than embedding-level sim-ilarity. G RAD CE (Zhang et al., 2025b) first filters candidates by embedding similarity, then selects a random anchor and performs a single forward and backward pass on all validation samples to pre-compute the loss and gradient with respect to the input embedding at that anchor. For each remaining candidate, it computes the embedding difference from the anchor and takes the inner product with the precomputed gradient to approximate the can-didate’s validation loss via a first-order Taylor ex-pansion, selecting the k candidates with the lowest estimated loss. BRIDGE (Wan et al., 2025) itera-tively alternates between using Bayesian optimiza-tion to select a small high-performing subset of ICL demonstrations from the candidate pool ("op-timize") and using that subset as seed examples to re-generate reasoning paths on the training set back to the many-shot regime ("generate"), repeating this process over multiple rounds to progressively improve demonstration quality. 
+
+B.2 Efficient Implementation 
+
+Previous work (Xiao et al., 2024) shows that stan-dard LLM inherently relies on initial tokens as “attention sinks” to stabilize the generation process. Model # Demonstrations SST-2 CR Poem Sentiment Modular Addition Qwen-1.5B k = 25 2.3±0.2 × 10 −3 1.9±0.3 × 10 −3 8.9±2.5 × 10 −4 1.1±0.1 × 10 −3              
+
+> Qwen-3B k= 25 5.3±0.2×10 −33.2±0.3×10 −32.0±2.5×10 −33.5±0.1×10 −3
+
+Table 7: Relative error of the predictive output between the full demonstration prefix p and the compressed virtual tokens ˆp. Evaluations are reported across multiple downstream tasks for varying demonstration counts. Lower values indicate higher fidelity to the original uncompressed model output. We run three times to compute the mean and standard deviations. 
+
+Thus, we explicitly retain a small number of exact initial KV states as sink tokens from the raw prefix. These states are concatenated with our generated virtual tokens to form the compressed context. The standard SSM recurrence processes tokens sequentially: 
+
+st = As t−1 + ut, u t = Bx t, s 0 = 0 , (4) where xt ∈ RH is the input embedding at step 
+
+t, B ∈ RD×H is a learned input projection, A ∈
+
+RD×D is the frozen discretized HiPPO matrix, and 
+
+st ∈ RD is the hidden state. A naive implementa-tion requires T sequential kernel launches, which may under utilize the GPU. We observe that unrolling the recurrence over C
+
+consecutive steps yields a closed-form expression. Starting from an incoming state sin , the state after processing inputs u0, u 1, . . . , u C−1 is: 
+
+sout = AC sin +
+
+> C−1
+
+X
+
+> t=0
+
+AC−1−tut. (5) The summation can be rewritten as a single batched contraction. Define the weight matrices Wt =
+
+AC−1−t for t = 0 , . . . , C −1, so that W0 = AC−1
+
+(oldest input, most decay) and WC−1 = I (newest input, no decay). Stacking these into a tensor W ∈
+
+RC×D×D and the chunk inputs into U ∈ RC×D,the entire summation reduces to: 
+
+> C−1
+
+X
+
+> t=0
+
+Wtut =
+
+> C−1
+
+X
+
+> t=0
+
+W[t]U[t], (6) which is evaluated as a single einsum operation on the GPU. We partition the full prefix of length T into 
+
+⌈T /C ⌉ contiguous chunks. Processing proceeds as follows: for each chunk k = 0 , 1, . . . , we first compute the powers {AC−1, A C−2, . . . , I } itera-tively using C matrix multiplications of size D×D.Then, we evaluate the within-chunk contribution via the batched contraction. Finally, we advance the inter-chunk state as s(k+1) in = AC s(k)in + contrib (k).Since A is frozen, the powers are computed on the fly and discarded after each chunk to avoid storing a C × D × D buffer. This reduces the number of sequential state up-dates from T to ⌈T /C ⌉, while each chunk-level operation is a single, well-parallelised GPU kernel. The underlying SSM dynamics are unchanged— the final state sT is mathematically identical to that of the token-by-token scan. During training, we observe that directly opti-mizing the distillation objectives (logits and hidden states) without prior initialization degrades perfor-mance. The root cause is a bootstrap problem: ran-domly initialized virtual KV tokens produce degen-erate attention patterns in the frozen Transformer, which in turn yield near-uniform output distribu-tions. The resulting logit-level and hidden-state gradients carry little useful signal for the auxiliary, preventing meaningful learning. The first-stage KV alignment resolves this by constraining the vir-tual tokens to lie in a geometrically valid region of the KV representation space before any query-conditioned supervision is applied. 
+
+B.3 Omitted Experiment Results 
+
+We illustrate additional evaluation results across different model scales and sequence lengths to sup-plement the findings in the main text. 
+
+Sensitivity to small numbers of demonstrations. 
+
+To verify on shorter context lengths, Table 7 ex-tends the relative output error analysis to the con-text window of k = 25 demonstrations. Across two different models (Qwen-1.5B, Qwen-3B) and four downstream tasks, the relative error between the full demonstration prefix and our compressed virtual tokens remains below 0.6% . These results confirm that Algorithm 1 consistently preserves the original predictive distribution regardless of the context scale or model architecture. Approach SST-2 Poem Sentiment Addition Coin Flip Edge Existence Algorithm 2 95 .9±0.7 78 .6±1.1 81 .8±1.2 85 .3±1.2 83 .6±0.6     
+
+> Algorithm 2 without context compression 95 .0±0.579 .7±0.882 .8±1.085 .3±1.283 .7±1.3
+
+Table 8: Test accuracy (%) of Algorithm 2 with and without context compression. Each result reports the mean and standard deviation over three random seeds.                                                    
+
+> Approach Window MMLU Modular Addition GSM8K Length Error FLOPs Memory Error FLOPs Memory Error FLOPs Memory StreamingLLM 32 2.5% 7.72 e13 15 .88 G10 .7% 1.90 e13 13 .95 G6.4% 1.25 e14 14 .05 G
+> 128 0.7% 7.75 e13 15 .95 G8.7% 1.91 e13 13 .96 G5.1% 1.26 e14 14 .07 GLM-Infinite 32 11 .6% 7.73 e13 15 .90 G14 .3% 1.90 e13 12 .96 G5.7% 1.26 e14 14 .06 G
+> 128 5.1% 7.75 e13 15 .98 G8.7% 1.91 e13 12 .99 G4.9% 1.27 e14 14 .07 G
+
+Table 9: We report the results using more window lengths on MMLU, Addition datasets, and GSM8K with k = 50 .The relative error is computed against actual inference results. 
+
+Results on smaller models. To test whether Al-gorithm 1 maintains its advantage at a smaller model scale, Table 10 details the computational cost, memory usage, and relative error for the Qwen-1.5B-Instruct model on the SST-2, Poem Sentiment, and Modular Addition datasets. Under the standard setting of k = 50 demonstrations, Al-gorithm 1 achieves the lowest relative error among all evaluated methods, including 0.3% on SST-2 and 0.1% on both Poem Sentiment and Addition. Furthermore, Algorithm 1 requires fewer FLOPs than the leading baseline, BSA, while maintaining a comparable memory footprint. This verifies that the efficiency and accuracy advantages of the Al-gorithm 1 module generalize reliably to smaller model variants. 
+
+Coverage of remaining task categories. To confirm the extension to other reasoning tasks, Ta-ble 10 and Table 11 present the evaluation on the remaining reasoning datasets, Coin Flip and Edge Existence, using both the Qwen-1.5B-Instruct and Qwen-3B-Instruct models with k = 50 demonstra-tions. Consistent with earlier findings, Algorithm 1 achieves the lowest relative error among all base-lines, recording 0.1% error on both datasets for the 1.5B model, and under 0.9% for the 3B model. This demonstrates that Algorithm 1 preserves strong pre-dictive fidelity across diverse reasoning tasks while maintaining a highly efficient computational pro-file compared to sliding-window and block-sparse baselines. 
+
+Results regarding Algorithm 2. To separate the effect of the selection algorithm from that of con-text compression, in Table 8, we find that removing context compression changes the average accuracy from 85 .04% to 85 .30% , corresponding to an in-crease of 0.26 percentage points. This result shows that the accuracy gain cannot be explained by the compressed representation acting as a regularizer. The selection algorithm remains effective when candidates are evaluated using the full context. Method Window SST-2 Poem Sentiment Modular Addition Length Error FLOPs Memory Error FLOPs Memory Error FLOPs Memory StreamingLLM 
+
+32 11 .3% 9.42 e12 6.94 G 17 .5% 1.36 e13 6.61 G 12 .8% 9.53 e12 7.21 G
+
+64 7.6% 9.43 e12 6.94 G 13 .2% 1.36 e13 6.62 G 11 .9% 9.54 e12 7.22 G
+
+128 5.2% 9.46 e12 6.96 G 8.7% 1.37 e13 6.64 G 8.4% 9.56 e12 7.24 GLM-Infinite 
+
+32 16 .2% 9.36 e12 6.93 G 7.0% 1.37 e13 6.61 G 5.5% 9.41 e12 7.21 G
+
+64 11 .5% 9.38 e12 6.94 G 3.7% 1.37 e13 6.61 G 3.5% 9.44 e12 7.21 G
+
+128 11 .0% 9.41 e12 6.96 G 2.9% 1.37 e13 6.64 G 3.2% 9.50 e12 7.23 GBSA ∼ 400 1.1% 9.52 e12 7.15 G 0.7% 1.53 e13 6.96 G 0.9% 8.81 e12 7.78 GAlgorithm 1 16 0.3% 6.30e 12 7.19 G 0.1% 1.02e 13 7.06 G 0.1% 5.28e 12 8.06 GMethod Window Coin Flip Edge Existence MMLU Length Error FLOPs Memory Error FLOPs Memory Error FLOPs Memory StreamingLLM 
+
+32 18 .1% 1.30 e13 7.83 G 3.8% 5.99 e13 14 .63 G 3.2% 3.88 e13 10 .06 G
+
+64 10 .2% 1.30 e13 7.84 G 2.7% 6.01 e13 14 .64 G 0.8% 3.88 e13 10 .08 G
+
+128 9.8% 1.31 e13 7.85 G 2.5% 6.03 e13 14 .65 G 0.6% 3.89 e13 10 .13 GLM-Infinite 
+
+32 28 .7% 1.32 e13 7.84 G 7.5% 6.43 e13 14 .63 G 1.4% 3.88 e13 10 .07 G
+
+64 26 .8% 1.32 e13 7.84 G 6.5% 6.43 e13 14 .64 G 0.7% 3.89 e13 10 .08 G
+
+128 23 .9% 1.33 e13 7.86 G 4.6% 6.46 e13 14 .66 G 0.5% 3.89 e13 10 .13 GBSA ∼ 400 0.7% 1.35 e13 8.28 G 0.9% 6.88 e13 15 .77 G 0.5% 3.95 e13 10 .36 G
+
+Algorithm 1 16 0.1% 9.02e 12 8.35 G 0.1% 4.11e 13 14 .73 G 0.3% 2.49e 13 10 .81 G
+
+Table 10: Supplementary results on Qwen-1.5B-Instruct. We compare long-context inference methods on SST-2, Poem Sentiment, Modular Addition, Coin Flip, Edge Existence, and MMLU with k = 50 demonstrations, and report relative output error with respect to full-prefix inference, together with FLOPs and peak memory usage. 
+
+Method Window Coin Flip Edge Existence Poem Sentiment Length Error FLOPs Memory Error FLOPs Memory Error FLOPs Memory Dense - - 1.49 e15 14 .58 G - 9.77 e15 24 .57 G - 2.53 e15 12 .70 GStreamingLLM 64 31 .5% 2.63 e13 13 .59 G 1.9% 1.28 e14 20 .40 G 9.3% 2.72 e13 12 .37 G
+
+128 30 .6% 2.64 e13 13 .61 G 1.8% 1.28 e14 20 .42 G 9.1% 2.73 e13 12 .39 GLM-Infinite 64 32 .8% 2.64 e13 13 .60 G 1.3% 1.28 e14 20 .40 G 14 .2% 2.72 e13 12 .38 G
+
+128 30 .6% 2.64 e13 13 .61 G 1.2% 1.28 e14 20 .43 G 13 .8% 2.73 e13 12 .40 GICAE 128 1.4% 1.36 e14 14 .27 G 3.5% 1.02 e15 24 .76 G 3.2% 5.40 e13 12 .32 GDuoAttention 64 10 .5% 2.70 e13 14 .02 G 3.2% 1.40 e14 22 .59 G 7.6% 2.75 e13 12 .50 GBSA ∼ 400 2.4% 2.75 e13 14 .07 G 1.4% 1.53 e14 24 .64 G 4.2% 2.95 e13 12 .85 G
+
+Algorithm 1 16 0.7% 1.91e 13 14 .13 G 0.8% 9.97e 13 25 .02 G 1.6% 2.37e 13 13 .23 G
+
+Table 11: Supplementary results on Qwen-3B-Instruct. We compare long-context inference methods on the Coin Flip, Edge Existence, and Poem Sentiment tasks with k = 50 demonstrations, and report relative output error with respect to full-prefix inference, together with FLOPs and peak memory usage.
