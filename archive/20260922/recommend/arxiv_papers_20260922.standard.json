@@ -1,0 +1,341 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-22T22:26:17.292268+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 8,
+    "quick_skim_target": 11,
+    "quick_selected": 8
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.23314v1",
+      "source": "arxiv",
+      "title": "ValueDiff: Value-Geometric KV Cache Eviction for Sink-Suppressed LLMs",
+      "abstract": "Modern LLMs with QK-normalization, gated attention, learned attention sinks, or logit softcapping exhibit weaker persistent attention sinks, on which existing KV cache eviction methods primarily rely. We observe that across these models, weaker sinks co-occur with greater value-vector dispersion relative to key-vector dispersion. Motivated by this value-side dispersion, we present ValueDiff, a value-geometric eviction that ranks tokens by the L2 deviation of their value vectors from the cache mean. The same score arises as the minimal-disturbance eviction under a max-entropy assumption about future attention. We evaluate under fixed cache budgets, with eviction at every block boundary during prefill and at every decoding step during generation. On RULER at a tight 2k token budget, ValueDiff retains 88--99\\% of dense across seven sink-suppressed models (best on 6 out of 7). On LongBench at the 4k budget, ValueDiff averages 92\\% retention across sink-suppressed models versus 83\\% for the strongest prior baseline. On MATH-500, ValueDiff is the strongest non-dense method on every sink-suppressed model tested at the 25\\% cache budget, outperforming prior methods by up to $\\sim$20 points on gated-attention models. Across all three benchmarks, value geometry emerges as the more reliable query-invariant eviction signal for sink-suppressed models.",
+      "authors": [
+        "Junyoung Park",
+        "Jungwook Choi",
+        "Mingu Lee"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-20T03:03:33+00:00",
+      "link": "https://arxiv.org/pdf/2609.23314v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "value-geometric KV cache eviction under fixed cache budgets",
+      "llm_evidence_cn": "固定缓存预算下的值几何KV缓存淘汰",
+      "llm_evidence": "固定缓存预算下的值几何KV缓存淘汰",
+      "canonical_evidence": "固定缓存预算下的值几何KV缓存淘汰",
+      "llm_tldr_en": "ValueDiff ranks tokens by the L2 deviation of their value vectors from the cache mean, a KV eviction score robust for sink-suppressed LLMs, evaluated on RULER under fixed budgets.",
+      "llm_tldr_cn": "现代LLM采用QK归一化、门控注意力、可学习注意力汇或logit软截断后，注意力汇变弱，使依赖汇的现有KV缓存淘汰方法失效。作者观察到汇变弱与值向量相对键向量离散度增大相伴，据此提出ValueDiff，按值向量相对缓存均值的L2偏差对token排序淘汰，该分数在最大熵假设下也是最小扰动淘汰。在固定缓存预算下，于预填充每块边界与生成每步进行淘汰，在RULER等基准上验证。该工作为KV缓存压缩提供了新的值侧几何视角。",
+      "llm_tldr": "现代LLM采用QK归一化、门控注意力、可学习注意力汇或logit软截断后，注意力汇变弱，使依赖汇的现有KV缓存淘汰方法失效。作者观察到汇变弱与值向量相对键向量离散度增大相伴，据此提出ValueDiff，按值向量相对缓存均值的L2偏差对token排序淘汰，该分数在最大熵假设下也是最小扰动淘汰。在固定缓存预算下，于预填充每块边界与生成每步进行淘汰，在RULER等基准上验证。该工作为KV缓存压缩提供了新的值侧几何视角。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.19868v1",
+      "source": "arxiv",
+      "title": "Zarya: A Hybrid Autoregressive--Masked Diffusion Language Model with Flexible Training and Dual-Mode Inference",
+      "abstract": "Autoregressive language models (ARMs) are constrained by sequential, left-to-right generation, while masked diffusion models (MDMs) enable parallel decoding but suffer from high computational overhead due to the inability to reuse Key-Value (KV) cache and from incoherent generation arising from learning dependencies over an intractable space of token combinations. We introduce Zarya, a family of hybrid language models that jointly optimizes an autoregressive (AR) objective and a masked-diffusion objective within a single architecture. Zarya structures training data into variable-size slots and employs a curriculum that gradually increases slot granularity, enabling a smooth transition from fine-grained AR learning to coarse-grained diffusion learning. At inference, Zarya provides two distinct decoding paradigms through a unified interface: (i) MDM sampling with first-hitting denoising, and (ii) slotted speculative decoding that interleaves inter-slot diffusion-based selection with intra-slot autoregressive infilling, achieving full KV cache reuse. The training and inference regimes are fully decoupled, allowing a model trained with any configuration to be deployed in either mode. Extensive configurability --- including grouped noise patterns (Prefix Completion, Fill-In-the-Prefix, Fill-In-the-Middle), ordered sampling schedules, and noise-level permutation strategies --- enables flexible research exploration. We release Zarya models publicly in sizes 0.6B, 1.7B, and 4B, demonstrating performance on standard benchmarks while offering a principled integration of autoregressive and diffusion paradigms.",
+      "authors": [
+        "Leonid Sinev",
+        "Ilya Koziev",
+        "Vladislav Leshchuk"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-09-17T08:21:14+00:00",
+      "link": "https://arxiv.org/pdf/2609.19868v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "hybrid model addressing inability to reuse KV cache in diffusion decoding",
+      "llm_evidence_cn": "针对扩散解码无法复用KV缓存问题的混合模型",
+      "llm_evidence": "针对扩散解码无法复用KV缓存问题的混合模型",
+      "canonical_evidence": "针对扩散解码无法复用KV缓存问题的混合模型",
+      "llm_tldr_en": "Masked diffusion models enable parallel decoding but cannot reuse KV cache and generate incoherently. Zarya is a hybrid language model jointly optimizing autoregressive and masked-diffusion objectives in one architecture with variable-size slots and curriculum, enabling flexible training and dual-mode inference with KV cache reuse.",
+      "llm_tldr_cn": "自回归语言模型受限于从左到右的串行生成，掩码扩散模型虽能并行解码却因无法复用KV缓存而计算开销高、生成不连贯。本文提出Zarya混合语言模型，在单一架构中联合优化自回归与掩码扩散目标，通过可变大小槽位与逐步细化的课程实现两种模式的平滑过渡。该模型支持灵活训练与双模式推理，缓解扩散解码无法复用KV缓存的问题，为兼顾并行效率与生成质量提供新架构。",
+      "llm_tldr": "自回归语言模型受限于从左到右的串行生成，掩码扩散模型虽能并行解码却因无法复用KV缓存而计算开销高、生成不连贯。本文提出Zarya混合语言模型，在单一架构中联合优化自回归与掩码扩散目标，通过可变大小槽位与逐步细化的课程实现两种模式的平滑过渡。该模型支持灵活训练与双模式推理，缓解扩散解码无法复用KV缓存的问题，为兼顾并行效率与生成质量提供新架构。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.23816v1",
+      "source": "arxiv",
+      "title": "SPLASH: Co-Designing Sparse Attention with High-Bandwidth Flash for Efficient Long-Context Inference",
+      "abstract": "The key-value (KV) cache has become the dominant consumer of memory in large language model (LLM) serving systems as context lengths, concurrency, and request lifetimes grow. High-bandwidth memory (HBM) provides the bandwidth attention decode needs but limited capacity, while off-package memory and storage add capacity but lack the bandwidth to sustain attention decode. High-Bandwidth Flash (HBF) is a promising substrate that combines terabyte-scale capacity with near-HBM read bandwidth. Limited write endurance makes read-only model weights its natural use, but we argue that HBF paired with HBM as a hierarchy can also hold the KV cache. Unlike prior hierarchies, whose secondary tiers are bandwidth bottlenecked, the comparable bandwidths let the two act as one logical memory for the long-context KV cache. HBF capacity enables long-context serving, and sparse attention makes it efficient by limiting KV-cache reads during memory-bound decode. Since HBF reads full flash pages and aggregates bandwidth by accessing thousands of parallel flash planes, sparse attention must be co-designed with these physical properties. We present SPLASH, an algorithm and architecture co-design that virtualizes the KV cache across HBM and HBF and adapts sparse attention to HBF's page granularity and plane-level parallelism. Across models and context lengths, SPLASH improves decode throughput per GPU by 3.5x-11.4x over the evaluated baselines under a 100 ms per-token latency objective, while keeping accuracy within 4% of dense attention across long-context suites.",
+      "authors": [
+        "Aditya Anirudh Jonnalagadda",
+        "Agasthi Haputhanthri",
+        "Pranav Dangi",
+        "Rohan Juneja",
+        "Wenshuo Yue",
+        "Aritra Bagchi",
+        "Bin Gao",
+        "Tulika Mitra"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-09-20T19:11:43+00:00",
+      "link": "https://arxiv.org/pdf/2609.23816v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache memory hierarchy and sparse attention for long-context inference",
+      "llm_evidence_cn": "面向长上下文推理的KV缓存分层与稀疏注意力",
+      "llm_evidence": "面向长上下文推理的KV缓存分层与稀疏注意力",
+      "canonical_evidence": "面向长上下文推理的KV缓存分层与稀疏注意力",
+      "llm_tldr_en": "SPLASH co-designs sparse attention with high-bandwidth flash so an HBF+HBM hierarchy can hold the KV cache, easing memory capacity limits in long-context LLM serving while sustaining decode bandwidth.",
+      "llm_tldr_cn": "随着上下文长度与并发增长，KV缓存已成为LLM服务的主要显存消耗，HBM容量有限而外部存储带宽不足。本文提出SPLASH，将稀疏注意力与高带宽闪存HBF协同设计，用HBF+HBM分层承载KV缓存，兼顾TB级容量与接近HBM的读带宽。相比以往受带宽瓶颈限制的二级存储方案，该设计为长上下文推理提供了可行的内存层级，支撑高效解码。",
+      "llm_tldr": "随着上下文长度与并发增长，KV缓存已成为LLM服务的主要显存消耗，HBM容量有限而外部存储带宽不足。本文提出SPLASH，将稀疏注意力与高带宽闪存HBF协同设计，用HBF+HBM分层承载KV缓存，兼顾TB级容量与接近HBM的读带宽。相比以往受带宽瓶颈限制的二级存储方案，该设计为长上下文推理提供了可行的内存层级，支撑高效解码。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.22884v1",
+      "source": "arxiv",
+      "title": "Block-Sparse Attention with Semantic-Geometric Decoupled Routing",
+      "abstract": "Long-context inference has become a defining capability of large language models, but exact dense attention remains costly due to its quadratic scaling with sequence length. Block-sparse attention offers a hardware-friendly alternative by routing each query block to a small set of relevant key blocks, yet accurate training-free block routing remains difficult. Existing routers often pool post-RoPE token representations, which entangles semantic aggregation with RoPE-induced geometry and attenuates local positional cues through high-frequency phase cancellation. To resolve this mismatch, we propose \\textbf{Semantic-Geometric Decoupled Routing}, a training-free block routing framework that shifts semantic aggregation to the pre-RoPE space and reconstructs geometric bias with an offline structural prior and relative block distances. This decomposition yields an explicit closed-form block routing score without token-level search or post-hoc calibration. Experiments on long-context text and video tasks show that our method approaches full-attention accuracy across 4K--128K contexts, keeps routing overhead below 3.4 ms, and achieves a 5.03$\\times$ speedup over FlashAttn at a 128K context length.",
+      "authors": [
+        "Xinwei Long",
+        "Weigao Sun",
+        "Weibo Gao",
+        "Pengkun Jiao",
+        "Biqing Qi",
+        "Feida Zhu",
+        "Yiran Zhong",
+        "Steven Hoi",
+        "Bowen Zhou"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-09-19T08:38:12+00:00",
+      "link": "https://arxiv.org/pdf/2609.22884v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "training-free block-sparse attention routing for long-context inference",
+      "llm_evidence_cn": "面向长上下文推理的免训练块稀疏注意力路由",
+      "llm_evidence": "面向长上下文推理的免训练块稀疏注意力路由",
+      "canonical_evidence": "面向长上下文推理的免训练块稀疏注意力路由",
+      "llm_tldr_en": "The router shifts semantic aggregation to the pre-RoPE space and reconstructs geometry, fixing RoPE phase cancellation to make training-free block-sparse routing accurate for long-context inference.",
+      "llm_tldr_cn": "长上下文推理已成大模型关键能力，但稠密注意力的二次复杂度代价高昂，块稀疏注意力通过将查询块路由到少量相关键块提供硬件友好替代，然而免训练的准确块路由仍困难。本文指出既有路由器在RoPE后空间池化表示，混淆了语义聚合与RoPE几何并使局部位置线索衰减。为此提出语义-几何解耦路由，将语义聚合移至RoPE前空间并重建几何信息，提升块稀疏注意力的路由准确性。",
+      "llm_tldr": "长上下文推理已成大模型关键能力，但稠密注意力的二次复杂度代价高昂，块稀疏注意力通过将查询块路由到少量相关键块提供硬件友好替代，然而免训练的准确块路由仍困难。本文指出既有路由器在RoPE后空间池化表示，混淆了语义聚合与RoPE几何并使局部位置线索衰减。为此提出语义-几何解耦路由，将语义聚合移至RoPE前空间并重建几何信息，提升块稀疏注意力的路由准确性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.24197v1",
+      "source": "arxiv",
+      "title": "H-Spec: Parallel Speculative Decoding Without a Drafter-Side KV Cache",
+      "abstract": "Speculative decoding losslessly accelerates large language model inference by having a lightweight draft model predict future tokens for verification by the target model. Recent block diffusion drafters further reduce drafting latency by predicting multiple tokens in parallel. However, existing block drafters project target hidden states at every input position into a separate drafter-side KV cache, incurring per-request memory and KV-write overhead that grow with concurrency; directly reusing target KVs in place removes this cache but fails to sustain draft quality throughout the block. We propose a hybrid target-context injection method that complements direct target KV reuse with target hidden states only at the last input position, requiring no separate drafter-side KV cache. Building on this design, we propose H-Spec, a hybrid Mamba-attention parallel drafter that consumes the two target-context sources through complementary modules. Mamba modules are initialized with projected last-token target hidden states, while attention modules reuse target KVs in place. Despite its recurrent formulation, Mamba's parallel scan allows H-Spec to preserve block-parallel drafting. Across three target models and diverse tasks, H-Spec improves over the best baseline by 5.0--13.3% in mean accepted length and 5.3--12.6% in batch-size-1 inter-token latency speedup. Under concurrent serving, H-Spec consistently achieves higher throughput while maintaining lower KV cache utilization than baselines across evaluated concurrency levels.",
+      "authors": [
+        "Weifan Jiang",
+        "Krishna Teja Chitty-Venkata",
+        "Megan Flynn",
+        "Reed Meyerson",
+        "Zhenting Qi",
+        "Tianyu Wu",
+        "Eldar Kurtic",
+        "Minlan Yu",
+        "Alexandre Marques"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-21T07:11:29+00:00",
+      "link": "https://arxiv.org/pdf/2609.24197v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "reuses target KVs in place instead of a drafter-side KV cache",
+      "llm_evidence_cn": "原地复用目标KV而非草稿端KV缓存",
+      "llm_evidence": "原地复用目标KV而非草稿端KV缓存",
+      "canonical_evidence": "原地复用目标KV而非草稿端KV缓存",
+      "llm_tldr_en": "Block-diffusion speculative decoding needs a separate drafter-side KV cache, adding per-request memory and KV-write overhead. H-Spec reuses target KVs in place and injects target hidden states only at the last position.",
+      "llm_tldr_cn": "基于块扩散草稿模型的投机解码虽能并行预测多个token，但需将目标隐状态投影到独立的草稿端KV缓存，带来随并发增长的显存与写入开销，而直接复用目标KV又难以维持草稿质量。作者提出H-Spec混合目标上下文注入方法，在直接复用目标KV的基础上仅于最后一个输入位置补充目标隐状态。该方法无需独立草稿KV缓存即可保持整块草稿质量，降低内存与KV写入开销，为高并发推理加速提供更高效的投机解码方案。",
+      "llm_tldr": "基于块扩散草稿模型的投机解码虽能并行预测多个token，但需将目标隐状态投影到独立的草稿端KV缓存，带来随并发增长的显存与写入开销，而直接复用目标KV又难以维持草稿质量。作者提出H-Spec混合目标上下文注入方法，在直接复用目标KV的基础上仅于最后一个输入位置补充目标隐状态。该方法无需独立草稿KV缓存即可保持整块草稿质量，降低内存与KV写入开销，为高并发推理加速提供更高效的投机解码方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.23130v1",
+      "source": "arxiv",
+      "title": "From Inference Engine to Inference Control Plane: Connecting vLLM, llm-d, and the Evolution of Efficient Distributed LLM Serving",
+      "abstract": "Large language model (LLM) inference is evolving from an engine-local optimization problem into a distributed control problem involving reusable state, phase placement, heterogeneous accelerators, networking, autoscaling, reliability, and service-level objectives. This paper connects that transition across peer-reviewed systems research, open-source implementations, and documented production studies. It treats vLLM and llm-d as complementary layers: model-serving engines optimize execution through mechanisms such as PagedAttention, continuous batching, kernels, quantization, and parallelism, while an inference control plane can optimize where, when, and under what policy execution occurs across a fleet. The contribution is synthesis rather than a new benchmark; all reported performance and deployment results remain attributed to their original sources. The combined evidence suggests that the scarce resource in modern inference is shifting from raw FLOPs alone toward managed state, placement, network movement, reliability, and decision quality. We propose an Inference Execution Planner that selects feasible execution plans rather than only endpoints, including aggregated versus disaggregated topology, KV source and transfer action, hardware variant, routing/admission policy, and slower scaling decisions. We also provide a source-local benchmark atlas, a bottleneck-migration taxonomy, practical deployment guidance, an evaluation framework based on SLO-goodput, and research questions for agentic, multimodal, heterogeneous, and resilient inference.",
+      "authors": [
+        "Twinkll Sisodia"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.PF"
+      ],
+      "published": "2026-09-19T16:58:20+00:00",
+      "link": "https://arxiv.org/pdf/2609.23130v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reusable state and PagedAttention in distributed LLM serving",
+      "llm_evidence_cn": "分布式LLM服务中的可复用状态与PagedAttention",
+      "llm_evidence": "分布式LLM服务中的可复用状态与PagedAttention",
+      "canonical_evidence": "分布式LLM服务中的可复用状态与PagedAttention",
+      "llm_tldr_en": "LLM inference is shifting from engine-local tuning to a distributed control problem; this paper connects vLLM and llm-d layers, surveying reusable state, PagedAttention, batching and placement policies for efficient serving.",
+      "llm_tldr_cn": "该文指出大模型推理正从单引擎局部优化演变为涉及可复用状态、阶段放置与异构加速器的分布式控制问题。作者以vLLM与llm-d为互补层次，梳理PagedAttention、连续批处理、量化与并行等执行优化，以及控制平面在何时何地以何策略执行推理的调度能力。文章结合同行评审系统研究、开源实现与生产案例，说明可复用KV状态与缓存是服务效率的关键组成。其价值在于为分布式LLM服务提供统一分析框架与工程路线图，属于系统层面的方法论桥梁。",
+      "llm_tldr": "该文指出大模型推理正从单引擎局部优化演变为涉及可复用状态、阶段放置与异构加速器的分布式控制问题。作者以vLLM与llm-d为互补层次，梳理PagedAttention、连续批处理、量化与并行等执行优化，以及控制平面在何时何地以何策略执行推理的调度能力。文章结合同行评审系统研究、开源实现与生产案例，说明可复用KV状态与缓存是服务效率的关键组成。其价值在于为分布式LLM服务提供统一分析框架与工程路线图，属于系统层面的方法论桥梁。",
+      "llm_tags": [
+        "query:pic:composite"
+      ],
+      "matched_query_tag": "query:pic:composite",
+      "matched_query_text": "Papers central to 每日检索与PIC/position-independent KV cache优化相关的最新论文, especially work that connects or combines: position independent caching for LLM inference acceleration; KV cache reuse in large language model inference; prefix caching techniques for LLM inference; prompt caching for reducing inference latency; context caching for long context LLM inference; long context inference acceleration methods; How does position independent caching improve long context inference?; What are the latest methods for KV cache reuse in LLM inference?.",
+      "matched_requirement_id": "req-composite-pic",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.24417v1",
+      "source": "arxiv",
+      "title": "ARM: Attention with Routed-Memory for Learnable Sparse Control",
+      "abstract": "Despite advances in long-context inference, large language models (LLMs) remain fundamentally limited by the key-value (KV) caching mechanisms that are necessary for stable computation. Techniques such as selective token eviction and pruning have vastly mitigated these issues, but often discard core information to manage the growing cache. In this paper, we propose Attention with Routed Memory (ARM) a novel KV caching structure that introduces a fully differentiable, fixed-size memory system organized as a hierarchical router. Via a Gumbel-Softmax, ARM learns to select memory slots and perform sigmoid-gated updates that softly combine new and stored information, avoiding hard eviction and reducing information loss. By further training a policy to dynamically select varying amounts of memory at inference, ARM adapts its accesses for both simple contexts and inputs that require deeper reasoning, enabling more scalable and effective retrieval on both short- and long-contexts. Experimental results on standard commonsense and long-context reasoning benchmarks demonstrate that ARM achieves superior performance and efficiency compared to fixed KV-caching approaches, while remaining efficient and scalable in terms of both memory and generation latency.",
+      "authors": [
+        "Qiuhao Zeng",
+        "Jerry Huang",
+        "Peng Lu",
+        "Ruiyi Fang",
+        "Gezheng Xu",
+        "Zihao Jing",
+        "Yufei Cui",
+        "Charles Ling",
+        "Gang Niu",
+        "Boyu Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-21T11:11:17+00:00",
+      "link": "https://arxiv.org/pdf/2609.24417v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "differentiable fixed-size KV memory structure for long-context inference",
+      "llm_evidence_cn": "面向长上下文推理的可微固定大小KV记忆结构",
+      "llm_evidence": "面向长上下文推理的可微固定大小KV记忆结构",
+      "canonical_evidence": "面向长上下文推理的可微固定大小KV记忆结构",
+      "llm_tldr_en": "ARM replaces hard KV eviction with a differentiable fixed-size routed memory, using Gumbel-Softmax slot selection and sigmoid-gated updates to softly combine new and stored information.",
+      "llm_tldr_cn": "长上下文推理仍受限于维持稳定计算所必需的KV缓存，令牌驱逐与剪枝虽缓解压力却常丢弃关键信息。本文提出带路由记忆的注意力ARM，构建完全可微的固定大小分层路由记忆系统，通过Gumbel-Softmax选择记忆槽并以Sigmoid门控软更新融合新旧信息，避免硬驱逐、降低信息损失。方法进一步训练策略动态控制记忆读写，为KV缓存结构设计与长上下文推理提供了可学习的软记忆管理方案。",
+      "llm_tldr": "长上下文推理仍受限于维持稳定计算所必需的KV缓存，令牌驱逐与剪枝虽缓解压力却常丢弃关键信息。本文提出带路由记忆的注意力ARM，构建完全可微的固定大小分层路由记忆系统，通过Gumbel-Softmax选择记忆槽并以Sigmoid门控软更新融合新旧信息，避免硬驱逐、降低信息损失。方法进一步训练策略动态控制记忆读写，为KV缓存结构设计与长上下文推理提供了可学习的软记忆管理方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.24298v1",
+      "source": "arxiv",
+      "title": "KV-COBRA: KV Cache Compression via Co-Optimized Bit-Rank Allocation",
+      "abstract": "What limits KV-cache compression at extreme bit-rates? We argue that it is not the choice of compression scheme, but how its budget is allocated across attention heads. Existing methods apply rank and bit-width uniformly, ignoring that each head has a different optimal mix of rank truncation and quantization. We show that co-optimizing rank and bit-width per head, using only standard low-rank projection and scalar quantization, dominates uniform allocation, with the largest gains at low bit-rates. Our method, KV-COBRA (Co-Optimized Bit-Rank Allocation), formalizes this as a resource-allocation problem: it balances rank-truncation loss against quantization loss within each head, then redistributes budget across heads to minimize total distortion. A fused Hadamard rotation equalizes per-channel variance, and reordering the SVD basis by attention-KL importance makes the solver query-aware. The same allocator extends to joint $K{+}V$ compression. On perplexity, zero-shot, and long-context benchmarks from $0.5$ to $4$ bits per dimension (bpd), KV-COBRA shows the smallest accuracy degradation among evaluated methods at low bpd, with no per-token overhead.",
+      "authors": [
+        "Sihyeon Ha",
+        "Jaeho Lee",
+        "Yo-Seb Jeon"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-21T08:58:24+00:00",
+      "link": "https://arxiv.org/pdf/2609.24298v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache compression via per-head co-optimized rank and bit allocation",
+      "llm_evidence_cn": "通过逐头协同优化秩与位宽分配实现KV缓存压缩",
+      "llm_evidence": "通过逐头协同优化秩与位宽分配实现KV缓存压缩",
+      "canonical_evidence": "通过逐头协同优化秩与位宽分配实现KV缓存压缩",
+      "llm_tldr_en": "KV cache compression at extreme bit-rates is limited by uniform budget allocation across heads. KV-COBRA co-optimizes rank truncation and bit-width per head as a resource-allocation problem, redistributing budget to minimize distortion; with only standard low-rank projection and scalar quantization it dominates uniform allocation, especially at low bit-rates.",
+      "llm_tldr_cn": "针对极低比特率下KV缓存压缩效果受限的问题，本文认为瓶颈不在压缩方案本身，而在于秩截断与量化预算在注意力头间被均匀分配。作者提出KV-COBRA，将每头的秩与位宽协同优化形式化为资源分配问题，平衡两种损失并跨头重新分配预算以最小化总失真。实验显示仅用标准低秩投影与标量量化即可超越均匀分配，在低比特率下增益最大。",
+      "llm_tldr": "针对极低比特率下KV缓存压缩效果受限的问题，本文认为瓶颈不在压缩方案本身，而在于秩截断与量化预算在注意力头间被均匀分配。作者提出KV-COBRA，将每头的秩与位宽协同优化形式化为资源分配问题，平衡两种损失并跨头重新分配预算以最小化总失真。实验显示仅用标准低秩投影与标量量化即可超越均匀分配，在低比特率下增益最大。",
+      "llm_tags": [
+        "query:pic:composite"
+      ],
+      "matched_query_tag": "query:pic:composite",
+      "matched_query_text": "Papers central to 每日检索与PIC/position-independent KV cache优化相关的最新论文, especially work that connects or combines: position independent caching for LLM inference acceleration; KV cache reuse in large language model inference; prefix caching techniques for LLM inference; prompt caching for reducing inference latency; context caching for long context LLM inference; long context inference acceleration methods; How does position independent caching improve long context inference?; What are the latest methods for KV cache reuse in LLM inference?.",
+      "matched_requirement_id": "req-composite-pic",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
