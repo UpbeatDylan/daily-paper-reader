@@ -6,49 +6,38 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-09-22
-- 运行时间：2026-09-22 22:35:46 UTC
+- 最新运行日期：2026-09-23
+- 运行时间：2026-09-23 22:10:53 UTC
 - 运行状态：成功
-- 本次总论文数：8
-- 精读区：0
-- 速读区：8
+- 本次总论文数：6
+- 精读区：2
+- 速读区：4
 
 ### 今日简报（AI）
-今天筛出8篇LLM推理加速论文，全部速读，无精读。
-
-最值得看的是KV缓存淘汰与稀疏注意力两线：《ValueDiff》用值几何做KV淘汰，《SPLASH》把稀疏注意力与高带宽闪存协同设计。
-
-普通读者可先读这两篇的摘要与方法图，理解“省显存”与“省算力”两条路线即可。
-- 详情：[/202609/22/README](/202609/22/README)
+9月23日日报：共筛6篇LLM推理优化论文，精读
+- 详情：[/202609/23/README](/202609/23/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [HySparse2: Hybrid Sparse Attention with Two-Level KV Sharing](/202609/23/2609.26368v1-hysparse2-hybrid-sparse-attention-with-two-level-kv-sharing)  
+   标签：评分：8.0/10、query:pic
+   evidence：两级KV共享与跨层KV缓存复用
+2. [Flash-dLLM: IO-Aware KV Caching and Parallel Decoding for Fast, Memory-Efficient Diffusion LLMs](/202609/23/2609.26796v1-flash-dllm-io-aware-kv-caching-and-parallel-decoding-for-fast-memory-efficient-diffusion-llms)  
+   标签：评分：8.0/10、query:pic
+   evidence：IO感知KV缓存与缓存复用加速LLM推理
 
 ### 速读区论文标签
-1. [ValueDiff: Value-Geometric KV Cache Eviction for Sink-Suppressed LLMs](/202609/22/2609.23314v1-valuediff-value-geometric-kv-cache-eviction-for-sink-suppressed-llms)  
+1. [KV-COBRA: KV Cache Compression via Co-Optimized Bit-Rank Allocation](/202609/23/2609.24298v1-kv-cobra-kv-cache-compression-via-co-optimized-bit-rank-allocation)  
    标签：评分：7.0/10、query:pic
-   evidence：固定缓存预算下的值几何KV缓存淘汰
-2. [SPLASH: Co-Designing Sparse Attention with High-Bandwidth Flash for Efficient Long-Context Inference](/202609/22/2609.23816v1-splash-co-designing-sparse-attention-with-high-bandwidth-flash-for-efficient-long-context-inference)  
+   evidence：面向LLM推理的KV缓存比特-秩协同压缩
+2. [Compressing Long Context into Answer-Aligned Memory Embeddings for LLM Inference](/202609/23/2609.25537v1-compressing-long-context-into-answer-aligned-memory-embeddings-for-llm-inference)  
    标签：评分：7.0/10、query:pic
-   evidence：面向长上下文推理的KV缓存分层与稀疏注意力
-3. [H-Spec: Parallel Speculative Decoding Without a Drafter-Side KV Cache](/202609/22/2609.24197v1-h-spec-parallel-speculative-decoding-without-a-drafter-side-kv-cache)  
+   evidence：将长上下文压缩为答案对齐记忆嵌入，并引入两级KV缓存
+3. [CompKV: Compensation-Aware KV Selection for Long-Context LLM Inference](/202609/23/2609.26300v1-compkv-compensation-aware-kv-selection-for-long-context-llm-inference)  
    标签：评分：7.0/10、query:pic
-   evidence：原地复用目标KV而非草稿端KV缓存
-4. [ARM: Attention with Routed-Memory for Learnable Sparse Control](/202609/22/2609.24417v1-arm-attention-with-routed-memory-for-learnable-sparse-control)  
-   标签：评分：7.0/10、query:pic
-   evidence：面向长上下文推理的可微固定大小KV记忆结构
-5. [Zarya: A Hybrid Autoregressive--Masked Diffusion Language Model with Flexible Training and Dual-Mode Inference](/202609/22/2609.19868v1-zarya-a-hybrid-autoregressive--masked-diffusion-language-model-with-flexible-training-and-dual-mode-inference)  
+   evidence：长上下文推理的KV缓存内存流量与稀疏注意力KV选择
+4. [Understanding and Exploiting Diagonal Attention Sparsity in Autoregressive Image Generation](/202609/23/2609.19702v1-understanding-and-exploiting-diagonal-attention-sparsity-in-autoregressive-image-generation)  
    标签：评分：6.0/10、query:pic
-   evidence：针对扩散解码无法复用KV缓存问题的混合模型
-6. [Block-Sparse Attention with Semantic-Geometric Decoupled Routing](/202609/22/2609.22884v1-block-sparse-attention-with-semantic-geometric-decoupled-routing)  
-   标签：评分：6.0/10、query:pic
-   evidence：面向长上下文推理的免训练块稀疏注意力路由
-7. [From Inference Engine to Inference Control Plane: Connecting vLLM, llm-d, and the Evolution of Efficient Distributed LLM Serving](/202609/22/2609.23130v1-from-inference-engine-to-inference-control-plane-connecting-vllm-llm-d-and-the-evolution-of-efficient-distributed-llm-serving)  
-   标签：评分：6.0/10、query:pic
-   evidence：分布式LLM服务中的可复用状态与PagedAttention
-8. [KV-COBRA: KV Cache Compression via Co-Optimized Bit-Rank Allocation](/202609/22/2609.24298v1-kv-cobra-kv-cache-compression-via-co-optimized-bit-rank-allocation)  
-   标签：评分：6.0/10、query:pic
-   evidence：通过逐头协同优化秩与位宽分配实现KV缓存压缩
+   evidence：解码受KV缓存访问瓶颈制约，用稀疏注意力加速
 
 
 <div class="dpr-home-promo-card">

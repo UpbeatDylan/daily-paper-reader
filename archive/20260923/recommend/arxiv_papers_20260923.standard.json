@@ -1,0 +1,267 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-23T22:02:06.119569+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2609.26368v1",
+      "source": "arxiv",
+      "title": "HySparse2: Hybrid Sparse Attention with Two-Level KV Sharing",
+      "abstract": "Long-horizon and multi-turn agents typically generate short actions and process long observations from tools and environments. This growing context demands efficient prefill, compact KV-cache storage, and accurate long-context retrieval. To meet these demands, we introduce HySparse2, a hybrid sparse attention architecture with two-level KV sharing. At the outer level, KV Bridging adopts a YOCO-style self-decoder and cross-decoder structure, but bridges only full-attention layers. The self-decoder uses hybrid sliding-window attention (SWA), while the cross-decoder uses hybrid sparse attention. The KV caches for full-attention layers in the cross-decoder are generated from the hidden states of full-attention layers in the self-decoder. At the inner level, HySparse2 retains HySparse's core KV Reuse design with two refinements. First, it replaces block-level sparsity with token-level sparsity for finer long-context retrieval. Second, it removes the separate SWA branch from sparse layers and instead forces a sliding window of recent tokens into the sparse selection. This two-level KV sharing allows all cross-decoder KV caches to be constructed from self-decoder hidden states. Prefill can therefore exit after the self-decoder, skipping all cross-decoder layers. On an 80B-A3B MoE model, HySparse2 outperforms HySparse and Hybrid SWA on long-context retrieval and multi-turn agentic tasks, while substantially reducing prefill computation and KV-cache storage.",
+      "authors": [
+        "Jianyu Wei",
+        "Yizhao Gao",
+        "Qihao Zhang",
+        "Shimao Chen",
+        "Zhengju Tang",
+        "Yu Cheng",
+        "Shengjie Zhou",
+        "Zihan Jiang",
+        "Yifan Song",
+        "Hailin Zhang",
+        "Liang Zhao",
+        "Bo Yang",
+        "Gang Wang",
+        "Shijie Cao",
+        "Fuli Luo"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-22T13:10:32+00:00",
+      "link": "https://arxiv.org/pdf/2609.26368v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "two-level KV sharing and cross-layer KV cache reuse",
+      "llm_evidence_cn": "两级KV共享与跨层KV缓存复用",
+      "llm_evidence": "两级KV共享与跨层KV缓存复用",
+      "canonical_evidence": "两级KV共享与跨层KV缓存复用",
+      "llm_tldr_en": "HySparse2 introduces a hybrid sparse attention architecture with two-level KV sharing, bridging only full-attention layers in a YOCO-style decoder so cross-decoder KV caches are reused, improving prefill efficiency and KV storage for long-context agents.",
+      "llm_tldr_cn": "面对长程多轮智能体产生超长上下文、预填充与KV缓存存储开销巨大的问题，本文提出HySparse2混合稀疏注意力架构，采用两级KV共享：外层以YOCO式自解码器与交叉解码器仅桥接全注意力层并复用其KV缓存，内层引入混合稀疏注意力。该设计在压缩KV缓存的同时保持长上下文检索能力，为长上下文智能体推理提供高效方案。",
+      "llm_tldr": "面对长程多轮智能体产生超长上下文、预填充与KV缓存存储开销巨大的问题，本文提出HySparse2混合稀疏注意力架构，采用两级KV共享：外层以YOCO式自解码器与交叉解码器仅桥接全注意力层并复用其KV缓存，内层引入混合稀疏注意力。该设计在压缩KV缓存的同时保持长上下文检索能力，为长上下文智能体推理提供高效方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.26796v1",
+      "source": "arxiv",
+      "title": "Flash-dLLM: IO-Aware KV Caching and Parallel Decoding for Fast, Memory-Efficient Diffusion LLMs",
+      "abstract": "Diffusion Large Language Models (dLLMs) have recently emerged as a promising alternative to autoregressive LLMs by enabling non-autoregressive text generation. However, their practical deployment remains limited by inefficient inference, largely due to the absence of effective Key-Value (KV) caching and scalable parallel decoding mechanisms. Existing acceleration methods typically study KV caching and parallel decoding in isolation, overlooking the I/O bottlenecks that arise when cache reuse and parallel token verification are jointly applied. In this work, we introduce $\\textbf{Flash-dLLM}$, a training-free inference acceleration framework for fast and memory-efficient dLLMs. Flash-dLLM first identifies GPU memory I/O as a dominant bottleneck in KV-cache-enabled dLLM inference and addresses it with an I/O-aware fused KV-cache kernel that reduces redundant memory movement. Building on this optimized cache mechanism, Flash-dLLM further proposes an efficient KV-cache-driven draft-and-verify decoding strategy, where the dLLM itself serves as both drafter and verifier without requiring an auxiliary model. This unified design enables faster decoding while preserving generation quality and improving scalability to longer sequences and larger batch size. Extensive experiments on mathematical reasoning and code-generation benchmarks demonstrate that Flash-dLLM consistently outperforms existing state-of-the-art dLLM acceleration methods in both inference speed and memory efficiency. In particular, it achieves $5.1\\times$ and $11.0\\times$ speedups over prior strongest baseline Elastic-Cache on GSM8K and HumanEval, respectively.",
+      "authors": [
+        "Quan Nguyen-Tri",
+        "Mukul Ranjan",
+        "Zhiqiang Shen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-22T17:59:57+00:00",
+      "link": "https://arxiv.org/pdf/2609.26796v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "IO-aware KV caching and cache reuse for fast LLM inference",
+      "llm_evidence_cn": "IO感知KV缓存与缓存复用加速LLM推理",
+      "llm_evidence": "IO感知KV缓存与缓存复用加速LLM推理",
+      "canonical_evidence": "IO感知KV缓存与缓存复用加速LLM推理",
+      "llm_tldr_en": "Flash-dLLM is a training-free framework that jointly designs IO-aware KV caching and parallel decoding, identifying GPU memory I/O as the bottleneck to accelerate diffusion LLMs.",
+      "llm_tldr_cn": "针对扩散大语言模型因缺乏有效KV缓存与可扩展并行解码而推理效率低、且现有方法孤立研究二者忽视I/O瓶颈的问题，本文提出免训练加速框架Flash-dLLM。该框架首先识别GPU内存I/O为主要瓶颈，将KV缓存复用与并行token验证协同设计，形成IO感知的缓存与解码机制。实验表明其能实现快速且内存高效的扩散LLM推理，为扩散LLM的实际部署提供了新的加速思路。",
+      "llm_tldr": "针对扩散大语言模型因缺乏有效KV缓存与可扩展并行解码而推理效率低、且现有方法孤立研究二者忽视I/O瓶颈的问题，本文提出免训练加速框架Flash-dLLM。该框架首先识别GPU内存I/O为主要瓶颈，将KV缓存复用与并行token验证协同设计，形成IO感知的缓存与解码机制。实验表明其能实现快速且内存高效的扩散LLM推理，为扩散LLM的实际部署提供了新的加速思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.24298v1",
+      "source": "arxiv",
+      "title": "KV-COBRA: KV Cache Compression via Co-Optimized Bit-Rank Allocation",
+      "abstract": "What limits KV-cache compression at extreme bit-rates? We argue that it is not the choice of compression scheme, but how its budget is allocated across attention heads. Existing methods apply rank and bit-width uniformly, ignoring that each head has a different optimal mix of rank truncation and quantization. We show that co-optimizing rank and bit-width per head, using only standard low-rank projection and scalar quantization, dominates uniform allocation, with the largest gains at low bit-rates. Our method, KV-COBRA (Co-Optimized Bit-Rank Allocation), formalizes this as a resource-allocation problem: it balances rank-truncation loss against quantization loss within each head, then redistributes budget across heads to minimize total distortion. A fused Hadamard rotation equalizes per-channel variance, and reordering the SVD basis by attention-KL importance makes the solver query-aware. The same allocator extends to joint $K{+}V$ compression. On perplexity, zero-shot, and long-context benchmarks from $0.5$ to $4$ bits per dimension (bpd), KV-COBRA shows the smallest accuracy degradation among evaluated methods at low bpd, with no per-token overhead.",
+      "authors": [
+        "Sihyeon Ha",
+        "Jaeho Lee",
+        "Yo-Seb Jeon"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-21T08:58:24+00:00",
+      "link": "https://arxiv.org/pdf/2609.24298v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache compression with co-optimized bit-rank allocation for LLM inference",
+      "llm_evidence_cn": "面向LLM推理的KV缓存比特-秩协同压缩",
+      "llm_evidence": "面向LLM推理的KV缓存比特-秩协同压缩",
+      "canonical_evidence": "面向LLM推理的KV缓存比特-秩协同压缩",
+      "llm_tldr_en": "KV-COBRA co-optimizes rank truncation and bit-width per attention head as a resource-allocation problem, dominating uniform KV cache compression especially at low bit-rates.",
+      "llm_tldr_cn": "极端低比特率下KV缓存压缩的瓶颈并非压缩方案本身，而在于如何把预算分配到各注意力头上，现有方法对秩截断与比特宽度采用统一设置。作者提出KV-COBRA，把每头的秩截断损失与量化损失平衡形式化为资源分配问题，再在头间重新分配预算以最小化总失真，且仅使用标准低秩投影与标量量化。实验显示协同优化显著优于均匀分配，在低比特率下增益最大。该工作表明按头分配压缩预算是提升KV缓存压缩效率的关键。",
+      "llm_tldr": "极端低比特率下KV缓存压缩的瓶颈并非压缩方案本身，而在于如何把预算分配到各注意力头上，现有方法对秩截断与比特宽度采用统一设置。作者提出KV-COBRA，把每头的秩截断损失与量化损失平衡形式化为资源分配问题，再在头间重新分配预算以最小化总失真，且仅使用标准低秩投影与标量量化。实验显示协同优化显著优于均匀分配，在低比特率下增益最大。该工作表明按头分配压缩预算是提升KV缓存压缩效率的关键。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.19702v1",
+      "source": "arxiv",
+      "title": "Understanding and Exploiting Diagonal Attention Sparsity in Autoregressive Image Generation",
+      "abstract": "Autoregressive image generation has emerged as a paradigm for multimodal AI systems due to its compatibility with transformer-based LLM serving infrastructures. However, generating thousands of visual tokens per request makes decoding increasingly bottlenecked by KV cache accesses during attention computation. Sparse attention is particularly attractive for this workload because many visual generation applications tolerate moderate quality degradation in exchange for improved performance and efficiency. While sparse attention has been extensively explored for text-based LLM inference, it remains unclear whether its sparsity assumptions generalize effectively to autoregressive image generation. We present the first systematic characterization of attention sparsity in autoregressive image generation across diverse workloads and representative open-source models. Our analysis reveals several distinguishing properties, including a pronounced prefill-decode asymmetry, strong attention concentration on prompt and local tokens, and a unique diagonal attention sparsity pattern arising from the spatial locality of visual tokens. Motivated by these observations, we propose a diagonal-aware sparse attention mechanism that selectively skips KV entries along the diagonal attention direction within a recent window. Implemented on top of a GPU-based serving system using FlexGen, FlashAttention-2, and custom kernels, our approach achieves up to 3.1x throughput and 1.19x latency improvements with less than 2% quality degradation compared to dense inference.",
+      "authors": [
+        "Daeun Kim",
+        "Junwha Hong",
+        "Changhun Oh",
+        "Yoonsung Kim",
+        "Yoonhyeong Lee",
+        "Jongse Park"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.PF"
+      ],
+      "published": "2026-09-17T04:54:59+00:00",
+      "link": "https://arxiv.org/pdf/2609.19702v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache access bottleneck in decoding, sparse attention for acceleration",
+      "llm_evidence_cn": "解码受KV缓存访问瓶颈制约，用稀疏注意力加速",
+      "llm_evidence": "解码受KV缓存访问瓶颈制约，用稀疏注意力加速",
+      "canonical_evidence": "解码受KV缓存访问瓶颈制约，用稀疏注意力加速",
+      "llm_tldr_en": "Autoregressive image generation is bottlenecked by KV cache accesses during decoding; this paper systematically characterizes diagonal attention sparsity and exploits it with sparse attention to accelerate generation with tolerable quality loss.",
+      "llm_tldr_cn": "自回归图像生成每次请求需生成数千视觉token，解码阶段受KV缓存访问严重制约，成为效率瓶颈。作者首次系统刻画了该任务中的对角注意力稀疏模式，并据此设计稀疏注意力方法以降低注意力计算与缓存访问开销。实验显示该稀疏性假设在图像生成中成立，可在可接受的质量下降下提升性能与效率。该工作为多模态自回归生成的注意力稀疏化与KV缓存优化提供了系统性依据。",
+      "llm_tldr": "自回归图像生成每次请求需生成数千视觉token，解码阶段受KV缓存访问严重制约，成为效率瓶颈。作者首次系统刻画了该任务中的对角注意力稀疏模式，并据此设计稀疏注意力方法以降低注意力计算与缓存访问开销。实验显示该稀疏性假设在图像生成中成立，可在可接受的质量下降下提升性能与效率。该工作为多模态自回归生成的注意力稀疏化与KV缓存优化提供了系统性依据。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.25537v1",
+      "source": "arxiv",
+      "title": "Compressing Long Context into Answer-Aligned Memory Embeddings for LLM Inference",
+      "abstract": "Large language model (LLM) inference is constrained by the quadratic scaling of self-attention and the linear scaling of the KV cache, increasing latency, energy consumption, and GPU memory demand as context length scales. Existing soft-compression methods either lack query-guided memory selection at inference time, train without answer-targeted supervision, or couple compression tightly to a specific decoder architecture. We propose a Context-to-Answer-Aligned Memory Compression (CMC) framework, which compresses long input contexts into compact Context Memory Embeddings (CMEs) aligned to any frozen decoder's embedding space, reducing inference costs without modifying decoder weights. CMC introduces a two-tier KV cache that combines question-guided CME selection with a local context window, and trains the compressor with answer-targeted distillation from a frozen LLM. Experiments across nine encoder-decoder combinations and four QA benchmarks show that CMC consistently outperforms the baseline, achieving up to 7.3 EM and 4.0 F1 point gains on SQuAD, while reducing inference time and energy consumption by up to 20% and peak reserved GPU memory by up to 50% at 3,000 generation tokens. Ablation studies confirm that each architectural component and training objective contributes to the performance.",
+      "authors": [
+        "Md Mostafizer Rahman",
+        "Md Faizul Ibne Amin",
+        "Md Shahajada Mia",
+        "Yutaka Watanobe",
+        "Fang Liu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-09-22T01:10:49+00:00",
+      "link": "https://arxiv.org/pdf/2609.25537v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "compressing long context into answer-aligned memory embeddings with a two-tier KV cache",
+      "llm_evidence_cn": "将长上下文压缩为答案对齐记忆嵌入，并引入两级KV缓存",
+      "llm_evidence": "将长上下文压缩为答案对齐记忆嵌入，并引入两级KV缓存",
+      "canonical_evidence": "将长上下文压缩为答案对齐记忆嵌入，并引入两级KV缓存",
+      "llm_tldr_en": "LLM inference is limited by quadratic attention and linear KV-cache growth; CMC compresses long contexts into answer-aligned memory embeddings in a frozen decoder's space and adds a two-tier KV cache to cut cost without weight changes.",
+      "llm_tldr_cn": "LLM推理受自注意力二次增长与KV缓存线性增长制约，长上下文带来延迟、能耗与显存压力，而现有软压缩方法缺乏查询引导选择与答案监督。本文提出上下文到答案对齐记忆压缩CMC，将长输入压缩为对齐冻结解码器嵌入空间的紧凑记忆嵌入，并引入结合问题信息的两级KV缓存。该方法在不修改解码器权重下降低推理成本。其贡献在于提供架构无关的长上下文压缩与KV缓存优化框架。",
+      "llm_tldr": "LLM推理受自注意力二次增长与KV缓存线性增长制约，长上下文带来延迟、能耗与显存压力，而现有软压缩方法缺乏查询引导选择与答案监督。本文提出上下文到答案对齐记忆压缩CMC，将长输入压缩为对齐冻结解码器嵌入空间的紧凑记忆嵌入，并引入结合问题信息的两级KV缓存。该方法在不修改解码器权重下降低推理成本。其贡献在于提供架构无关的长上下文压缩与KV缓存优化框架。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.26300v1",
+      "source": "arxiv",
+      "title": "CompKV: Compensation-Aware KV Selection for Long-Context LLM Inference",
+      "abstract": "Despite their strong performance, large language models (LLMs) are bottlenecked by KV cache memory traffic during long-context inference. Sparse attention is widely used to accelerate LLM inference by computing exact attention over a selected subset of tokens. To recover the contribution of tokens excluded from exact attention, recent methods apply coarse-grained compensation to the omitted attention tail. However, existing methods typically select tokens based on attention mass and only then compensate for the unselected tokens. This decoupled design overlooks their interaction: selection should prioritize tokens that would leave the largest compensation error if omitted. To address this limitation, we introduce CompKV, the first compensation-aware sparse attention framework that divides tokens into blocks and explicitly optimizes selection for the downstream compensation mechanism. Our theoretical analysis shows that the residual left by block-level mean compensation is governed by both block attention mass and within-block logit variation. We approximate this residual using compact block-level statistics, yielding a deployable selection criterion. We further develop an efficient asynchronous implementation. Experiments on RULER and LongBench-Pro show that CompKV performs best among the evaluated sparse baselines while delivering up to a $6.85\\times$ self-attention speedup over full attention.",
+      "authors": [
+        "Zhen Huang",
+        "Ruizhe Yao",
+        "Danyi Liu",
+        "Xinrui Chen",
+        "Shuwei Li",
+        "Siru Zhong",
+        "Zijian Cao",
+        "Yushan Lai",
+        "Mingming Guo",
+        "Weijie Zheng",
+        "Haohuan Fu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-22T12:11:19+00:00",
+      "link": "https://arxiv.org/pdf/2609.26300v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV cache memory traffic, sparse attention KV selection for long-context inference",
+      "llm_evidence_cn": "长上下文推理的KV缓存内存流量与稀疏注意力KV选择",
+      "llm_evidence": "长上下文推理的KV缓存内存流量与稀疏注意力KV选择",
+      "canonical_evidence": "长上下文推理的KV缓存内存流量与稀疏注意力KV选择",
+      "llm_tldr_en": "Long-context inference is bottlenecked by KV cache memory traffic; CompKV selects tokens in a compensation-aware manner so selection prioritizes tokens whose omission would cause the largest compensation error.",
+      "llm_tldr_cn": "长上下文LLM推理受KV缓存内存流量制约，稀疏注意力通过仅在选中token上计算精确注意力来加速，但对被丢弃的注意力尾部需做补偿。现有方法先按注意力质量选token再补偿，二者解耦，忽略了选择与补偿之间的相互作用。作者提出CompKV，首个补偿感知的KV选择方法，优先选择被省略后补偿误差最大的token。该工作通过耦合选择与补偿提升了长上下文推理的效率与精度，为KV缓存压缩与稀疏注意力提供了新思路。",
+      "llm_tldr": "长上下文LLM推理受KV缓存内存流量制约，稀疏注意力通过仅在选中token上计算精确注意力来加速，但对被丢弃的注意力尾部需做补偿。现有方法先按注意力质量选token再补偿，二者解耦，忽略了选择与补偿之间的相互作用。作者提出CompKV，首个补偿感知的KV选择方法，优先选择被省略后补偿误差最大的token。该工作通过耦合选择与补偿提升了长上下文推理的效率与精度，为KV缓存压缩与稀疏注意力提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
