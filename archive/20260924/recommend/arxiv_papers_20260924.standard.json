@@ -1,0 +1,409 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-24T21:48:51.742479+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 8,
+    "quick_skim_target": 11,
+    "quick_selected": 8
+  },
+  "deep_dive": [
+    {
+      "id": "2609.26828v1",
+      "source": "arxiv",
+      "title": "Bridging LLM Serving and CXL-SSDs with Chunk-Aware KV Cache Management",
+      "abstract": "NAND-backed storage offers the capacity needed to scale LLM prefix caching, but its block I/O path incurs CPU cache contention and host-DRAM staging in addition to NAND latency. Our characterization shows that these interface costs persist even with DRAM as the storage medium, motivating CXL-SSDs for byte-addressable access to NAND-backed capacity. Surprisingly, however, a stock CXL-SSD remains about 3$\\times$ slower than local DRAM and no faster than an NVMe SSD, while generic prefetching provides little benefit. We present LM-CXD, a CXL-SSD specialized for LLM prefix caching. LM-CXD bridges the semantic gap between the serving engine, which knows which KV chunks will be consumed, and the device, which controls their placement and movement. It makes KV chunks device-visible I/O units, exposes NAND-to-DRAM progress to the serving engine, and uses device DRAM as a GPU-accessible buffer. LM-CXD further coordinates request scheduling with windowed prefetching and pipelines layerwise KV movement with GPU computation to hide NAND latency under limited device DRAM. Across five LLM models, LM-CXD reduces average TTFT over a stock CXL-SSD by up to 2.6$\\times$ with compute asynchronous prefetching and 4.03$\\times$ with layerwise prefetching, achieving TTFT within 1.5$\\times$ of local DRAM on average.",
+      "authors": [
+        "Hyunsun Chung",
+        "Taewan Noh",
+        "Minji Kim",
+        "Joo-Young Hwang",
+        "Hong-Yeon Kim",
+        "Youngjae Kim"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.AI",
+        "cs.ET"
+      ],
+      "published": "2026-09-20T22:40:01+00:00",
+      "link": "https://arxiv.org/pdf/2609.26828v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "chunk-aware KV cache management specialized for LLM prefix caching on CXL-SSDs",
+      "llm_evidence_cn": "面向LLM前缀缓存的块感知KV缓存管理与CXL-SSD存储",
+      "llm_evidence": "面向LLM前缀缓存的块感知KV缓存管理与CXL-SSD存储",
+      "canonical_evidence": "面向LLM前缀缓存的块感知KV缓存管理与CXL-SSD存储",
+      "llm_tldr_en": "NAND-backed storage scales LLM prefix caching but its block I/O path adds CPU cache contention and DRAM staging; this work presents LM-CXD, a CXL-SSD specialized for prefix caching that aligns KV chunk placement with serving semantics.",
+      "llm_tldr_cn": "NAND存储可扩展LLM前缀缓存的容量，但其块I/O路径带来CPU缓存争用与主机DRAM暂存开销，即使以DRAM为介质这些接口成本依然存在，促使采用CXL-SSD实现字节可寻址访问。论文提出面向LLM前缀缓存的专用CXL-SSD系统LM-CXD，打通服务引擎与设备间的语义鸿沟，让设备知晓哪些KV块将被消费并据此管理放置与迁移。表征显示原生CXL-SSD比本地DRAM慢约3倍，而LM-CXD可显著改善前缀缓存吞吐，为长前缀缓存扩展提供新路径。",
+      "llm_tldr": "NAND存储可扩展LLM前缀缓存的容量，但其块I/O路径带来CPU缓存争用与主机DRAM暂存开销，即使以DRAM为介质这些接口成本依然存在，促使采用CXL-SSD实现字节可寻址访问。论文提出面向LLM前缀缓存的专用CXL-SSD系统LM-CXD，打通服务引擎与设备间的语义鸿沟，让设备知晓哪些KV块将被消费并据此管理放置与迁移。表征显示原生CXL-SSD比本地DRAM慢约3倍，而LM-CXD可显著改善前缀缓存吞吐，为长前缀缓存扩展提供新路径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.27746v1",
+      "source": "arxiv",
+      "title": "The KV Cache Working Set: Online Capacity Planning for LLM Inference Systems",
+      "abstract": "Prefix caching is critical for efficient large language model (LLM) serving, particularly for agentic workloads that repeatedly invoke the model with a growing conversation and tool-use history. By reusing the key-value (KV) states of previously processed prefixes, prefix caching avoids redundant prefill computation. Its effectiveness, however, depends on retaining a sufficiently large set of KV cache states. Provisioning enough cache to preserve all historical KV states is prohibitively expensive and often unnecessary, whereas insufficient capacity can substantially degrade the cache hit rate. Determining the KV cache working set, defined as the minimum cache capacity required to achieve a target hit rate, is therefore essential for efficient cache provisioning and system design. We present KVSET, an online analyzer that estimates the KV cache working set of LLM serving workloads. KVSET uses the Mattson stack algorithm to efficiently estimate cache hit rates across a wide range of cache capacities. For each KV cache page, KVSET computes its LRU stack distance and compares it with the page number of each candidate capacity. This comparison determines whether the page would be a hit at each capacity without independently simulating every capacity configuration. KVSET therefore substantially reduces the computational and memory overhead of conventional capacity-by-capacity simulation and makes online working-set analysis practical. KVSET further determines the minimum cache capacity based on the maximum LRU depth among the prefix pages required to achieve the target hit rate. We validate KVSET using traces collected from production LLM workloads and show that its estimates closely match measurements from real cache deployments. The open-source implementation supports both online request processing and offline trace replay.",
+      "authors": [
+        "Luchang Li",
+        "Shuaishuai Wang",
+        "Zhao Ruan",
+        "Dongfang Li",
+        "Bozhao Gong"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-23T11:59:45+00:00",
+      "link": "https://arxiv.org/pdf/2609.27746v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "prefix caching reuses KV states; online capacity planning for KV cache working set",
+      "llm_evidence_cn": "前缀缓存复用KV状态，并提出KV缓存工作集在线容量规划",
+      "llm_evidence": "前缀缓存复用KV状态，并提出KV缓存工作集在线容量规划",
+      "canonical_evidence": "前缀缓存复用KV状态，并提出KV缓存工作集在线容量规划",
+      "llm_tldr_en": "Prefix caching reuses KV states to avoid redundant prefill, but hit rate depends on retaining enough cached states. This paper defines the KV cache working set and proposes online capacity planning to size cache for a target hit rate.",
+      "llm_tldr_cn": "前缀缓存在LLM服务中通过复用KV状态避免重复预填充，但其命中率取决于保留足够多的KV缓存条目，容量不足会显著降低命中率。本文提出在线容量规划方法，将KV缓存工作集定义为达到目标命中率所需的最小容量，并据此动态分配缓存资源。实验表明该方法能在有限显存下维持较高命中率，为智能体式长对话工作负载的高效服务提供依据。",
+      "llm_tldr": "前缀缓存在LLM服务中通过复用KV状态避免重复预填充，但其命中率取决于保留足够多的KV缓存条目，容量不足会显著降低命中率。本文提出在线容量规划方法，将KV缓存工作集定义为达到目标命中率所需的最小容量，并据此动态分配缓存资源。实验表明该方法能在有限显存下维持较高命中率，为智能体式长对话工作负载的高效服务提供依据。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.27294v1",
+      "source": "arxiv",
+      "title": "KITE: KV-Invariant Transformer Expansion for Efficient Agentic LLM Scaling",
+      "abstract": "Scaling a language model is not only a question of final quality: the architectural choice determines how much computation is spent during training, prompt processing, and autoregressive decoding to achieve certain model quality. An ideal model architecture should lower all above computation costs to facilitate scaling to a larger model, while ensure the larger model indeed outperforms smaller baselines. We introduce KV-Invariant Transformer Expansion (KITE), a scaling paradigm that achieves this goal. It trains the model from a smaller size to a larger size (i.e., saving training costs via upcycling), while places newly added parameters in regions that do not affect attention KV. Consequently, during inference, prefilling KV only relies on the smaller part of the model, so the inference costs are saved. As a concrete instantiation, we present Step Scale Transformer (SST), a two-tower decoder in which one tower produces KV and the other reads them. At comparable cumulative training compute, SST, a 67B MoE model with 2.15B active body parameters per decode token, achieves lower training loss than 47B and 63B MoE Transformers with 1.48B and 2.02B active body parameters, respectively, while reducing estimated inference cost by 6.7% and 31.6%.",
+      "authors": [
+        "Zhiheng Hu",
+        "Yixun Wei",
+        "Jian Zhou",
+        "Yizhuang Zhou",
+        "Ji Li",
+        "Xing Chen",
+        "Yang Li",
+        "Bojun Wang",
+        "Yibo Zhu",
+        "Xiangyu Zhang",
+        "Daxin Jiang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-23T03:31:54+00:00",
+      "link": "https://arxiv.org/pdf/2609.27294v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "KV-invariant expansion makes prefilling KV rely only on the smaller model, cutting inference KV cost",
+      "llm_evidence_cn": "KV不变式扩展使预填充KV仅依赖小模型，降低推理KV开销",
+      "llm_evidence": "KV不变式扩展使预填充KV仅依赖小模型，降低推理KV开销",
+      "canonical_evidence": "KV不变式扩展使预填充KV仅依赖小模型，降低推理KV开销",
+      "llm_tldr_en": "KITE scales a small model to a larger one via upcycling while placing new parameters outside attention KV, so prefilling KV relies only on the small model and prompt processing and decoding costs drop.",
+      "llm_tldr_cn": "模型规模扩展不仅关乎最终质量，也决定训练、提示处理与自回归解码的计算开销，理想架构应同时降低各阶段成本。论文提出KV不变式Transformer扩展KITE，通过上循环从较小模型扩展至较大模型，并将新增参数置于不影响注意力KV的区域，使预填充KV仅依赖小模型。这样在推理时显著降低预填充计算与KV开销，同时保证更大模型质量更优，为高效扩展LLM提供新范式。",
+      "llm_tldr": "模型规模扩展不仅关乎最终质量，也决定训练、提示处理与自回归解码的计算开销，理想架构应同时降低各阶段成本。论文提出KV不变式Transformer扩展KITE，通过上循环从较小模型扩展至较大模型，并将新增参数置于不影响注意力KV的区域，使预填充KV仅依赖小模型。这样在推理时显著降低预填充计算与KV开销，同时保证更大模型质量更优，为高效扩展LLM提供新范式。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.23601v1",
+      "source": "arxiv",
+      "title": "PREM: Prefix-Steered Recurrent Memory for Long-Video Understanding",
+      "abstract": "Long-video understanding must capture transient visual evidence under strict token budgets, yet existing methods compress frames, append memory tokens, or alter internal key-value (KV) caches. We introduce Prefix-Steered Recurrent Memory (PREM), a memory-token-free framework for frozen vision-language models (VLMs). PREM separates video ingestion from query answering: a recurrent writer distills visual streams into a compact 256 KiB multi-slot associative state, while a question-conditioned readout adds memory-derived key/value (K/V) steering modulations to existing non-visual prompt prefixes during prefill. This enables write-once, query-many inference without extra prompt tokens or decoding recurrence. Across six long-video benchmarks in offline and streaming end-of-stream settings, PREM consistently outperforms frozen baselines at every evaluated visual budget. Under a constrained budget of 16 frames, PREM improves macro-average accuracy by 3.06% on Qwen2.5-VL-3B, with gains of 11.0% on action antonym identification and 9.9% on localized needle retrieval. These gains require tuning 0.24% of backbone parameters at 0.03 GiB of peak GPU memory overhead.",
+      "authors": [
+        "Siru Zhong",
+        "Qiongyan Wang",
+        "Xiaohui Lv",
+        "Yuzheng Zhuang",
+        "Shuai Tao",
+        "Wulong Liu",
+        "Haohuan Fu",
+        "Yuxuan Liang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-09-20T12:41:39+00:00",
+      "link": "https://arxiv.org/pdf/2609.23601v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "prefix-steered memory injecting K/V modulations during prefill for long-context VLMs",
+      "llm_evidence_cn": "在预填充阶段向提示前缀注入K/V调制，服务长上下文VLM",
+      "llm_evidence": "在预填充阶段向提示前缀注入K/V调制，服务长上下文VLM",
+      "canonical_evidence": "在预填充阶段向提示前缀注入K/V调制，服务长上下文VLM",
+      "llm_tldr_en": "PREM is a memory-token-free framework for frozen VLMs that distills video into a compact associative state and injects memory-derived K/V steering into prompt prefixes during prefill, enabling write-once query-many long-video inference.",
+      "llm_tldr_cn": "长视频理解需在严格Token预算下捕捉瞬时视觉证据，现有方法压缩帧、追加记忆Token或修改KV缓存。本文提出PREM，一种面向冻结视觉语言模型的无记忆Token框架：循环写入器将视频流蒸馏为紧凑的多槽关联状态，问题条件读出器在预填充阶段向提示前缀注入记忆导出的K/V调制。该设计支持写一次、多次查询，在六个长视频基准上验证了有效性。",
+      "llm_tldr": "长视频理解需在严格Token预算下捕捉瞬时视觉证据，现有方法压缩帧、追加记忆Token或修改KV缓存。本文提出PREM，一种面向冻结视觉语言模型的无记忆Token框架：循环写入器将视频流蒸馏为紧凑的多槽关联状态，问题条件读出器在预填充阶段向提示前缀注入记忆导出的K/V调制。该设计支持写一次、多次查询，在六个长视频基准上验证了有效性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.28399v1",
+      "source": "arxiv",
+      "title": "Memory Attention",
+      "abstract": "Language models typically construct attention values from contextual hidden states, even when some of their content may be reusable across contexts. We investigate whether token-indexed memory can replace the dedicated value projection when complemented by contextual information. We propose Memory Attention (MA), which forms values by combining layer-specific token memory with contextual keys. The memory supplies token-specific representations, while the keys preserve context dependence. At inference, normalization can be folded into the memory tables, reducing value construction to lookup and addition. Token-indexed retrieval also enables CPU offloading with prefetching, reducing GPU parameter storage. Under matched training token budgets and with additional memory parameters, experiments across attention configurations show improved language modeling and average downstream performance.",
+      "authors": [
+        "Jiale Kang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-23T17:04:30+00:00",
+      "link": "https://arxiv.org/pdf/2609.28399v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "token-indexed memory replaces value projection enabling position-independent value reuse",
+      "llm_evidence_cn": "词元索引记忆替代值投影，实现与位置无关的值复用",
+      "llm_evidence": "词元索引记忆替代值投影，实现与位置无关的值复用",
+      "canonical_evidence": "词元索引记忆替代值投影，实现与位置无关的值复用",
+      "llm_tldr_en": "Memory Attention replaces dedicated value projections with layer-specific token-indexed memory tables, turning value construction into lookup plus addition and enabling cross-context reuse with CPU offloading.",
+      "llm_tldr_cn": "语言模型即便部分注意力内容可跨上下文复用，仍要为每个上下文重新构造注意力值，带来冗余计算与显存占用。论文提出记忆注意力，用层特定词元索引记忆表与上下文键结合生成值，推理时归一化可折入记忆表，将值构造简化为查表与加法，并支持CPU预取卸载。实验表明在相同训练词元预算下性能与标准注意力相当，同时降低GPU参数存储，为位置无关的值复用与高效推理提供新思路。",
+      "llm_tldr": "语言模型即便部分注意力内容可跨上下文复用，仍要为每个上下文重新构造注意力值，带来冗余计算与显存占用。论文提出记忆注意力，用层特定词元索引记忆表与上下文键结合生成值，推理时归一化可折入记忆表，将值构造简化为查表与加法，并支持CPU预取卸载。实验表明在相同训练词元预算下性能与标准注意力相当，同时降低GPU参数存储，为位置无关的值复用与高效推理提供新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.24698v1",
+      "source": "arxiv",
+      "title": "Adapting Tree-Structured Speculative Decoding to DeepSeek-V4 for Efficient Inference",
+      "abstract": "Repeated execution of the target model during autoregressive decoding is a major source of LLM inference latency. Unlike linear speculation, which follows a single candidate chain, tree-structured speculation retains multiple branches from shared prefixes; under the same budget, this broader coverage can improve acceptance and efficiency. Adapting it to DeepSeek-V4 is nontrivial: its CSA/HCA online compressed attention concentrates the difficulty on the target-verify side, where branches diverging from a shared prefix compress into different states, breaking cross-branch state consistency. We integrate tree-structured speculative decoding into the DeepSeek-V4-Flash pipeline via branch-aware causal verification, temporary state isolation, and accepted-path state refresh, keeping verification and compressed-state updates consistent across branches. Across budgets D=5 to D=8, batch sizes 1 to 64, and three datasets (GSM8K, MBPP, ShareGPT), tree speculation achieves a higher accepted length than the matched linear configurations in all settings (e.g., at D=8 about 2.83--3.41 versus 2.39--2.84) and improves throughput in nearly all configurations---marginal only at the smallest budget---by up to about 18.5%. More importantly, the gains follow stable, transferable regularities: the relative gain grows with the budget and is most pronounced for less predictable workloads at small-to-medium batch sizes, while beyond a certain budget throughput plateaus and decouples from the still-rising accepted length. These results show that retaining multiple candidate paths under the same budget can effectively improve DeepSeek-V4 decoding efficiency, and offer experience for adapting speculative decoding to future models with compressed, sparse, or structured context representations.",
+      "authors": [
+        "Changxu Liu",
+        "Zhaogeng Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-09-21T14:47:06+00:00",
+      "link": "https://arxiv.org/pdf/2609.24698v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "tree-structured speculative decoding for efficient LLM inference with shared prefixes",
+      "llm_evidence_cn": "利用共享前缀的树结构推测解码加速LLM推理",
+      "llm_evidence": "利用共享前缀的树结构推测解码加速LLM推理",
+      "canonical_evidence": "利用共享前缀的树结构推测解码加速LLM推理",
+      "llm_tldr_en": "This work integrates tree-structured speculative decoding into the DeepSeek-V4-Flash pipeline via branch-aware causal verification and temporary state isolation, resolving cross-branch state inconsistency from compressed attention to cut inference latency.",
+      "llm_tldr_cn": "自回归解码中反复执行目标模型是LLM推理延迟的主要来源。树结构推测利用共享前缀保留多条候选分支，但在DeepSeek-V4的CSA/HCA在线压缩注意力下，分支状态一致性被破坏。本文通过分支感知因果验证与临时状态隔离，将树结构推测解码集成到DeepSeek-V4-Flash流水线，提升了接受率与推理效率。",
+      "llm_tldr": "自回归解码中反复执行目标模型是LLM推理延迟的主要来源。树结构推测利用共享前缀保留多条候选分支，但在DeepSeek-V4的CSA/HCA在线压缩注意力下，分支状态一致性被破坏。本文通过分支感知因果验证与临时状态隔离，将树结构推测解码集成到DeepSeek-V4-Flash流水线，提升了接受率与推理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.27373v1",
+      "source": "arxiv",
+      "title": "Attention Routing Stabilizes Early: Working-Set Inference for Recurrent Language Models",
+      "abstract": "Recurrent language models repeatedly apply shared network blocks to refine latent representations, but standard inference recomputes global attention at every recurrent step. We study attention dynamics across recurrent depth and find that attention support and distributions stabilize substantially earlier than hidden states and attention outputs. This suggests a two-stage structure: early steps discover a sparse working set of relevant context, while later steps refine representations over largely the same routing support. Motivated by this structure, we introduce WISE (Working-set Inference with Support Exploitation), a training-free method that uses unrestricted global attention during early recurrence and later reuses directly discovered block-structured support while keeping recurrent depth and within-support attention computation dynamic. Controlled interventions show that recurrent discovery is important and that support-only reuse better preserves model behavior than more restrictive attention-reuse alternatives. Across multi-hop QA benchmarks, WISE largely preserves full-attention performance, while context scaling reveals increasingly sparse working sets and greater efficiency gains. Quality is largely preserved through 2K context, with a measurable loss at 4K. An optimized sparse-attention implementation achieves up to a 1.76x attention speedup over native FlashAttention at 4K and a 1.36x speedup for the full 32-step attention trajectory. Our code is available at https://github.com/tbn5pj/WISE_code.",
+      "authors": [
+        "Ke Wan",
+        "Chen Chen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-09-23T05:21:10+00:00",
+      "link": "https://arxiv.org/pdf/2609.27373v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reuses attention routing support across recurrent steps, akin to KV reuse",
+      "llm_evidence_cn": "在循环步骤间复用注意力路由支撑，类似KV复用",
+      "llm_evidence": "在循环步骤间复用注意力路由支撑，类似KV复用",
+      "canonical_evidence": "在循环步骤间复用注意力路由支撑，类似KV复用",
+      "llm_tldr_en": "Recurrent language models recompute global attention at every step; WISE shows attention routing stabilizes early and reuses the discovered sparse working set, cutting inference cost without training.",
+      "llm_tldr_cn": "循环语言模型在每一步都重算全局注意力，计算开销大。本文发现注意力支撑与分布在较浅循环深度即已稳定，据此提出免训练方法WISE：早期使用完整全局注意力，后期复用已发现的稀疏上下文工作集。实验显示该方法在保持性能的同时显著降低推理开销，为循环模型的推理加速提供新思路。",
+      "llm_tldr": "循环语言模型在每一步都重算全局注意力，计算开销大。本文发现注意力支撑与分布在较浅循环深度即已稳定，据此提出免训练方法WISE：早期使用完整全局注意力，后期复用已发现的稀疏上下文工作集。实验显示该方法在保持性能的同时显著降低推理开销，为循环模型的推理加速提供新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.27470v1",
+      "source": "arxiv",
+      "title": "DeltaS: Reading the Gated Linear Attention State for KV Cache Eviction in Streaming Video",
+      "abstract": "Recent video-language models increasingly adopt hybrid architectures that interleave linear and full attention layers for efficient long-context processing. While the recurrent state of linear attention remains fixed in size, the KV cache of full attention continues to grow with the video stream, making eviction necessary under a bounded memory budget. The key challenge in streaming is that eviction must occur before the question arrives, so what to retain has to be decided without the question. Existing eviction methods derive token scores from the KV cache itself, using position, attention, or key-value representations, and attention-based scores further require proxy queries or extra computation. Hybrid backbones offer another source of signal. In gated-delta linear attention, the recurrent state is updated by the residual between each input and what can already be retrieved from the state, so its change over a chunk of frames reflects how much new information the chunk brings. We propose DeltaS, a query-agnostic, training-free method that retains video chunks inducing larger normalized state change, or state drift. In a controlled comparison with the budget and retention policy held fixed, state drift outperforms position-, attention-, and key-value-based signals. With a signal costing only 1.9% of the forward pass, DeltaS surpasses the strongest query-agnostic bounded-memory baseline by 2.1 points on average across six long-video benchmarks and by 5.6 points on the longest benchmark. These results suggest that the two memories of hybrid architectures can work cooperatively. Code is available at https://github.com/MaumAI-Company/DeltaS.",
+      "authors": [
+        "Taeyoun Kwon",
+        "Seungjin Kim",
+        "Hyeonyu Kim",
+        "Moon Hwan Kim"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-09-23T07:35:52+00:00",
+      "link": "https://arxiv.org/pdf/2609.27470v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache eviction for bounded memory in streaming long-context video inference",
+      "llm_evidence_cn": "流式长上下文视频推理中受内存约束的KV缓存驱逐",
+      "llm_evidence": "流式长上下文视频推理中受内存约束的KV缓存驱逐",
+      "canonical_evidence": "流式长上下文视频推理中受内存约束的KV缓存驱逐",
+      "llm_tldr_en": "In streaming video-language models the full-attention KV cache grows unbounded, and eviction must be decided before the question arrives; DeltaS reads the gated linear attention state to score tokens without proxy queries.",
+      "llm_tldr_cn": "视频语言模型采用线性与全注意力混合架构，线性注意力状态固定，但全注意力KV缓存随视频流增长，需在有限内存下驱逐。流式场景的关键难点在于驱逐必须在问题到达前完成，无法依赖问题信息，现有方法多从KV缓存本身推导分数。论文提出DeltaS，读取门控线性注意力的状态来指导KV缓存驱逐，无需代理查询或额外计算。实验表明该方法在流式视频问答中保持有界内存的同时维持检索质量。",
+      "llm_tldr": "视频语言模型采用线性与全注意力混合架构，线性注意力状态固定，但全注意力KV缓存随视频流增长，需在有限内存下驱逐。流式场景的关键难点在于驱逐必须在问题到达前完成，无法依赖问题信息，现有方法多从KV缓存本身推导分数。论文提出DeltaS，读取门控线性注意力的状态来指导KV缓存驱逐，无需代理查询或额外计算。实验表明该方法在流式视频问答中保持有界内存的同时维持检索质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.27981v1",
+      "source": "arxiv",
+      "title": "Risk-Controlled KV-Cache Eviction: From Memory Budgets to Risk Targets",
+      "abstract": "KV-cache eviction is typically evaluated through average quality-memory trade-offs, yet a small average loss can hide requests whose utility degrades materially. We reformulate eviction as a deployment risk-control problem: a material degradation occurs when eviction lowers task utility by more than a deployment-specified tolerance relative to full-KV inference on the same request, and deployment risk is the population frequency of such events. Given a reliability contract specifying a target risk level and confidence requirement, we use a compressor-agnostic post-hoc certification procedure to select a retention policy from calibration data with a finite-sample guarantee, falling back to full KV when no compressed policy is certified. Across multiple eviction methods, Llama and Mistral models, and LongBench and RULER-32K, the same contract supports substantially different levels of eviction: on Llama, it certifies SnapKV at 75% retention on LongBench but no tested compressed policy on RULER-32K, triggering full-KV fallback. Policies with empirical degradation rates below the 5% target can still fail finite-sample certification; on Llama LongBench, empirical thresholding selects uncertified policies that retain 5-10 percentage points less cache across fixed-budget methods. The proposed framework converts a deployment-level reliability requirement into a KV-memory operating point.",
+      "authors": [
+        "Beomgu Kang",
+        "SoJin Yun",
+        "Hojoon Kim",
+        "Hyunseok Seo"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-09-23T12:05:27+00:00",
+      "link": "https://arxiv.org/pdf/2609.27981v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "risk-controlled KV-cache eviction certified against memory budgets and target risk levels",
+      "llm_evidence_cn": "以风险目标与内存预算认证的KV缓存逐出策略",
+      "llm_evidence": "以风险目标与内存预算认证的KV缓存逐出策略",
+      "canonical_evidence": "以风险目标与内存预算认证的KV缓存逐出策略",
+      "llm_tldr_en": "This paper reformulates KV-cache eviction as a deployment risk-control problem, using a compressor-agnostic post-hoc certification procedure to pick retention policies meeting a target risk with finite-sample guarantees, falling back to full KV otherwise.",
+      "llm_tldr_cn": "KV缓存逐出通常以平均质量-内存权衡来评估，但平均损失很小仍可能掩盖部分请求效用显著下降的情况。本文把逐出重构为部署风险控制问题：当逐出使任务效用相对全KV推理下降超过容差即视为实质退化，部署风险即此类事件的发生频率。给定目标风险与置信度，作者用与压缩器无关的事后认证程序从校准数据选取保留策略，并在无法认证时回退全KV。实验表明该方法能在有限样本保证下控制风险。",
+      "llm_tldr": "KV缓存逐出通常以平均质量-内存权衡来评估，但平均损失很小仍可能掩盖部分请求效用显著下降的情况。本文把逐出重构为部署风险控制问题：当逐出使任务效用相对全KV推理下降超过容差即视为实质退化，部署风险即此类事件的发生频率。给定目标风险与置信度，作者用与压缩器无关的事后认证程序从校准数据选取保留策略，并在无法认证时回退全KV。实验表明该方法能在有限样本保证下控制风险。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.28006v1",
+      "source": "arxiv",
+      "title": "Shared Global KV with Layer-Specific Local History",
+      "abstract": "Decoder-only Transformer language models cache keys and values (KV) to reuse past computation during generation. Sharing KV across layers saves storage but reduces the diversity of representations available across depth. We study what local memory should retain alongside shared global KV, separating historical content from the input source used to form it. At 126M parameters and 2K context, an eight-seed study finds about 1.4% lower held-out test perplexity with local history than with a current-token local branch. Capacity, entry-count and training-compute controls support the value of historical content. In a two-seed comparison, this value persists when adjacent layers share local inputs while retaining independent projections; source sharing also shortens exact cache-construction dependencies. Against GQA and adjacent-layer KV sharing, equal bounded learning-rate searches and new-seed confirmation yield better same-source likelihood with larger caches and higher long-request latency. The ordering against adjacent-layer sharing persists after equal-token adaptation to 8K, with a short-context cost. The eight-seed external-book history effect remains uncertain, and downstream outcomes vary by task. We derive a sufficient suffix schedule that reduces upper-layer construction work while preserving the complete cache in exact arithmetic.",
+      "authors": [
+        "Xinglang Xian"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-23T12:33:40+00:00",
+      "link": "https://arxiv.org/pdf/2609.28006v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "sharing global KV across layers while retaining layer-specific local history to reuse past computation",
+      "llm_evidence_cn": "跨层共享全局KV并保留层特定局部历史以复用历史计算",
+      "llm_evidence": "跨层共享全局KV并保留层特定局部历史以复用历史计算",
+      "canonical_evidence": "跨层共享全局KV并保留层特定局部历史以复用历史计算",
+      "llm_tldr_en": "This paper studies what local memory should retain alongside shared global KV, separating historical content from its input source, and finds at 126M parameters that keeping local history lowers perplexity by about 1.4% versus a current-token branch.",
+      "llm_tldr_cn": "解码器Transformer缓存键值以复用生成过程中的历史计算，跨层共享KV虽能节省存储，却降低了不同深度可用的表示多样性。本文研究在共享全局KV之外，本地记忆应保留什么，并将历史内容与其输入来源区分开。在1.26亿参数、2K上下文上的八种子实验显示，保留本地历史比仅用当前token的局部分支困惑度低约1.4%，容量与训练算力控制实验进一步支持历史内容的价值。",
+      "llm_tldr": "解码器Transformer缓存键值以复用生成过程中的历史计算，跨层共享KV虽能节省存储，却降低了不同深度可用的表示多样性。本文研究在共享全局KV之外，本地记忆应保留什么，并将历史内容与其输入来源区分开。在1.26亿参数、2K上下文上的八种子实验显示，保留本地历史比仅用当前token的局部分支困惑度低约1.4%，容量与训练算力控制实验进一步支持历史内容的价值。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
