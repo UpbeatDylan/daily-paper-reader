@@ -1,0 +1,207 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-25T22:33:20.186608+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2609.28870v1",
+      "source": "arxiv",
+      "title": "When Fancy Eviction Fails: Rethinking Cache Replacement For LLM Prefix Reuse",
+      "abstract": "Long-running LLM applications repeatedly send growing context, making prefix caching critical for reducing prefill cost. Yet prefix-cache behavior under agentic workloads remains poorly understood. We study production traces from two companies and evaluate 14 eviction algorithms across HBM-constrained and large memory-pool settings. Despite a large gap to Belady, sophisticated policies designed for traditional caches provide little benefit over LRU. The reason is structural: prefix reuse is dominated by the regular pacing of active sessions, making recency unusually predictive. Prefix caching nevertheless introduces new challenges, including heavy-tailed session footprints and highly variable miss costs as attention computation grows with sequence length. We introduce the compute-savings ratio and two offline oracles to quantify these effects. Our results show that effective prefix-cache management should retain recency as its foundation while selectively adding quick demotion for one-hit prefixes, compute-aware partial eviction for expensive misses, and capacity-dependent eviction granularity. We will release the traces and simulator to support future research.",
+      "authors": [
+        "Yiyu Liu",
+        "Minlan Yu",
+        "Juncheng Yang"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-09-24T00:28:20+00:00",
+      "link": "https://arxiv.org/pdf/2609.28870v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "studies prefix cache eviction and reuse for LLM prefill cost reduction",
+      "llm_evidence_cn": "研究LLM前缀缓存的淘汰与复用以降低预填充开销",
+      "llm_evidence": "研究LLM前缀缓存的淘汰与复用以降低预填充开销",
+      "canonical_evidence": "研究LLM前缀缓存的淘汰与复用以降低预填充开销",
+      "llm_tldr_en": "The paper studies prefix-cache eviction under agentic workloads, evaluating 14 replacement algorithms on production traces and finding simple LRU nearly matches sophisticated policies because regular session pacing makes recency unusually predictive.",
+      "llm_tldr_cn": "论文关注长运行LLM应用中前缀缓存的淘汰行为。作者采集两家公司生产trace，在HBM受限和大内存池两种场景下评测14种缓存替换算法。结果显示复杂策略相比LRU几乎无额外收益，因前缀复用受会话规律节奏主导使新近性异常可预测。该工作揭示前缀缓存的独特挑战，为面向智能体负载的缓存设计提供依据。",
+      "llm_tldr": "论文关注长运行LLM应用中前缀缓存的淘汰行为。作者采集两家公司生产trace，在HBM受限和大内存池两种场景下评测14种缓存替换算法。结果显示复杂策略相比LRU几乎无额外收益，因前缀复用受会话规律节奏主导使新近性异常可预测。该工作揭示前缀缓存的独特挑战，为面向智能体负载的缓存设计提供依据。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.29913v1",
+      "source": "arxiv",
+      "title": "MILO: Efficient Many-shot In-Context Learning with Block-wise Low-rank Compression",
+      "abstract": "Many-shot in-context learning (ICL) enables large language models (LLMs) to adapt to complex tasks by conditioning on thousands of demonstration examples, but this paradigm shifts the inference efficiency bottleneck to the key-value (KV) cache memory. Due to the linear scaling behavior of the KV cache, storing these intermediate tensors has become a paramount challenge for both online serving and on-device deployment. To address this issue, we propose a novel compression framework, termed MILO, that exploits the low-rank redundancy inherent in many-shot contexts. Specifically, MILO features a block-wise low-rank compression strategy that compresses the KV cache at the block granularity, where each block contains multiple many-shot examples. Furthermore, to handle the heterogeneous context density across different blocks, MILO dynamically allocates rank budgets based on the information entropy, preserving the fidelity of critical blocks while aggressively compressing redundant ones. Experimental results on Qwen2.5 models demonstrate that our method achieves up to 50% reduction in KV cache memory and 1.8x throughput improvement, with negligible performance degradation on classification and reasoning benchmarks, significantly outperforming prior baselines.",
+      "authors": [
+        "Youpeng Zhao",
+        "Tian Tan",
+        "Liqian Peng",
+        "Jun Wang",
+        "Alec Go"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-24T14:52:24+00:00",
+      "link": "https://arxiv.org/pdf/2609.29913v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "block-wise low-rank KV cache compression",
+      "llm_evidence_cn": "分块低秩KV缓存压缩",
+      "llm_evidence": "分块低秩KV缓存压缩",
+      "canonical_evidence": "分块低秩KV缓存压缩",
+      "llm_tldr_en": "MILO exploits low-rank redundancy in many-shot contexts to compress the KV cache block-wise for efficient ICL inference.",
+      "llm_tldr_cn": "该论文针对多示例上下文学习把推理效率瓶颈转移到随示例数线性增长的KV缓存、从而给在线服务与端侧部署带来压力的问题，提出MILO压缩框架。它利用多示例上下文中固有的低秩冗余，采用分块低秩策略在块粒度上压缩KV缓存，每个块包含多个示例。实验表明该方法能有效降低缓存内存占用，为多示例ICL的高效推理与部署提供支持。",
+      "llm_tldr": "该论文针对多示例上下文学习把推理效率瓶颈转移到随示例数线性增长的KV缓存、从而给在线服务与端侧部署带来压力的问题，提出MILO压缩框架。它利用多示例上下文中固有的低秩冗余，采用分块低秩策略在块粒度上压缩KV缓存，每个块包含多个示例。实验表明该方法能有效降低缓存内存占用，为多示例ICL的高效推理与部署提供支持。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.26425v1",
+      "source": "arxiv",
+      "title": "QuantWM: Temporally Consistent 2-Bit KV Cache Quantization for World Models and Video Generation",
+      "abstract": "KV cache memory has become a major deployment bottleneck for video generation and world models, which motivates low-bit quantization study for efficiency. Existing 2-bit KV cache quantization methods can achieve nearly lossless performance on video benchmarks such as VBench, however, we find that they still cause severe temporal flickering and visual degradation. Meanwhile, deeper investigates show that Key quantization produces smaller reconstruction errors than Value, but surprisingly leads to much larger output degradation. We trace this discrepancy to attention: small Key perturbations can change the attention logits, i.e., QK^\\top, and shift the temporal-spatial tokens selected by Queries. These observations motivate us to explicitly preserve attention logits and temporal-spatial token selection during KV cache quantization to alleviate the visual degradation problem. To address this issue, we present QuantWM, a training-free and strictly causal 2-bit KV cache quantization framework. QuantWM introduces two complementary techniques to mitigate the attention shifts. Firstly, quantization-sensitivity-aware clustering (QSAC) jointly considers historical Query sensitivity and residual ranges to select INT2-friendly Key centroids, which reduces quantization errors in channels that are more critical to attention. In addition, principal-subspace attention compensation (PSAC) restores the remaining Key errors along the dominant Query subspace using low-rank projections, which provides a direct and efficient correction to stabilize attention logits. Extensive experiments on Causal-Forcing, LingBot-World-v2, HY-World 1.5, Matrix-Game-2 and Longcat-Video demonstrate that QuantWM significantly improves visual quality and temporal consistency, while outperforming existing methods across image and video quality metrics with up to 6.20x KV cache memory compression and limited additional overhead.",
+      "authors": [
+        "Jiaqi Zhao",
+        "Xiaobin Hu",
+        "Bo Yin",
+        "Junpeng Jiang",
+        "Miao Zhang",
+        "Shuicheng Yan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-09-22T13:50:54+00:00",
+      "link": "https://arxiv.org/pdf/2609.26425v1",
+      "tags": [
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "2-bit KV cache quantization for memory bottleneck reduction",
+      "llm_evidence_cn": "用于缓解内存瓶颈的2比特KV缓存量化",
+      "llm_evidence": "用于缓解内存瓶颈的2比特KV缓存量化",
+      "canonical_evidence": "用于缓解内存瓶颈的2比特KV缓存量化",
+      "llm_tldr_en": "QuantWM studies 2-bit KV cache quantization for video generation and world models, tracing temporal flickering to Key perturbations that shift attention logits, and proposes a temporally consistent quantization scheme.",
+      "llm_tldr_cn": "论文针对视频生成与世界模型中KV缓存内存瓶颈，研究低比特量化。作者发现现有2比特KV缓存量化虽在VBench等指标近乎无损，却仍造成严重时间闪烁，并追溯到Key量化扰动注意力logits、改变Query选择的时空token。为此提出QuantWM以提升时间一致性，揭示生成任务中KV量化的独特失效模式。",
+      "llm_tldr": "论文针对视频生成与世界模型中KV缓存内存瓶颈，研究低比特量化。作者发现现有2比特KV缓存量化虽在VBench等指标近乎无损，却仍造成严重时间闪烁，并追溯到Key量化扰动注意力logits、改变Query选择的时空token。为此提出QuantWM以提升时间一致性，揭示生成任务中KV量化的独特失效模式。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.27233v1",
+      "source": "arxiv",
+      "title": "Distilling Sequential Computation in Transformer Language Models",
+      "abstract": "Transformer language models process sequences token by token in an autoregressive manner, making growing contexts increasingly expensive. Yet many adjacent token spans are highly predictable or frequently occur as stable units, suggesting that their representations may be compressible. We introduce a method for distilling sequential computation by replacing spans of input tokens with collapsed representations, computed on the fly by a lightweight merge module. This module generates a single surrogate embedding from a sequence of static token embeddings that captures the functional role of the multiple tokens, allowing pretrained models to operate on compressed inputs without architectural changes or re-training. We apply this approach during inference to compress both prompts and intermediate decoding steps, using a rollback mechanism to substitute stored multi-token KV cache entries with their single-step surrogates. Experiments across diverse models show that the merge module can be used to reduce effective sequence length by up to 40% with minimal accuracy degradation across language modeling evaluations and downstream tasks, including question answering, summarization, commonsense reasoning, and long-form mathematical reasoning. Additional lightweight adaptation of the merge module further improves the accuracy-compression trade-off in selected settings. These results demonstrate that sequential token computation in Transformers can be effectively approximated through condensed surrogate representations that approximate the original behavior without model updating.",
+      "authors": [
+        "Zixuan Lan",
+        "Jessica Yang",
+        "Yanhong Li",
+        "Karen Livescu",
+        "Jiawei Zhou"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-23T02:02:57+00:00",
+      "link": "https://arxiv.org/pdf/2609.27233v1",
+      "tags": [
+        "keyword:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "distilling sequential computation to compress long contexts for cheaper inference",
+      "llm_evidence_cn": "蒸馏序列计算以压缩长上下文降低推理成本",
+      "llm_evidence": "蒸馏序列计算以压缩长上下文降低推理成本",
+      "canonical_evidence": "蒸馏序列计算以压缩长上下文降低推理成本",
+      "llm_tldr_en": "Autoregressive transformers make growing contexts expensive; this work distills sequential computation by collapsing token spans into surrogate embeddings via a lightweight merge module, enabling pretrained models to run on compressed inputs for cheaper inference.",
+      "llm_tldr_cn": "自回归语言模型逐token处理序列，使上下文增长时代价越来越高，而许多相邻token片段高度可预测。作者提出序列计算蒸馏方法，用轻量合并模块把一段token嵌入折叠为单个代理表示，使预训练模型无需改结构或重训即可处理压缩输入。该方法在推理阶段降低了长上下文的计算开销，为长上下文加速提供了新途径。",
+      "llm_tldr": "自回归语言模型逐token处理序列，使上下文增长时代价越来越高，而许多相邻token片段高度可预测。作者提出序列计算蒸馏方法，用轻量合并模块把一段token嵌入折叠为单个代理表示，使预训练模型无需改结构或重训即可处理压缩输入。该方法在推理阶段降低了长上下文的计算开销，为长上下文加速提供了新途径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.29812v1",
+      "source": "arxiv",
+      "title": "FlashLoop: Fast and Memory-Efficient Looped Transformers via Lazy Updates",
+      "abstract": "Looped Transformers have attracted substantial attention as a parameter-efficient approach to increasing computational depth through repeated application of shared Transformer blocks. However, their practical advantages over conventional Transformers remain under debate: each additional loop incurs another Transformer pass and requires caching another set of KV states, causing inference FLOPs and KV-cache memory to grow continuously with loop depth. This overhead becomes particularly severe at large loop counts and long context, preventing the parameter efficiency of Looped Transformers from translating into practical inference efficiency. In this paper, we find that much of the additional computation and storage introduced by looping is redundant. As recurrence proceeds, state changes become increasingly concentrated on a small subset of tokens; attention-output differences are dominated by a sparse and stable subset of key columns; and KV residuals between adjacent loops become progressively more amenable to low-bit quantization. Building on these observations, we introduce FlashLoop, a training-free inference framework that reduces cross-loop redundancy through token-sparse updates, sparse attention, and KV-residual quantization. Across several Looped Transformers models, \\textsc{FlashLoop} delivers lossless accuracy while achieving up to 1.64$\\times$ end-to-end speedup and up to 6$\\times$ KV-cache memory reduction, substantially improving the practicality of scaling Looped Transformers to greater computational depths and longer context.",
+      "authors": [
+        "Wanqi Yang",
+        "Shiwei Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-24T13:47:03+00:00",
+      "link": "https://arxiv.org/pdf/2609.29812v1",
+      "tags": [
+        "keyword:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reducing redundant KV state caching in looped transformers",
+      "llm_evidence_cn": "减少循环Transformer中冗余KV状态缓存",
+      "llm_evidence": "减少循环Transformer中冗余KV状态缓存",
+      "canonical_evidence": "减少循环Transformer中冗余KV状态缓存",
+      "llm_tldr_en": "FlashLoop observes that much of the extra computation and KV state caching introduced by looping transformers is redundant, and uses lazy updates to cut inference FLOPs and KV-cache memory for long-context, high-loop inference.",
+      "llm_tldr_cn": "循环Transformer通过重复应用共享块增加计算深度，但每次循环都需额外前向并缓存一套KV状态，导致推理FLOPs与KV缓存显存随循环深度持续增长，在长上下文与多循环时尤为严重。本文提出FlashLoop，发现循环引入的计算与存储存在大量冗余，采用惰性更新机制减少重复计算与KV缓存写入。实验表明该方法在长上下文与高循环数场景下显著提升推理效率与内存表现，使循环Transformer的参数效率转化为实际推理效率。",
+      "llm_tldr": "循环Transformer通过重复应用共享块增加计算深度，但每次循环都需额外前向并缓存一套KV状态，导致推理FLOPs与KV缓存显存随循环深度持续增长，在长上下文与多循环时尤为严重。本文提出FlashLoop，发现循环引入的计算与存储存在大量冗余，采用惰性更新机制减少重复计算与KV缓存写入。实验表明该方法在长上下文与高循环数场景下显著提升推理效率与内存表现，使循环Transformer的参数效率转化为实际推理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
