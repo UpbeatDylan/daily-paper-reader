@@ -1,0 +1,39 @@
+{
+  "label": "2026-09-27",
+  "date": "2026-09-27",
+  "generated_at": "2026-09-27T22:16:44",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202609/27/2609.23130v1-from-inference-engine-to-inference-control-plane-connecting-vllm-llm-d-and-the-evolution-of-efficient-distributed-llm-serving",
+      "section": "quick",
+      "title_en": "From Inference Engine to Inference Control Plane: Connecting vLLM, llm-d, and the Evolution of Efficient Distributed LLM Serving",
+      "authors": "Twinkll Sisodia",
+      "date": "2026-09-19",
+      "pdf": "https://arxiv.org/pdf/2609.23130v1",
+      "score": "6.0",
+      "evidence": "高效分布式LLM服务中的可复用状态与PagedAttention",
+      "tldr": "大型语言模型（LLM）推理正从引擎局部优化转向分布式控制问题，涉及可复用状态、阶段放置、异构加速器、网络、自动扩缩容与SLO。本文综合系统研究、开源实现与生产案例，将vLLM与llm-d视为互补层：引擎优化执行，控制平面优化全局调度。作者提出推理执行规划器，选择聚合/解聚拓扑、KV来源与传输、硬件变体及路由准入等可行方案。贡献在于提供基准图谱、瓶颈迁移分类、部署指南与SLO-goodput评估框架。",
+      "tags": "query:pic",
+      "abstract_en": "Large language model (LLM) inference is evolving from an engine-local optimization problem into a distributed control problem involving reusable state, phase placement, heterogeneous accelerators, networking, autoscaling, reliability, and service-level objectives. This paper connects that transition across peer-reviewed systems research, open-source implementations, and documented production studies. It treats vLLM and llm-d as complementary layers: model-serving engines optimize execution through mechanisms such as PagedAttention, continuous batching, kernels, quantization, and parallelism, while an inference control plane can optimize where, when, and under what policy execution occurs across a fleet. The contribution is synthesis rather than a new benchmark; all reported performance and deployment results remain attributed to their original sources. The combined evidence suggests that the scarce resource in modern inference is shifting from raw FLOPs alone toward managed state, placement, network movement, reliability, and decision quality. We propose an Inference Execution Planner that selects feasible execution plans rather than only endpoints, including aggregated versus disaggregated topology, KV source and transfer action, hardware variant, routing/admission policy, and slower scaling decisions. We also provide a source-local benchmark atlas, a bottleneck-migration taxonomy, practical deployment guidance, an evaluation framework based on SLO-goodput, and research questions for agentic, multimodal, heterogeneous, and resilient inference.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202609/27/2609.24635v1-written-as-a-record-read-as-an-address-what-a-forward-pass-leaves-in-an-operations-kv-cache",
+      "section": "quick",
+      "title_en": "Written as a Record, Read as an Address: What a Forward Pass Leaves in an Operation's KV Cache",
+      "authors": "Lingfeng Wu, Behzad Shomali",
+      "date": "2026-09-21",
+      "pdf": "https://arxiv.org/pdf/2609.24635v1",
+      "score": "6.0",
+      "evidence": "研究前向传播写入操作KV缓存的内容及其读取方式",
+      "tldr": "语言模型执行“交换 Box F 与 Box B 内容”等操作时，前向传播会把操作 token 写入 KV cache，但留下何种记录、如何被读取仍不清楚。作者将前向传播拆成冻结 writer 与隔离训练 reader，让 reader 仅凭指令和操作 token 恢复被隐藏的状态绑定。在合成 boxes 任务上，未训练 reader 仅恢复≤0.06 的查询绑定，训练后达 0.75–1.00，且可恢复性随操作读写足迹变化。操作 span 移植能因果改变可见状态的读取路径，形成路由记录；隔离训练还在 Llama-3.1-8B 与 Mistral-7B 的中层窄带内，从单个操作数名 token 直接恢复 payload。这表明操作 token 留下局部、可因果恢复的记录，支持路由与直接取值，但写出记录的模型主要读取其携带的地址而非值。",
+      "tags": "query:pic",
+      "abstract_en": "When a language model reads an operation such as \"Swap the contents of Box F and Box B\", its forward pass writes keys and values for those tokens into the KV cache. Prior work on entity tracking establishes what models use: bindings are resolved at query time rather than stored as explicit latent state. We ask what they write at the operation span and how it is accessed. We split a forward pass into a frozen writer and a reader: the writer's cache is recomputed without gradients, while the reader sees only the instruction and operation tokens, with all state descriptions hidden, and is trained in isolation. Anything the reader recovers was therefore already present in the unmodified cache. On a synthetic boxes task, a base reader recovers $\\leq 0.06$ of queried bindings against $0.75$--$1.00$ after training, and recoverability tracks the operation's read/write footprint. We find two modes of access. Across Llama-3.1-8B and Mistral-7B, operation-span transplants causally redirect which visible state is read even when the two worlds hold identical values, revealing a routing record. Isolation training preserves routing and adds direct access to the payload, the value the operation read, from the single operand-name token in a narrow mid-depth band (layers 12--15 of 32 in Llama-3.1-8B, 14--17 in Mistral-7B) --- the same site that holds the routing record. The same recipe extends to further operations, ToMi and GSM8K, but is bounded by training coverage and costs open-book accuracy. Operation tokens thus leave localized, causally recoverable records that support both routing and direct payload access, though the model that writes them reads mainly the address they carry and not the value.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
