@@ -1,0 +1,293 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-09-28T23:34:35.980458+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2609.30854v1",
+      "source": "arxiv",
+      "title": "The KV Cache Is the New Memory Wall",
+      "abstract": "Autoregressive LLM inference at long context is bounded by memory bandwidth, not arithmetic throughput, and the binding resource shifts from model weights to the Key-Value (KV) cache as sequence length grows. For Llama-3-70B in BF16, the 140 GB weight footprint exceeds the 80 GB HBM of a single accelerator, and one 128k-token sequence adds 42 GB of KV cache. Techniques that compress, evict, page, share, or offload KV state have proliferated, but reported gains use inconsistent workloads, hardware, and quality metrics, preventing cross-paper comparison. This SoK paper unifies the field analytically, with a protocol that strictly separates derived and reported claims. We derive closed-form arithmetic intensity as a decaying function of context length, parameterized by hardware topology for NVIDIA H100, NVIDIA B200, and AMD MI300X, including per-die bandwidth partitioning and the crossover lengths where KV traffic overtakes weight traffic. We classify the literature into five domains, quantization, token eviction, KV paging, prefix caching, and heterogeneous tiering, evaluating one method per domain at 128k context under a single protocol. The central finding is a three-regime structure: below a hardware-specific crossover, weight traffic dominates and KV compression yields negligible speedup; beyond it, KV traffic dominates and each domain trades quality for bandwidth savings approaching the roofline bound. Paging and prefix sharing are lossless but address capacity, not bandwidth. Quantization and eviction cut bandwidth directly, with degradation that accelerates below 4-bit precision and turns discontinuous for eviction on position-sensitive tasks. Tiering converts the bandwidth wall into an interconnect problem bounded by PCIe or NVLink rather than HBM. We close with design rules for selecting a compression domain given hardware, context length, and quality budget.",
+      "authors": [
+        "Tejinder Singh"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG",
+        "cs.PF"
+      ],
+      "published": "2026-09-25T06:01:27+00:00",
+      "link": "https://arxiv.org/pdf/2609.30854v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "SoK on KV cache compression, eviction, paging, sharing and offloading for long-context inference",
+      "llm_evidence_cn": "长上下文推理中KV缓存压缩、驱逐、分页、共享与卸载的系统综述",
+      "llm_evidence": "长上下文推理中KV缓存压缩、驱逐、分页、共享与卸载的系统综述",
+      "canonical_evidence": "长上下文推理中KV缓存压缩、驱逐、分页、共享与卸载的系统综述",
+      "llm_tldr_en": "Long-context LLM inference is bounded by memory bandwidth, with the KV cache becoming the binding resource. This SoK unifies compression, eviction, paging, sharing and offloading, deriving closed-form arithmetic intensity and a strict evaluation protocol.",
+      "llm_tldr_cn": "长上下文自回归推理的瓶颈已从算术吞吐转向显存带宽，KV缓存随序列增长成为主要资源约束。本文是一篇系统性综述，统一分析压缩、驱逐、分页、共享与卸载等KV管理技术，并给出严格区分推导结论与报告结论的评测协议。作者推导出随上下文长度衰减的算术强度闭式表达，参数化于硬件拓扑。该工作为跨论文比较KV优化收益提供了统一的分析框架。",
+      "llm_tldr": "长上下文自回归推理的瓶颈已从算术吞吐转向显存带宽，KV缓存随序列增长成为主要资源约束。本文是一篇系统性综述，统一分析压缩、驱逐、分页、共享与卸载等KV管理技术，并给出严格区分推导结论与报告结论的评测协议。作者推导出随上下文长度衰减的算术强度闭式表达，参数化于硬件拓扑。该工作为跨论文比较KV优化收益提供了统一的分析框架。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.31415v1",
+      "source": "arxiv",
+      "title": "Evaluating the accuracy of KV cache reuse techniques",
+      "abstract": "Position-independent KV cache reuse aims to reduce latency in retrieval-augmented generation by reusing chunk-level KV caches across prompts. We show that current evaluations of KV cache reuse techniques rely on measurements that fail to faithfully capture the loss of accuracy attributable to reuse, often artificially inflating the reported effectiveness. We also show that existing datasets do not exhibit the reuse dynamics needed to thoroughly evaluate such techniques. To address these issues, we propose an evaluation methodology that measures this accuracy loss without ambiguity and we introduce Boxoffice, a tool that programmatically generates evaluation datasets that exercise challenging KV cache reuse patterns.",
+      "authors": [
+        "Samuel Cestola",
+        "Tianxiang Xia",
+        "Pengfei Zheng",
+        "Weiyan Zheng",
+        "Bo Wang",
+        "Yi Zhao",
+        "Diego Didona"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-25T15:36:43+00:00",
+      "link": "https://arxiv.org/pdf/2609.31415v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "position-independent KV cache reuse and its evaluation accuracy",
+      "llm_evidence_cn": "位置无关KV缓存复用及其评测准确性",
+      "llm_evidence": "位置无关KV缓存复用及其评测准确性",
+      "canonical_evidence": "位置无关KV缓存复用及其评测准确性",
+      "llm_tldr_en": "Current evaluations of position-independent KV cache reuse overstate effectiveness. The paper proposes an unambiguous accuracy-loss measurement methodology and Boxoffice, a tool generating datasets with challenging reuse patterns.",
+      "llm_tldr_cn": "针对位置无关KV缓存复用在检索增强生成中降低延迟的场景，现有评测方法无法真实反映复用带来的精度损失，且数据集缺乏足够的复用动态。论文提出一套无歧义的精度损失评测方法，并发布Boxoffice工具，可编程生成包含挑战性复用模式的评测数据集。结果表明当前KV缓存复用技术的有效性常被高估，该工作为复用技术提供了更可靠的评测基准。",
+      "llm_tldr": "针对位置无关KV缓存复用在检索增强生成中降低延迟的场景，现有评测方法无法真实反映复用带来的精度损失，且数据集缺乏足够的复用动态。论文提出一套无歧义的精度损失评测方法，并发布Boxoffice工具，可编程生成包含挑战性复用模式的评测数据集。结果表明当前KV缓存复用技术的有效性常被高估，该工作为复用技术提供了更可靠的评测基准。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.30884v1",
+      "source": "arxiv",
+      "title": "CacheReforge: Bounded Recovery for Stale KV Caches under Evolving Adapters",
+      "abstract": "Large language models rely on KV caching to reduce repeated prefill computation in long context and interactive applications. As lightweight adapters evolve, cached states reflect earlier versions, so stale reuse distorts current model outputs, while complete affected suffix recomputation restores fidelity at substantial cost. We seek minimal recomputation that recovers current adapter behavior. Existing systems track token, context, or stable adapter identity, but neither represent caches from earlier adapter versions nor distinguish update propagation from the recomputation required for behavioral recovery. To address these gaps, we introduce CacheReforge, which represents stale KV caches as layerwise mixed-version objects. It combines per-layer adapter anchors, calibrated sensitivity, accumulated drift, and executable restart boundaries to select direct reuse, bounded recomputation, or complete affected-suffix recovery. We distinguish dependency depth from the functional recomputation horizon and use cumulative tail influence to characterize when bounded recovery preserves current-model behavior. We evaluate CacheReforge on Qwen2.5-1.5B and Qwen2.5-7B with continual LoRA updates, including 16K HotpotQA and 2WikiMQA workloads. CacheReforge reduces mean KL divergence by 92.4% relative to stale reuse, while recomputing only 5.44% of layers and reducing cache-maintenance time by 93.2% relative to fresh full prefill. These results show that version-aware recovery preserves model fidelity and most KV caching gains.",
+      "authors": [
+        "Yuhang Cao",
+        "Yanzhou Mu",
+        "Chunrong Fang",
+        "Zhenyu Chen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-25T06:46:47+00:00",
+      "link": "https://arxiv.org/pdf/2609.30884v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "minimal recomputation to recover stale KV caches and reuse them under evolving adapters",
+      "llm_evidence_cn": "面向陈旧KV缓存的最小重算与复用",
+      "llm_evidence": "面向陈旧KV缓存的最小重算与复用",
+      "canonical_evidence": "面向陈旧KV缓存的最小重算与复用",
+      "llm_tldr_en": "CacheReforge addresses stale KV caches in long-context and interactive LLM serving: as adapters evolve, cached states reflect old versions and distort outputs, while full suffix recomputation is costly. It represents stale caches as layerwise mixed-version objects and recovers behavior with minimal recomputation.",
+      "llm_tldr_cn": "长上下文与交互式应用中，LLM依赖KV缓存减少重复预填充，但当轻量适配器持续演化时，旧版本缓存状态会污染当前输出，而完全重算受影响后缀代价高昂。论文提出CacheReforge，将陈旧KV缓存表示为逐层混合版本对象，并区分更新传播与行为恢复所需的最小重算。实验表明该方法能在保持当前适配器行为的前提下仅用最小重算恢复缓存保真度，为适配器演化场景下的KV缓存复用提供有界恢复机制。",
+      "llm_tldr": "长上下文与交互式应用中，LLM依赖KV缓存减少重复预填充，但当轻量适配器持续演化时，旧版本缓存状态会污染当前输出，而完全重算受影响后缀代价高昂。论文提出CacheReforge，将陈旧KV缓存表示为逐层混合版本对象，并区分更新传播与行为恢复所需的最小重算。实验表明该方法能在保持当前适配器行为的前提下仅用最小重算恢复缓存保真度，为适配器演化场景下的KV缓存复用提供有界恢复机制。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.30738v1",
+      "source": "arxiv",
+      "title": "Beyond Mean Attention: Diversity-Aware, Layer-Wise Scoring for KV Cache Eviction",
+      "abstract": "KV cache eviction methods such as SnapKV and PyramidKV rank tokens solely by mean attention over a small observation window. We study a unified score, $μ_i+λ_1σ_i+λ_2\\mathrm{corr}(i,S)$, adding attention dispersion across window queries and redundancy relative to selected tokens. For $λ_2<0$, the score penalizes similarity to selected tokens as in maximal marginal relevance (MMR), without extra forward passes. To test whether this relevance-diversity balance should vary with depth, we compare fixed global coefficients with three-segment and quadratic profiles. Only these depth profiles are searched on a development split under a $\\sinh$ reparameterization. On all 16 English LongBench datasets with Mistral-7B at a budget of 64 entries per layer, a single global diversification constant improves 13 of 16 datasets (macro +1.1); the gain holds at budget 32 and narrows at 128. Per-dataset search finds no detectable layer structure on most datasets; on passage retrieval it finds a large one: a mid-layer sign flip that rewards similarity and is worth +9.6 over the baseline at budget 64 and, without re-tuning, +13.2 over the global constant at budget 128. Ablations attribute the gain to the redundancy term; replaying every accepted search state on the held-out test set separates genuine structure from tuning noise.",
+      "authors": [
+        "Tianfang Xie",
+        "Wei Zhu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-09-25T03:08:00+00:00",
+      "link": "https://arxiv.org/pdf/2609.30738v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "improved KV cache eviction scoring for long-context inference acceleration",
+      "llm_evidence_cn": "面向长上下文推理加速的KV缓存驱逐打分改进",
+      "llm_evidence": "面向长上下文推理加速的KV缓存驱逐打分改进",
+      "canonical_evidence": "面向长上下文推理加速的KV缓存驱逐打分改进",
+      "llm_tldr_en": "SnapKV and PyramidKV rank tokens only by mean attention, ignoring dispersion and redundancy. This paper studies a unified score adding attention dispersion and redundancy relative to selected tokens, and finds the relevance-diversity balance should vary with layer depth across 16 LongBench datasets with Mistral-7B.",
+      "llm_tldr_cn": "SnapKV、PyramidKV等KV缓存驱逐方法仅按小观察窗内的均值注意力对token排序，忽略了注意力离散度与相对已选token的冗余性。论文研究统一打分μ+λ1σ+λ2corr，引入窗口查询的注意力离散度与类似MMR的冗余惩罚，并比较固定、三段与二次的层深系数曲线。在Mistral-7B、LongBench全部16个英文数据集、每层64条预算下取得更优效果，表明相关性-多样性平衡应随层深自适应，为KV缓存驱逐提供更精细的准则。",
+      "llm_tldr": "SnapKV、PyramidKV等KV缓存驱逐方法仅按小观察窗内的均值注意力对token排序，忽略了注意力离散度与相对已选token的冗余性。论文研究统一打分μ+λ1σ+λ2corr，引入窗口查询的注意力离散度与类似MMR的冗余惩罚，并比较固定、三段与二次的层深系数曲线。在Mistral-7B、LongBench全部16个英文数据集、每层64条预算下取得更优效果，表明相关性-多样性平衡应随层深自适应，为KV缓存驱逐提供更精细的准则。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.29875v1",
+      "source": "arxiv",
+      "title": "When Can Agents Forget Their Reasoning? ICLR for Long-Horizon Agent Context Compression",
+      "abstract": "Long horizon language model agents continually accumulate reasoning history, increasing context length and inference cost even after earlier decisions have been executed and observed. Unlike static Chain of Thought compression, removing historical reasoning can change future actions and the resulting interaction trajectory. We study when such reasoning can be safely forgotten. We propose Interaction Aware Compression for Long Horizon Reasoning (ICLR), a training free online method that ranks reasoning blocks using frozen proxy entropy while preserving actions, tool calls, and observations. On 260 WorkBuddyBench tasks, ICLR improves average reward from 0.699 to 0.718, while reducing input, output, and cache read tokens by 25.5%, 14.4%, and 33.3%, respectively. Ablations reveal trajectory amplification, where local reasoning deletion produces nonlinear changes in total computation by altering subsequent interaction. Representation probing, activation patching, and controlled trajectory analyses further suggest that historical reasoning becomes more replaceable once task relevant derived state has been reliably externalized into code, files, tool outputs, or environmental feedback. These results characterize agent reasoning as dynamic working state rather than permanent interaction history.",
+      "authors": [
+        "Mingxuan Wang",
+        "Fei Luo",
+        "Bo Wang",
+        "Guorun Yao",
+        "Yinglong Guo",
+        "Chao Ning",
+        "Hongyue Chen",
+        "Yanbiao Ma",
+        "Jungong Han"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-09-24T14:28:43+00:00",
+      "link": "https://arxiv.org/pdf/2609.29875v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "context compression reducing cache read tokens for long-horizon inference",
+      "llm_evidence_cn": "通过上下文压缩减少缓存读取token以降低长时程推理成本",
+      "llm_evidence": "通过上下文压缩减少缓存读取token以降低长时程推理成本",
+      "canonical_evidence": "通过上下文压缩减少缓存读取token以降低长时程推理成本",
+      "llm_tldr_en": "Long-horizon agents accumulate reasoning history, raising context length and cost, yet deleting reasoning may alter future actions. ICLR ranks reasoning blocks by frozen proxy entropy, preserving actions and observations, cutting tokens and raising reward.",
+      "llm_tldr_cn": "长时程智能体不断累积推理历史，导致上下文与推理成本持续增长，但删除历史推理可能改变后续动作轨迹。本文研究推理何时可被安全遗忘，提出免训练的在线压缩方法ICLR，基于冻结代理熵对推理块排序，同时保留动作、工具调用与观察。在WorkBuddyBench上平均奖励由0.699升至0.718，并显著减少输入、输出与缓存读取token。该工作为智能体上下文压缩提供了安全准则。",
+      "llm_tldr": "长时程智能体不断累积推理历史，导致上下文与推理成本持续增长，但删除历史推理可能改变后续动作轨迹。本文研究推理何时可被安全遗忘，提出免训练的在线压缩方法ICLR，基于冻结代理熵对推理块排序，同时保留动作、工具调用与观察。在WorkBuddyBench上平均奖励由0.699升至0.718，并显著减少输入、输出与缓存读取token。该工作为智能体上下文压缩提供了安全准则。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.31093v1",
+      "source": "arxiv",
+      "title": "Block Sparse Attention with Log-Linear Complexity",
+      "abstract": "Scaling language models to long contexts is limited by the quadratic cost of self-attention. Block sparse attention offers an efficient alternative, but selecting the retained blocks remains a bottleneck. Conventional block selection requires scoring all query-block pairs and therefore remains quadratic in sequence length. To address this issue, we propose PISA, a block-sparse attention mechanism that employs a pyramid Top-$K$ selection strategy. The main idea is to gradually narrow down the candidates across different levels, making it more efficient to find the most relevant keys. Specifically, we construct a coarse-to-fine hierarchy of keys and perform selection from the coarsest level. At each level, LogSumExp scoring is applied to a bounded candidate set to select candidates for the next finer level, continuing until the finest level is reached. Through pooling, we construct $O(\\log N)$ levels of keys, yielding an overall complexity of $O(N\\log N)$, where $N$ denotes the sequence length. We develop hardware-aware Triton kernels for both training and inference, fusing hierarchical routing and LogSumExp scoring without materializing the query-key score matrix. We further evaluate our method on language modeling tasks. Compared with the baseline, our method achieves comparable performance on benchmarks such as commonsense reasoning while delivering better results on retrieval tasks.",
+      "authors": [
+        "Bohao Tang",
+        "Zhen Qin",
+        "Yuqi Pan",
+        "Zheng Li",
+        "Pengfei Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-25T10:28:58+00:00",
+      "link": "https://arxiv.org/pdf/2609.31093v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "efficient block sparse attention for long-context inference acceleration",
+      "llm_evidence_cn": "面向长上下文推理加速的高效块稀疏注意力",
+      "llm_evidence": "面向长上下文推理加速的高效块稀疏注意力",
+      "canonical_evidence": "面向长上下文推理加速的高效块稀疏注意力",
+      "llm_tldr_en": "Block sparse attention suffers from quadratic block selection. PISA introduces a pyramid Top-K strategy with a coarse-to-fine key hierarchy, narrowing candidates level by level to enable log-linear long-context attention.",
+      "llm_tldr_cn": "将语言模型扩展到长上下文受自注意力二次成本限制，块稀疏注意力虽高效，但保留块的选择仍需对所有查询-块对打分而保持二次复杂度。论文提出PISA，采用金字塔Top-K选择策略，构建由粗到细的键层次并逐层缩小候选集。结果在降低选择开销的同时保持注意力质量，使长上下文推理更高效。",
+      "llm_tldr": "将语言模型扩展到长上下文受自注意力二次成本限制，块稀疏注意力虽高效，但保留块的选择仍需对所有查询-块对打分而保持二次复杂度。论文提出PISA，采用金字塔Top-K选择策略，构建由粗到细的键层次并逐层缩小候选集。结果在降低选择开销的同时保持注意力质量，使长上下文推理更高效。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.31395v1",
+      "source": "arxiv",
+      "title": "ActKV: Efficient LLM Agents through Action-Guided KV Cache Management",
+      "abstract": "Agentic LLM inference accumulates long KV caches across iterative observation-reasoning-action loops, imposing substantial memory overhead and limiting serving throughput. Existing compression methods emphasize overall output quality, overlooking the asymmetric importance of actions in driving task progress. Our key idea is to establish a compression criterion that values KV entries by their contribution to action generation and prioritizes action quality. However, iterative execution, dynamic memory demands, and scattered action-critical entries pose challenges to eviction policies, budget allocation, and paged memory integration. To this end, we propose ActKV, the first KV cache compression framework tailored for agentic LLM inference. (i) Action-oriented KV cache eviction exploits stable action access patterns to retain entries critical to future actions, supporting reliable task progress under compression. (ii) Confidence-driven adaptive budget allocation uses LLM's intrinsic confidence to adapt the budget to evolving action-critical memory demands. (iii) Page-aware compression management standardizes compression into three primitives with customized kernels, realizing practical throughput gains. On long-trace tasks, ActKV retains an average of 98.53% of FullKV's accuracy with only 25.98% of its peak KV cache memory. It also achieves 3.97 times and 3.58 times FullKV's token and task throughput, delivering state-of-the-art performance.",
+      "authors": [
+        "Zihan Wang",
+        "Cheng Tang",
+        "Lei Gong",
+        "Chao Wang",
+        "Wenqi Lou",
+        "Teng Wang",
+        "Xuehai Zhou"
+      ],
+      "primary_category": "cs.OS",
+      "categories": [
+        "cs.OS",
+        "cs.AI"
+      ],
+      "published": "2026-09-25T15:24:30+00:00",
+      "link": "https://arxiv.org/pdf/2609.31395v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "action-guided KV cache compression and management for agentic LLM inference",
+      "llm_evidence_cn": "面向智能体推理的动作引导KV缓存压缩管理",
+      "llm_evidence": "面向智能体推理的动作引导KV缓存压缩管理",
+      "canonical_evidence": "面向智能体推理的动作引导KV缓存压缩管理",
+      "llm_tldr_en": "ActKV targets agentic LLM inference, where iterative loops accumulate long KV caches that inflate memory and limit throughput. It proposes the first action-guided KV cache compression framework, valuing KV entries by their contribution to action generation and prioritizing action quality.",
+      "llm_tldr_cn": "智能体式LLM推理在观察-推理-行动循环中不断累积长KV缓存，造成显著显存开销并限制服务吞吐。现有压缩方法偏重整体输出质量，忽视了动作在推进任务中的非对称重要性。论文提出ActKV，首个面向智能体推理的KV缓存压缩框架，以KV条目对动作生成的贡献为价值准则进行驱逐与预算分配，并处理迭代执行与分页内存集成等挑战，从而在保障动作质量的同时提升缓存管理效率。",
+      "llm_tldr": "智能体式LLM推理在观察-推理-行动循环中不断累积长KV缓存，造成显著显存开销并限制服务吞吐。现有压缩方法偏重整体输出质量，忽视了动作在推进任务中的非对称重要性。论文提出ActKV，首个面向智能体推理的KV缓存压缩框架，以KV条目对动作生成的贡献为价值准则进行驱逐与预算分配，并处理迭代执行与分页内存集成等挑战，从而在保障动作质量的同时提升缓存管理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
