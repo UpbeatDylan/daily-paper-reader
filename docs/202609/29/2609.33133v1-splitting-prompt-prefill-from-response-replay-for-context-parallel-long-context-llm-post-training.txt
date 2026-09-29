@@ -1,0 +1,858 @@
+Title: Splitting Prompt Prefill from Response Replay for Context-Parallel Long-Context LLM Post-Training
+
+URL Source: https://arxiv.org/pdf/2609.33133v1
+
+Published Time: Tue, 29 Sep 2026 01:40:29 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# Splitting Prompt Prefill from Response Replay for Context-Parallel Long-Context LLM Post-Training 
+
+Yubing Bao 
+
+ybbao23@m.fudan.edu.cn 
+
+Fudan University Shanghai, China 
+
+Zhihui Lu 
+
+lzh@fudan.edu.cn 
+
+Fudan University Shanghai, China 
+
+Qiang Duan 
+
+qduan@psu.edu 
+
+The Pennsylvania State University State College, USA 
+
+Yuedong Xu 
+
+ydxu@fudan.edu.cn 
+
+Fudan University Shanghai, China 
+
+Sen Liu 
+
+senliu@fudan.edu.cn 
+
+Fudan University Shanghai, China 
+
+Pan Zhou 
+
+panzhou@smu.edu.sg 
+
+Singapore Management University Singapore, Singapore 
+
+Abstract 
+
+Training long-context LLM policies with RL requires re-evaluating groups of sampled responses under the updated policy, an update-stage attention workload that differs sharply from pre-training: each group shares one long prompt that fans out into multiple response branches. Standard context parallelism (CP) flattens each prompt–response pair into a linear sequence, so the same prompt key–value (KV) states are recomputed—or repeatedly rotated through the network— once per response branch. We present AugTree , a CP execu-tion scheme built around this replay stage. AugTree separates the replay into two phases: a prompt-prefill phase that com-putes the shared prompt KV state once, and a response-replay phase that schedules the independent response branches over a bounded set of replay lanes. The replay phase instanti-ates two communication semantics, chosen by a lightweight online planner that enumerates CP degrees, schedules, and placements before GPU dispatch: rotating KV shards within response-local lanes when responses dominate, and mov-ing response queries to stationary prompt-KV owners with a partial-softmax reduction when prompts dominate. The shared prompt state remains fully differentiable—response losses backpropagate into it and the accumulated prompt gradients propagate through the original prefill graph—so AugTree preserves exact training semantics rather than per-forming detached, inference-style KV caching. On four real post-training workloads and up to 64 accelerators, AugTree improves average training-stage step time by 1.18 × over dynamic CP (up to 2.23 ×), 2.63 × over a Megatron ring CP baseline with prompt reuse, and 7.08 × over the baseline without reuse. 
+
+Keywords: Large language models, context parallelism, long-context training, RL post-training, distributed attention 
+
+1 Introduction 
+
+Reinforcement Learning (RL) post-training has become a key mechanism for further improving Large Language Mod-els (LLMs), with recent systems demonstrating substantial 0.001 0.01 0.1 1 10 100 1000 Prompt length / response length 010 20 Percentage (%) 
+
+> LongReward LongAlign LMSYS OpenThoughts
+
+Figure 1. Prompt–response ratios vary widely. In real post-training datasets, prompts can be much shorter or much longer than responses. gains in mathematics, coding, agentic tasks and many oth-ers [3, 5, 13, 26, 28, 31, 36]. A standard RL post-training iteration involves three distinct stages: rollout for sampling responses, reward for scoring prompt–response trajectories, and training for updating the model. Meantime, a growing line of rollout-side optimizations has substantially reduced rollout time: TRACE [45] profiles current RL pipelines and finds rollout accounting for only 28.6%/21.2% of wall-clock time (policy update: 66.5%/75.4%), and DORA [16] shrinks the rollout fraction from 65% before optimization to 12% af-ter; Seer [27] and NeMo-RL [31] provide consistent evidence. As rollout becomes faster, update-side work becomes more important. AugTree targets precisely this update stage. This training bottleneck is further amplified by rapidly ex-panding LLM context windows. Recent models support very long contexts, e.g., 256K tokens in GPT-5.2 [26], 1M tokens in DeepSeek V4 [5] and 2M tokens in Gemini 2.5 Pro [3], sub-stantially increasing training computation and memory cost. Context Parallelism (CP) addresses this pressure by partition-ing long sequences across GPUs [11, 18, 19, 21]. Existing CP systems rely on Ring-style KV rotation [21, 44], Ulysses-style all-to-all shuffles [18], hybrid designs [6, 11, 25], or dynamic optimization based on input sparsity [9, 19, 34]. But they are designed for pre-training, where inputs are treated as independent sequences (only prompts, no responses), and thus fail to exploit the structured prompt–response groups in RL post-training, causing significant inefficiency. 
+
+> 1arXiv:2609.33133v1 [cs.DC] 27 Sep 2026
+
+The key mismatch is that RL post-training data are not independent long sequences. Instead, they have three prop-erties that shape how CP should compute, communicate, and plan. (1) Shared-prompt response groups. For each prompt, RL post-training typically samples 𝐺 responses, e.g., 𝐺 = 64. Thus, each batch contains 𝐺 trajectories sharing a prompt but branching into different responses, forming a natural tree: one shared prefix with multiple response paths. The attention dependency is asymmetric: responses attend to the prompt, while the prompt need not attend to responses. (2) Highly variable prompt–response ratios. As shown in Fig. 1, our anal-ysis of four real-world post-training datasets (LongAlign [1], LongReward [39], LMSYS [41], OpenThoughts [12]) shows that prompt–response ratios vary by up to a hundredfold. Long-document QA is often prompt-heavy, whereas creative writing is response-heavy. This variation determines which CP cost dominates: moving shared-prompt states or process-ing long response branches. (3) Online data generation. Un-like pre-training data that can be packed or planned offline, post-training trajectories are generated online during roll-out. Thus, sequence lengths, response groups, and prompt– response ratios are known only after generation, requiring CP to make placement and communication decisions at up-date time rather than relying on static offline planning. When standard CP is applied to such data, it flattens each prompt–response trajectory into an independent se-quence and loses the tree structure. The first two properties above then become two major sources of waste, while the third makes them hard to eliminate with fixed offline plans. First, flattening destroys prompt sharing. Since the same prompt appears in all 𝐺 trajectories, standard CP may re-compute prompt-side states for every trajectory, whereas the shared prompt should ideally be computed once. Thus, up to (𝐺 −1)/ 𝐺 of prompt-side computation is redundant, corresponding to 87 .5% redundancy when 𝐺 =8 and 98 .4% when 𝐺 =64. This waste follows directly from shared-prompt grouping. Second, flattening causes unnecessary attention-state movement. Standard Ring-Attention-style CP usually moves KV blocks. For prompt-heavy groups, it may repeat-edly move the same large prompt KV for different response branches, even though the prompt is shared. Here, mov-ing response-side queries to stationary prompt KV can be cheaper. When responses dominate, moving KV may remain preferable, but communication should preserve response-path locality (i.e., keep each branch’s tokens on the same CP rank) so one branch does not receive irrelevant KV from siblings. Thus, the best strategy depends on both the prompt– response ratio and the response-group tree. To address these issues, we present AugTree , a prompt-aware context-parallel training method for long-context RL post-training. AugTree treats each response group as a prompt–response tree rather than 𝐺 independent sequences. This view leads to three components that directly match the three post-training properties above, as shown in Fig. 2. 1 2 3 45 6781 21 21 2Online Data for Post-training Updating 1 2 3 4 1 2 1 2 1 25 6 7 81 2 3 4 5 6 7 8       
+
+> Reuse Prompt KV
+> Prompt token Response token
+> Packing
+> 1
+> Move KV Move Q Prompt-aware Comm. 2
+> Dev   Dev   Dev   Dev  
+> Prompt-light Prompt-heavey
+> KV QKV Q
+> KV refers to prompt KV, and Q refers to response Q.
+
+Figure 2. Two sources of AugTree’s gain. AugTree (1) computes the shared prompt KV once for all responses and (2) chooses whether attention communication should move KV or Q based on the prompt–response ratio. 
+
+(1) Prompt KV reuse. To exploit shared-prompt response groups and remove redundant prompt computation, AugTree computes the shared prompt KV once and reuses it across all responses from the same prompt. This applies to all prompt– response ratios and becomes more beneficial as prompt length or group size grows. (2) Prompt-aware commu-nication. To reduce unnecessary attention-state movement, AugTree chooses the CP communication strategy based on the prompt–response ratio. For prompt-dominant groups , re-peatedly moving large prompt KV is expensive. AugTree in-troduces MoveQ , which keeps prompt KV and reduction state stationary, moving only response-side queries to prompt shards. A single global reduction then merges partial soft-max states. For response-dominant groups , moving KV can remain more efficient, but communication should preserve response-path locality whenever possible. AugTree therefore introduces TreeMoveKV , a tree-aware move-KV primitive that avoids moving KV from irrelevant sibling responses. 
+
+(3) Online planning and execution. To handle online data generation and varying prompt–response ratios, AugTree uses an asynchronous planner and a plan-driven execution engine: the planner selects an efficient CP plan after rollout, when trajectory lengths and group structure are known, and the execution engine applies it during training. Our contri-butions are: 
+
+• To the best of our knowledge, AugTree is the first CP work to study grouped-response RL post-training as a shared-prompt workload. We identify its three key properties— shared prompts, variable prompt–response ratios, and on-line generation—and show that standard ring-style CP loses this structure, causing redundant prompt computa-tion and unnecessary attention-state movement. 
+
+• We propose AugTree, a prompt-aware CP method for long-context post-training updates. AugTree models each re-sponse group as a prompt–response tree, computes the 
+
+> 2
+
+shared prompt once, reuses prompt KV across responses, and preserves response-path locality during CP placement. 
+
+• We introduce two communication primitives for different prompt–response regimes: MoveQ for prompt-dominant groups and TreeMoveKV for response-dominant groups. They avoid repeatedly moving large shared-prompt KV and irrelevant sibling-response KV, respectively. 
+
+• We implement AugTree with an asynchronous planner and plan-driven execution engine for post-training up-dates. On four real post-training workloads using up to 64 accelerators, AugTree improves average training-stage step time by 1.18 × over DCP (up to 2.23 ×), by 2.63 × over MegaR (Megatron ring CP with prompt reuse) and 7.08 ×
+
+over MegaN (without prompt reuse). 
+
+2 Background and Motivation 
+
+We elaborate on the mismatch between RL post-training and existing context-parallel (CP) training systems below. 
+
+2.1 Post-Training Replay as Prompt–Response Trees Replay workflow. RL post-training refines an LLM after pre-training, improving capabilities such as reasoning and tool use [3, 13, 26, 36]. A standard iteration runs rollout (sampling 
+
+𝐺 responses {𝑅 𝑖 }𝐺 𝑖 =1 for a prompt 𝑃 from the current policy), reward (assigning each trajectory a score or advantage), and training (replaying the scored trajectories and updating the policy). We use replay workload for this training-stage re-evaluation, not an off-policy replay buffer; AugTree targets exactly this stage. 
+
+Replay tree. Replay data from one prompt is not a set of unrelated sequences. All 𝐺 responses share the same prompt prefix 𝑃 and branch only after rollout, forming a prompt– response tree: the prompt is the shared root, and the re-sponses are independent sibling branches. Existing training stacks often flatten this tree into 𝐺 independent sequences 
+
+{( 𝑃, 𝑅 1), (𝑃, 𝑅 2), . . . , (𝑃, 𝑅 𝐺 )} . Conventional CP training tar-gets linear sequences. This flattening hides the shared pre-fix: prompt-side states are recomputed or communicated repeatedly, as if each response owned a private prompt copy. The waste is especially costly in long-context post-training, where 𝑃 may contain long documents, retrieved contexts, conversation histories, or tool traces, so the length |𝑃 | can far exceed the length |𝑅 𝑖 |.
+
+Asymmetric KV dependency. For an autoregressive LLM, the likelihood of response 𝑅 𝑖 factorizes as 𝜋 𝜃 (𝑅 𝑖 |𝑃 ) = Î𝑡 𝑝 𝑖,𝑡 ,where 𝑝 𝑖,𝑡 = 𝜋 𝜃 (𝑅 𝑖,𝑡 | 𝑃, 𝑅 𝑖, <𝑡 ): each response token attends to the full prompt and its own prefix, but not to sibling re-sponses. In the forward pass, response logits require the shared prompt KV states 𝐾𝑉 𝑃 , but computing 𝐾𝑉 𝑃 does not depend on any response tokens, so the prompt can be com-puted once and reused across responses; in the backward pass, response-token losses propagate gradients through the attention paths that read 𝐾𝑉 𝑃 , so the prompt states must KV 
+
+> Copy Block to SRAM Copy
+> Q
+> Dh
+> LLDh
+> O
+> QKV
+> Input tensor: B x H x L x D h( D)
+> Dh
+> LB x H
+> Attention Pattern
+> Output to HBM Compute Block on SRAM
+
+Figure 3. Attention as Q–KV block interactions. Long-context CP schedules valid query–KV block interactions across devices. Dev   Dev   Dev   Dev   Dev   Dev   Dev   Dev        
+
+> QKV
+> Attention Mask Dev   Dev   Dev   Dev  
+> All-to-all Dev   Dev   Dev   Dev  
+> All-to-all After exchange
+> (b) Sequence-sharded CP (Ring) (c) Head-sharded CP (All-to-All) (a) Initial Placement
+> Dev   Dev   Dev   Dev  
+> h -  KV  KV  KV  KV  Dev  Dev  Dev  Dev  h -  h -  h -  h -  KV ,Q  KV ,Q  KV ,Q  KV ,Q  Dev   Dev   Dev   Dev   h  h  h  h  KV - ,Q -  KV - ,Q -  KV - ,Q -  KV - ,Q -  Dev   Dev   Dev   Dev   h -  KV  KV  KV  KV  Dev   Dev   Dev   Dev   h -  KV  KV  KV  KV  Sequence
+
+Figure 4. How existing CP moves attention tensors. 
+
+Sequence-sharded CP moves KV blocks to query owners, while head-sharded CP uses all-to-all tensor reshaping to make each head local. accumulate contributions from all response branches with exact many-to-one gradient aggregation (Sec. 3.2). 
+
+2.2 Linear CP Assumptions and Replay Mismatch 
+
+CP shards a long sequence across devices to reduce per-GPU KV memory; among transformer operators, only attention re-quires coordinated access to remote keys and values, making communication a first-order bottleneck. 
+
+Attention as block interactions. For one attention head, let Q, K, V ∈ R𝐿 ×𝐷 ℎ denote the query, key, and value tensors, where 𝐿 is the sequence length and 𝐷 ℎ is the per-head hidden dimension. The attention output is O = softmax (QK ⊤/√𝐷 ℎ +
+
+M) V, where O ∈ R𝐿 ×𝐷 ℎ and the mask M marks invalid query–key positions. Direct attention materializes an 𝐿 × 𝐿 
+
+score matrix, while FlashAttention-style kernels tile Q and 
+
+KV blocks and maintain online softmax state in SRAM [4]. As shown in Fig. 3, each valid tile computes one query–KV interaction and accumulates partial softmax/output state. CP distributes these block-level interactions across devices. 
+
+Linear CP assumptions. Existing CP systems often make two implicit assumptions. First, they treat the input as a linear    
+
+> 334 34 34 34 Dev  Dev  Dev  Dev  # of blocks
+> "Zig-zag" Assignment Imbalanced computation in post-traing
+> Dev  Dev  Dev  Dev  Dev  Dev  Dev  Dev  16 16 34 8Dev  Dev  Dev  Dev  # of blocks
+
+Figure 5. Zigzag load balancing. Standard CP balances linear causal attention by pairing early and late sequence chunks. For tree-structured replay masks, however, the same placement can fragment branches and create load imbalance. 
+
+sequence . Sequence-sharded CP partitions tokens across de-vices; each device owns a subset of query tokens and obtains remote KV blocks through Ring-Attention-style KV rotation or all-gather-like exchange [21, 44]. The common semantic is that KV is mobile and moves to reconstruct the global atten-tion context. Second, head-sharded CP, such as Ulysses-style CP [18], uses all-to-all communication to redistribute tensors so that each device holds the full sequence but only a sub-set of heads. Modern 2D CP systems combine sequence and head sharding for scalability [6, 9, 11, 19, 20, 25, 34]. These designs differ in layout, but all assume attention is executed over packed linear sequences. 
+
+Replay mismatch. Post-training replay breaks the linear-sequence assumption: replay attention is a shared prompt column plus block-diagonal response branches, where a to-ken on branch 𝑖 attends only to 𝑃 and its own prefix 𝑅 <𝑡 𝑖 , not to sibling branches 𝑅 𝑗 (𝑗 ≠ 𝑖 ) — not a dense causal triangle over a flattened sequence. Linear CP hides this structure after packing. It may repeatedly move the same large prompt KV across response branches, and may move sibling-response KV that is unused by the current branch; zigzag placement, for example, can fragment response paths and imbalance tree-structured masks (Fig. 5). So post-training replay re-quires CP to preserve prompt sharing and response-path locality, rather than only balancing a flattened sequence. 
+
+2.3 Why Dynamic CP is Still Insufficient 
+
+Dynamic CP systems, represented by DCP [19], improve over static CP by building a dependency graph and partition-ing valid attention blocks across ranks. This adds placement flexibility and helps avoid some topology-unaware schedul-ing decisions. But post-training replay requires more than dynamic block placement: it must also select communication semantic of distributed attention and exploit the determinis-tic prompt–response tree generated online after rollout. 
+
+Restricted communication semantics. For the same valid attention tiles, different executions preserve different tensors locally. As Fig. 6 illustrates, we view data blocks, tile compu-tations, and intermediate results as hypergraph vertices (one tensor block can feed multiple tiles) and their dependencies ≈   
+
+> Q0
+> Q1
+> KV 0
+> KV 1
+> C0
+> C1C2
+> O0
+> O1
+> Q0
+> Q1
+> KV 0
+> KV 1
+> C0
+> C1C2
+> O0
+> O1
+> Hyperedges
+> Vertices
+> Purple: on Dev   Yellow: on Dev  
+> Cut Cut
+> Reduce Move KV Move Q
+> (a) Move KV (b) Move Q
+
+Figure 6. Moving KV and moving Q are different com-munication choices. For the same valid attention tiles, a row-wise cut keeps query/output state local and moves KV, while a column-wise cut keeps KV local, moves Q, and re-duces partial output states. as hyperedges. A row-wise cut keeps query/output state lo-cal and moves KV blocks — the traditional ring semantic; a column-wise cut keeps KV blocks local, moves query blocks, and reduces partial softmax/output states. Both compute the same attention result, but their communication costs differ. DCP optimizes placement under the traditional move-KV semantic, and therefore does not search the move-Q alterna-tive. This restriction can be costly in prompt-heavy replay, where a large shared prompt KV is reused by many short responses and repeatedly moving it is inefficient. 
+
+Missing online tree structure. DCP also treats each re-play instance as a generic dependency graph. This misses two post-training properties. First, replay data is generated online: sequence lengths, response groups, and prompt– response ratios are known only after rollout. Second, the dependency graph is not arbitrary; it has a deterministic tree structure with one shared prompt root and independent response branches. Generic graph solving can add planning overhead and may fragment response paths, while a tree-aware planner can directly exploit prompt sharing, path locality, and the prompt–response ratio to select both place-ment and replay primitive. 
+
+3 AugTree 
+
+3.1 System Overview 
+
+AugTree is plugged into the training stage of an RL post-training system, closing the gap identified in Sec. 2: it reuses the shared prompt state, preserves response-path locality, and chooses whether replay moves KV or Q before dispatch. Rollout and reward engines first produce scored prompt– response groups, and AugTree treats each group as a replay tree T = (𝑃, {𝑅 𝑖 }𝐺 𝑖 =1), where 𝑃 is the shared prompt and 𝑅 𝑖 is the 𝑖 -th response branch. AugTree leaves rollout scheduling, reward computation, loss construction, gradient synchro-nization, and optimizer steps unchanged; it only replaces the CP attention path inside the trainer. As shown in Fig. 7, AugTree follows a plan-then-execute design. For each replay tree, the planner chooses an exe-cution plan 𝑐 = (𝑑, 𝜋, r, 𝑋 ), where 𝑑 is the CP degree, 𝜋 is   
+
+> 4Tree-Aware Strategy Planner
+> TreeCP Execution Engine
+> "d =   with MoveQ" "d =   with MoveQ"
+> Reward engine
+> "d =   with TreeMoveKV"
+> Training Strategy Training Data
+> TreeMoveKV MoveQ
+> Replay-Many Prefill-Once
+> Prompt KV Ring
+> Strategy
+> Rollout engine
+> Response KV Ring Response Q Ring
+> Replay Many Strategy
+> Prompt token Response token
+> Prefill Replay  Replay 
+
+Figure 7. AugTree planning and execution. Rollout and reward produce scored prompt–response groups. AugTree plans over each replay tree, chooses the CP degree, response schedule, placement, and communication primitive, and exe-cutes the selected attention path inside the trainer. the replay primitive, r = (𝑏, 𝑠 ) is the response-replay grid, and 𝑋 maps response replay units to grid locations. When 
+
+𝑏 = 0, AugTree does not separate prompt prefill from re-sponse replay; it falls back to ordinary ring CP and runs the prompt and response tokens together. This fallback is useful for short groups, where the overhead of tree-specific replay may outweigh its benefit. For split plans with 𝑏 ≥ 1, the plan-ner chooses 𝜋 ∈ { TreeMoveKV , MoveQ } and schedules the response branches over the replay grid. Then the execution engine maps the selected plan to pro-cess groups, tensor movement, and attention kernels. Sec-tion 3.2 describes how AugTree establishes and reuses the shared prompt state while preserving exact gradients; Sec-tion 3.3 presents the two tree-aware replay primitives; Sec-tion 3.4 defines the legal plan space and the bounded online planner; and Sec. 3.5 explains how the selected plan is real-ized inside an existing distributed trainer. 
+
+3.2 Prefill-Once Prompt KV Reuse 
+
+For a split plan with 𝑏 ≥ 1, AugTree separates prompt establishment from response replay. Given a replay tree 
+
+T = (𝑃, {𝑅 𝑖 }𝐺 𝑖 =1), the valid KV context of the 𝑡 -th token on branch 𝑖 is 
+
+𝐾𝑉 (𝑅 𝑖,𝑡 ) = 𝐾𝑉 𝑃 ∪ 𝐾𝑉 (𝑅 𝑖, <𝑡 ), (1) with no 𝐾𝑉 (𝑅 𝑗 ) for 𝑗 ≠ 𝑖 . So AugTree builds the prompt-side KV state once and shares it across all response branches. 
+
+Shared prompt prefill pass. When the planner selects a split plan 𝑏 ≥ 1, AugTree first executes a single differen-tiable prompt-prefill pass, producing the sharded prompt state 𝐾𝑉 𝑃 = {( 𝐾 (ℓ ) 
+
+> 𝑃
+
+, 𝑉 (ℓ ) 
+
+> 𝑃
+
+)} 𝑁 layer  
+
+> ℓ=1
+
+for each of the 𝑁 layer Trans-former layers. Since 𝐾𝑉 𝑃 is fixed during the subsequent re-sponse replay, all 𝐺 branches reuse this one state rather than materializing private prompt copies. 
+
+Response replay. After prefill, AugTree replays responses with teacher forcing. Each replay call feeds response tokens together with the cached prompt KV. The response-side at-tention tiles are then executed using either TreeMoveKV or MoveQ, depending on the planner decision. The first re-sponse token 𝑅 𝑖, 1 is scored by applying the language-model head to the final prompt hidden state from the prefill pass, and its loss backpropagates through that state into the prompt graph. 
+
+Exact many-to-one backward. Prompt reuse in training is not an inference-only KV cache. Although losses are defined on response tokens, gradients still flow through attention paths that read 𝐾𝑉 𝑃 . Therefore, AugTree must accumulate prompt-state gradients from all response branches: 
+
+∇𝐾𝑉 𝑃 =
+
+> 𝐺
+
+∑︁ 
+
+> 𝑖 =1
+
+∇𝐾𝑉 𝑃 L𝑖 , (2) where L𝑖 is the response-token loss on branch 𝑖 . When exact prompt gradients are enabled, the execution engine accu-mulates gradient seeds on the prompt-KV leaves and back-propagates them through the original prompt-prefill graph, preserving exact many-to-one gradient aggregation. 
+
+Activation lifetime. The prompt computation graph re-mains logically live until all response units in the replay tree have contributed their prompt-state gradients. AugTree fol-lows the checkpointing policy of the base trainer: prompt ac-tivations required by that policy are either retained or recom-puted during the final prompt backward traversal. Once the aggregated prompt gradient has been propagated, AugTree releases the prompt graph and its shared-prefix state. This lifetime is scoped to one replay tree and does not change the model parameters, optimizer state, or loss definition. 
+
+3.3 Tree-Aware Replay Primitives 
+
+After the shared prompt pass in Sec. 3.2, response replay must evaluate all valid Q–KV tile interactions implied by Eq. 1. For the same valid tile set, distributed attention can preserve different tensors locally: it can keep queries and outputs local while moving KV, or keep KV local while moving queries and reducing partial outputs. AugTree instantiates these two communication semantics as TreeMoveKV and MoveQ. 
+
+Common tile semantics. As illustrated in Fig. 8, both TreeMoveKV and MoveQ evaluate the same valid tiles in the Q–KV dependency matrix. Each interaction between a query block 𝑄 𝑖 and a KV shard 𝐾𝑉 𝑗 produces a partial online-softmax state 𝑆 𝑖 𝑗 . Following standard online-softmax formulations [4, 24], all states along the dependency row of 
+
+𝑄 𝑖 are associatively merged, e.g., 𝑆 𝑖 0 ⊕ 𝑆 𝑖 1 → 𝑂 𝑖 , where ⊕
+
+denotes online-softmax state merging rather than ordinary addition. Thus, the two schemes produce identical attention outputs. 
+
+TreeMoveKV: response-local move-KV. TreeMoveKV is used when response replay dominates. It preserves the standard move-KV execution of ring-style CP [22]: each rank retains its query and output blocks, while KV shards circulate                                             
+
+> 5Dev   Dev   Dev   Dev   Dev   Dev  
+> 234KV  KV 
+> Dev   Dev  
+> 1O 
+> Dev   Dev   Dev   Dev   Dev   Dev  
+> 234
+> Dev   Dev  
+> 5TreeMoveKV
+> Dev   Dev  
+> 5
+> Global Reduce
+> MoveQ Q-KV Dependency Matrix
+> Query block Q KV shard Softmax state S Output block O
+> Legend
+> KV  KV  KV  KV  KV  KV 
+> KV  KV  KV  KV  KV 
+> Q  Q  Q  Q  Q  Q  Q  Q  Q  Q  Q  Q  KV  KV  KV  S   S   S   S   S   S   S   S   S   S   S   S   S   S   S   S   O  O  Initial Placement Q  Q  O  S   S   S   S   Q  Q 
+
+Figure 8. TreeMoveKV and MoveQ on Q–KV dependencies. Purple blocks are query blocks, yellow blocks are KV shards, green blocks are partial online-softmax states 𝑆 = (𝑚, ℓ, 𝑂 acc ), and light-purple blocks are final outputs. TreeMoveKV rotates KV shards while queries remain on their owners. MoveQ keeps KV shards stationary, sends queries to KV owners, and reduces the resulting partial softmax states. across ranks and partial attention states are merged via stan-dard online-softmax techniques [4]. After one ring traversal, each query owner obtains its exact attention output. The key innovation is tree-aware placement . Rather than flattening the prompt and all sibling responses into a glob-ally partitioned sequence, AugTree assigns each response path, or a small group of paths, to a replay lane of 𝑑 lane ranks. Within each lane, only the shared prompt KV and the re-sponse KV required by its assigned paths are circulated. Each lane prefills the full prompt KV sharded across its 𝑑 lane mem-bers, so prefill cost repeats 𝑠 = 𝑑 /𝑑 lane times while per-rank memory stays at the single-lane share; this repetition is in-cluded in the planner cost model. At every ring stage, each rank evaluates the valid Q–KV tiles for its local queries and merges the resulting partial states. This lane-local execution prevents KV blocks from unrelated sibling responses from being communicated while retaining the low-overhead ring dataflow. 
+
+MoveQ: KV-stationary replay. MoveQ targets prompt-heavy groups, where repeatedly circulating a large shared prompt KV state for many short responses would domi-nate communication. Instead, it keeps the canonical prompt KV shards stationary on their owning ranks and sends the smaller response-query blocks to the ranks holding their valid prompt or response KV shards. Each KV owner eval-uates its local Q–KV tiles and produces a partial online-softmax state 𝑆 = (𝑚, ℓ, 𝑂 acc ), where 𝑚 is the local row-wise maximum, ℓ is the corresponding softmax normalizer, and 
+
+𝑂 acc is the unnormalized output accumulator [4, 24]. The par-tial states for the same query are then associatively merged, after which the exact normalized attention output is materi-alized on the original query owner. The reduction operates on full partial states (𝑚, ℓ, 𝑂 acc )
+
+rather than independently normalized outputs, preserving exact attention semantics; its custom autograd operator ap-plies the reverse communication so gradients return to the original query and KV owners. Thus, MoveQ replaces re-peated movement of the dominant prompt KV state with response-query communication and one reduction of partial attention states. 
+
+Communication model. Let 𝜌 = 𝐿 𝑃 /𝐿 𝑅 denote the prompt-to-response ratio, where 𝐿 𝑃 is the prompt length and 𝐿 𝑅 is the response replay length proxy. Let 𝐻 𝑞 and 𝐻 𝑘𝑣 be the query and KV head counts. Ignoring topology constants, the repeated point-to-point communication of TreeMoveKV and MoveQ is approximated as: 
+
+𝐶 TreeMoveKV ≈ 2(𝐿 𝑃 + 𝐿 𝑅 )𝐻 𝑘𝑣 , (3) 
+
+𝐶 MoveQ ≈ 𝐿 𝑅 𝐻 𝑞 + 𝑇 red (𝐿 𝑅 ), (4) where 𝑇 red (𝐿 𝑅 ) denotes the calibrated overhead of the one-time reduction over partial softmax states. The relative com-munication cost is therefore 
+
+𝐶 TreeMoveKV 
+
+𝐶 MoveQ 
+
+≈ 2(𝐿 𝑃 + 𝐿 𝑅 )𝐻 𝑘𝑣 
+
+𝐿 𝑅 𝐻 𝑞 + 𝑇 red (𝐿 𝑅 ) . (5) As 𝜌 grows, repeated KV movement becomes increasingly expensive relative to query movement plus reduction. This first-order model is an intuitive approximation intended only to expose the main regime switch, not a rigorous cost esti-mate: it omits byte counts, collective latencies, and topol-ogy effects. It shows that TreeMoveKV is attractive when response-side replay dominates, while MoveQ becomes at-tractive when prompt KV is large and response queries are short. The rigorous cost model used for planning, which accounts for CP degree, replay grid, placement, padding, memory limits, launch overheads, and measured cluster be-havior, is given in Sec. 3.4. 
+
+3.4 Online Strategy Planner 
+
+We next introduce AugTree’s online planner. As replay trees emerge only after rollout, static offline CP schedules are in-feasible. Before GPU dispatch, the planner selects a memory-feasible plan that balances replay work and minimizes the estimated total time for prompt prefill and response replay. 
+
+Plan space and feasibility. For each replay tree, the plan-ner evaluates plan candidates 𝑐 = (𝑑, 𝜋, r, 𝑋 ) where r = (𝑏, 𝑠 ),              
+
+> 6(a) Prompt-Light TreeCP
+> Prompt token Response token
+> Compute on Dev   Compute on Dev  
+> Prefill Replay Prefill Replay Prefill Replay Prefill Replay
+> (b) Prompt-Heavy CP TreeCP CP
+> Extra Comm. via Trajectory Splitting
+> No Extra Comm.
+> QKV
+> Light Comm. via Response Q Ring Heavy Comm. via Prompt KV Ring
+> KV QDev   Dev   Dev   Dev   Dev   Dev   Dev   Dev   Compute on Dev   Compute on Dev  
+> Prompt token Response token
+
+Figure 9. When to use TreeMoveKV or MoveQ. (a) Prompt-light / response-dominant replay: ordinary CP partitions a flattened sequence and may mix sibling response paths. TreeMoveKV retains move-KV execution while placing complete response paths or path groups in lane-local rings. (b) Prompt-heavy replay: ordinary CP repeatedly moves large prompt KV for short responses. MoveQ keeps prompt KV stationary and communicates response queries and partial reduction states instead. 
+
+𝑑 is the CP degree, 𝜋 is the execution primitive, r is the re-play grid, and 𝑋 is the placement. Here 𝑏 is the number of response-replay rounds and 𝑠 is the number of replay lanes per round. When 𝑏 = 0, AugTree does not split prompt pre-fill from response replay and instead runs ordinary ring CP, RingCP [22], separately over each (𝑃, 𝑅 𝑖 ) pair using the stan-dard causal mask, forming the fused candidate (𝑑, RingCP , (0, 1), ∅) .The prompt is thus recomputed per branch, which is exactly why this fallback is selected only when split replay is not worthwhile. When 𝑏 ≥ 1, 𝜋 ∈ { TreeMoveKV , MoveQ }. For TreeMoveKV, the 𝑑 ranks form 𝑠 disjoint lanes, each with 𝑑 lane = 𝑑 /𝑠 , so 
+
+𝑠 must divide 𝑑 ; each lane runs an independent response-local KV ring. For MoveQ, 𝑋 assigns response queries to lanes while prompt-KV shards remain stationary and partial attention states are reduced by query. The planner keeps only candidates satisfying primitive-specific rank and collec-tive constraints, non-empty active lanes, valid process-group topology, and per-rank memory limits for prompt states, ac-tivations, communication buffers, and temporary outputs. It also rejects placements that assign incompatible concurrent roles to the same rank. The search is thus exhaustive over the candidate set (degree, primitive, and grid—the decisions profiling shows dominate end-to-end time), while the place-ment 𝑋 per candidate is a balanced makespan assignment, solved exactly by subset DP for 𝑈 ≤ 𝑈 max (a small constant cap that keeps the assignment bounded) and by largest-first greedy balancing otherwise. It does not span hypergraph cuts, per-layer primitive mixtures, or general DAG schedules. 
+
+Replay units and grid assignment. For each replay tree, the planner observes the prompt length |𝑃 |, response lengths 
+
+{| 𝑅 𝑖 |} 𝐺 𝑖 =1, group size 𝐺 , and candidate CP degrees D. It also uses cluster profiles of compute throughput, point-to-point and collective bandwidth, launch latency, and per-rank mem-ory capacity to estimate execution time and feasibility. For planning, the implementation uses 𝐿 max  
+
+> 𝑅
+
+= max 𝑖 |𝑅 𝑖 | as a conservative replay-length proxy and records the mean re-sponse length for diagnostics. AugTree converts the 𝐺 re-sponse paths into a bounded set of replay units U = {𝑢 𝑘 }𝑈 𝑘 =1,where 𝑈 ≤ 𝑈 max , 𝑈 max is an upper bound on the number of replay units, and each unit is one complete response path. Each unit receives a work estimate 𝑤 𝑘 based on its query length, valid Q–KV tile count, and primitive-specific profile. For a fixed candidate (𝑑, 𝜋, 𝑏, 𝑠 ), the planner assigns each unit to a replay round and lane, 𝑋 𝑘 = (𝜏 𝑘 , 𝑗 𝑘 ), where 𝜏 𝑘 ∈{1, . . . , 𝑏 } and 𝑗 𝑘 ∈ { 1, . . . , 𝑠 }. Lanes within a round execute concurrently, while rounds execute sequentially. The assign-ment minimizes the predicted replay critical path: min 
+
+> 𝑋 𝑏
+
+∑︁ 
+
+> 𝜏 =1
+
+max   
+
+> 𝑗 ∈ { 1,...,𝑠 }
+
+∑︁ 𝑢 𝑘 :𝑋 𝑘 =(𝜏,𝑗 )
+
+𝑤 𝑘 , (6) subject to single-assignment, per-lane memory, and primitive-specific ownership and topology constraints. AugTree solves this problem with AssignGrid, a bounded dynamic program tracking assigned units, lane loads, and replay rounds. Since 
+
+𝑈 is capped by the small constant 𝑈 max , planning remains fast enough for online execution before GPU dispatch. 
+
+Cost model. Each feasible split candidate with 𝑏 ≥ 1 is scored by estimated prefill time plus replay time: 
+
+b𝑇 (𝑐 ) = 𝛾 𝑐 
+
+b𝑇 prefill (𝑐 ) + b𝑇 replay (𝑐 )
+
+
+
+, (7) where 𝛾 𝑐 is a calibration factor measured from held-out pro-filing runs. For 𝑏 = 0, the planner scores a standard ring CP pass over the prompt and responses together. This candidate is selected when tree-specific replay is not worthwhile. For split candidates, the prefill term constructs the shared prompt KV once: 
+
+b𝑇 prefill = 𝛼 𝑝 
+
+𝐿 𝑃 
+
+𝑑 + 𝛽 𝑝 𝐿 𝑃 𝑓 ring (𝑑 ) + 𝐿 𝑝 (𝑑 ). (8) The 𝛼 term models compute, the 𝛽 term models communica-tion, and 𝐿 𝑝 models fixed launch/collective overhead during 
+
+> 7
+
+Algorithm 1 AugTree Online Planner 
+
+Require: Tree T = (𝑃, {𝑅 𝑖 }𝐺 𝑖 =1), candidate degrees D 
+
+> 1:
+
+Build bounded replay units U and weights {𝑤 𝑖 }𝑈 𝑖 =1 
+
+> 2:
+
+𝑐 ★ ← ∅ , b𝑇 ★ ← ∞  
+
+> 3:
+
+for 𝑑 ∈ D do  
+
+> 4:
+
+C𝑑 ← {( RingCP , 0, 1)} ∪ FeasibleSplits (𝑑 ) 
+
+> 5:
+
+for (𝜋, 𝑏, 𝑠 ) ∈ C 𝑑 do  
+
+> 6:
+
+𝑋 ← ∅ if 𝑏 = 0, else AssignGrid (U , {𝑤 𝑖 }, 𝑏, 𝑠 ) 
+
+> 7:
+
+𝑐 ← ( 𝑑, 𝜋, (𝑏, 𝑠 ), 𝑋 ), compute b𝑇 (𝑐 ) by Eq. 7  
+
+> 8:
+
+if b𝑇 (𝑐 ) < b𝑇 ★ then  
+
+> 9:
+
+𝑐 ★ ← 𝑐 , b𝑇 ★ ← b𝑇 (𝑐 ) 
+
+> 10:
+
+end if  
+
+> 11:
+
+end for  
+
+> 12:
+
+end for  
+
+> 13:
+
+return 𝑐 ★
+
+prefill. The replay term depends on the selected primitive. For TreeMoveKV, replay keeps move-KV semantics: 
+
+b𝑇 TMKV replay = 𝛼 TMKV 𝑊 (r, 𝑋 ) + 𝛽 TMKV 𝐶 KV (r, 𝑋 ) + 𝐿 TMKV (𝑑, r, 𝑋 ),
+
+(9) where 𝑊 (r, 𝑋 ) is the critical-path replay work, 𝐶 KV is the KV traffic, and 𝐿 TMKV captures scheduling, communication startup, and kernel launch overhead. For MoveQ, replay keeps prompt KV stationary and reduces partial softmax states: 
+
+b𝑇 MQ replay = 𝛼 MQ 𝑊 (r, 𝑋 )+ 𝛽 𝑄 𝐶 𝑄 (r, 𝑋 )+ 𝑇 r (r, 𝑋, 𝑑 )+ 𝐿 MQ (𝑑, r, 𝑋 ).
+
+(10) Here 𝐶 𝑄 is the query-transfer traffic, 𝑇 r models the collec-tive reduction over partial softmax states, and 𝐿 MQ captures MoveQ communication startup and launch overhead. 
+
+Solver summary. Algorithm 1 summarizes the planner. The outer loop enumerates the 𝑏 = 0 ordinary ring CP candidate and feasible split candidates (𝑑, 𝜋, r). Each candidate is fil-tered by memory, lane-population, and topology constraints. For split candidates, AssignGrid computes the placement 
+
+𝑋 with the assignment solver described above, and the com-plete plan is scored with Eq. 7. MoveQ is not chosen by a hard threshold; Eq. 5 only informs the communication estimate, while the final decision uses the calibrated end-to-end score. The dominant planning cost is the candidate enumeration 
+
+𝑂 (|D| 𝐾 ), where D is the set of candidate CP degrees and 
+
+𝐾 is the number of valid (𝜋, r) choices per CP degree; since 
+
+𝑈 unit counts never exceed the constant cap 𝑈 max , planning overhead grows mildly with response count. 
+
+3.5 Plan-Driven Execution Engine 
+
+The engine realizes the selected plan 𝑐 = (𝑑, 𝜋, r, 𝑋 ) inside the RLHF trainer, translating it into process groups, token ownership, communication operators, and attention kernels. 
+
+Overlapped plan dispatch. Planning runs on CPU from rollout lengths while GPUs execute previously planned trees; the small plan is broadcast once at dispatch, keeping planning off the steady-state critical path. 
+
+Parallelism-aware group materialization. AugTree builds CP groups within each pipeline stage by reusing data-parallel replicas as sequence-parallel ranks; ranks in one PP stage jointly execute one replay tree under degree 𝑑 , while PP pre-serves normal ordering and DP replicas either run different trees or share gradients. Tensor parallelism is orthogonal: TP groups shard model tensors along the original dimension while sharing the same plan, and all layers of one tree follow one plan. 
+
+Adaptive fallback and split replay. For 𝑏 = 0, the engine runs the whole tree with ordinary ring CP. For split plans (𝑏 ≥ 1), it prefills the prompt once per PP stage and stores per-layer prompt KV as past_key_value ; prefill always uses the prompt-KV ring path, and the primitive choice applies only to replay. Response branches then replay across the selected rounds and lanes, each call feeding response tokens with cached prompt KV, so losses and gradients are computed without re-running the prompt per branch. 
+
+Autograd-compatible attention dispatch. AugTree im-plements TreeMoveKV and MoveQ as drop-in self-attention replacements: the wrapper reads the plan and dispatches each layer to the ring, tree-local KV ring, or Q-moving path. Communication and reduction steps are autograd operations, so backward returns gradients to the original tensor owners— these are the only model-operator changes; losses, gradient synchronization, and optimizer steps remain those of the base trainer. 
+
+4 Experiments 
+
+4.1 Setup 
+
+We evaluate on an 8-node GPU cluster, each equipped with two 64-core CPUs and eight SIMT accelerators. Each accel-erator provides 64 GB HBM, 1.8 TB/s memory bandwidth, and 37 Tflop/s peak FP64 throughput. Intra-node CPU–GPU communication uses PCIe Gen5, while inter-node commu-nication uses native RDMA with four 400 Gbps ports per node. Jobs run via Slurm and torchrun using Python 3.10, PyTorch 2.4.1, OpenMPI 5.0.3, and GCC 8.5.0. 
+
+Models and protocols. We evaluate Qwen2.5-Instruct mod-els at 1.5B, 3B, 7B, and 14B scales [17], using Qwen2.5-7B-Instruct by default, and additionally Llama-3.1-8B-Instruct [10] to confirm cross-model generality. The 7B model has 28 lay-ers, hidden size 3584, 28 query heads, 4 KV heads, head di-mension 128, and FFN size 18,944. All methods use bfloat16 and identical optimizer settings. Unless noted otherwise, we set the response group size to 𝐺 =8, and later evaluate scalability with 𝐺 ∈ { 8, 16 , 32 , 64 }. All methods share the same pipeline-parallel layout and differ only in CP execu-tion, isolating the effects of prompt reuse, CP placement, and communication semantics. We report layouts as CP ×PP ×DP. Long-context experiments use 8 ×4×1 on 32 accelerators for                
+
+> 80.0 8.0 16 24
+> Step time (s)
+> LongReward  16k
+> 17.6
+> 7.4x 7.6x 8.5x
+> 0.0 8.0 16 24
+> 32k
+> 16.6
+> 7.0x 7.1x 7.7x
+> 0.0 10 20 30
+> 64k
+> 25.8
+> 6.8x 6.9x 6.9x
+> 0.0 25 50 75
+> 128k
+> 63.5
+> 7.0x 7.1x 7.2x
+> 0.0 50 100 150
+> 256k
+> 124
+> 7.2x 7.2x 7.6x
+> 0.0 8.0 16 24
+> Step time (s)
+> LongAlign
+> 16.2
+> 7.3x 7.4x 8.5x
+> 0.0 8.0 16 24 16.8
+> 7.0x 7.1x 8.4x
+> 0.0 10 20 30 24.8
+> 5.0x 7.3x 6.3x
+> 0.0 25 50 75 64.6
+> 7.3x 7.3x 7.7x
+> 0.0 50 100 150 122
+> 4.3x 7.2x 6.4x
+> 0.0 8.0 16 24
+> Step time (s)
+> LMSYS  17.8
+> 6.0x 6.2x 6.4x
+> 0.0 8.0 16 24 17.8
+> 3.3x 3.6x 4.5x
+> 0.0 10 20 30 26.0
+> 1.5x 4.1x 4.0x
+> 0.0 30 60 90 67.0
+> 1.2x 10.4x 10.4x
+> 0.0 50 100 150 129
+> 1.1x 9.9x 22.1x
+> 0.0 8.0 16 24
+> Step time (s)
+> OpenThoughts
+> 17.7
+> 5.4x 5.4x 10.9x
+> 0.0 8.0 16 24 17.3
+> 2.6x 2.6x 3.8x
+> 0.0 10 20 30 26.1
+> 1.5x 1.5x 1.7x
+> 0.0 30 60 90 67.1
+> 1.2x 1.2x 1.2x
+> 0.0 50 100 150 128
+> 1.1x 1.2x 1.2x
+> MegaN MegaR DCP TreeCP
+
+Figure 10. End-to-end training-stage step time. Qwen2.5-7B, 𝐺 =8, four real post-training workloads, and 16k–256k tokens per step. 16k–128k tokens per step and 16 ×4×1 on 64 accelerators for 256k tokens. 
+
+Baselines. We compare AugTree with three baselines. MegaN 
+
+uses Megatron ring CP [21, 30] without prompt reuse, flatten-ing the 𝐺 prompt–response pairs into independent samples. 
+
+MegaR adds prompt reuse and applies zigzag ring place-ment [11, 44] during response replay. DCP [19], a dynamic CP, reuses the prompt and dynamically partitions replay blocks using a graph objective, while retaining KV-rotation semantics. All methods use identical data and model configu-rations; AugTree additionally exploits the prompt–response tree and adaptively selects TreeMoveKV or MoveQ. 
+
+Workloads. Following DCP [19], replay workloads are con-structed from LongReward [39], LongAlign [1], LMSYS-Chat-1M [41], and OpenThoughts [12]. Each corpus is converted into prompt–response pairs using deterministic rules inde-pendent of the evaluated CP method. For LongReward, the prompt combines the long context and query, while the re-sponse is the provided or preferred answer. For LongAlign, the user message forms the prompt and the assistant mes-sage the response. Each LMSYS user–assistant turn is treated as one sample, whereas OpenThoughts uses the problem and distilled reasoning trace as the prompt and response. These corpora span prompt-heavy alignment, short conversations, and response-heavy reasoning. For the main sweep, we set 𝐺 =8, and use per-step to-ken budgets 𝐺 (𝐿 𝑃 +𝐿 𝑅 ) ∈ { 16k , 32k , 64k , 128k , 256k }. Given budget 𝐵 , the target per-branch length is 𝐵 /𝐺 . We tokenize valid pairs with the Qwen tokenizer, and then rank them by 
+
+|log (𝐵 /( 𝐺 (𝐿 𝑃 + 𝐿 𝑅 ))| , breaking ties by corpus order. This controls the training-token budget while preserving each corpus’s prompt–response regime. For group-size scalabil-ity, we vary 𝐺 on the 32k-token LongAlign workload while keeping total tokens per step fixed. 
+
+Metrics. Our primary metric is end-to-end training-stage 
+
+step time, averaged over steady-state iterations. This mea-sures the update stage of post-training: replaying scored tra-jectories and updating the policy. We also report attention forward/backward time, prompt prefill time, response re-play time, context-parallel communication volume, planner solve time, and step time under model-size and response-group-size scaling. Our pipeline-share profiling additionally measures the update fraction of the full RL pipeline. 
+
+4.2 Main Results End-to-end step time. Fig. 10 reports training-stage step time on four real prompt–response distributions: LongRe-ward , LongAlign , LMSYS , and OpenThoughts . Each column fixes the per-step token budget 𝐺 (𝐿 𝑃 +𝐿 𝑅 ) from 16k to 256k, and each panel compares the four methods. Across the 20 dataset–length points, AugTree is on av-erage 7.08 × faster than MegaN, 2.63 × faster than MegaR, and 1.18 × faster than DCP. The largest gains appear on LM-SYS at 256k, where short responses make repeated prompt processing and prompt-KV movement especially expensive. AugTree loses to DCP on only 4 of the 20 points: two LMSYS cases differ by at most 1.2%, while LongAlign at 64k/256k favors DCP because its graph-balanced placement happens to fit those sampled layouts. Across all 20 AugTree plans, the planner selects MoveQ in 9 cases and move-KV plans in 11 cases, including 8 TreeMoveKV plans and 3 fallback ring plans. This shows that both communication semantics are needed across realistic prompt–response regimes. 
+
+> 9
+
+FW BW 01
+
+> Time (s)
+> LongReward
+
+16k  
+
+> 4.1 4.1 1.7 1.7
+> 7.6x 7.7x 7.8x 7.7x 9.4x 8.4x
+
+FW BW 01
+
+32k  
+
+> 3.9 3.9 1.5 1.5
+> 7.2x 7.1x 7.4x 7.1x 8.2x 7.1x
+
+FW BW 01
+
+64k  
+
+> 5.3 5.3 2.6 2.6
+> 6.2x 5.9x 6.4x 6.0x 6.7x 5.6x
+
+FW BW 0123
+
+128k  
+
+> 10 10 6.6 6.6
+> 5.7x 5.7x 6.0x 5.8x 6.3x 5.9x
+
+FW BW 0246
+
+256k  
+
+> 21 21 13 13
+> 6.1x 6.0x 6.1x 6.0x 7.1x 6.7x
+
+FW BW 01 
+
+> Time (s)
+> LongAlign
+> 3.8 3.8 1.5 1.5
+> 7.4x 7.7x 7.7x 7.7x 9.6x 8.5x
+
+FW BW 01 
+
+> 3.9 3.9 1.5 1.5
+> 7.1x 7.3x 7.2x 7.4x 9.3x 8.5x
+
+FW BW 012 5.2 5.2 2.4 2.4 
+
+> 5.2x 4.5x 7.0x 6.6x 7.5x 3.1x
+
+FW BW 0123 11 11 6.8 6.8 
+
+> 6.1x 6.2x 6.4x 6.2x 7.4x 7.0x
+
+FW BW 0246 21 21 13 13 
+
+> 7.9x 7.3x 6.3x 6.2x 5.6x 5.2x
+
+FW BW 01 
+
+> Time (s)
+> LMSYS  4.2 4.2 1.7 1.7
+> 7.1x 6.1x 7.3x 6.3x 11.1x 10.0x
+
+FW BW 012 4.1 4.1 1.6 1.6 
+
+> 4.5x 3.2x 4.9x 3.5x 8.8x 4.7x
+
+FW BW 024
+
+> 5.1 2.6 2.1x 1.6x 5.1x 4.4x 5.0x 4.3x
+
+FW BW 036912 11 6.9 1.3x 1.2x 10.5x 11.4x 10.4x 11.3x 
+
+FW BW 0612 18 24 21 14 1.2x 1.2x 8.9x 14.2x 18.6x 22.9x 
+
+FW BW 01 
+
+> Time (s)
+> OpenThoughts
+> 4.2 4.2 1.6 1.6
+> 6.8x 5.4x 6.9x 5.3x 26.6x 14.6x
+
+FW BW 012 4.0 4.0 1.5 1.5 
+
+> 3.9x 2.6x 3.9x 2.6x 7.9x 4.2x
+
+FW BW 024
+
+> 5.1 2.6 2.1x 1.6x 2.1x 1.6x 2.6x 1.9x
+
+FW BW 036912 11 6.9 1.3x 1.2x 1.3x 1.2x 1.4x 1.2x 
+
+FW BW 0612 18 24 21 14 1.3x 1.2x 1.3x 1.2x 1.4x 1.2x 
+
+MegaN MegaR DCP TreeCP Figure 11. Attention forward/backward time. Qwen2.5-7B, 𝐺 =8, four real post-training workloads, and 16k–256k tokens per step. 036
+
+> Prefill Time (s)
+
+LongReward 
+
+> 90
+> 20.3x 20.3x 20.3x
+
+0510 
+
+LongAlign 
+
+> 89
+> 11.7x 20.1x 20.1x
+
+012
+
+LMSYS 
+
+> 65
+> 60.0x 62.7x 62.9x
+
+0123
+
+OpenThoughts 
+
+> 65
+> 32.4x 33.4x 58.5x
+
+020 40 
+
+> Replay Time (s)  44
+> 4.4x 4.5x 5.8x
+
+020 40 44 
+
+> 3.2x 4.7x 3.5x
+
+050 100 
+
+> 121
+> 1.0x 10.0x 24.2x
+
+050 100 
+
+> 120
+> 1.1x 1.1x 1.1x
+
+MegaN MegaR DCP TreeCP 
+
+Figure 12. Prompt prefill and response replay time. 
+
+Qwen2.5-7B, 𝐺 =8, four real post-training workloads, and 256k tokens per step. These gains come from exploiting both sources of struc-ture in post-training replay: prompt reuse explains the large gap over MegaN, while the gains over MegaR and DCP show that reuse alone is insufficient. 
+
+4.3 Component Ablations and Breakdown Attention forward/backward breakdown. Fig. 11 reports per-accelerator average attention forward and backward time over the same grid as Fig. 10 (counters divided by 32 for 16k–128k, 64 for 256k). By attention time, AugTree is on average 7.94 × faster than MegaN, 2.52 × faster than MegaR, and 1.31 × faster than DCP, confirming that the end-to-end gains mainly come from reducing replay attention overhead. Low-gain cases mostly occur on LongAlign, where DCP’s graph-balanced KV rotation is already competitive. 
+
+Prompt prefill versus response replay. Fig. 12 decom-poses the 256k-token cases into prompt prefill and response replay. MegaN spends substantially more time in prefill be-cause it rebuilds the shared prompt for each response path, while AugTree, MegaR, and DCP compute it once. 0.0 10 20 30 
+
+> Step time (s)
+
+(a) OpenThoughts   
+
+> 27.7 5.9× 5.9× 14.0× 5.5× 3.3× 14.2×
+
+0.0 10 20 30 (b) LongAlign    
+
+> 28.3 7.2× 7.2× 1.1× 5.8× 7.9× 8.0×
+> MegaN MegaR DCP TreeCP-N TreeCP-Ring TreeCP-MoveQ TreeCP
+
+Figure 13. Step-time ablations. Qwen2.5-7B, 𝐺 =8, g16k per group, 8 accelerators. AugTree(auto) selects the primitive per group. Replay is the main differentiator after prompt reuse. At 256k, AugTree reduces replay time by 8.67 × over MegaN, 6.70 × over MegaR, and 1.37 × over DCP on average, showing that AugTree improves the replay path itself via branch lo-cality and the cheaper primitive, beyond removing duplicate prompt computation. 
+
+Step-time ablations. The four execution strategies form a natural component ablation: MegaN uses flattened ring CP without prompt reuse; MegaR adds prompt reuse but still uses linear ring placement; DCP further adds dynamic block placement but keeps move-KV execution; AugTree adds prompt–response tree awareness and primitive selection. Hence MegaN → MegaR isolates the benefit of prompt reuse, MegaR → DCP isolates dynamic move-KV placement, and DCP →AugTree isolates tree-aware replay with primitive selection. To validate these components directly, we re-run the full ladder end-to-end on a single 8-accelerator node (no PP/DP) for the g16k cases, also including forced-primitive variants AugTree-Ring, AugTree-MoveQ, and AugTree-N (Fig. 13). The results confirm the decomposition: prompt reuse (MegaN → MegaR) removes most of MegaN’s cost, the planner’s automatic selection (MegaR →AugTree) gives 
+
+10 LongReward LongAlign LMSYS OpenThoughts 0.0 300 600 900    
+
+> Comm. (GiB)
+> MegaN MegaR DCP TreeCP
+> 823
+> 1.8x 1.8x 16.1x
+> 819
+> 3.8x  1.8x 16.2x
+> 414
+> 1.0x 8.2x 8.2x
+> 417
+> 1.0x 1.0x 2.2x
+
+Figure 14. CP attention communication volume. 
+
+Qwen2.5-7B, 𝐺 =8, four real post-training workloads, and 256k tokens per step. a further 1.1–2.4 × gain, and forcing the wrong primitive (e.g., AugTree-MoveQ on response-heavy OpenThoughts, 8.47 s vs. 1.99 s for AugTree(auto)) erases the benefit—each design decision contributes, and none is dispensable. 
+
+Update share of the full RL pipeline. Profiling rollout (8 accelerators, Qwen2.5-7B generation), reward scoring (2 ac-celerators, Qwen3-3B classifier), and update (the 8-accelerator Megatron configuration above) separately at the same per-step tree budget ( 𝐺 =8, 16k tokens), the update share of the pipeline depends mainly on the prompt–response ratio, rang-ing from 73% on the prompt-heavy LongAlign distribution down to 17% on the response-heavy OpenThoughts distri-bution, where 1907-token responses push rollout to 83% of pipeline time. Consequently, AugTree’s update-side speedup (up to 14 × over MegaN and 2 .4× over DCP) yields the largest end-to-end pipeline gains on prompt-heavy workloads—up to 2 .7× for the full rollout +reward +update pipeline: AugTree is designed for the update stage, yet on prompt-heavy distri-butions it benefits the entire pipeline. 
+
+4.4 Communication and Planner Analysis CP communication. Fig. 14 reports CP ring-stage attention communication bytes for the 256k workloads. This metric iso-lates repeated ring communication in the attention path. At 256k, AugTree reduces ring-stage communication by avoid-ing sibling-response traffic and by replacing repeated prompt-KV movement with query-side movement when prompts dominate. On the two prompt-heavy cases where AugTree selects MoveQ, AugTree reduces profiled ring-stage com-munication by 16.12 ×, 6.68 ×, and 9.06 × on average over MegaN, MegaR, and DCP, respectively. On response-heavy cases where AugTree selects TreeMoveKV, it reduces profiled ring-stage communication by 5.15 ×, 5.14 ×, and 1.56 × over the same baselines. This result matches the design: MoveQ is useful when large shared prompt KV would otherwise be moved repeatedly, while TreeMoveKV is useful when response-side replay dominates and sibling-response traffic should be avoided. This metric excludes MoveQ’s final col-lective reduction; its small latency impact is quantified in Fig. 15(a). MoveKV Ring MoveQ Ring MoveQ Reduce      
+
+> 0.0 24
+> Comm time (s)  (a) MoveKV vs MoveQ phase comm.
+> 4.03s 0.29s 0.22s
+> 16 64 256 1024 8192
+> Attention blocks
+> 024
+> Time (s)
+> (b) Planner solve time
+> DCP TreeCP
+
+Figure 15. MoveQ phase costs and planner solve time. 
+
+Qwen2.5-7B on 8 accelerators, 𝐺 =8. (a) MoveKV ring ver-sus MoveQ phase communication time on g16k LongAlign, CP=8; (b) planner solve time, 512-token blocks, graph sizes 16–8,192. 
+
+MoveQ phase costs. Fig. 15(a) resolves the two MoveQ phases directly: the query-side ring rotation and the softmax-state reduction together take about one eighth of the move-KV ring time they replace (0.29+0.22 s vs. 4.03 s per step), confirming that swapping the primitive for prompt-heavy groups is where much of AugTree’s communication gain comes from. 
+
+Planner overhead. In Fig. 15(b), solve time grows with the replay graph from 16 to 8,192 attention blocks ( 𝐺 =8, 512-token blocks), with the candidate CP degree scaling up to 128. DCP constructs and partitions a block-level dependency hypergraph for each candidate degree, causing solve time to grow from 0.17 ms at 16 blocks to 3336.5 ms at 8,192 blocks. AugTree instead enumerates bounded tree-aware candidates over (𝑑, 𝜋, 𝑠, 𝑋 ) and scores them from precomputed block statistics; its solve time grows only from 0.018 ms to 1.70 ms over the same range, three orders of magnitude faster at the largest size. Newly generated trees can thus be planned after rollout and before GPU dispatch. 
+
+4.5 Scalability and Correctness Model scalability. Fig. 16 evaluates the same execution strategies across Qwen2.5 model sizes on 32k-token Lon-gAlign and OpenThoughts workloads. Across the eight model– dataset points, AugTree is on average 6.99 × faster than MegaN, 1.37 × faster than MegaR, and 1.36 × faster than DCP. For both LongAlign and OpenThoughts, MegaN scales poorly because it repeats prompt computation for each re-sponse path. MegaR and DCP reduce this duplication, but AugTree still improves over them because replay placement and communication primitive selection remain important as model compute grows. The relative gain is smaller on 14B OpenThoughts, where dense model computation becomes a larger fraction of the step time and therefore reduces the fraction exposed to CP optimization. AugTree requires no architecture-specific changes: for standard MHA/GQA/MQA attention the semantics are unchanged, and Eq. (4) explic-itly captures the query/KV head counts, which shift the TreeMoveKV–MoveQ crossover. MLA changes only the KV representation and MoE only adds expert-parallel traffic, po-tentially shifting the optimal plan but not the underlying            
+
+> 11 LongAlign OpenThoughts 0.0 6.0 12 18
+> Step time (s)  1.5B
+> 17 17
+> 7.3x 4.9x 7.4x 4.9x 8.2x 8.2x
+> LongAlign OpenThoughts 0.0 8.0 16 24
+> 3B
+> 22 22
+> 7.5x 4.2x 7.7x 4.2x 8.6x 6.5x
+> LongAlign OpenThoughts 0.0 6.0 12 18
+> Step time (s)  7B
+> 17 17
+> 7.0x 2.6x 7.1x 2.6x 8.4x 3.8x
+> LongAlign OpenThoughts 0.0 15 30
+> 14B
+> 31 33
+> 6.7x 2.2x 6.7x 2.2x 8.3x 3.2x
+> MegaN MegaR DCP TreeCP
+
+Figure 16. End-to-end step time across model sizes. 
+
+Qwen2.5-Instruct models from 1.5B to 14B on 32k-token LongAlign and OpenThoughts workloads. 020      
+
+> Step time (s)  (a) Step time (8 cards)
+> 31.8 5.6× 5.3× 12.3× 31.6 7.2× 6.6× 7.5×
+> 025
+> Attn. time (s)  (b) Attn. fwd | bwd
+> 19.9 7.8 19.9 7.7
+> OpenThoughts LongAlign 010 20
+> Step time (s)  (c) Step time (32 cards)
+> 18.8 4.6× 4.6× 9.5× 20.3 7.2× 7.3× 8.4×
+> OpenThoughts LongAlign 024
+> Attn. time (s)  (d) Attn. fwd | bwd
+> 17.4 7.2 18.8 7.9
+> MegaN MegaR DCP TreeCP
+
+Figure 17. Cross-model generality. Llama-3.1-8B, 𝐺 =8, g16k per group; (a,b) 8 accelerators on one node, (c,d) 32 accelerators across four nodes (same CP ×PP ×DP =8×4×1logical layout); step time in (a,c), attention fwd/bwd time in (b,d). shared-prefix dependency; as in recent CP systems [19, 34], we evaluate a single family and show gains persist from 1.5B to 14B. 
+
+Cross-model family. Fig. 17 repeats the g16k comparison on Llama-3.1-8B, at 8 accelerators on one node (a,b) and 32 ac-celerators across four nodes (c,d). At 8 accelerators, AugTree is 12.3 × and 7.5 × faster than MegaN on OpenThoughts and LongAlign, and 2.2 × and 1.1 × faster than MegaR, confirm-ing that the plan shape, not the Qwen tokenizer or atten-tion layout, drives the gains. The LongAlign attention panel shows the smallest AugTree margin there because its prompt-heavy layouts also favor DCP-style placement, as in Fig. 11. The gains persist on the four-node 32-accelerator config-uration: AugTree is 9.5 × and 8.4 × faster than MegaN on OpenThoughts and LongAlign, and 2.3 × and 1.2 × faster than MegaR, so the benefit also carries over the node boundary where replay traverses inter-node CP rings. 
+
+Group-size scalability. Fig. 18 evaluates response group sizes 𝐺 ∈ { 8, 16 , 32 , 64 } on the 32k-token LongAlign work-load while keeping the total training tokens per step fixed. G = 8 G = 16 G = 32 G = 64    
+
+> Response group size
+> 0.0 1.5 3.0 4.5
+> Step time (s)  MegaN MegaR DCP TreeCP
+> 17
+> 7.0x 7.1x 8.4x  36
+> 14.1x 14.2x 16.8x  73
+> 28.1x 28.4x 33.4x  146
+> 56.9x 56.8x 66.4x
+
+Figure 18. End-to-end step time across response group sizes. Qwen2.5-7B, 32k-token LongAlign workload, and 𝐺 
+
+from 8 to 64. As 𝐺 increases, MegaN treats increasingly many prompt– response paths as independent sequences and repeats prompt computation, while AugTree stays flat (1.99–2.21 s) by reusing the prompt and selecting MoveQ for these prompt-heavy groups. Across the four group sizes, AugTree is on average 31.25 × faster than MegaN, 1.19 × faster than MegaR, and 1.18 × faster than DCP; MegaR and DCP are close because DCP still selects a move-KV ring plan. 
+
+Correctness of AugTree execution. AugTree changes the distributed attention schedule but not the attention depen-dency or RL loss: both primitives compute the same atten-tion result (Sec. 3.3), differing only in tensor ownership and communication direction, and their communication and re-duction steps are autograd operations that return gradients to the original tensor owners. Prompt gradients likewise accumulate on the shared prompt states before propagat-ing through the original prefill graph (Sec. 3.2). Token-level losses, gradient synchronization, and optimizer updates are unchanged. Validation runs confirm matching loss trajecto-ries against the move-KV baselines under identical replay inputs. 
+
+4.6 Discussion and Limitations Workload generality. AugTree is driven by the attention dependency structure rather than a specific model family or RL loss: one shared causal prefix fans out into indepen-dent autoregressive branches—each response attending to the shared prompt and its own prefix—so group-based objec-tives [13, 28, 38], which differ mainly in reward normaliza-tion, filtering, or loss weighting, all apply without changing the planner or engine, and the same structure directly covers RAG, multi-turn dialogue, and agentic trajectories that share such a root. AugTree does not exploit deeper internal prefix sharing or general DAGs with cross-branch dependencies or reconvergence; if such workloads are replayed as indepen-dent trajectories, AugTree still exploits their common root, and general DAG-aware CP is left to future work. 
+
+5 Related Work 
+
+Long-Context Context Parallelism. Long-context train-ing systems use context parallelism to split a single long sequence across devices. RingAttention [21] and Ring Flash Attention [44] shard the sequence dimension and rotate KV 
+
+> 12
+
+blocks. DeepSpeed Ulysses [18] shards attention heads and uses all-to-all tensor redistribution. USP [6], LoongTrain [11], and TransformerEngine [25] compose sequence and head dimensions to scale long-context training. Recent systems further optimize kernels, packing, load balance, or flexible placement, including FlashMask [32], JENGA [33], SAS [43], Hierarchical Balance Packing [37], FlexPipe [40], FlexSP [34], ByteScale [9], HexiSeq [20], WLB-LLM [35], and NanoCP [2]. These systems target dense or variable linear sequences, local attention work, pipeline balance, heterogeneous placement, or decoding-time scheduling. AugTree targets a different workload: post-training replay, where one prompt fans out to multiple response paths. It preserves this tree structure and changes the replay communication object when moving prompt KV is inefficient. DCP [19] is the closest baseline be-cause it partitions block-level attention graphs for dynamic inputs, but it still assumes move-KV execution and treats replay as a generic graph. 
+
+RLHF and Post-Training Systems. LLM post-training sys-tems optimize the rollout–reward–training pipeline. GRPO [28] and DAPO [38] use group-based reinforcement learning ob-jectives. OpenRLHF [15] and HybridFlow/veRL [29] provide RLHF runtimes, while RealHF [23], RLHFuse [42], AReaL [7], RhymeRL [14], RollPacker [8], and Seer [27] optimize re-source allocation, asynchrony, rollout scheduling, or long-tail latency. These are orthogonal to AugTree, which opti-mizes the training update stage and runs inside such run-times without changing their rollout scheduling or RL objec-tives. 
+
+6 Conclusion 
+
+We present AugTree, a prompt-aware context-parallel train-ing method for long-context LLM post-training updates: separating prompt prefill from response replay, preserving response-path locality, and selecting TreeMoveKV or MoveQ by communication pattern. A bounded online planner and plan-driven engine make these decisions practical in exist-ing trainers; experiments on real replay workloads show AugTree improves training-stage step time over Megatron ring baselines and DCP. Beyond the move-KV assumption of prior CP, AugTree shows that preserving prompt state and choosing the communication object matter: on prompt-dominant workloads its update-stage speedup also yields the largest full-pipeline gains (up to 2.7 ×). 
+
+References 
+
+[1] Yushi Bai, Xin Lv, Jiajie Zhang, Yuze He, Ji Qi, Lei Hou, Jie Tang, Yuxiao Dong, and Juanzi Li. 2024. Longalign: A recipe for long context alignment of large language models. In Findings of the Association for Computational Linguistics: EMNLP 2024 . 1376–1395. [2] Jiefei Chen, Binbin Lin, Jinming Ma, Jiangfei Duan, Haojie Duanmu, Hao Liu, Qinxiu Cheng, Xiuhong Li, Zhilin Pei, Hui Wang, et al. 2026. NanoCP: Request-Level Dynamic Context Parallelism for Data-Expert Parallel Decoding. arXiv preprint arXiv:2605.21100 (2026). [3] Gheorghe Comanici, Eric Bieber, Mike Schaekermann, Ice Pasupat, Noveen Sachdeva, Inderjit Dhillon, Marcel Blistein, Ori Ram, Dan Zhang, Evan Rosen, et al. 2025. Gemini 2.5: Pushing the frontier with advanced reasoning, multimodality, long context, and next generation agentic capabilities. arXiv preprint arXiv:2507.06261 (2025). [4] Tri Dao, Dan Fu, Stefano Ermon, Atri Rudra, and Christopher Ré. 2022. Flashattention: Fast and memory-efficient exact attention with io-awareness. Advances in neural information processing systems 35 (2022), 16344–16359. [5] AI DeepSeek. 2026. Deepseek-v4: Towards highly efficient million-token context intelligence. [6] Jiarui Fang and Shangchun Zhao. 2024. Usp: A unified sequence parallelism approach for long context generative ai. arXiv preprint arXiv:2405.07719 (2024). [7] Wei Fu, Jiaxuan Gao, Xujie Shen, Chen Zhu, Zhiyu Mei, Chuyi He, Shusheng Xu, Guo Wei, Jun Mei, Jiashu Wang, et al. 2026. Areal: A large-scale asynchronous reinforcement learning system for language reasoning. Advances in Neural Information Processing Systems 38 (2026), 36256–36282. [8] Wei Gao, Yuheng Zhao, Dakai An, Tianyuan Wu, Lunxi Cao, Shaopan Xiong, Ju Huang, Weixun Wang, Siran Yang, Wenbo Su, et al. 2025. Rollpacker: Mitigating long-tail rollouts for fast, synchronous rl post-training. arXiv preprint arXiv:2509.21009 (2025). [9] Hao Ge, Junda Feng, Qi Huang, Fangcheng Fu, Xiaonan Nie, Lei Zuo, Haibin Lin, Bin Cui, and Xin Liu. 2025. ByteScale: Communication-Efficient Scaling of LLM Training with a 2048K Context Length on 16384 GPUs. In Proceedings of the ACM SIGCOMM 2025 Conference .963–978. [10] Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Alex Vaughan, et al. 2024. The llama 3 herd of models. arXiv preprint arXiv:2407.21783 (2024). [11] Diandian Gu, Peng Sun, Qinghao Hu, Ting Huang, Xun Chen, Yingtong Xiong, Guoteng Wang, Qiaoling Chen, Shangchun Zhao, Jiarui Fang, et al. 2024. Loongtrain: Efficient training of long-sequence llms with head-context parallelism. arXiv preprint arXiv:2406.18485 (2024). [12] Etash Guha, Ryan Marten, Sedrick Keh, Negin Raoof, Georgios Smyr-nis, Hritik Bansal, Marianna Nezhurina, Jean Mercat, Trung Vu, Zayne Sprague, et al. 2025. Openthoughts: Data recipes for reasoning models. 
+
+arXiv preprint arXiv:2506.04178 (2025). [13] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, Qihao Zhu, Runxin Xu, Ruoyu Zhang, Shirong Ma, Xiao Bi, et al. 2025. DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning. Nature 645, 8081 (2025), 633–638. [14] Jingkai He, Tianjian Li, Erhu Feng, Dong Du, Qian Liu, Tao Liu, Yu-bin Xia, and Haibo Chen. 2025. History rhymes: Accelerating llm reinforcement learning with rhymerl. arXiv preprint arXiv:2508.18588 
+
+(2025). [15] Jian Hu, Xibin Wu, Zilin Zhu, Weixun Wang, Dehao Zhang, Yu Cao, et al. 2024. Openrlhf: An easy-to-use, scalable and high-performance rlhf framework. arXiv preprint arXiv:2405.11143 6 (2024). [16] Tianhao Hu, Xiangcheng Liu, Yuchun Miao, Youshao Xiao, Hongyu Zang, Yang Zheng, Xuan Huang, Jinrui Ding, Yufei Zhang, Yu Yang, et al. 2026. DORA: A scalable asynchronous reinforcement learning system for language model training. arXiv preprint arXiv:2604.26256 
+
+(2026). [17] Binyuan Hui, Jian Yang, Zeyu Cui, Jiaxi Yang, Dayiheng Liu, Lei Zhang, Tianyu Liu, Jiajun Zhang, Bowen Yu, Keming Lu, et al. 2024. Qwen2.5-coder technical report. arXiv preprint arXiv:2409.12186 (2024). [18] Sam Ade Jacobs, Masahiro Tanaka, Chengming Zhang, Minjia Zhang, Shuaiwen Leon Song, Samyam Rajbhandari, and Yuxiong He. 2023. Deepspeed ulysses: System optimizations for enabling train-ing of extreme long sequence transformer models. arXiv preprint arXiv:2309.14509 (2023). 
+
+> 13
+
+[19] Chenyu Jiang, Zhenkun Cai, Ye Tian, Zhen Jia, Yida Wang, and Chuan Wu. 2025. DCP: Addressing Input Dynamism In Long-Context Training via Dynamic Context Parallelism. In Proceedings of the ACM SIGOPS 31st Symposium on Operating Systems Principles . 221–236. [20] Yan Liang, Youhe Jiang, Ran Yan, Binhang Yuan, Wei Wang, and Chuan Wu. 2026. HexiSeq: Accommodating Long Context Training of LLMs over Heterogeneous Hardware. arXiv preprint arXiv:2605.07569 (2026). [21] Hao Liu, Matei Zaharia, and Pieter Abbeel. 2024. Ringattention with blockwise transformers for near-infinite context. In International Con-ference on Learning Representations , Vol. 2024. 3992–4008. [22] Hao Liu, Matei Zaharia, and Pieter Abbeel. 2024. Ringattention with blockwise transformers for near-infinite context. In International Con-ference on Learning Representations , Vol. 2024. 3992–4008. [23] Zhiyu Mei, Wei Fu, Kaiwei Li, Guangju Wang, Huanchen Zhang, and Yi Wu. 2025. Real: Efficient rlhf training of large language models with parameter reallocation. Proceedings of Machine Learning and Systems 
+
+7 (2025). [24] Maxim Milakov and Natalia Gimelshein. 2018. Online normalizer calculation for softmax. arXiv preprint arXiv:1805.02867 (2018). [25] NVIDIA. 2024. Transformer Engine. https://github.com/NVIDIA/ TransformerEngine .[26] OpenAI. 2025. Introducing GPT-5.2. https://openai.com/index/ introducing-gpt-5-2/ . Accessed: 2026-01-29. [27] Ruoyu Qin, Weiran He, Weixiao Huang, Yangkun Zhang, Yikai Zhao, Bo Pang, Xinran Xu, Yingdi Shan, Yongwei Wu, and Mingxing Zhang. 2025. Seer: Online context learning for fast synchronous llm reinforce-ment learning. arXiv preprint arXiv:2511.14617 (2025). [28] Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, YK Li, Yang Wu, et al. 2024. Deepseekmath: Pushing the limits of mathematical reasoning in open language models. arXiv preprint arXiv:2402.03300 (2024). [29] Guangming Sheng, Chi Zhang, Zilingfeng Ye, Xibin Wu, Wang Zhang, Ru Zhang, Yanghua Peng, Haibin Lin, and Chuan Wu. 2025. Hybrid-flow: A flexible and efficient rlhf framework. In Proceedings of the Twentieth European Conference on Computer Systems . 1279–1297. [30] Mohammad Shoeybi, Mostofa Patwary, Raul Puri, Patrick LeGresley, Jared Casper, and Bryan Catanzaro. 2019. Megatron-lm: Training multi-billion parameter language models using model parallelism. arXiv preprint arXiv:1909.08053 (2019). [31] Pedro F Silvestre and Peter Pietzuch. 2025. Systems opportunities for LLM fine-tuning using reinforcement learning. In Proceedings of the 5th Workshop on Machine Learning and Systems . 90–99. [32] Guoxia Wang, Jinle Zeng, Xiyuan Xiao, Siming Wu, Jiabin Yang, Lujing Zheng, Zeyu Chen, Jiang Bian, Dianhai Yu, and Haifeng Wang. 2025. Flashmask: Efficient and rich mask extension of flashattention. In 
+
+International Conference on Learning Representations , Vol. 2025. 27641– 27661. [33] Tuowei Wang, Xingyu Chen, Kun Li, Ting Cao, Ju Ren, and Yaoxue Zhang. 2025. {JENGA }: Enhancing {LLM } { Long-Context } Fine-tuning with Contextual Token Sparsity. In 2025 USENIX Annual Tech-nical Conference (USENIX ATC 25) . 123–141. [34] Yujie Wang, Shiju Wang, Shenhan Zhu, Fangcheng Fu, Xinyi Liu, Xue-feng Xiao, Huixia Li, Jiashi Li, Faming Wu, and Bin Cui. 2025. Flexsp: Accelerating large language model training via flexible sequence par-allelism. In Proceedings of the 30th ACM International Conference on Architectural Support for Programming Languages and Operating Sys-tems, Volume 2 . 421–436. [35] Zheng Wang, Anna Cai, Xinfeng Xie, Zaifeng Pan, Yue Guan, Weiwei Chu, Jie Wang, Shikai Li, Jianyu Huang, Chris Cai, et al. 2025. {WLB-LLM }:{Workload-Balanced } 4D Parallelism for Large Language Model Training. In 19th USENIX Symposium on Operating Systems Design and Implementation (OSDI 25) . 785–801. [36] An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, Chengen Huang, Chenxu Lv, et al. 2025. Qwen3 technical report. arXiv preprint arXiv:2505.09388 (2025). [37] Yongqiang Yao, Jingru Tan, Kaihuan Liang, Feizhao Zhang, Jiahao Hu, Shuo Wu, Yazhe Niu, Ruihao Gong, Dahua Lin, and Ningyi Xu. 2026. Hierachical Balance Packing: Towards Efficient Supervised Fine-tuning for Long-Context LLM. Advances in Neural Information Processing Systems 38 (2026), 45509–45536. [38] Qiying Yu, Zheng Zhang, Ruofei Zhu, Yufeng Yuan, Xiaochen Zuo, Yu Yue, Weinan Dai, Tiantian Fan, Gaohong Liu, Lingjun Liu, et al. 2025. Dapo: An open-source llm reinforcement learning system at scale. arXiv preprint arXiv:2503.14476 (2025). [39] Jiajie Zhang, Zhongni Hou, Xin Lv, Shulin Cao, Zhenyu Hou, Yilin Niu, Lei Hou, Yuxiao Dong, Ling Feng, and Juanzi Li. 2025. Longreward: Improving long-context large language models with ai feedback. In 
+
+Proceedings of the 63rd Annual Meeting of the Association for Computa-tional Linguistics (Volume 1: Long Papers) . 3718–3739. [40] Hairui Zhao, Qi Tian, Hongliang Li, and Zizhong Chen. 2025. 
+
+{FlexPipe }: Maximizing training efficiency for transformer-based mod-els with {Variable-Length } inputs. In 2025 USENIX Annual Technical Conference (USENIX ATC 25) . 143–159. [41] Lianmin Zheng, Wei Lin Chiang, Ying Sheng, Tianle Li, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zhuohan Li, Zi Lin, Eric P Xing, et al. 2024. LMSYS-CHAT-1M: A LARGE-SCALE REAL-WORLD LLM CON-VERSATION DATASET. In 12th International Conference on Learning Representations, ICLR 2024 .[42] Yinmin Zhong, Zili Zhang, Bingyang Wu, Shengyu Liu, Yukun Chen, Changyi Wan, Hanpeng Hu, Lei Xia, Ranchen Ming, Yibo Zhu, et al. 2025. Optimizing {RLHF } training for large language models with stage fusion. In 22nd USENIX Symposium on Networked Systems Design and Implementation (NSDI 25) . 489–503. [43] Yuan Zhou, Shaojie Xiang, Lingfan Yu, Zhenyu Song, Charith Mendis, and Yida Wang. 2026. SAS: Sparse Attention Synthesizer for Effi-cient Language Model Inference. In Proceedings of the 21st European Conference on Computer Systems . 1707–1721. [44] Zilin Zhu. 2024. Ring Flash Attention. https://github.com/zhuzilin/ ring-flash-attention .[45] Heming Zou, Qi Wang, Yun Qu, Yuhang Jiang, Lizhou Cai, Yixiu Mao, Ru Peng, Xin Xu, Weijie Liu, Kai Yang, et al. 2026. TRACE: A Unified Rollout Budget Allocation Framework for Efficient Agentic Reinforce-ment Learning. arXiv preprint arXiv:2606.11119 (2026).
