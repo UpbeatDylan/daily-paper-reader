@@ -1,0 +1,191 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-01T22:57:45.202152+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.33465v1",
+      "source": "arxiv",
+      "title": "GSM: Efficient Language Modeling with Shared Global State",
+      "abstract": "Efficient language models must reduce not only the cost of individual accesses to past context but also the overhead of repeatedly selecting and processing historical information across layers. We introduce the Global State Model (GSM), a causal encoder--decoder architecture that concentrates the selection and aggregation of long-range information in the encoding stage. Through multiple stages of history retrieval, the encoder progressively incorporates long-range information into representations at recent positions, forming a shared state with a fixed window size. Each decoder layer accesses this same state using queries updated from the preceding layer, preserving computational depth while avoiding repeated construction of historical key--value (KV) representations and long-range indexing. As a result, neither the decoder's per-step attention cost nor its KV cache size grows with the history length. Experiments show that GSM improves computational efficiency and reduces cache overhead while maintaining model performance and the ability to use long-range information, offering a shared-state architecture for efficient language modeling.",
+      "authors": [
+        "Yunao Zheng",
+        "Bin Wen",
+        "Xiaojie Wang",
+        "Kaiyu Jiang",
+        "Xuanyu Zheng",
+        "Changyi Liu",
+        "Hongyi Fu",
+        "Jianxiong Wang",
+        "Tianke Zhang",
+        "Haonan Fan",
+        "Yingxin Li",
+        "Jiankang Chen",
+        "Xu Wang",
+        "Tingting Gao",
+        "Han Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-27T11:19:21+00:00",
+      "link": "https://arxiv.org/pdf/2609.33465v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "avoids repeated construction of historical key-value representations",
+      "llm_evidence_cn": "避免重复构建历史键值表示",
+      "llm_evidence": "避免重复构建历史键值表示",
+      "canonical_evidence": "避免重复构建历史键值表示",
+      "llm_tldr_en": "GSM targets the overhead of repeatedly selecting and processing historical information across layers in long-context models, concentrating long-range aggregation in an encoder with a fixed-size shared state.",
+      "llm_tldr_cn": "该文针对长上下文语言模型中跨层反复选择与处理历史信息、重复构建键值表示带来的开销问题，提出全局状态模型GSM。该因果编码器—解码器架构把长程信息的选取与聚合集中在编码阶段，通过多阶段历史检索将远距离信息逐步融入近端位置表示，形成固定窗口大小的共享状态，各解码层复用同一状态。该设计在保持计算深度的同时避免重复构造历史KV，提升了长上下文建模效率。",
+      "llm_tldr": "该文针对长上下文语言模型中跨层反复选择与处理历史信息、重复构建键值表示带来的开销问题，提出全局状态模型GSM。该因果编码器—解码器架构把长程信息的选取与聚合集中在编码阶段，通过多阶段历史检索将远距离信息逐步融入近端位置表示，形成固定窗口大小的共享状态，各解码层复用同一状态。该设计在保持计算深度的同时避免重复构造历史KV，提升了长上下文建模效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.33252v1",
+      "source": "arxiv",
+      "title": "CascadeEP: Asynchronous Expert Execution for MoE Prefill under Attention Imbalance",
+      "abstract": "Mixture-of-experts (MoE) serving commonly deploys data and expert parallelism (DEP): attention replicas run distinct request batches while routed experts are sharded across an expert-parallel (EP) group. During prefill, attention replicas finish dispatch at different times, but synchronous EP delays expert feed-forward network (FFN) computation until routed inputs from all replicas are ready. Request schedulers seek to balance load while reusing the key-value (KV) cache of shared prompt prefixes to avoid redundant prefill computation. These goals can conflict when a replica holding a matching prefix is already overloaded, leaving residual attention imbalance. We present ASYNCEP, a distributed execution engine for MoE prefill. ASYNCEP proposes three mechanisms. Asynchronous EP allows expert computation to start before tokens from all attention replicas are ready. streamFFN batches ready tokens to balance early execution with FFN computation efficiency. Opportunistic expert weight fetching (OEWF) allows a faster replica to fetch expert weights and execute unstarted work from other GPUs. We evaluate ASYNCEP on DeepSeek-V4-Flash, DeepSeek-V4-Pro, and GLM-5.3, and our results show that ASYNCEP achieves up to 1.48x speedup in p95 time-to-first-token (TTFT) and improves the inference throughput by up to 1.17x.",
+      "authors": [
+        "Jin Qin",
+        "Tiancheng Hu",
+        "Shiyan Wang",
+        "Junhao Hu",
+        "Zexin Jian",
+        "Yuzheng Wang",
+        "Haoyu Li",
+        "Chunwei Xia",
+        "Ying Liu",
+        "Pixian Zhan",
+        "Di Wang",
+        "Zhongzhe Hu",
+        "Huimin Cui",
+        "Tao Xie",
+        "Chenxi Wang"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-09-27T05:53:28+00:00",
+      "link": "https://arxiv.org/pdf/2609.33252v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "prefix KV cache reuse of shared prompt prefixes in MoE prefill",
+      "llm_evidence_cn": "MoE预填充中共享提示前缀的KV缓存复用",
+      "llm_evidence": "MoE预填充中共享提示前缀的KV缓存复用",
+      "canonical_evidence": "MoE预填充中共享提示前缀的KV缓存复用",
+      "llm_tldr_en": "MoE prefill with data and expert parallelism suffers attention imbalance, and prefix KV cache reuse can worsen it. ASYNCEP asynchronously executes expert FFNs to balance load while preserving shared-prefix KV cache reuse.",
+      "llm_tldr_cn": "MoE服务采用数据与专家并行时，预填充阶段各注意力副本完成分发时间不一，同步专家并行需等待全部副本就绪，而前缀KV缓存复用又会加剧副本负载不均衡。本文提出ASYNCEP分布式执行引擎，异步调度专家前馈计算并协调共享前缀KV缓存复用。该方法在保持前缀缓存复用的同时减少同步等待，缓解注意力不均衡。工作为MoE预填充调度兼顾负载均衡与缓存复用提供了新方案。",
+      "llm_tldr": "MoE服务采用数据与专家并行时，预填充阶段各注意力副本完成分发时间不一，同步专家并行需等待全部副本就绪，而前缀KV缓存复用又会加剧副本负载不均衡。本文提出ASYNCEP分布式执行引擎，异步调度专家前馈计算并协调共享前缀KV缓存复用。该方法在保持前缀缓存复用的同时减少同步等待，缓解注意力不均衡。工作为MoE预填充调度兼顾负载均衡与缓存复用提供了新方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.33410v1",
+      "source": "arxiv",
+      "title": "FoldAttention: Declared-Reference Softmax for Fast Decode and Deterministic Backward",
+      "abstract": "Autoregressive decode repeatedly streams a growing KV cache, making attention a major cost at long context. Existing high-performance kernels use online softmax, which discovers a row's normalization reference as it scans keys. Earlier contributions therefore remain provisional and may require rescaling. We argue that the reference need not be discovered: softmax is invariant to a common shift, so the reference only has to keep the weights in range. We present FoldAttention, an additive formulation of softmax attention that fixes a finite reference $Z_i$ before scanning the KV cache. Each weight $2^{s_{ij}-Z_i}$ is then final when computed, so contributions add across disjoint key ranges and their quotient equals softmax attention in real arithmetic. We use this property to develop two techniques for Hopper decode: (1) final weights gate key and value reads before the bytes are fetched, and a per-call depth $T$ cuts keys below $2^{-T}$ while keeping their mass, and (2) additive partials compose split KV and shared-prefix cascades without rescaling. On H100 at $T=16$, FoldAttention decodes seven real-model generations 1.36-2.30$\\times$ faster than the fastest BF16 baseline, and up to 3.09$\\times$ faster across MHA and GQA shapes, at an error within 1.5% of the lowest BF16 error on six of the seven; reading every key, it is 1.14-1.30$\\times$ faster at matched error. We validate on Qwen3-8B that a whole decode step is up to 1.46$\\times$ faster while likelihood and long-context accuracy match those under BF16 kernels. The same principle makes the backward deterministic: CTAs round bounded partial gradients onto an integer grid declared before the reduction and add them in any order. FoldAttention thereby removes the determinism tax: its deterministic backward is up to 1.84$\\times$ faster than deterministic FlashAttention-3/4 and 1.05$\\times$ faster than the fastest nondeterministic kernel.",
+      "authors": [
+        "Sriman Achanta"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-09-27T09:44:57+00:00",
+      "link": "https://arxiv.org/pdf/2609.33410v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "additive softmax fixing a reference before scanning the KV cache for fast long-context decode",
+      "llm_evidence_cn": "固定参考值的加性softmax，扫描KV缓存前即可确定归一化",
+      "llm_evidence": "固定参考值的加性softmax，扫描KV缓存前即可确定归一化",
+      "canonical_evidence": "固定参考值的加性softmax，扫描KV缓存前即可确定归一化",
+      "llm_tldr_en": "FoldAttention replaces online softmax with a declared finite reference fixed before scanning the KV cache, making each attention weight final and enabling fast deterministic long-context decode.",
+      "llm_tldr_cn": "自回归解码需反复流式读取不断增长的KV缓存，使注意力成为长上下文的主要开销，而现有在线softmax需边扫描边确定归一化参考，导致贡献值暂定并可能重缩放。本文提出FoldAttention，利用softmax对公共平移的不变性，在扫描KV缓存前就固定有限参考值，使每个权重一经计算即为最终值。该形式化改写可加速长上下文解码并支持确定性反向传播。",
+      "llm_tldr": "自回归解码需反复流式读取不断增长的KV缓存，使注意力成为长上下文的主要开销，而现有在线softmax需边扫描边确定归一化参考，导致贡献值暂定并可能重缩放。本文提出FoldAttention，利用softmax对公共平移的不变性，在扫描KV缓存前就固定有限参考值，使每个权重一经计算即为最终值。该形式化改写可加速长上下文解码并支持确定性反向传播。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.34612v1",
+      "source": "arxiv",
+      "title": "SPIMOE: Exploiting Hybrid Sparsity for Reasoning MoE Inference on Heterogeneous PIM Architectures",
+      "abstract": "Long-reasoning Mixture-of-Experts (MoE) models expose two coupled inference bottlenecks: growing KV caches shift the critical path toward attention, while sparse expert activation causes load imbalance and low hardware utilization. Although Processing-in-Memory (PIM) offers a promising way to mitigate data movement overhead, existing PIM-based accelerators typically optimize attention or FFNs in isolation. We propose SPIMOE, the first co-design framework that exploits hybrid sparsity for efficient MoE inference on heterogeneous PIM architectures. SPIMOE combines adaptive expert routing with block-sparse attention and physical KV-cache eviction, and disaggregates attention and FFNs across SRAM-PIM and HBM-PIM. Static expert mapping and dynamic sub-batch scheduling further balance channel loads and overlap the two paths. Evaluations show that SPIMOE achieves up to $8.35\\times$ end-to-end speedup over an NVIDIA A100 GPU and $3.33\\times$ speedup in MoE FFN execution over PIMoE, while preserving reasoning accuracy comparable to full-attention baselines.",
+      "authors": [
+        "Rubing Yang",
+        "Cenlin Duan",
+        "Yingjie Qi",
+        "Xiaolin He",
+        "Xiao Ma",
+        "Jianlei Yang"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-09-28T08:40:10+00:00",
+      "link": "https://arxiv.org/pdf/2609.34612v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "physical KV-cache eviction and block-sparse attention for long-reasoning MoE inference acceleration",
+      "llm_evidence_cn": "面向长推理MoE的物理KV缓存淘汰与稀疏注意力加速",
+      "llm_evidence": "面向长推理MoE的物理KV缓存淘汰与稀疏注意力加速",
+      "canonical_evidence": "面向长推理MoE的物理KV缓存淘汰与稀疏注意力加速",
+      "llm_tldr_en": "SPIMOE co-designs adaptive expert routing, block-sparse attention and physical KV-cache eviction on heterogeneous PIM, cutting data movement for long-reasoning MoE inference.",
+      "llm_tldr_cn": "长推理混合专家模型面临KV缓存膨胀与专家激活稀疏两大瓶颈，现有存内计算加速器往往只单独优化注意力或前馈网络。本文提出SPIMOE，首个在异构存内计算架构上联合利用混合稀疏性的协同设计框架，结合自适应专家路由、块稀疏注意力与物理KV缓存淘汰，并将注意力与FFN分置于SRAM-PIM和HBM-PIM。该工作为长上下文MoE推理的数据搬运与负载均衡问题提供了硬件协同的加速思路。",
+      "llm_tldr": "长推理混合专家模型面临KV缓存膨胀与专家激活稀疏两大瓶颈，现有存内计算加速器往往只单独优化注意力或前馈网络。本文提出SPIMOE，首个在异构存内计算架构上联合利用混合稀疏性的协同设计框架，结合自适应专家路由、块稀疏注意力与物理KV缓存淘汰，并将注意力与FFN分置于SRAM-PIM和HBM-PIM。该工作为长上下文MoE推理的数据搬运与负载均衡问题提供了硬件协同的加速思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
