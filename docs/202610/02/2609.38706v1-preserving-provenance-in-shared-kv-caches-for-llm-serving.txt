@@ -1,0 +1,409 @@
+Title: Preserving Provenance in Shared KV Caches for LLM Serving
+
+URL Source: https://arxiv.org/pdf/2609.38706v1
+
+Published Time: Thu, 01 Oct 2026 00:43:43 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# Preserving Provenance in Shared KV Caches for LLM Serving 
+
+## Wei Song 1 Yuxin Cao 2 Xi Zheng 3 Leo Zhang 1 Xiao Cheng 3
+
+> 1
+
+Griffith University 
+
+> 2
+
+National University of Singapore 
+
+> 3
+
+Macquarie University 
+
+## Abstract 
+
+Production LLM serving stacks combine an inference en-gine’s local prefix cache with a shared KV-cache tier for fleet-wide reuse. The local cache distinguishes requests by adapter, weight configuration and sharing domain, but the shared tier may key entries only by token content and coarse model metadata. This boundary erases provenance and lets iden-tical tokens under incompatible computational or sharing contexts collide. We call this composition gap provenance-blind reuse and present its first systematic study. A source audit of three vLLM connectors confirms the structural omis-sion, while runtime experiments reproduce it across vLLM and two SGLang releases, 12 models from 7 families (0.5 B– 32 B), and over 160 configurations. Cross-adapter collisions reduce accuracy from 0.94 to 0.64, incompatible KV represen-tations reduce reasoning accuracy to zero, and salt omission enables 93% prompt identification from timing. We formalize the missing guarantee as the KV provenance contract : for a declared dimension registry, shared keys must be injective over computational and sharing provenance, with identities stable across workers. Any dimension with a stable identity can therefore be added without connector-specific key logic. A canonical descriptor binds per-request and per-worker provenance into lookup and store keys, while a differential checker detects dimensions that change KV state without changing the key. Implemented in vLLM and SGLang 0.5.20 across three cache paths, provenance binding eliminates unsafe reuse while preserving legitimate sharing. Hit-path latency changes remain within 0.34 ms and below run-to-run variation; retention grows with provenance diversity. 
+
+## 1 Introduction 
+
+Modern LLM serving systems increasingly rely on two co-operating layers of KV-cache reuse. An inference engine such as vLLM [14] or SGLang [39] manages a local prefix cache and distinguishes requests by their serving context, including adapter identity, weight configuration and, where supported, a sharing-domain salt. A shared tier such as LM-Cache [4] or Mooncake [23] serves computed KV state to any worker whose request maps to the same key, enabling fleet-wide prefix reuse. Each layer is correct in isolation, but their composition is safe only if the shared key preserves every engine-level distinction that affects the cached state Same prompt x · same base model   
+
+> Instance 1 · Adapter A Instance 2 · Adapter B
+> Local key: (x, A) Local key: (x, B)
+> Pre fi ll & store A's KV
+> Expected: cache miss
+> Pre fi ll with B
+> Actual: Hit on A's KV Decode with B
+
+Shared KV cache      
+
+> Key: H(x, model ID) Value: KV from A
+> Local keys di ff er Shared key is the same
+> Missing adapter identity A's KV + B's decoding
+
+Figure 1. Cross-adapter provenance-blind reuse on vLLM. Because the shared key omits adapter identity, a request under 𝐵 retrieves KV state produced under 𝐴 and decodes with 𝐵 ’s weights over 𝐴 ’s prefix representation. or permission to share it. As we show, this condition is rou-tinely violated because context tracked locally by the engine is lost at the engine–connector boundary. Figure 1 illustrates the failure concretely. Two workers serve the same base model with different LoRA adapters [13], 
+
+𝐴 and 𝐵 , while sharing an external KV tier. The first worker computes KV state for a prompt under adapter 𝐴 and stores it under a key derived from the prompt tokens. When the same prompt later arrives at the second worker under adapter 𝐵 ,the shared tier matches on the token-derived key and re-turns the state that 𝐴 produced. The second worker there-fore decodes with 𝐵 ’s weights over a prefix representation computed under 𝐴 , producing output that silently depends on an adapter the request did not select. No error is raised and no adversary is needed. The engine’s local cache would have kept the two adapters separate. The failure arises solely from composing that local isolation with a shared key that omits adapter identity, which the engine alone holds. The root cause generalizes beyond adapters. The engine and the shared-cache connector derive their keys under dif-ferent notions of equivalence: the engine distinguishes two identical token sequences whenever their request contexts produce different KV state or prohibit sharing, whereas the connector treats them as equivalent based on tokens and coarse model metadata alone. Equality of shared keys thus arXiv:2609.38706v1 [cs.DC] 30 Sep 2026 Song et al. 
+
+implies neither computational equivalence nor permission to reuse. We call this gap provenance-blind reuse . While adapter-related key conflicts have surfaced individually as engineer-ing issues [19, 29], our work unifies them with failures in-volving weight precision, weight version, KV representation format, and sharing domains as instances of a single missing interface contract at the engine–connector boundary. We conduct a systematic study of this failure across two inference engines, multiple connector implementations, and a wide range of model configurations. A source-level audit of three independently implemented shared-cache connectors for vLLM (LMCache, the filesystem connector, and the Moon-cake integration) confirms that the key omission is structural. All three derive keys the same way, a consequence of con-tent addressing rather than a per-connector defect. Runtime experiments reproduce the failure through vLLM’s LMCache and filesystem paths and SGLang’s HiCache path across two releases, spanning 12 models from 7 families (0.5 B–32 B) and more than 160 configurations. The exact omitted dimen-sions vary by stack and release, but the pattern is consistent: the shared tier never receives the full provenance needed to decide whether cached state is safely reusable. We organize the missing provenance into two classes with distinct failure modes. Computational provenance , such as adapter identity, weight precision, weight version and KV representation, determines whether cached state is valid for the requester; its omission can cause the shared tier to serve or load incompatible state. Sharing provenance , represented by the tenant salt, determines whether otherwise compat-ible requests are permitted to share; its omission defeats engine-level tenant isolation. The consequences vary: cross-adapter reuse reduces accuracy from 0.94 to 0.64 without an adversary, while incompatible KV representations reduce reasoning accuracy from 0.94 to zero. Weight-version harm is model- and task-dependent, whereas weight-precision reuse alters outputs without a statistically significant accuracy loss in the workloads tested. Salt omission lets a remote observer identify a victim’s prompt with 93% accuracy from timing alone. Routing locality and prefix diversity affect how often workers reach the shared tier but do not remove the flaw. The most direct repair is to include the missing dimensions in the shared key. However, two fundamental constraints make such a naive approach silently break reuse or leave the gap open. First, process-local identifiers are not provenance identities. Two workers may assign different integer handles to the same LoRA adapter, so binding the raw handle would partition state that should be shared. Second, key derivation occurs at execution sites with asymmetric metadata. In vLLM, for example, the scheduler that looks up the store knows the request’s adapter and sharing domain, while the worker that writes the state may not. Injecting provenance at only one site therefore causes the two paths to derive different keys. To address both constraints, we propose the KV provenance contract , an interface specification parametric over a declared dimension registry at the engine–connector boundary. It requires configurations that produce different KV state to de-rive different shared keys (computational invariant), and con-figurations not permitted to share to do likewise (permission invariant). Both invariants require provenance identities to remain stable across workers and consistent between lookup and store paths. Extensibility follows structurally from the parametric design: any dimension with an injective, cross-worker-stable identity extends the contract without chang-ing connector-specific key logic. We realize the contract with a canonically encoded provenance descriptor spanning two lifetimes. Per-request fields carry the adapter identity and salt through the request record to both access paths, while per-worker fields capture weight precision, version and KV format at startup. Each cache path’s native key derivation consumes this descriptor. A differential checker holds to-ken content fixed and reports any declared dimension that changes KV state without changing the derived key. We im-plement provenance binding in vLLM and SGLang 0.5.20 across LMCache, vLLM’s filesystem connector and SGLang HiCache, eliminating cross-provenance reuse while fully preserving same-provenance sharing. Across both engines, observed hit-path latency changes are at most 0.34 ms and smaller than run-to-run variation, so no hit-path latency penalty is resolvable at our measurement scale; retention grows with provenance diversity on the file-backed store that each engine uses. In summary, this paper makes three contributions: 
+
+• First systematic identification of provenance-blind reuse. We present the first analysis of the composition gap between an LLM engine’s local cache and a shared KV-cache tier. We show that adapter, weight-precision, weight-version, KV-representation, and sharing-domain conflicts, previously reported as isolated bugs, are instances of a single missing interface contract at the engine–connector boundary. A source-level audit covers three independently implemented connectors for vLLM, and runtime experi-ments confirm the failure across two engines (vLLM and SGLang), two SGLang releases, 12 models from 7 families (0.5 B–32 B), and more than 160 configurations. 
+
+• The KV provenance contract. We formalize the KV provenance contract , a registry-parametric interface spec-ifying when two requests may safely share cached state. It distinguishes computational from sharing provenance and requires each dimension affecting KV state or shar-ing permission to carry a stable, cross-worker identity. Extensibility is a formal property of the design: any new stable-identity dimension extends the contract without changing connector-specific key logic. We instantiate the contract for five dimensions: adapter, precision, version, KV format and tenant salt. A per-dimension differential omission test falsifies the contract under declared configu-ration changes, making omitted bindings directly testable. Preserving Provenance in Shared KV Caches for LLM Serving 
+
+• Cross-engine implementation of the KV provenance contract. We implement the contract as provenance bind-ing in vLLM and SGLang 0.5.20 across three cache paths (LMCache, vLLM’s filesystem connector, and SGLang Hi-Cache). Across all paths it eliminates cross-provenance reuse while preserving same-provenance sharing, with no resolvable hit-path latency penalty at our measurement scale and storage cost linear in provenance diversity. 
+
+## 2 Background and Threat Model 
+
+2.1 Local and Shared KV Caching 
+
+During prefill, an autoregressive transformer computes key and value projections for every prompt token at every model layer. Subsequent decoding attends to these projections rather than recomputing the prompt. We call their collection the request’s KV state . KV state consumes substantial serving memory, and producing it accounts for much of the time to first token, so requests sharing a token prefix can avoid redundant prefill by reusing the state. A local prefix cache 
+
+retains that state within one inference worker and indexes it by the shared prefix: vLLM [14] hashes fixed-size token blocks, while SGLang [39] organizes prefixes in a radix tree. Because the cached state remains local to the worker, only requests routed to that worker can reuse it. A shared KV-cache tier extends this reuse across workers by placing cached state in process-external storage. Systems such as LMCache [4] and Mooncake [23], vLLM’s filesys-tem connector, and SGLang HiCache expose such storage through a connector at the engine boundary. On a local miss, the connector derives a shared key from the prefix and available metadata and queries the external store; a hit loads the cached tensors and skips the corresponding prefill work, while a miss computes and writes new state. Because the store outlives individual workers, state written by one remains available to another across scheduling and deploy-ment changes. The connector’s shared key (not the engine’s local-cache key) therefore determines which requests are treated as equivalent at fleet scope. 
+
+2.2 Serving Configurations and Isolation 
+
+Safe KV reuse requires computational compatibility and per-mission to share. Computational provenance determines valid-ity for the requesting configuration, while sharing provenance 
+
+determines whether reuse is allowed. 
+
+2.2.1 Computational configuration. We study four di-mensions, each of which can change the KV state that is produced for an identical token prefix. 
+
+Adapter identity. A LoRA adapter [13] applies learned low-rank updates to a base model’s weights. Because the key and value projections depend on the active weights, the same token prefix can produce different KV state under different adapters. Multi-adapter systems such as S-LoRA [24] and Punica [3] multiplex adapters for different tasks or tenants over one base model, so the adapter, and hence the KV state, can vary between requests on the same worker. 
+
+Weight precision. Post-training quantization [7, 16, 36] reduces model-memory and compute costs by representing or executing the weights at lower precision. A serving fleet may therefore run unquantized, fp8 or lower-bit replicas of the same logical model. These replicas can produce numeri-cally different key and value projections even when the KV cache itself uses the same element type. Weight precision is normally fixed for a worker’s lifetime. 
+
+Weight version. Model updates replace a checkpoint be-hind a stable model name. During a rolling update, workers running the old and new checkpoints may coexist and access the same shared cache. Even when the checkpoints have the same architecture and tensor shapes, their parameters can produce different KV state for an identical prefix. Weight version is fixed for the lifetime of a worker, and it changes only across deployment events. 
+
+KV representation. The stored tensors also have a worker-level representation. An engine may allocate its KV pool with different element types, such as bfloat16 or float16 ,or apply a KV-specific format such as fp8 . Unlike weight precision, which affects the projections themselves, the KV representation governs how computed state is stored and loaded. State written under one representation cannot be assumed compatible with a worker using another: its values may be misinterpreted or the load may fail. The effective representation is fixed when a worker initializes its KV pool. 
+
+2.2.2 Sharing permission. Computational compatibility alone does not make reuse permissible. 
+
+Sharing-domain salt. vLLM accepts a per-request 
+
+cache_salt and incorporates it into the first block hash of its local prefix cache, documenting this mechanism as a defense against prefix-cache timing attacks (CVE-2025-46570) [30]. Requests with different salts occupy separate sharing domains and must not reuse one another’s state, even when their tokens and computational configurations match. The salt changes not the computed KV state but whether another request may observe or reuse it; like the adapter, it can vary per request within one worker. Adapter identity and sharing domain are request-level ,whereas weight precision, weight version and KV repre-sentation are worker-level . The engine can know all five di-mensions, but a shared-cache connector can bind only the provenance it receives. Because local-cache handling varies across engines and releases, local isolation does not imply that an external tier preserves the same distinctions. The interface contract of §5 is shaped by this separation, and it binds the two levels through separate digests. Song et al. 
+
+2.3 Deployment and Threat Model 
+
+We study two consequences of the same interface failure: integrity or liveness failures under ordinary operation, and confidentiality leakage across isolated request domains. 
+
+Integrity and liveness setting (no adversary). Clients issue well-formed requests to a serving fleet whose workers share an external KV tier but differ in a dimension omit-ted from its key: adapter identity, weight precision, weight version or KV representation. Such heterogeneity arises in multi-adapter serving, mixed-precision deployment, rolling model updates and workers configured with different KV formats. A request may then retrieve state produced under a configuration other than the one it selected. Depending on the dimension, the foreign state can perturb the output, reduce task accuracy, or fail to load correctly. No malicious request is required. The failure follows from normal requests and valid worker configurations sharing one namespace. 
+
+Confidentiality setting (cross-instance observer). Avictim and an attacker issue requests to different engine instances that share the external KV tier. The victim supplies a sharing-domain salt intended to prevent other requests from probing its cached prefixes. The attacker does not know that salt and observes only the time to first token of its own requests. Given a set of candidate prompts, the attacker tests each candidate from another instance. A shared-tier hit can reveal that the victim previously cached the corresponding prefix. The goal is prompt identification within this candidate set, not arbitrary prompt reconstruction. Unlike prior prefix-cache timing attacks [26, 35, 40], this setting requires no co-location with the victim and tests whether engine-local salt isolation survives composition with the shared tier. 
+
+## 3 Provenance-Blind Reuse 
+
+Safe KV reuse requires the shared key to preserve every distinction made locally by the engine. We formalize this re-quirement and define provenance-blind reuse as its violation, then audit three independently implemented vLLM shared-cache connectors, all of which derive keys alike and discard the same provenance at the engine–connector boundary, showing that the failure is structural. 
+
+3.1 Conditions for Safe KV Reuse 
+
+Reuse of KV state is safe when the state is applicable to the requesting configuration and the request is permitted to use it. Both conditions must be checkable from the shared key alone, because the store decides reuse without consulting the engine, and §5 states them as the contract’s invariants. 
+
+Definition 1 (Provenance-blind reuse) . Provenance-blind reuse occurs when two requests generate the same shared cache key because they have the same prompt tokens, even though they differ in configuration or sharing policy. As a result, one request may reuse the KV state produced for the other even when that reuse is invalid or not permitted. This problem is not a bug in one connector. It arises because content-addressed caches deliberately hash only prompt tokens to reuse identical prefixes across workers. Information absent from the tokens, such as adapter iden-tity, weight version or sharing policy, is therefore lost unless explicitly included in the shared key. 
+
+3.2 What Information Reaches the Shared Cache 
+
+We audited every content-addressed connector in a current vLLM and LMCache stack, covering the three common paths for cross-instance sharing: LMCache’s connector, vLLM’s built-in filesystem store ( SharedStorageConnector ) and its Mooncake integration. For each, we compare the engine’s context at KV computation with what the connector receives and the shared key contains. At KV computation, the engine holds the full context: token sequence, adapter identity, salt, and weights at the current precision and version. The con-nector receives only token identifiers, model name, tensor-parallel world size, worker rank and KV dtype. LMCache also accepts an optional tag, but only through a nonstandard request channel rather than the engine’s standard request record. None of the three receives the salt, adapter identity, weight precision distinct from KV dtype, or weight version. 
+
+3.3 How Current Connectors Lose Provenance 
+
+Each key reflects only the inputs received. LMCache com-bines a hash of the token identifiers with the model name, tensor-parallel width, worker rank and KV dtype; vLLM’s 
+
+SharedStorageConnector uses their md5 , whereas its Mooncake connector applies blake2b hash. These fields confine reuse within one nominal model configuration, while multimodal inputs remain safe because their content hashes enter the token identifiers upstream. All three omit adapter identity, weight precision distinct from KV dtype, weight version and tenant salt. KV-representation coverage differs by stack: LMCache already binds KV dtype, while the representation failures in §4.2 arise on SGLang, where the shared key omits both the element type and the dtype distinctions that our experiments cover. The evidence rests on three source audits and two runtime verifications: LMCache and vLLM’s filesystem store also col-lide end to end, and Mooncake keys its chunks the same token-content way by source audit. Because the three are independently developed yet derive their keys alike, the ex-posure is a property of the content-addressing pattern rather than an accident in one connector. One shared-store deploy-ment guide instructs operators to change the store names-pace whenever weights, quantization or adapters change, first-party evidence that the key encodes none of them. Preserving Provenance in Shared KV Caches for LLM Serving Adapter identity Tenant salt Weight precision Weight version KV representation                     
+
+> Engine
+> Token IDs x
+> Metadata m
+> Provenance p
+> x, m (local miss) Unbound fi elds
+> Engine–connector interface
+> Connector
+> Shared key k = f(x, m)
+> Unbound fi elds omitted on read and write
+> Write
+> (k, KV)
+> Lookup
+> k(from p2)
+> Hit
+> KV( p1)
+> Shared KV cache
+> Key: kValue: KV from p1
+> p1≠p2, yet k1=k2→ foreign KV hit
+
+Figure 2. The unrepaired path. Provenance is lost at the engine–connector interface: adapter, salt, precision, version, and KV representation reach neither the read nor the write path of shared-key derivation, so two contexts 𝑝 1 ≠ 𝑝 2 derive one key and the second is served the first’s state. 𝑚 summa-rizes the retained model fields, which vary by connector. 
+
+3.4 Why Requests Collide 
+
+Figure 1 illustrates the concrete case for adapters, and the mechanism generalizes to every discarded dimension. Fig-ure 2 traces the data flow and marks the boundary between engine and connector at which provenance is lost. When a request misses the local prefix cache, the engine passes token identifiers to the connector, which derives a key and queries the store. Discarded dimensions cross neither read nor write paths, so requests sharing tokens and nominal model derive one key, and a hit returns the first entry written. The collision lies in the connector interface rather than the store: any store accepting that key inherits ambiguity. 
+
+## 4 Empirical Characterization 
+
+The previous section showed that shared-cache connectors lose provenance by design. We now ask whether cross-provenance reuse occurs, how much it degrades correctness, what causes that degradation, and how likely it becomes under the conditions of a realistic deployment. 
+
+4.1 Characterization Setup 
+
+We measure two quantities. Confirmed cross-provenance reuse 
+
+is a nonzero need_to_load counter, an engine-internal met-ric reporting prefix tokens loaded from the shared store rather than recomputed, when a worker requests under one provenance tokens seeded on another GPU under a different provenance. Output divergence is a served output differing from an isolated reference under the same configuration with the tier disabled, excluding decoding nondeterminism. Where ground truth exists, we also grade correctness (§4.3). 
+
+Serving stacks and platforms. We characterize two stacks end to end: vLLM 0.9.2 with LMCache and SGLang with HiCache on releases 0.5.20 and 0.5.8.post1. Experi-ments use two platforms: P1, with two RTX 6000 Ada GPUs (driver 550.163.01, CUDA 12.4), and P2, with RTX PRO 6000 and RTX PRO 5000 Blackwell GPUs of compute capability 12.0 (driver 580.173.02, CUDA 13.0). vLLM runs on P1 with a standalone cache server over the deployed transport, with scale and family checks on P2. SGLang 0.5.20 runs on P2 and 0.5.8.post1 on P1 because P1’s driver cannot load the CUDA 13 build required by later releases. We hold the release fixed across model-size and family cells to avoid confounding with engine version. Correctness comparison remains within one software configuration and platform. Unless stated otherwise, each experiment pairs a seeder 
+
+populating the store under one provenance with a retriever 
+
+requesting the same tokens under another. We compare the retriever with an isolated reference running its configuration with the tier disabled and its own warm baseline reading a self-seeded store, separating foreign state from reuse. Each phase runs in a separate server process, attributing effects to state written by a prior process. A cross-provenance change from a correct answer to wrong or vice versa is a flip . We test flips with an exact-binomial McNemar test and report them as harmful (correct → wrong) or reversed (wrong → correct). 
+
+Datasets and workloads. We use public datasets when a task provides ground truth. Reuse and divergence exper-iments use the first human turn from 2,000 ShareGPT con-versations [1], spanning 200–4,000 characters. Incidence and fleet experiments pair each with one of eight hand-written system prompts over 200 tokens as the shared prefix. Senti-ment correctness uses GLUE SST-2 [25, 31] for short reviews and IMDB [20] for long documents. Opposite-policy pairs train on a 300-example sample (150 per class) and evaluate on a disjoint split: the first 400 SST-2 validation sentences (300 for scale sweep and 100 for short-review experiment) and 400 IMDB test reviews (200 per class, fixed seed), using 100, 200 or all 400. IMDB reviews have markup removed and are clipped to 1,400 characters so the review and instruction fit the context. Mathematical reasoning uses 100 GSM8K [6] problems with few-shot prompting and exact-match grading. Extraction and constructed reasoning use passages longer than the connector’s 128-token chunk with programmati-cally computable ground truth: 60 synthetic memoranda of about 160 tokens with span-retrieval questions, and 60 or 100 fixed-seed items of about 340 words spanning aggregation, comparison, filter-and-maximum and two-hop lookup. 
+
+4.2 Cross-Provenance Reuse (Does It Happen?) 
+
+Cross-provenance reuse occurs on every dimension the stor-age key omits, including adapter identity, weight precision, weight version, and key-value representation, and persists at every model size tested, from 0.5 B to 32 B parameters. Song et al. 
+
+Adapter identity is the clearest case. Two independently initialized random adapters collide and diverge on all six prompts. With fine-tuned English and French adapters, all thirty prompts collide and 25 of 30 outputs diverge from the requester’s output (83%, 95% Wilson interval [66, 93]). A tier-disabled single-instance control keeps the adapters separate, attributing the divergence to the store: the foreign KV rep-resentation changes how the model reads the prompt while the requester still decodes. SGLang 0.5.20 partially mitigates this case by adding a per-adapter handle to the storage key (uuid5 for launch-time adapters and a fresh uuid4 for run-time loads). Over 200 reviews, two opposite-policy adapters stay apart: the requester loads nothing from the other’s store, writes 713 entries and matches its isolated reference (0.920 vs. 0.920, no flips), while same-adapter reuse loads 29,312 tokens. The source scores 0.050 under the reader’s inverted policy, confirming the policies oppose. Yet a name-and-path handle is blind to the bytes it names: replacing weights in place leaves the key unchanged, and the replacement worker receives the earlier adapter’s state over the full 5,376-token prefix and diverges from its isolated reference (§6.1). The handle also over-separates, so identical content at another path or dynamically loaded on two workers shares nothing. Under 0.5.8.post1, persistent reuse does not complete with an adapter loaded, leaving adapter isolation unresolved. Weight precision and version collide through the same mechanism. Dynamic fp8 quantization changes weights while KV dtype stays bfloat16 , yielding identical keys: all forty prompts collide and 34 outputs diverge (85%, [71, 93]), from rewording to factual disagreement. On vLLM’s Shared-StorageConnector , 16 of 20 prompts collide and four misses fall below the chunk size; the result also appears in SGLang’s graded precision cells (§4.3). Weight version behaves simi-larly: the key identifies served path rather than content, so an in-place update preserves the key and a populated store serves superseded state to workers running new weights; all ten prompts retrieve that state and diverge. Under SGLang’s full controls, changing the checkpoint at one served name consumes 960 of about 995 tokens from the other version’s state, versus zero on a clean store, zero under a distinct served name and normal same-provenance reuse. KV pool element type is likewise absent and produces the same re-sult under those controls. A KV dtype mismatch collides but never completes its load rather than silently returning foreign state (§4.3); vLLM binds KV dtype, so this dimension has no counterpart there. 
+
+4.3 Correctness Impact (How Bad Is It?) 
+
+The four dimensions span three severity bands: weight precision changes output text without degrading accuracy; adapter identity and weight version cause statistically significant, task- and model-dependent harm; and KV representation replaces the answer wholesale. 
+
+Table 1. Weight-version reuse across model sizes and stacks, sentiment task. Source label counts the outputs that carry the source version’s answer.                                    
+
+> Accuracy Source Stack Model 𝑁 Isolated Cross-prov. label 𝑝
+> vLLM Qwen2.5-0.5B 300 0.893 0.750 74/300 <0.001 vLLM Qwen2.5-7B 300 0.947 0.900 30/300 0.004 vLLM Qwen2.5-14B 300 0.957 0.910 27/300 0.003 vLLM Qwen2.5-32B 300 0.957 0.943 17/300 0.39 SGLang Qwen2.5-0.5B 400 0.902 0.865 —0.014 SGLang Qwen2.5-7B 400 0.943 0.938 —0.63
+
+Precision is the surprising exception. On extraction, all sixty requests reuse foreign state and most outputs change, yet every answer matches the clean reference. On reasoning, the retriever receives the seeder’s state over the cached prefix (mean 357 of about 440 tokens under vLLM), but no cell reaches significance ( 𝑝 ≥ 0.125). Sentiment agrees: 0.935 vs. 0.940 at 0.5 B and 0.970 vs. 0.970 at 7 B over 200 reviews, with comparable results at 14 B and 32 B under vLLM. Adapter identity, by contrast, corrupts the answer. Over 100 short reviews, an inverted adapter falls from 94% to 64% when served the standard adapter’s KV state (32 harmful flips vs. 2 reversed, 𝑝 < 0.001), and reuse can return the other tenant’s answer outright. On 200 IMDB reviews via vLLM runtime LoRA, accuracy falls from 0.945 to 0.715 with 28.5% relabelled to the seeder’s policy ( 𝑝 < 10 −9). Harm depends on whether the cached prefix contains the discriminative content rather than document length. Merged-weight models show a comparable effect (0.94 to 0.60). Weight version behaves like an adapter, with task-dependent magnitude. Under vLLM, two opposite-policy fine-tunes serve as versions merged into full checkpoints. Across 300 reviews per model from 0.5 B to 32 B, reuse stays near 92% of prompts while accuracy loss falls from 14.3 points at 0.5 B to 1.4 at 32 B, where the difference is unresolved ( 𝑝 = 0.39, Table 1). On SGLang, sentiment attenuates similarly (3.7 points at 0.5 B to an unresolved 0.5 at 7 B), whereas reasoning rises from an unresolved 3.0 to a significant 8.0 at 7 B. The earlier release reproduces this split at 7 B on the other platform. At 14 B both deltas are small and unresolved even at four times the sample size, so attenuation is not a power artifact. Harm does not grow with model size on either graded task. Harm is robust to training randomness: three indepen-dently trained 7 B pairs all decline significantly, with net harmful flips in every case. The effect is symmetric (standard retrieving inverted: 0.97 to 0.90, 𝑝 < 0.02) and reproduces across families (Llama-3.1-8B, Mistral-7B). Released check-points also collide: a base model seeds and its instruction-tuned sibling retrieves foreign state on 18 of 20 prompts, yet scores 0.94 both ways. On GSM8K, reuse fires on 96% of problems but accuracy moves nonsignificantly (0.76 to Preserving Provenance in Shared KV Caches for LLM Serving 
+
+0.71), because the short question caches about seventy to-kens and the answer-determining reasoning is recomputed. Harm appears only where versions disagree on the answer the cached prefix determines. At the other extreme, changing the KV pool element type replaces the answer outright. Sentiment falls to about 0.47 across 0.5 B–14 B (from 0.945–0.975), with 298 of 299 paired flips harmful. On reasoning, collided accuracy is zero at ev-ery size and family tested; the widening gap reflects a rising isolated reference rather than a worsening collision. A KV dtype mismatch depends on storage policy: under the wait-ing default, the foreign-page load never completes, a liveness failure; under the permissive policy, the engine declines the entry and matches the isolated reference. An own-store con-trol loads 19,200 tokens and remains healthy, which confirms that the permissive policy stays safe only because it declines to load the foreign entry at all. 
+
+4.4 Causal Analysis (Why Does It Happen?) 
+
+Comparing tasks and dimensions confounds the task, the data and the adapters, so two controlled experiments isolate the cached state itself as the direct cause of the loss. Holding reviews, model and adapters fixed, a dose-response experiment varies the foreign fraction of the cached prefix while the retriever recomputes the remainder. Accuracy falls from 0.92 with no foreign state to 0.76 at one quarter (33 tokens), then remains steady through one half (95), three quarters (158) and the whole prompt (220), while emission of the seeder’s label rises from 8% to 25%. Because only the foreign fraction changes, cached state is causal, and the early saturation shows that a partial foreign prefix carries the label-determining framing. The zero-to-quarter step is significant (17 flips vs. 1, 𝑝 < 10 −3), whereas a position control that fixes the foreign token count and moves sentiment-bearing content between cached and recomputed portions is only marginal ( 𝑝 =0.06), confirming that foreign state rather than its position causes the harm. A complementary threshold experiment makes the firing condition mechanical: the connector stores fixed-size chunks, so prefixes below one chunk never collide, whereas those at or above it collide whenever shared. Sweeping a system prompt across two adapters, a sub-chunk prefix serves no cross-adapter state, while prefixes of roughly 100–1,000 to-kens serve tens to several hundred foreign tokens, one chunk at a time. SGLang exhibits the same threshold at one storage page. Production shared prefixes span hundreds of tokens, so collisions fire deterministically whenever such a prefix crosses a provenance boundary. 
+
+4.5 Deployment Incidence (How Likely in Realistic Deployments?) 
+
+The cross-provenance rate in production lies between two tight bounds and rises toward the ceiling precisely when the cache tier is doing the job it was deployed for. We bound the rate using eight production-style system prompts shared by bfloat16 and fp8 tenants, each paired with a real user query. A two-phase seed-then-replay con-struction serves cross-provenance state to 167 of 200 requests (83.5%), an upper bound because every replayed prefix is warm under the other class; an interleaved stream with one always-warm worker per class falls to 3 of 200 (1.5%), as workers reach the store only on a cold first touch. The real-istic rate depends on the fleet’s reuse distribution, which is skewed and capacity-sensitive [32]; because existing traces lack provenance, these bounds are constructed rather than derived from a production trace. Fleet diversity and routing shape the realized rate. On a live four-worker fleet (two per precision) sharing one store over 600 requests and 32 system prompts, load-balanced routing produces 10% cross-provenance reuse while sticky routing almost never does. As prefix diversity rises, the load-balanced rate grows from 3% at 8 prefixes to 8% at 32 and 16% at 128 because more prefixes overflow local caches and send cold touches to the store; sticky routing remains at zero until diversity exceeds local capacity, reaching 4% at 128. A joining or restarting worker reads the store on every request from a cold local cache and receives foreign state on all of them when another provenance has populated the store, a routine condition during autoscaling or rolling updates (§6.4). 
+
+4.6 Confidentiality Impact (Can It Leak Information?) 
+
+The same omission, seen through a confidentiality lens, turns the shared tier into a cross-instance side channel that defeats the isolation control the engine already deploys. With the tier disabled in one instance, a request with a dif-ferent salt or none misses a salted victim’s blocks, confirming documented engine-local isolation. Enabling the tier serves that state across instances to an unsalted or differently salted request, whose need_to_load confirms a store load on both connectors tested end to end. The bypass reproduces across seven families from 0.5 B to 14 B (Qwen 0.5 B–14 B, Llama-3.1-8B, Mistral-7B, Phi-3.5-mini, Yi-1.5-6B, Falcon3-7B and SmolLM2-1.7B), always serving the salted victim’s state to the unsalted or differently salted attacker while preserving same-salt reuse in every family. Composed end to end, the bypass enables a concrete at-tack: an attacker timing 𝑁 candidate prompts against a salted victim identifies the victim’s prompt perfectly up to ten can-didates and at 93% for 𝑁 =100, the exact scenario the salt was introduced to prevent. Saturating load on the store closes the channel, while a faster transport widens the gap. One dimension admits a release-level fix. SGLang 0.5.20 isolates salted requests in both tiers: a second sharing do-main presenting identical tokens consumes nothing from either and receives the clean-store output. On 0.5.8.post1 the same test reuses the first domain’s 1 024 cached tokens. Salt behaviour is therefore a release-level property. Meanwhile, Song et al. 
+
+none of the audited vLLM connectors binds the salt, which is opt-in and off by default, and one commercial serverless offering documents a fleet-wide shared cache that offers no isolation between separate customer accounts. Across both stacks these are one gap and not five: every failure above follows from a shared key that carries token content and coarse model identity while the engine, and only the engine, holds the provenance that key would need. Bind-ing one dimension, as a release may, leaves the others open. What the interface lacks is a contract for that provenance. 
+
+## 5 KV Provenance Contract and Design 
+
+Every failure in §4 stems from a shared key that encodes tokens but not their production context. This section formal-izes the missing guarantee as a parametric contract over a declared dimension registry, gives a canonical realization extensible without connector-specific key changes, binds request- and worker-level provenance, maps the coverage boundary, and defines a differential omission test for any dimension that is left unbound. 
+
+5.1 The Provenance Contract Provenance dimensions. Let D = {𝑑 1, . . . , 𝑑 𝑛 } be a finite 
+
+dimension registry , where each dimension 𝑑 𝑖 has a value do-main Dom (𝑑 𝑖 ) and an identity function id 𝑖 : Dom (𝑑 𝑖 ) → I 
+
+that maps concrete runtime values to identities in a common identity space I. A dimension is well-formed when its iden-tity function is injective and cross-worker stable: for all work-ers 𝑤, 𝑤 ′ and values 𝑣 ∈ Dom (𝑑 𝑖 ), id 𝑤 𝑖 (𝑣 ) = id 𝑤 ′ 
+
+> 𝑖
+
+(𝑣 ). A prove-nance configuration over D is a valuation 𝑐 ∈ Î𝑑 ∈ D Dom (𝑑 ).Write 𝐾𝑉 (𝑥, 𝑐 ) for the state a worker produces for tokens 𝑥 
+
+under 𝑐 , and Key (𝑥, 𝑐 ) for the shared key it derives. 
+
+Definition 2 (KV Provenance Contract C(D) ). Given a well-formed dimension registry D, a key function Key satisfies the KV provenance contract C(D) iff for all token sequences 𝑥 
+
+and configurations 𝑐 1, 𝑐 2 over D:
+
+(i) Computational invariant. Configurations producing differ-ent state derive different keys: 
+
+𝐾𝑉 (𝑥, 𝑐 1) ≠ 𝐾𝑉 (𝑥, 𝑐 2) =⇒ Key (𝑥, 𝑐 1) ≠ Key (𝑥, 𝑐 2). (1) 
+
+(ii) Permission invariant. Configurations not permitted to share derive different keys: 
+
+¬ ShareAllowed (𝑐 1, 𝑐 2) =⇒ Key (𝑥, 𝑐 1) ≠ Key (𝑥, 𝑐 2). (2) The contract is parametric in D: it specifies what bound dimensions must satisfy, not which dimensions exist. It is stated over declared dimensions, because binding stable iden-tities is what an implementation can do, while deciding equiv-alence of arbitrary KV-generating functions is not. 
+
+5.2 Canonical Realization and Extensibility 
+
+Our implementation realizes C(D) through a canoni-cal encoding : an injective, length-prefixed encoder enc : Î𝑑 ∈ D I → { 0, 1}∗ paired with a collision-resistant hash 𝐻 ,and the two together yield the shared key Key (𝑥, 𝑐 ) = 𝑓  𝑥, 𝐻 (enc (id 1 (𝑐 (𝑑 1)) , . . . , id 𝑛 (𝑐 (𝑑 𝑛 )))) , (3) where 𝑓 is the connector’s native key function. The real-ization assumes that, for fixed 𝑥 , 𝑓 (𝑥, ·) preserves distinct provenance digests; if it hashes them again, its collisions are an additional failure event. Hash-based identities and keys approximate the ideal contract only up to the probability that the hash itself collides. 
+
+Proposition 1 (Dimension Extension) . Let Key realize 
+
+C(D) via a canonical encoding, and assume 𝑓 (𝑥, ·) preserves distinct provenance digests. For any well-formed new dimen-sion 𝑑 𝑛 +1, extending enc by appending id 𝑛 +1 satisfies the extended contract C(D ∪ { 𝑑 𝑛 +1 }) , except with negligible hash-collision probability under the assumed hash security. Proof sketch. Injectivity of length-prefixed encoding is pre-served under field extension: if two configurations differ on any dimension, their encodings differ. Conditioned on no hash collision, their digests differ, and the assumption on 𝑓 
+
+preserves that distinction in the shared key. The only proba-bilistic step is excluding hash collisions; collision resistance does not make 𝐻 injective. Cross-worker stability follows from the well-formedness of the extended registry. □
+
+Extension requires only one registry entry and populated field through the existing serialization; connector-specific key logic remains unchanged because connectors consume the digest rather than individual fields. The current instantia-tion binds adapter, salt, weight precision and weight version, and additionally binds the resolved KV representation when the native shared key does not already encode it. The contract also assigns responsibility: the engine alone holds request context and must supply its known provenance, while the connector alone builds the key and must bind that provenance at every access site without inferring safe reuse from equal tokens. We carry provenance as one descriptor with request- and worker-level halves, both serialized by the same length-prefixed encoder over one registry and reduced by the same digest, so neither is a special case. 
+
+5.3 Binding Mechanism 
+
+The canonical realization reduces the contract to computing a digest over dimension identities, but in a running system those identities must reach every site that derives a key. 
+
+Worker-level digest. Weight precision, a weight-version identifier and the key-value representation are fixed for a worker’s lifetime, so we digest them once at startup and fold the result into the model identity the connector already car-ries. The values digested are the ones the worker resolved, Preserving Provenance in Shared KV Caches for LLM Serving 
+
+not the ones it was launched with. An engine that accepts 
+
+auto for a dtype decides the element type at pool allocation, so identically launched workers can resolve differently. Bind-ing the launch string would therefore merge configurations that compute different state and split ones that agree. The SGLang integration reads the resolved value and keeps the launch string as metadata that never reaches a key. 
+
+Request-level tags. The adapter identity and salt vary per request and travel with it. For the salt we bind the value the request carries. For the adapter we bind an identity of the ob-ject rather than a process-local handle: on vLLM, the identity is the adapter name, stable across workers; on SGLang, the in-tegration fingerprints the adapter’s contents (every tensor’s name, dtype, shape and bytes, together with the semanti-cally meaningful configuration fields), while the engine’s per-adapter handle indexes a registry of those fingerprints. Content identity ensures that the same bytes under a sec-ond path share state, while replaced bytes at the same path do not. The binding is inert for a request carrying neither adapter nor salt, so such a request keys exactly as unpatched and the worker-level digest is undisturbed. The two halves are independent of one another, and they compose without interfering with each other. 
+
+Cross-site consistency. Both halves compose into a single descriptor, and that descriptor has to be available at every site that touches the store, or the computational invariant (1) holds at one site and fails at the other. The shared store is ac-cessed at two sites: the scheduler , which looks up state before prefill, and the worker , which stores it after. The scheduler holds the request record with the adapter name and the salt, while the worker holds the weights and the computed state but its copy of that record carries neither reliably. Injecting provenance at one site only breaks same-provenance reuse silently, because the store site then derives a key the lookup site cannot reproduce. In the implementation the worker’s request record carries the salt and the adapter identity, so the lookup site and the store site both derive their keys from the same descriptor value. 
+
+Connector integration. Given a consistent descriptor, the remaining step is embedding it into each connector’s native key format. What reaches the connector is the descriptor’s canonical digest rather than the field values, so connectors share the provenance encoding, not the key itself. LMCache carries the worker digest in the model identity and the re-quest digest in one namespaced tag, while vLLM’s filesystem and Mooncake stores fold the worker material into their 
+
+md5 and blake2b inputs. SGLang HiCache concentrates the choice in one place: every storage chain it builds, for lookup, write, promotion and restart alike, descends from a single namespace seed, so the integration replaces that seed and reaches all four without a per-site change. The seed that di-gest replaces on SGLang is the one the engine already uses to separate sharing domains, so the native salt keeps working and any non-adapter component of the key’s extra field trav-els through the descriptor verbatim. Within each integration, lookup and store bind the same descriptor, so site-specific encodings cannot cause silent disagreement. One connector’s wire format constrains how the digest is encoded rather than how much provenance is bound. LMCache packs its key into a fixed 150-byte field, which a 128-bit hex digest appended to an unbounded model path would overrun. Because the digest width is a security pa-rameter, the encoding keeps 128 bits but shortens the repre-sentation: twenty-two base64 characters for the digest and a fixed-length hash over the model identity and worker prove-nance. A representative key is 89 characters regardless of path length, so the budget holds by construction. 
+
+5.4 Differential Omission Testing 
+
+A parametric contract is testable per dimension. For each 
+
+𝑑 𝑖 ∈ D , the differential omission test holds token sequence 𝑥 
+
+and all dimensions except 𝑑 𝑖 fixed, varies 𝑑 𝑖 to a distinct value 𝑣 ′, and reports an omission iff                 
+
+> 𝐾𝑉 (𝑥, 𝑐 )≠𝐾𝑉 (𝑥, 𝑐 [𝑑 𝑖 ↦→𝑣 ′]) ∧Key (𝑥, 𝑐 )=Key (𝑥, 𝑐 [𝑑 𝑖 ↦→𝑣 ′]) .
+> (4)
+
+An omission at 𝑑 𝑖 directly falsifies the computational invari-ant (1). The permission invariant (2) is tested analogously, replacing KV inequality with ¬ ShareAllowed. The offline form compares real attention state on one machine: a model runs on CPU in float32 and its prefill keys and values are compared layer by layer, so two runs of one configuration agree bitwise. On Qwen2.5-0.5B it reports all five supplied dimensions as omissions under the unpatched content-only key and one, the deliberately held-out rotary base, under the bound key, the largest absolute difference between corresponding cached tensors being 1.03 for the adapter, 6.54 for precision and 2.14 for the weight version, while the sharing domain changes no state and is decided by the permission oracle. Disabling one binding reopens exactly that dimension and no other. Registering the held-out dimension routes it through the existing encoder and key derivation, one registry entry and no new key-derivation code, after which the checker reports no omission over this space: it evaluates the declared candidates it is supplied and is not a discovery oracle for an unenumerated configuration space. §6.3 runs the same test inside a serving engine, where the state is what two workers wrote into the shared store and the keys are the names the store gave those entries. 
+
+## 6 Evaluation of Provenance Binding 
+
+This section evaluates whether provenance binding blocks unsafe reuse while preserving legitimate sharing (§6.1), whether its dimensions act independently (§6.2, §6.3), and how it performs under rolling updates, cold starts and practical resource costs (§6.4, §6.5). Song et al. 
+
+We evaluate two production stacks: vLLM 0.9.2 with LM-Cache and its filesystem store, and SGLang 0.5.20 with Hi-Cache, using the models, datasets and seeder/retriever proto-col of §4.1. Bound and unbound conditions otherwise match; workers restart with cold local caches, and every timed re-trieval is a confirmed store load. Across all experiments, the binding eliminates every identified unsafe reuse case, pre-serves legitimate sharing, adds no resolvable hit-path latency, and incurs storage in proportion to the provenance diversity that a deployment actually presents. 
+
+6.1 Correctness of Provenance Binding 
+
+The binding covers five dimensions: four computational di-mensions that change cached state (adapter identity, weight precision, weight version and key-value representation), and one permission dimension, the tenant salt, which can prohibit sharing even when state is identical. For each dimension, a 0.5 B worker pair seeds the same tokens under one configuration and retrieves them under another through LMCache and vLLM’s filesystem store. Bind-ing reduces all five cross-configuration cases to zero foreign tokens while preserving full-prefix same-provenance hits (624 tokens on the filesystem store and 768 under LMCache); disabling it restores every cross case to a hit, confirming that the binding causes the misses. The dimensions also compose: a seeder differing in preci-sion and weight version reuses under the original key but misses under the bound key, reducing reuse from 91% to zero. When all five dimensions differ, all twelve 360-token prompts receive foreign state under the original key and none under the bound key. 
+
+Paired matrix on SGLang. Table 2 evaluates thirteen SGLang provenance cases in bound and unbound arms at 0.5 B, using forty documents and 5,376 prefix tokens per read. Each case runs five separate-process phases: a no-store ref-erence, source seed, cross-configuration read, reader seed and warm read verifying the store. A bound cross-read is safe only with zero foreign tokens and a completed response matching the reference; empty or failed responses do not qualify. Twenty-five of twenty-six arms pass, except the un-bound run-time adapter case, where identical adapter bytes receive different engine handles across processes. Five unbound cases load the full 5,376-token foreign prefix, with incomplete responses in the two element-type cases marked in Table 2. The sixth case, key-value dtype, fails to complete the mismatched load; it is a load failure, not a completed foreign-prefix read. Binding turns all six into safe misses with zero foreign tokens and responses matching the clean reference, while their own warm reads still load all 5,376 tokens. Binding also recovers legitimate sharing lost by the engine: identical adapter content at another path or under different run-time handles reuses the full prefix only 
+
+Table 2. Paired SGLang 0.5.20 HiCache matrix at 0.5 B. For-eign : reads the other configuration’s state; safe miss : zero foreign tokens and a clean-reference response; hit : same-provenance reuse; isolated : the native key separates configu-rations. † incomplete response; ‡ no self-reuse.                             
+
+> Case Unbound Bound Weight version foreign safe miss
+> Weight precision foreign safe miss
+> Key-value element type foreign †safe miss
+> Key-value dtype load failure safe miss
+> Version and element type foreign †safe miss
+> Adapter replaced in place foreign safe miss
+> Same provenance hit hit Adapter across restart hit hit Adapter at another path no reuse hit
+> Adapter, run-time handles no reuse ‡hit
+> Tenant salt isolated isolated Different adapter content isolated isolated Adapter, different salt isolated isolated
+
+Table 3. Leave-one-binding-out on a combined adapter– salt workload. Cells report prefix tokens loaded from the shared store ( need_to_load ), including legitimate same-provenance reuse. Each binding zeros its single-dimension cross case; both zero every cross case. The 16-token residuals are discussed in the paragraphs that follow.                      
+
+> Same Cross-provenance Binding provenance Adapter Salt Both none 656 640 672 672 adapter only 656 0672 16 salt only 656 640 016 both 656 000
+
+when bound, because adapter identity comes from content rather than engine-internal handles. 
+
+6.2 Ablation Study 
+
+To distinguish independent contributions from an all-or-nothing effect, we combine the two request-level dimensions, adapter and salt, in one workload and enable their bindings separately. A seeder writes each prefix under one adapter– salt pair, and a retriever requests the same tokens under four provenance combinations (Table 3). With neither binding active, the original key leaks 640 cross-adapter and 672 cross-salt tokens. Adapter-only bind-ing zeros the former but leaves 672 cross-salt tokens; salt-only binding does the converse, leaving 640; and both zero every cross case while preserving same-provenance reuse at 656. These single-dimension cases demonstrate that the two bindings contribute independently of each other. When both dimensions differ, either single binding leaves one 16-token chunk. The four conditions share a store, so Preserving Provenance in Shared KV Caches for LLM Serving weight version KV repr. group adapter identity 020 40            
+
+> Colliding pages
+> 42 45 042 45 42 000
+> (a) Leave-one-out detection
+> unrepaired field withheld contract complete
+> 30 40 50 60
+> Time to first token (ms)
+> 0.0 0.5 1.0
+> Fraction of requests  (b) Hit-path latency
+> unbound (n=60) bound (n=60)
+> 1234
+> Provenance classes seeded
+> 050 100 150 200
+> Store retained (MiB)
+> fp8 pool
+> (c) Retention vs. diversity
+> unbound bound
+
+Figure 3. Provenance binding on SGLang 0.5.20 with HiCache, 0.5 B. In (a) leave-one-dimension-out, bars count store pages with differing bytes under an identical key. (b) Time to first token on confirmed store hits, two runs of 30 requests per arm (𝑛 = 60 per arm). (c) Store retention against the number of provenance classes seeded. these counts can include template state written by earlier re-triever requests. In an adapter-only fresh-store control with the seeder as the only prior writer, the cross-provenance read loads zero tokens; subsequent requests under the retriever’s own adapter show 16-token template hits with zero store loads. This supports template self-reuse as the explanation for the residual, but does not independently establish the salt-only residual’s provenance. We therefore report the observed store-load counts, and we do not classify either of the two residuals as state carried over from a foreign provenance. 
+
+6.3 Omission Detection 
+
+The ablation checks what a retriever receives; a complemen-tary store-side test asks whether configurations producing different cached state share a key, directly testing whether the binding omits any required dimension. Two workers differing in one dimension write the same documents into one store, and a checker flags matching keys whose page bytes differ, indicating an omitted binding. Fig-ure 3(a) reports these collisions for the unbound, leave-one-dimension-out and complete bindings. Withholding weight-version identity collides on 42 of 45 pages, key-value rep-resentation (element type, dtype and layout, which change together with launch dtype) on all 45, and adapter identity on 42 of 43. Restoring each withheld dimension reduces its observed collision count to zero. This validates the tested bindings for the supplied configuration changes and pages; it does not establish completeness over untested values or an unenumerated configuration space. 
+
+6.4 Deployment Validation 
+
+Rolling updates and cold starts make unsafe reuse most likely: old-version workers warm the store before new ones read it, while newly launched workers consult the shared store on every request until their local caches warm. 
+
+Paired rollout. An old-version worker warms the store before old- and new-version traffic is interleaved at new-version fractions from one quarter to all, with a fixed seed giving the bound and unbound arms the same request stream. Binding eliminates stale serving at every ratio. At one-quarter new traffic, the unbound stale-fetch rate is 0.24 and accuracy is 0.87, versus zero and 0.92 when bound; at three quarters, accuracy is 0.89 versus 0.94. The effect tracks the stale rate and is largest early, while old-version state dominates the store. 
+
+Cold-start recovery. A worker joining or restarting mid-rollout has a cold local cache and reads the shared store on every request. If the old version warmed that store, all 100 requests receive stale state and accuracy is 0.73; binding restores it to 0.92 by preventing the cold worker from reading old-version entries. Cold starts during rollouts therefore yield the binding’s largest correctness benefit. 
+
+6.5 Overhead Analysis 
+
+A binding must also be affordable at serving scale. It adds a one-time startup digest for worker-level dimensions (weight precision, weight version and key-value representation) and a per-request digest for request-level dimensions (adapter identity and tenant salt). We measure hit-path latency, sus-tained throughput, startup time and storage. 
+
+Hit-path latency. On vLLM, across three counterbalanced repeats of 50 requests per condition, median time to first token changes by −0.30 ms (36.7 vs. 36.4 ms) and p90 by 
+
+−0.5 ms, within the 3.0 ms between-repeat spread. On SGLang, four runs in bound–unbound–unbound–bound order give two runs per arm, each with 30 confirmed 4,352-token store loads ( 𝑛 = 60 per arm), and produce modes near 31.6 and 50 ms (Figure 3b). The pooled mean shifts by +0.34 ms, and the lower and upper modes by +0.03 and 
+
++0.64 ms, against 3.0 ms of between-repeat variation. Nei-ther engine shows a resolvable penalty at our measurement scale: the request-level digest takes 12.7 𝜇 s, versus tens of milliseconds for a store round trip. 
+
+Sustained throughput. With two same-provenance 7B vLLM workers cross-seeding and retrieving at concurrency 25, all 900 requests per condition are confirmed 384-token store fetches on both workers. Across three counterbalanced repeats, the bound and unbound distributions overlap within between-repeat variation, so no penalty in sustained through-put is resolvable at this concurrency. Song et al. 
+
+Startup costs. Fingerprinting a 40 MB adapter takes 1.06 s cold and 0.060 s warm per load; weight-version metadata fin-gerprinting takes 0.1 ms. Content-hashing a 0.5B checkpoint takes 1.35 s and scales with checkpoint size. These one-time costs amortize over the worker’s lifetime. 
+
+Storage growth. Binding separates entries that the original key unsafely deduplicates, so storage scales with provenance diversity. For twelve prefixes on vLLM’s filesystem store, unbound size remains 214 MB, while bound size grows across four classes from 214 to 428, 642 and 856 MB. For twenty documents on SGLang’s file backend, the corresponding counts are a flat 66 pages unbound and 66, 132, 198 and 264 pages bound (Figure 3c). The fourth class adds 24.75 rather than 49.5 MiB because it uses an fp8 pool, so footprint reflects element width. Growth is linear and is the minimum needed to keep provenance classes separate. 
+
+Eviction under fixed budget. Under a fixed budget, prove-nance separation increases eviction pressure. On vLLM, un-bound deduplication retains one fitting copy, so latency and throughput remain flat. With binding, exceeding capacity causes thrashing: time to first token rises from 0.024 to 0.065 s and throughput falls from 42 to 15 req/s before plateauing. This is the cost of eliminating unsafe deduplication; provi-sioning for expected provenance diversity avoids it. 
+
+## 7 Discussion 
+
+Interface implications. Each layer is locally correct: the engine binds provenance into its key, while the shared tier uses content addressing to deduplicate. The failure lies at the seam, where the tier re-derives a key from tokens without the engine’s context. Any request policy, such as a rate class, region or data-residency tag, is likewise lost unless carried through. We therefore bind provenance into the key rather than detect collisions after they produce wrong output. 
+
+Scope and Generality. The failure belongs to the inter-face, not any single connector or stack: all audited connec-tors key alike and both characterized stacks reuse across provenance boundaries (§4.2). Omitted dimensions vary: SGLang 0.5.20 binds the tenant salt whereas 0.5.8.post1 does not, and vLLM binds the key-value dtype. Adapter identity offers the sharpest contrast: every audited vLLM connector omits it, while SGLang 0.5.20 uses a name-and-path handle that separates named adapters but not versions under one name. Because harm varies, we grade correctness only where ground truth exists (§4.3). Incidence uses a controlled two-phase workload because production traces lack provenance labels. Throughput and eviction are measured on vLLM 0.9.2. Our measurements use single-host workers accessing a standalone cache server, not a multi-host fleet. Generaliza-tion depends on architectural compatibility (cross-version reuse requires cached tensors to fit the retriever and versions to disagree on the cached prefix’s answer, so opposite-policy checkpoints show substantial harm while agreeing ones do not) and the identity chosen per dimension, which the dif-ferential checker validates against exact KV state. 
+
+## 8 Related Work 
+
+LLM serving and shared KV caching. vLLM [14] in-troduced PagedAttention and prefix caching; SGLang [39] uses a radix tree. LMCache [4] and Mooncake [23] share KV across instances through external stores, while CachedAt-tention [9] retains inactive sessions hierarchically. Disaggre-gated serving [12, 21, 41] makes cross-instance KV transfer first-class; CacheGen [18] compresses and streams it, Mem-Serve [11] and DéjàVu [27] manage distributed pools, and DroidSpeak [17] reuses KV across models sharing an archi-tecture. They assume matching tokens imply matching KV state, which fails across workers that differ in adapter, in precision or in weight version. 
+
+When is cached state reusable. Prompt Cache [10] reuses state for modular non-prefix segments under an author-declared schema; CacheBlend [38] reuses non-prefix chunks and recomputes a few tokens to repair cross-attention omit-ted by reuse. Both address position within one engine and model configuration, assuming producer and consumer con-figurations match. Our question is orthogonal: state can be positionally valid yet produced by another configuration. 
+
+Cache timing side channels and isolation. Input-Snatch [40], EarlyBird [26] and PromptPeek [35] recover prompts by timing prefix-cache hits within the victim’s instance, which the salt is meant to prevent. We show that a shared tier discarding the salt extends this leak to a remote attacker on another instance. SpliceLeak [28] studies a non-prefix-fusion side channel in the same tier but requires co-location and does not concern the salt. KVGov [2] binds a per-principal keyed hash into the block hash; PrefixWall [22], SafeKV [5] and CachePrune [34] isolate or selectively share prefix state within one engine. None considers a cross-instance tier that re-derives its key without the context these defenses assume. 
+
+KV-state integrity, adapters and models. Cache manip-ulation steers outputs through writes [8] or faults in shared blocks [37], requiring adversarial write or fault capability; our collisions instead serve correctly computed state under the wrong provenance. Multi-adapter systems [3, 24, 33] batch LoRA requests and migrate adapters between replicas, requiring stable cross-worker identities while relying on per-instance isolation that shared tiers do not replicate. The issue is recognized in practice: an adapter-aware LMCache key was closed as not planned [19], a vLLM issue records the con-flict [29], and recent work exploits cross-adapter reuse while acknowledging naive sharing is lossy [15]. We unify unin-tentional adapter, precision, version and KV-representation reuse as provenance-blind reuse, demonstrate a cross-tenant integrity failure, and close all four with one binding. Preserving Provenance in Shared KV Caches for LLM Serving 
+
+## 9 Conclusion 
+
+This paper identifies provenance-blind reuse as a struc-tural composition gap at the engine–connector boundary in shared KV caching: every audited connector omits provenance that the engine tracks locally, causing cross-configuration collisions that reduce task accuracy by up to 30 points or to zero. We formalize the missing guarantee as the KV provenance contract, parametric over a de-clared dimension registry so that coverage extends without connector-specific key changes, and pair it with a differen-tial checker that makes omitted bindings directly testable. Provenance binding, implemented in vLLM and SGLang across three cache paths, eliminates unsafe reuse on all five bound dimensions while preserving same-provenance sharing at no resolvable hit-path latency penalty. 
+
+## References 
+
+[1] 2023. ShareGPT Vicuna Unfiltered. Hugging Face dataset reposi-tory. https://huggingface.co/datasets/anon8231489123/ShareGPT_ Vicuna_unfiltered Community-contributed ShareGPT conversations; repository maintained under the account anon8231489123. Accessed September 20, 2026. [2] Tejasvi C. Addagada. 2026. Governing the KV Cache: Preventing Timing Side-Channel Leakage in Multi-Tenant LLM Inference. arXiv preprint arXiv:2608.09225 (2026). [3] Lequn Chen, Zihao Ye, Yongji Wu, Danyang Zhuo, Luis Ceze, and Arvind Krishnamurthy. 2024. Punica: Multi-Tenant LoRA Serving. In 
+
+Proceedings of Machine Learning and Systems (MLSys) .[4] Yihua Cheng, Yuhan Liu, Jiayi Yao, Yuwei An, Xiaokun Chen, Shaoting Feng, Yuyang Huang, Samuel Shen, Kuntai Du, and Junchen Jiang. 2025. LMCache: An Efficient KV Cache Layer for Enterprise-Scale LLM Inference. arXiv preprint arXiv:2510.09665 (2025). https://arxiv. org/abs/2510.09665 
+
+[5] Kexin Chu, Zecheng Lin, Dawei Xiang, Zixu Shen, Jianchang Su, Cheng Chu, Yiwei Yang, Wenhui Zhang, Wenfei Wu, and Wei Zhang. 2025. Selective KV-Cache Sharing to Mitigate Timing Side-Channels in LLM Inference. arXiv preprint arXiv:2508.08438 (2025). [6] Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, Christopher Hesse, and John Schulman. 2021. Training Verifiers to Solve Math Word Problems. arXiv preprint arXiv:2110.14168 (2021). https://arxiv.org/abs/2110.14168 
+
+[7] Elias Frantar, Saleh Ashkboos, Torsten Hoefler, and Dan Alistarh. 2023. GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers. In International Conference on Learning Representations (ICLR) .[8] Mukkesh Ganesh, Kaushik Iyer, and Arun Baalaaji Sankar Ananthan. 2025. Whose Narrative is it Anyway? A KV Cache Manipulation Attack. arXiv preprint arXiv:2511.12752 (2025). [9] Bin Gao, Zhuomin He, Puru Sharma, Qingxuan Kang, Djordje Jevdjic, Junbo Deng, Xingkun Yang, Zhou Yu, and Pengfei Zuo. 2024. Cost-Efficient Large Language Model Serving for Multi-turn Conversations with CachedAttention. In 2024 USENIX Annual Technical Conference (USENIX ATC 24) . USENIX Association. https://www.usenix.org/ conference/atc24/presentation/gao-bin-cost 
+
+[10] In Gim, Guojun Chen, Seung seob Lee, Nikhil Sarda, Anurag Khandelwal, and Lin Zhong. 2024. Prompt Cache: Modular Attention Reuse for Low-Latency Inference. In Proceedings of Machine Learning and Systems , Vol. 6. https://proceedings.mlsys.org/paper_files/ paper/2024/hash/a66caa1703fe34705a4368c3014c1966-Abstract-Conference.html 
+
+[11] Cunchen Hu, Heyang Huang, Junhao Hu, Jiang Xu, Xusheng Chen, Tao Xie, Chenxi Wang, Sa Wang, Yungang Bao, Ninghui Sun, and Yizhou Shan. 2024. MemServe: Context Caching for Disaggregated LLM Serving with Elastic Memory Pool. arXiv preprint arXiv:2406.17565 
+
+(2024). [12] Cunchen Hu, Heyang Huang, Liangliang Xu, Xusheng Chen, Jiang Xu, Shuang Chen, Hao Feng, Chenxi Wang, Sa Wang, Yungang Bao, Ninghui Sun, and Yizhou Shan. 2024. Inference without Interference: Disaggregate LLM Inference for Mixed Downstream Workloads. arXiv preprint arXiv:2401.11181 (2024). [13] Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. 2021. Lora: Low-rank adaptation of large language models. arXiv preprint arXiv:2106.09685 
+
+(2021). [14] Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph E. Gonzalez, Hao Zhang, and Ion Stoica. 2023. Efficient Memory Management for Large Language Model Serving with PagedAttention. In Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles . https://arxiv.org/abs/ 2309.06180 
+
+[15] Allison Li, Kristjan Greenewald, Thomas Parnell, and Navid Azizan. 2025. Efficient Multi-Adapter LLM Serving via Cross-Model KV-Cache Reuse with Activated LoRA. arXiv preprint arXiv:2512.17910 (2025). [16] Ji Lin, Jiaming Tang, Haotian Tang, Shang Yang, Xingyu Dang, and Song Han. 2024. AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration. In Proceedings of Machine Learning and Systems (MLSys) .[17] Yuhan Liu, Yuyang Huang, Jiayi Yao, Shaoting Feng, Zhuohan Gu, Kuntai Du, Hanchen Li, Yihua Cheng, Junchen Jiang, Shan Lu, Madan Musuvathi, and Esha Choukse. 2024. DroidSpeak: KV Cache Sharing for Cross-LLM Communication and Multi-LLM Serving. arXiv preprint arXiv:2411.02820 (2024). [18] Yuhan Liu, Hanchen Li, Yihua Cheng, Siddhant Ray, Yuyang Huang, Qizheng Zhang, Kuntai Du, Jiayi Yao, Shan Lu, Ganesh Anantha-narayanan, Michael Maire, Henry Hoffmann, Ari Holtzman, and Junchen Jiang. 2024. CacheGen: KV Cache Compression and Stream-ing for Fast Large Language Model Serving. In Proceedings of the ACM SIGCOMM 2024 Conference . doi: 10.1145/3651890.3672274 
+
+[19] LMCache contributors. 2026. LoRA-aware KV cache keying for Multi-LoRA serving. GitHub issue, LMCache/LMCache#2961. https://github. com/LMCache/LMCache/issues/2961 Closed as not planned. [20] Andrew L. Maas, Raymond E. Daly, Peter T. Pham, Dan Huang, An-drew Y. Ng, and Christopher Potts. 2011. Learning Word Vectors for Sentiment Analysis. In Proceedings of the 49th Annual Meeting of the Association for Computational Linguistics: Human Language Technologies . Association for Computational Linguistics, 142–150. 
+
+https://aclanthology.org/P11-1015/ 
+
+[21] Pratyush Patel, Esha Choukse, Chaojie Zhang, Aashaka Shah, Íñigo Goiri, Saeed Maleki, and Ricardo Bianchini. 2024. Splitwise: Efficient Generative LLM Inference Using Phase Splitting. In Proceedings of the 51st Annual International Symposium on Computer Architecture (ISCA) .doi: 10.1109/ISCA59077.2024.00019 
+
+[22] Panagiotis Georgios Pennas, Konstantinos Papaioannou, Marco Guarnieri, and Thaleia Dimitra Doudali. 2026. PrefixWall: Mitigating Prefix Caching Side Channels in Shared LLM Systems. arXiv preprint arXiv:2603.10726 (2026). [23] Ruoyu Qin, Zheming Li, Weiran He, Jialei Cui, Feng Ren, Mingxing Zhang, Yongwei Wu, Weimin Zheng, and Xinran Xu. 2025. Mooncake: Trading More Storage for Less Computation — A KVCache-centric Architecture for Serving LLM Chatbot. In 23rd USENIX Conference on File and Storage Technologies (FAST 25) . USENIX Association, 155–170. 
+
+https://www.usenix.org/conference/fast25/presentation/qin Song et al. 
+
+[24] Ying Sheng, Shiyi Cao, Dacheng Li, Coleman Hooper, Nicholas Lee, Shuo Yang, Christopher Chou, Banghua Zhu, Lianmin Zheng, Kurt Keutzer, Joseph E. Gonzalez, and Ion Stoica. 2024. S-LoRA: Serving Thousands of Concurrent LoRA Adapters. In Proceedings of Machine Learning and Systems (MLSys) .[25] Richard Socher, Alex Perelygin, Jean Wu, Jason Chuang, Christopher D. Manning, Andrew Y. Ng, and Christopher Potts. 2013. Recursive Deep Models for Semantic Compositionality Over a Sentiment Treebank. In Proceedings of the 2013 Conference on Empirical Methods in Natural Language Processing . Association for Computational Linguistics, 1631– 1642. https://aclanthology.org/D13-1170/ 
+
+[26] Linke Song, Zixuan Pang, Wenhao Wang, Zihao Wang, XiaoFeng Wang, Hongbo Chen, Wei Song, Yier Jin, Dan Meng, and Rui Hou. 2024. The Early Bird Catches the Leak: Unveiling Timing Side Channels in LLM Serving Systems. arXiv preprint arXiv:2409.20002 (2024). [27] Foteini Strati, Sara McAllister, Amar Phanishayee, Jakub Tarnawski, and Ana Klimovic. 2024. DéjàVu: KV-cache Streaming for Fast, Fault-tolerant Generative LLM Serving. In Proceedings of the 41st Interna-tional Conference on Machine Learning (ICML) .[28] He Sun, Shinan Liu, Siyuan Ma, Junhao Li, Mingjun Xiao, and Wenhao Jiang. 2026. Agent-Assisted Side-Channel Attacks on Non-Prefix KV Cache in RAG. arXiv preprint arXiv:2606.21842 (2026). [29] vLLM contributors. 2024. Automatic Prefix Caching might conflict with multi-LoRA. GitHub issue, vllm-project/vllm#3264. [30] vLLM contributors. 2025. Potential Timing Side-Channel Vulnerability in vLLM’s Chunk-Based Prefix Caching. GitHub security advisory GHSA-4qjh-9fv9-r85r. https://github.com/vllm-project/vllm/security/ advisories/GHSA-4qjh-9fv9-r85r CVE-2025-46570. [31] Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel R Bowman. 2018. GLUE: A multi-task benchmark and analysis platform for natural language understanding. In Proceedings of the 2018 EMNLP workshop BlackboxNLP: Analyzing and interpreting neural networks for NLP . 353–355. [32] Jiahao Wang, Jinbo Han, Xingda Wei, Sijie Shen, Dingyan Zhang, Chenguang Fang, Rong Chen, Wenyuan Yu, and Haibo Chen. 2025. KVCache Cache in the Wild: Characterizing and Optimizing KVCache Cache at a Large Cloud Provider. In 2025 USENIX Annual Technical Conference (USENIX ATC 25) . USENIX Association. https://www. usenix.org/conference/atc25/presentation/wang-jiahao 
+
+[33] Bingyang Wu, Ruidong Zhu, Zili Zhang, Peng Sun, Xuanzhe Liu, and Xin Jin. 2024. dLoRA: Dynamically Orchestrating Requests and Adapters for LoRA LLM Serving. In 18th USENIX Symposium on Operat-ing Systems Design and Implementation (OSDI’24) . USENIX Association, 911–927. https://www.usenix.org/conference/osdi24/presentation/ wu-bingyang 
+
+[34] Guanlong Wu, Zhaohan Li, Yao Zhang, Zheng Zhang, Jianyu Niu, Ye Wu, and Yinqian Zhang. 2026. CachePrune: Privacy-Aware and Fine-Grained KV Cache Sharing for Efficient LLM Inference. arXiv preprint arXiv:2605.23640 (2026). [35] Guanlong Wu, Zheng Zhang, Yao Zhang, Weili Wang, Jianyu Niu, Ye Wu, and Yinqian Zhang. 2025. I Know What You Asked: Prompt Leakage via KV-Cache Sharing in Multi-Tenant LLM Serving. In Pro-ceedings of the Network and Distributed System Security Symposium (NDSS) .[36] Guangxuan Xiao, Ji Lin, Mickael Seznec, Julien Demouth, and Song Han. 2023. SmoothQuant: Accurate and Efficient Post-Training Quan-tization for Large Language Models. In Proceedings of the 40th Interna-tional Conference on Machine Learning (ICML) .[37] Yuji Yamamoto and Satoshi Matsuura. 2026. Bit-Flip Vulnerability of Shared KV-Cache Blocks in LLM Serving Systems. arXiv preprint arXiv:2604.17249 (2026). [38] Jiayi Yao, Hanchen Li, Yuhan Liu, Siddhant Ray, Yihua Cheng, Qizheng Zhang, Kuntai Du, Shan Lu, and Junchen Jiang. 2025. CacheBlend: Fast Large Language Model Serving for RAG with Cached Knowl-edge Fusion. In Proceedings of the Twentieth European Conference on Computer Systems (EuroSys ’25) . doi: 10.1145/3689031.3696098 
+
+[39] Lianmin Zheng, Liangsheng Yin, Zhiqiang Xie, Chuyue Sun, Jeff Huang, Cody Hao Yu, Shiyi Cao, Christos Kozyrakis, Ion Stoica, Joseph E. Gonzalez, Clark Barrett, and Ying Sheng. 2024. SGLang: Effi-cient Execution of Structured Language Model Programs. In Advances in Neural Information Processing Systems , Vol. 37. Curran Associates, Inc., 62557–62583. doi: 10.52202/079017-2000 
+
+[40] Xinyao Zheng, Husheng Han, Shangyi Shi, Qiyan Fang, Zidong Du, Xing Hu, and Qi Guo. 2024. InputSnatch: Stealing Input in LLM Ser-vices via Timing Side-Channel Attacks. arXiv preprint arXiv:2411.18191 
+
+(2024). [41] Yinmin Zhong, Shengyu Liu, Junda Chen, Jianbo Hu, Yibo Zhu, Xu-anzhe Liu, Xin Jin, and Hao Zhang. 2024. DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving. In 18th USENIX Symposium on Operating Systems Design and Implementation (OSDI’24) .
