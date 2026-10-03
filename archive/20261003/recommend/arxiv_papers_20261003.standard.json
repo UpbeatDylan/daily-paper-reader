@@ -1,0 +1,144 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-03T22:34:17.199904+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.38121v1",
+      "source": "arxiv",
+      "title": "WUSH-KV: KV Cache Quantization with Data-Adaptive Transforms",
+      "abstract": "KV cache memory and bandwidth costs grow with context length and batch size, which limits efficient long-context inference. To address this bottleneck, we introduce WUSH-KV for low-bit KV-cache quantization. It adapts WUSH, which constructs a data-aware transform from the second-order statistics of both factors in a matrix product to reduce quantization error. WUSH-KV uses calibration data to construct separate key and value transforms, with the value transform folded into the model weights and the key transform applied after RoPE. The transforms can be paired with clipped quantizers. For one such quantizer, QuEST INT, we show that, under mild assumptions, the WUSH transform is near-optimal. With this quantizer, WUSH-KV reduces layerwise reconstruction error and achieves the lowest end-to-end perplexity among other tested transforms. For end-to-end evaluation, we integrate WUSH-KV into SGLang using OSCAR-style percentile-clipped affine quantization. At 2-bit, WUSH-KV performs comparably to or outperforms the OSCAR transform across all evaluated models and downstream tasks.",
+      "authors": [
+        "Jiale Chen",
+        "Vage Egiazarian",
+        "Eldar Kurtić",
+        "Torsten Hoefler",
+        "Dan Alistarh"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-29T17:50:50+00:00",
+      "link": "https://arxiv.org/pdf/2609.38121v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "low-bit KV cache quantization to ease long-context inference bottleneck",
+      "llm_evidence_cn": "低比特KV缓存量化缓解长上下文推理瓶颈",
+      "llm_evidence": "低比特KV缓存量化缓解长上下文推理瓶颈",
+      "canonical_evidence": "低比特KV缓存量化缓解长上下文推理瓶颈",
+      "llm_tldr_en": "This paper addresses KV cache memory and bandwidth costs that grow with context length and batch size. WUSH-KV applies data-adaptive transforms with calibration for low-bit quantization, folding value transform into weights. It reduces reconstruction error for efficient long-context inference.",
+      "llm_tldr_cn": "该文针对KV缓存的内存与带宽开销随上下文长度和批量增长、制约长上下文推理的问题。作者提出WUSH-KV，利用校准数据从矩阵乘积二阶统计构造键与值的自适应变换以降低量化误差，值变换折叠进模型权重、键变换在RoPE后施加，并可搭配截断量化器。实验显示该方法降低逐层重建误差，在低比特下提升长上下文推理效率。",
+      "llm_tldr": "该文针对KV缓存的内存与带宽开销随上下文长度和批量增长、制约长上下文推理的问题。作者提出WUSH-KV，利用校准数据从矩阵乘积二阶统计构造键与值的自适应变换以降低量化误差，值变换折叠进模型权重、键变换在RoPE后施加，并可搭配截断量化器。实验显示该方法降低逐层重建误差，在低比特下提升长上下文推理效率。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.39131v1",
+      "source": "arxiv",
+      "title": "Characterizing High Bandwidth Flash for LLM Serving",
+      "abstract": "Large language model (LLM) serving requires substantial memory to store model weights and KV caches. As models grow larger and contexts become longer, memory capacity and bandwidth increasingly become bottlenecks for serving performance. Agentic workloads compound this pressure through repeated interactions over growing contexts, making it increasingly important to retain KV state for reuse. High-bandwidth flash (HBF) offers a way to expand accelerator memory capacity for large language model (LLM) serving, but its access costs and limited write endurance complicate its use. We evaluate HBF for high-throughput agentic serving across system design and scheduling choices to understand when additional capacity improves serving performance and energy efficiency. We introduce an HBM-HBF-host hierarchical storage system and buffered cache-aware scheduling, and use trace-driven simulations to analyze their effects on performance, energy consumption, and HBF write lifetime. Across the evaluated workloads, the fastest HBF-augmented systems reduce completion time by 36.1-87.0% relative to HBM-only systems. Modeled energy savings reach 55.8%, although HBF increases energy consumption on some light workloads. Buffered cache-aware scheduling extends estimated HBF write lifetime from 4.77 to 14.82 years in the evaluated configuration. These results demonstrate the importance of coordinating data placement and scheduling to improve serving efficiency while sustaining a practical HBF write lifetime.",
+      "authors": [
+        "Zack Yu",
+        "Chloe Wong",
+        "Coleman Hooper",
+        "Minjae Lee",
+        "Wonjun Kang",
+        "Youngjin Cho",
+        "Michael W. Mahoney",
+        "Yakun Sophia Shao",
+        "Kurt Keutzer",
+        "Amir Gholami"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AR",
+        "cs.DC"
+      ],
+      "published": "2026-09-30T07:02:56+00:00",
+      "link": "https://arxiv.org/pdf/2609.39131v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "retaining KV state for reuse under memory capacity pressure",
+      "llm_evidence_cn": "在内存压力下保留KV状态以供复用",
+      "llm_evidence": "在内存压力下保留KV状态以供复用",
+      "canonical_evidence": "在内存压力下保留KV状态以供复用",
+      "llm_tldr_en": "LLM serving is bottlenecked by memory for weights and KV caches, and agentic workloads raise the need to retain KV state for reuse. This paper characterizes high-bandwidth flash for serving, studying when added capacity improves performance and energy efficiency.",
+      "llm_tldr_cn": "大模型服务受限于存储权重与KV缓存的内存，长上下文与智能体负载进一步加剧压力，使KV状态复用愈发重要。本文系统评估高带宽闪存作为扩展加速器内存容量的方案，跨系统设计与调度选择分析其影响。研究揭示在何种条件下额外容量能提升高吞吐服务的性能与能效，同时指出闪存访问成本与写入寿命带来的权衡。该工作为长上下文KV缓存复用场景下的内存扩展与调度设计提供了实证依据。",
+      "llm_tldr": "大模型服务受限于存储权重与KV缓存的内存，长上下文与智能体负载进一步加剧压力，使KV状态复用愈发重要。本文系统评估高带宽闪存作为扩展加速器内存容量的方案，跨系统设计与调度选择分析其影响。研究揭示在何种条件下额外容量能提升高吞吐服务的性能与能效，同时指出闪存访问成本与写入寿命带来的权衡。该工作为长上下文KV缓存复用场景下的内存扩展与调度设计提供了实证依据。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.01230v1",
+      "source": "arxiv",
+      "title": "HHR: Hierarchical Hash Retrieval for Efficient LLM Generation",
+      "abstract": "Efficient long-context inference is essential for large language models (LLMs), yet it poses a severe computational bottleneck. Hash-based retrieval offers an efficient alternative by encoding queries and keys into binary codes and using Hamming distance for key selection. However, this leads to a critical mismatch between Hamming distance and attention relevance. Query-Key logits depend jointly on directional similarity and feature magnitudes, whereas hash binarization discards magnitude information, causing both false-positive retrieval of low-logit keys and false-negative omission of high-logit keys. To address these failures, we propose Hierarchical Hash Retrieval (HHR), a coarse-to-fine framework that progressively improves retrieval accuracy through Geometry-Aware Key Routing (GKR) and Learned Hash Projection (LHP). GKR learns a head-wise orthogonal transformation to redistribute feature magnitudes and derive more discriminative page-level logit bounds, enabling effective pruning of low-logit keys while preserving important candidates. LHP then learns a head-wise projection space that aligns Hamming distance with the true Query-Key relevance ranking for fine-grained retrieval. By combining GKR and LHP, HHR suppresses false positives and recovers false negatives, substantially improving the fidelity of hash-based sparse attention. Extensive experiments across diverse LLMs and benchmarks demonstrate that HHR achieves superior performance over existing methods. For example, on LongBench, HHR improves the average score by 1.10 points and, at a context length of 128K, achieves up to a 3.30x decoding speedup and a 2.83x end-to-end speedup for Llama-3.1-8B-Instruct. The code is publicly available at https://github.com/lianjunl13-sudo/HHR.",
+      "authors": [
+        "Lianjun Liu",
+        "Tiantian Zheng",
+        "You Huang",
+        "Weiqi Yan",
+        "Mingte Qiu",
+        "Huazhong Liu",
+        "Xiaofeng Zhu",
+        "Yunshan Zhong"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-01T07:31:44+00:00",
+      "link": "https://arxiv.org/pdf/2610.01230v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "long-context inference acceleration via key retrieval",
+      "llm_evidence_cn": "通过键检索加速长上下文推理",
+      "llm_evidence": "通过键检索加速长上下文推理",
+      "canonical_evidence": "通过键检索加速长上下文推理",
+      "llm_tldr_en": "HHR is a coarse-to-fine hierarchical hash retrieval framework that fixes the mismatch between Hamming distance and attention relevance, improving key selection for efficient long-context LLM generation.",
+      "llm_tldr_cn": "长上下文LLM推理面临严重计算瓶颈，基于哈希的检索通过二进制编码与汉明距离选择键，但汉明距离与注意力相关性存在不匹配，导致低logit键被误召回、高logit键被漏召回。本文提出分层哈希检索HHR，采用由粗到细的框架逐步提升检索精度，并保留特征幅值信息。实验表明该方法能显著改善长上下文生成的效率与准确性。",
+      "llm_tldr": "长上下文LLM推理面临严重计算瓶颈，基于哈希的检索通过二进制编码与汉明距离选择键，但汉明距离与注意力相关性存在不匹配，导致低logit键被误召回、高logit键被漏召回。本文提出分层哈希检索HHR，采用由粗到细的框架逐步提升检索精度，并保留特征幅值信息。实验表明该方法能显著改善长上下文生成的效率与准确性。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

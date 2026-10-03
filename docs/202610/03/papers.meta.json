@@ -1,0 +1,54 @@
+{
+  "label": "2026-10-03",
+  "date": "2026-10-03",
+  "generated_at": "2026-10-03T22:35:48",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202610/03/2609.38121v1-wush-kv-kv-cache-quantization-with-data-adaptive-transforms",
+      "section": "quick",
+      "title_en": "WUSH-KV: KV Cache Quantization with Data-Adaptive Transforms",
+      "authors": "Jiale Chen, Vage Egiazarian, Eldar Kurtić, Torsten Hoefler, Dan Alistarh",
+      "date": "2026-09-29",
+      "pdf": "https://arxiv.org/pdf/2609.38121v1",
+      "score": "7.0",
+      "evidence": "低比特KV缓存量化缓解长上下文推理瓶颈",
+      "tldr": "长上下文推理中，KV 缓存的内存与带宽随上下文长度和批大小增长，成为效率瓶颈。WUSH-KV 面向低位 KV 缓存量化，利用校准数据从矩阵乘积两个因子的二阶统计量构建数据自适应变换，并分别处理 key 与 value。该方法将 value 变换折叠进模型权重，把 key 变换置于 RoPE 之后，还可与裁剪量化器配合。在 2-bit 下，它降低逐层重构误差，端到端困惑度最低，并在 SGLang 与 OSCAR 式量化集成后，于多个模型和下游任务上媲美或超越 OSCAR 变换。",
+      "tags": "query:pic",
+      "abstract_en": "KV cache memory and bandwidth costs grow with context length and batch size, which limits efficient long-context inference. To address this bottleneck, we introduce WUSH-KV for low-bit KV-cache quantization. It adapts WUSH, which constructs a data-aware transform from the second-order statistics of both factors in a matrix product to reduce quantization error. WUSH-KV uses calibration data to construct separate key and value transforms, with the value transform folded into the model weights and the key transform applied after RoPE. The transforms can be paired with clipped quantizers. For one such quantizer, QuEST INT, we show that, under mild assumptions, the WUSH transform is near-optimal. With this quantizer, WUSH-KV reduces layerwise reconstruction error and achieves the lowest end-to-end perplexity among other tested transforms. For end-to-end evaluation, we integrate WUSH-KV into SGLang using OSCAR-style percentile-clipped affine quantization. At 2-bit, WUSH-KV performs comparably to or outperforms the OSCAR transform across all evaluated models and downstream tasks.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/03/2610.01230v1-hhr-hierarchical-hash-retrieval-for-efficient-llm-generation",
+      "section": "quick",
+      "title_en": "HHR: Hierarchical Hash Retrieval for Efficient LLM Generation",
+      "authors": "Lianjun Liu, Tiantian Zheng, You Huang, Weiqi Yan, Mingte Qiu, Huazhong Liu, Xiaofeng Zhu, Yunshan Zhong",
+      "date": "2026-10-01",
+      "pdf": "https://arxiv.org/pdf/2610.01230v1",
+      "score": "7.0",
+      "evidence": "通过键检索加速长上下文推理",
+      "tldr": "长上下文LLM推理面临严重计算瓶颈，哈希检索以二进制编码和汉明距离选择键，但二值化丢弃幅值信息，使汉明距离与注意力相关性错配，造成低logit键误召和高logit键漏召。HHR提出由粗到细的分层哈希检索框架，结合GKR与LHP分别优化路由边界和投影空间。在LongBench上平均分提升1.10，128K上下文下为Llama-3.1-8B-Instruct带来最高3.30倍解码和2.83倍端到端加速。该工作显著提升了哈希稀疏注意力的保真度与长文本生成效率。",
+      "tags": "query:pic",
+      "abstract_en": "Efficient long-context inference is essential for large language models (LLMs), yet it poses a severe computational bottleneck. Hash-based retrieval offers an efficient alternative by encoding queries and keys into binary codes and using Hamming distance for key selection. However, this leads to a critical mismatch between Hamming distance and attention relevance. Query-Key logits depend jointly on directional similarity and feature magnitudes, whereas hash binarization discards magnitude information, causing both false-positive retrieval of low-logit keys and false-negative omission of high-logit keys. To address these failures, we propose Hierarchical Hash Retrieval (HHR), a coarse-to-fine framework that progressively improves retrieval accuracy through Geometry-Aware Key Routing (GKR) and Learned Hash Projection (LHP). GKR learns a head-wise orthogonal transformation to redistribute feature magnitudes and derive more discriminative page-level logit bounds, enabling effective pruning of low-logit keys while preserving important candidates. LHP then learns a head-wise projection space that aligns Hamming distance with the true Query-Key relevance ranking for fine-grained retrieval. By combining GKR and LHP, HHR suppresses false positives and recovers false negatives, substantially improving the fidelity of hash-based sparse attention. Extensive experiments across diverse LLMs and benchmarks demonstrate that HHR achieves superior performance over existing methods. For example, on LongBench, HHR improves the average score by 1.10 points and, at a context length of 128K, achieves up to a 3.30x decoding speedup and a 2.83x end-to-end speedup for Llama-3.1-8B-Instruct. The code is publicly available at https://github.com/lianjunl13-sudo/HHR.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202610/03/2609.39131v1-characterizing-high-bandwidth-flash-for-llm-serving",
+      "section": "quick",
+      "title_en": "Characterizing High Bandwidth Flash for LLM Serving",
+      "authors": "Zack Yu, Chloe Wong, Coleman Hooper, Minjae Lee, Wonjun Kang, Youngjin Cho, Michael W. Mahoney, Yakun Sophia Shao, Kurt Keutzer, Amir Gholami",
+      "date": "2026-09-30",
+      "pdf": "https://arxiv.org/pdf/2609.39131v1",
+      "score": "6.0",
+      "evidence": "在内存压力下保留KV状态以供复用",
+      "tldr": "LLM 服务受内存容量与带宽限制，模型增大、上下文变长以及智能体重复交互进一步加剧压力，使 KV 状态复用愈发重要。高带宽闪存（HBF）能扩展加速器内存容量，但访问开销高、写入寿命有限。本文构建 HBM-HBF-主机分层存储与缓冲式缓存感知调度，用轨迹驱动仿真评估。结果显示最快 HBF 增强系统完成时间降低 36.1–87.0%，能耗最多降 55.8%，写入寿命由 4.77 年延至 14.82 年。",
+      "tags": "query:pic",
+      "abstract_en": "Large language model (LLM) serving requires substantial memory to store model weights and KV caches. As models grow larger and contexts become longer, memory capacity and bandwidth increasingly become bottlenecks for serving performance. Agentic workloads compound this pressure through repeated interactions over growing contexts, making it increasingly important to retain KV state for reuse. High-bandwidth flash (HBF) offers a way to expand accelerator memory capacity for large language model (LLM) serving, but its access costs and limited write endurance complicate its use. We evaluate HBF for high-throughput agentic serving across system design and scheduling choices to understand when additional capacity improves serving performance and energy efficiency. We introduce an HBM-HBF-host hierarchical storage system and buffered cache-aware scheduling, and use trace-driven simulations to analyze their effects on performance, energy consumption, and HBF write lifetime. Across the evaluated workloads, the fastest HBF-augmented systems reduce completion time by 36.1-87.0% relative to HBM-only systems. Modeled energy savings reach 55.8%, although HBF increases energy consumption on some light workloads. Buffered cache-aware scheduling extends estimated HBF write lifetime from 4.77 to 14.82 years in the evaluated configuration. These results demonstrate the importance of coordinating data placement and scheduling to improve serving efficiency while sustaining a practical HBF write lifetime.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
