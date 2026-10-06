@@ -1,0 +1,758 @@
+Title: MOIRA: Mass-Oriented Indexing with Ragged Attention for Long-Context Decoding
+
+URL Source: https://arxiv.org/pdf/2610.04313v1
+
+Published Time: Tue, 06 Oct 2026 00:38:36 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# MOIRA: Mass-Oriented Indexing with Ragged Attention for Long-Context Decoding 
+
+Dich Nhat Minh Nguyen Tran Dang Duong Nguyen 
+
+# Abstract 
+
+Long-context decoding is limited by memory bandwidth, because every output token reads the KV cache of every layer. Sparse decoding reduces this cost by reading only part of the KV cache. We observe that the number of pages a query needs varies widely across KV heads, layers and steps. Fixed budgets are simple, but they are sized for demanding cases and tuned per workload; adaptive budgets follow this variation more flexibly, but existing designs pay for it with extra selection cost or training. At the kernel level, FlashAttention-3 (FA3) and FlashInfer are designed for rows of similar length: with page lists whose length differs per KV head, they pad the lists, which forfeits much of the sparse saving, leave thread blocks unbalanced, or rely on a host-side plan that runs outside the CUDA graph. We propose Moira, a training-free sparse decode path in vLLM whose budget adapts per KV head and per layer. For every request, layer, KV head and step, a coverage rule keeps the smallest set of pages whose estimated attention mass reaches a fraction γ. A new kernel, self-planning attention, lets each thread block derive its own share of the work from the list lengths, so the whole decode step stays inside the CUDA graph. On an H200, at RULER’s 128k context, Moira with γ=0 .99 matches dense accuracy while reading about 30% of the pages and reduces the time per output token (TPOT) by 2.2–2.5 × relative to dense FA3; with γ=0 .98 it reduces TPOT by 2.7 × and stays within the noise of dense. Under high serving load it raises throughput by up to 51%. These results suggest that a budget adapted per head and layer, paired with a kernel that keeps such budgets inside the CUDA graph, makes sparse decoding both flexible and fast. 
+
+# 1 Introduction 
+
+Long-context decoding is limited by memory bandwidth: ev-ery output token reads the KV cache of every layer. Existing work reduces this cost by reading only part of the KV cache at each decode step, and falls into two groups. Fixed-budget methods , such as Quest (Tang et al., 2024) and the trained sparse attention of recent production models (DeepSeek-AI, 2025; Lai et al., 2026; Qiu et al., 2026), read the same number of tokens, the budget , for every head and every step. 
+
+Adaptive-budget methods let the budget vary with the query: Twilight (Lin et al., 2025) selects tokens per query head with top-p, FFD (Liu et al., 2026) keeps the blocks whose score, estimated from a low-bit copy of the keys, exceeds a threshold, and Elastic Threshold Attention (Haris et al., 2026) uses a learned threshold. However, the budget that is actually needed varies widely across KV heads, across layers and across steps (Figure 1). A fixed budget cannot follow this variation: it must be sized for the hardest case, so most heads over-read, and it must be re-tuned for each workload. Adaptive methods already let the budget vary per head, layer and step, but they pay for it elsewhere: Twilight selects per query head and plans its lists on the host, FFD scans a low-bit copy of every key at every step, and Elastic Threshold Attention requires training. On the kernel side, the selected pages are read by decode kernels such as FlashAttention-3 (FA3) (Shah et al., 2024) and FlashInfer (Ye et al., 2025), which are built for rows of similar length. When each KV head has a list of its own length, they either pad the lists, which forfeits much of the sparse saving, read the exact lengths but leave thread blocks unbalanced, or balance them with a host-side plan that must run outside the CUDA graph before every step. In this paper, we propose Moira (Mass-Oriented Indexing with Ragged Attention ), a training-free sparse decode path inside vLLM (Kwon et al., 2023) that addresses both limita-tions. First, Moira applies a coverage rule : for every request, layer, KV head and step, it keeps the smallest set of pages whose estimated attention mass reaches a fraction γ, and one fused kernel evaluates the rule. Second, a new kernel, 
+
+self-planning attention , lets each thread block derive its own share of the work from the list lengths in device memory, so the whole decode step stays in vLLM’s CUDA graphs. On an H200 at 128k, Moira with γ=0 .99 matches dense accuracy on RULER (Hsieh et al., 2024) with 27–33% of the page reads and reduces the time per output token (TPOT) by 2.2–2.5 × relative to dense FA3. arXiv:2610.04313v1 [cs.AI] 3 Oct 2026 MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+Our contributions are: • A coverage rule for per-head, per-layer budgets. We show that the number of pages a query needs varies across KV heads, layers and steps, and that one cover-age rule follows this variation across models, context lengths and tasks with γ fixed across them, whereas a fixed budget must be re-tuned for each case or profiled per KV head on the target model (Sections 2.2.1, 5.5.1 and 5.5.2). This rule is our main contribution. • A kernel that keeps such budgets in the CUDA graph. 
+
+Existing decode kernels pad lists of different lengths, leave thread blocks unbalanced, or balance them with a host-side plan. Self-planning attention balances them on the GPU, so the rule runs inside vLLM’s CUDA graphs without padding or a host plan (Figure 2, Sec-tion 3). • System and evaluation. We implement both in vLLM and compare Moira with FA3, FlashInfer, Quest, Twi-light and FFD. Moira lowers TPOT by 1.38–2.69 ×
+
+on synthetic batches of 8k–130k tokens, raises serving throughput by 45–51% under high load, and matches dense accuracy on long reasoning (AIME) and on RULER at 128k (Section 5). 
+
+# 2 Background and Motivation 
+
+2.1 Background 
+
+2.1.1 Decode attention in a paged serving engine 
+
+Each decode step generates one token per request, whose query attends over the request’s whole KV cache. With grouped-query attention (GQA), G query heads share one KV head, so the unit of work is a row : one (request, KV head) pair whose keys and values are read once for all G
+
+query heads. Four requests on Llama-3.1-8B (8 KV heads) give 32 rows per step. vLLM (Kwon et al., 2023) stores the KV cache in fixed-size pages (64 tokens here); each request’s pages are listed in a block table, through which the kernel reads its rows. These 32 rows are far fewer than the 132 streaming multipro-cessors (SMs) of an H200. To fill the GPU, decode kernels cut long rows into chunks, one per thread block, and merge the partial results through their log-sum-exp ( split-KV , or Flash-Decoding (Dao et al., 2023; Hong et al., 2024)). The cut requires a plan : which chunk of which row each thread block processes. FA3 (Shah et al., 2024) builds this plan on the GPU from the shape of the batch; FlashInfer (Ye et al., 2025) builds it on the host, in plan() , from the length of each request. A decode step lasts a few milliseconds, so host launch cost matters; vLLM captures the step once as a CUDA graph 
+
+and replays it at every step, which re-launches the captured kernels without host involvement. Host work that depends on the current step, such as FlashInfer’s plan() , cannot be part of the graph: it must run before every replay, or be removed. 
+
+2.1.2 Query-aware sparse decode 
+
+Query-aware methods estimate the attention the current query puts on each page and read only the pages that matter. Let aP be the fraction of a row’s attention mass that falls on page P , averaged over the G query heads. The smallest set of pages that covers a fraction γ of the mass is the oracle coverage set 
+
+C⋆(γ) = arg min  
+
+> C
+
+|C| s.t. P  
+
+> P∈C
+
+aP ≥ γ, (1) and its size |C ⋆| is the budget the row actually needs. Meth-ods differ in how they approximate it. Quest (Tang et al., 2024) bounds each page’s largest logit with a per-channel min/max box of its keys and keeps a fixed number of tokens. Twilight (Lin et al., 2025) further prunes Quest’s candidates separately for each query head with a top-p rule: it estimates the attention weights of the candidates from int4 keys and keeps the fewest tokens whose total weight reaches a fraction 
+
+p (here p=0 .85 ), so concentrated attention keeps fewer to-kens. FFD (Liu et al., 2026) keeps every block whose largest logit, estimated from a 2-bit copy of the keys, lies within 
+
+δ of a maximum estimated from the sink and local tokens. Quest and Twilight then read exact keys and values for the kept pages; FFD rebuilds the kept keys from the 2-bit copy plus an 8-bit residual and reads exact values. 
+
+2.2 Motivation 
+
+2.2.1 The budget must adapt per KV head and per layer 
+
+The needed budget varies across layers, KV heads and steps. We record C⋆(0 .95) at every decode step of 60 Long-Bench requests on Llama-3.1-8B and Qwen3-4B, for every layer and KV head (Figure 1). On Llama-3.1-8B a row needs 21.6% of the context on average to keep 95% of the mass: 68% in the first layer but only 9% in several others (Fig-ure 1a). The coefficient of variation (CV, standard deviation over mean) of the page count is 0.61 across layers, 0.74 across the KV heads of one layer at one step, and 0.53 across the steps of one (layer, KV head). Totals over all layers vary much less (CV 0.13–0.18 across KV heads, requests and steps): the variation appears at the granularity of (layer, KV head), which is where the budget must be set. 
+
+Fixed budgets over-read. A fixed budget must cover the rows that need the most. With the smallest budget that lets 90% of the rows keep 95% of the mass, a single token count shared by all rows reads 2.38 × the coverage set (Figure 1b). Even a budget profiled offline for every (layer, KV head) reads 1.73 ×, because within one head the need still changes MOIRA: Mass-Oriented Indexing with Ragged Attention 0 8 16 24 31        
+
+> layer
+> 0246
+> KV head
+> (a) need varies across layers and KV heads
+> 0.0 0.2 0.4 0.6 0.8 kept
+> 012
+> tokens read / tokens read by coverage set
+> fixed top-k static per layer static per (layer, head) previous step
+> 2.38 2.22 1.73 1.71
+> (b) fixed budgets over-read
+> 0.00 0.25 0.50 0.75 1.00
+> KV read / dense
+> per KV head (ideal) pad to longest head pow2 buckets one length per layer
+> 0.211 0.424 0.591 0.792
+> (c) coarse lengths forfeit the savings
+> Llama-3.1-8B Qwen3-4B
+
+Figure 1. The budget a row needs varies, and fixed budgets or coarse lengths forfeit the savings. Oracle coverage sets C⋆(0 .95) over 60 LongBench requests, 64-token pages. (a) Mean size of the set, as a fraction of the context, for each (layer, KV head) of Llama-3.1-8B: the first layer needs most of its context, while most layers need only a tenth. (b) Tokens read by budget policies relative to the coverage set, when each policy must give 90% of the rows, over all layers and steps, at least 0.95 of the mass: every fixed or profiled budget reads 1.7–2.4 × as many tokens as the coverage set (dashed line). (c) Fraction of the dense KV cache read by batches of 32 requests (total over decode steps 16–256) when the per-(layer, KV head) lengths are coarsened: padding to the longest head doubles the reads. 
+
+with the query. These counts use the exact mass (an oracle analysis); because a real estimator keeps more pages than the oracle set, Section 5.5.2 compares the two end to end at equal reads. 
+
+One set per KV head is the right granularity. If every KV head of a layer reads as many pages as its longest head, page reads double, from 21% to 42% of the dense cache over a batch of 32 requests (Figure 1c). Selecting per query head, as Twilight does, needs 1.51 × the pages at the same output error, because the G query heads share one KV head and every page any of them selects must be read. 
+
+The budget should therefore be chosen per (request, layer, KV head, step), from the attention mass averaged over the query heads of the group. This is the coverage rule of Section 3.2. 
+
+2.2.2 Existing kernels forfeit the savings 
+
+With an adaptive per-head budget, each row’s page count is known only on the GPU, within the step, after selection. A suitable kernel must (i) read only the selected pages, (ii) di-vide the work evenly among thread blocks, and (iii) need no host involvement within the step, so that it can run inside a CUDA graph. Figure 2 shows that every existing kernel misses at least one condition. 
+
+Padding reads pages that were not selected. A rectangu-lar grid gives every row enough thread blocks for the longest row and pads the rest; the padding is read like real pages, so sparse attention is as slow as dense (Figure 2a). Power-of-two buckets reduce the padding but remain 1.4 × slower than reading exactly the selected pages (Figure 2b). Both miss (i). 
+
+Exact lengths are not enough. FA3’s varlen mode takes a length per row and reads only the selected pages, but its split scheduler does not balance rows of different lengths: thread blocks of long rows finish last while the others sit idle (Figure 2c). At equal total work, FA3 slows by 23–32% as row lengths spread. FA3 misses (ii). 
+
+Balance planned on the host does not fit the step. Flash-Infer cuts every row into equal chunks, balancing the load (Figure 2d), but computes this plan on the host from the row lengths. With adaptive lists the lengths change at every layer and step, so the host must fetch them from the GPU and re-plan each time; at 32k ×16 the plan alone costs 2.4 × the kernel time and cannot be part of a CUDA graph. FlashInfer misses (iii). 
+
+Planning from past steps overflows. One could instead reserve thread-block slots per row at capture time, sized from earlier steps. But lengths change between steps: with slots sized from the previous step, 40% of the rows overflow, and a safety margin that cuts the overflow to 2.4% reserves 1.77 × the needed slots, so the kernel again does extra work. 
+
+The kernel must therefore partition the work itself, on the GPU, within the step, from the lengths the selection has just produced. Self-planning attention (Section 3.3) does exactly this and meets all three conditions (Figure 2e). MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+> (a) FA3, padded to max
+
+492 μs (dense 489) 
+
+> reads unselected pages
+> (b) FA3, pow-2 buckets
+
+281 μs
+
+> still reads padding
+> (c) FA3 varlen
+
+238 μs
+
+> exact, but unbalanced
+> (d) FlashInfer
+
+194 μs + 464 μs host plan 
+
+> host plan, not in CUDA graph
+> (e) Self-planning (ours)
+
+201 μs
+
+> exact, balanced, in graph
+
+Figure 2. Existing decode kernels on per-head lists of different lengths. Each bar is one (request, KV head) row with its selected pages; each segment is the work of one thread block; red is padding. Times: attention of one layer of Llama-3.1-8B on lists from real decode steps, scaled to 32k context × 16 requests (H200). Only self-planning attention reads exactly the selected pages, gives every thread block a bounded, nearly equal amount of work, and runs inside a CUDA graph. 
+
+# 3 Design 
+
+Moira replaces vLLM’s FA3 decode attention with four kernels that run in sequence at every layer (Figure 3), each over all rows b of the step: Step 1 (Estimate ) approximates the attention mass of each page from a small summary, without reading the keys (Section 3.1); Step 2 (Select ) keeps the fewest pages that cover a fraction γ of the mass and writes each row’s page list (Section 3.2); Step 3 (Attend ) reads exactly the pages in the list, with the work spread evenly over the thread blocks (Section 3.3); Step 4 (Merge ) combines the partial results of each row. Select chooses a budget per request, layer, KV head and step; Attend partitions the work on the GPU without the host; Estimate keeps the cost of selection small relative to the reads it saves. 
+
+3.1 Page summaries and the mvar estimate 
+
+A page holds S=64 tokens. For each page P and each KV head, Moira stores a page summary : the per-channel mean 
+
+μP and variance σ2 
+
+> P
+
+of the 64 keys ( 2D values, written once when the page fills). From this summary, Estimate 
+
+approximates the attention mass of the page for query head 
+
+g, mg,P = P 
+
+> k∈P
+
+es q g ·k with s = 1 /√D the softmax scale, without reading the keys: 
+
+log ˆ mg,P = s q g ·μP
+
+| {z }
+
+> mean logit
+
++ 12 (s q g )2 ·σ2
+
+> P
+
+| {z }
+
+> spread of the logits
+
++ log S. (2) We call this estimate mvar (mean and variance). Eq. 2 is the logarithm of S times the expectation of es q g ·k when the keys of a page are treated as independent Gaussians per channel, the same second-order approximation that CompKV (Huang et al., 2026) uses. The second term matters because a sum of exponentials is dominated by its largest logits, which the mean hides: on real pages that contain a few outlying keys, the mean term alone underestimates the mass by a factor of e5–e7 and the page is dropped, whereas mvar under-estimates it by a factor of about e3 (Appendix A). Unlike Quest (Tang et al., 2024), which bounds the largest logit, mvar estimates the total mass, which is exactly the quantity the coverage rule accumulates. The first page (the attention 
+
+Algorithm 1 Coverage rule for one row b (Select )
+
+1: Input: log-masses ℓg,P for g ≤ G and pages P0, . . . , P cur ;coverage γ; KB thresholds per pass 2: Output: page list Lb and its length nb
+
+3: ¯π ← 1
+
+> G
+
+P 
+
+> g
+
+softmax( ℓg, ·) ▷ group-mean mass 4: t ← γ − ¯πP0 − ¯πPcur ; lo ← 0; hi ← max P ∈P b ¯πP
+
+5: for 24 / log 2 KB passes do 
+
+6: τk ← lo + ( hi − lo ) k/K B for k < K B ▷ one reduction 7: Mk ← P    
+
+> P∈P b,¯πP≥τk
+
+¯πP
+
+8: lo ← max {τk : Mk ≥ t}
+
+9: hi ← min( {τk : Mk < t } ∪ { hi })
+
+10: end for 
+
+11: Lb ← [P0] ∥ [P ∈ P b : ¯ πP ≥ lo ] ∥ [Pcur ] ▷ compaction 
+
+sink (Xiao et al., 2024)) and the current page, which has no summary yet, are computed exactly. 
+
+3.2 The coverage rule 
+
+Select averages the estimated masses over the G query heads of the group (after a softmax per head), giving each page’s attention share ¯πP , and keeps pages in decreasing order of share until their sum reaches γ. For example, with four pages of ¯π = 0.70, 0.20, 0.08 and 0.02, γ=0 .9 keeps two pages and γ=0 .98 keeps three: the number of kept pages is an 
+
+output of the rule, not a preset parameter. The sink P0 and the current page Pcur are always kept. Written as a threshold: 
+
+Kb = {P0, P cur } ∪ { P ∈ P b : ¯ πP ≥ τb},τb = max {τ : P    
+
+> P∈P b,¯πP≥τ
+
+¯πP ≥ γ − ¯πP0 − ¯πPcur },
+
+(3) where Pb holds the row’s pages other than P0 and Pcur , so the two forced pages are counted once. This is top-p over pages, the estimated counterpart of the oracle coverage set (Eq. 1). γ is the only parameter (default 0.98 for every head). Averaging over the G query heads yields one list per group, so each page is read once for all G heads (Section 2.2.1). 
+
+Bisection instead of sorting. Sorting the pages of every row at every layer and step erases most of the saving: in a prototype, a sort-based rule cut the speedup over dense attention from 3.18 × to 1.47 × (Appendix A). Select there-MOIRA: Mass-Oriented Indexing with Ragged Attention Step 1: Estimate          
+
+> estimated attention mass per page sink current each page keeps the mean μand variance σ2of its 64 keys; mass from q,μ,σ2(Eq. 2)
+
+Step 2: Select         
+
+> τ
+> keep pages above τ; their mass ≥γ
+> threshold τfound by bisection, no sort; output: the row’s page list and its length nb(5 here)
+
+Step 3: Attend           
+
+> fixed grid: J=4 thread blocks per row
+> nb=8
+> nb=3
+> nb=5
+> nb=2
+> exit exit exit exit exit exit
+> each block reads nbfrom GPU memory, takes its own chunk of ≤cbpages, and exits if the chunk is empty
+
+Step 4: Merge  
+
+> partial outputs of row b
+> output combined by their log-sum-exp; single-chunk rows skip this step
+> one decode layer; all four kernels run inside vLLM’s CUDA graph, with no CPU work between them
+
+Figure 3. One decode layer of Moira, for one (request, KV head) row. Step 1 approximates the attention mass of each page; Step 2 keeps the fewest pages whose total mass reaches γ; Step 3 reads those pages, with each thread block taking one chunk of the row by itself; Step 4 combines the chunks. Values are illustrative; Step 3 uses the row lengths of Figure 2. 
+
+fore searches for τb ∈ [0 , max P ¯πP ] directly (Algorithm 1). Each pass tries KB evenly spaced thresholds, sums the mass above each, and keeps the sub-interval containing τb, shrink-ing it KB -fold; 24 / log 2 KB passes shrink it 224 -fold. One thread block handles one row with all masses in registers, writing only the final page list (sink first, current page last) and its length nb to GPU memory. 
+
+3.3 Self-planning attention The constraint. A CUDA graph fixes each kernel’s thread-block count at capture; at replay only GPU memory may change. The lengths nb change every step, so the kernel must handle every length with the same thread blocks, without the host (Section 2.2.2). 
+
+The idea: each block computes its own share of the work. 
+
+Attend always launches J thread blocks per row. Block (b, j )
+
+reads nb from GPU memory, cuts the row into chunks of cb
+
+pages, and processes chunk j; if the row has no chunk j, the block exits at once (Algorithm 2): 
+
+J = max 
+
+
+
+NJ ,
+
+l NT
+
+BH kv 
+
+m 
+
+, cb = max 
+
+
+
+C, 
+
+l nb
+
+J
+
+m 
+
+.
+
+(4) 
+
+J depends only on the batch size, fixed within each graph; cb
+
+depends on nb, which each block reads itself. For example, with J=4 and C=2 , every chunk holds two pages, and four rows of 8, 3, 5 and 2 pages use 4, 2, 3 and 1 blocks, and the other six blocks exit immediately (Figure 3, Step 3). Every busy block processes at most two pages, so the hardware scheduler distributes them evenly over the SMs, with no padding and no plan. NJ is the minimum number of blocks per row, NT the minimum for the whole grid (so a few long rows still fill the GPU), and C the minimum chunk size (so a short row needs one block). Each block computes all G
+
+query heads on the same key/value tile, reading every KV byte once per group. Merge combines each row’s chunks through their log-sum-exp; single-chunk rows are written 
+
+Algorithm 2 Self-planning attention: thread block (b, j ) of 
+
+Attend 
+
+1: Input: queries q1..G of row b; page list Lb and its length nb
+
+in GPU memory 2: c ← max( C, ⌈nb/J ⌉); m ← ⌈ nb/c ⌉ ▷ chunks of row b
+
+3: if j ≥ m then 
+
+4: return ▷ no chunk for this block 5: end if 
+
+6: for i = jc to min(( j+1) c, n b) − 1 do 
+
+7: load keys and values of page Lb[i]
+
+8: update the attention of all G query heads 9: end for 
+
+10: if m = 1 then write the output else write the partial output and its log-sum-exp (LSE) 
+
+by Attend directly. We use C=24 , NJ =32 and NT =4096 
+
+for every model and shape, and KB =8 , 4 and 2 for rows of fewer than 256, 1,024 and 4,096 pages in Select .
+
+3.4 Overhead analysis 
+
+A page summary holds 2D values, compared with 2SD 
+
+for the page’s keys and values, so it adds 1/S = 1 .6% to the KV-cache size. Per step, Estimate reads all summaries (1/S of the dense bytes) and Attend the kept fraction ρ of the pages, about (ρ + 1 /S ) of dense in total; at 128k with 
+
+γ=0 .98 , ρ ≈ 0.20 , so a step reads about 21%. Estimate and 
+
+Select together take 19–27 μs per layer (Table 4), with no host work. 
+
+3.5 Fixed budgets and other selectors 
+
+Attend and Merge do not depend on how pages are chosen. 
+
+Select also has a fixed-count mode that keeps the K largest pages through the same bisection (used in the ablation, Sec-tion 5.5.2), and Attend accepts the page list of any selector through an attend() entry point. On the same kernels we have run a Quest-style upper bound, a sink-plus-local-window selector in the style of DuoAttention (Xiao et al., 2025), and blocks of 1 to 128 tokens. Because Quest also MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+stores two vectors per page, running it on the same kernels as Moira isolates the effect of which pages are kept (Sec-tion 5.5.1). 
+
+# 4 Implementation 
+
+Integration with vLLM. Moira is a Python module of Triton kernels, loaded into vLLM 0.30 through an import hook. It replaces the decode attention of the FA3 backend and changes neither the model code nor the KV cache lay-out. The kernels address vLLM’s bfloat16 (bf16) KV cache through its tensor strides as an array [page, KV head, 64 tokens, 2D], so they work with both memory layouts that vLLM supports: token-major (NHD, the default) and head-major (HND). 
+
+Decode steps and mixed steps. In a pure decode step, FA3 is skipped entirely: the four Moira kernels run instead and are captured in vLLM’s full CUDA graph. In a mixed step ,where some requests are prefilling and others are decoding, Moira handles the decode rows and FA3 still handles the prefill rows. So that FA3 does not recompute the decode rows, Moira passes FA3 a copy of the step metadata in which the sequence lengths of the decode rows are zero; FA3 skips them and computes the prefill rows exactly as dense vLLM does. 
+
+Memory for page summaries. The summaries ( μP and 
+
+σ2 
+
+> P
+
+, bf16) live in a separate buffer, allocated on first use, outside the memory that vLLM reserves for the KV cache. The KV capacity that vLLM reports is therefore almost un-changed: it differs by only 0.06% (Llama-3.1-8B: 840,320 vs. 839,808 tokens; Qwen3-4B: 802,368 vs. 801,920). Plac-ing the summaries inside the KV cache would reduce the capacity by 1.6%. 
+
+Correctness checks. At γ=1 , Moira matches FA3 to within one bf16 unit in the last place (ulp), CUDA-graph replay is bit-identical to eager execution, and the page lists of Select match a float32 reference of the rule on 64/64 test rows; Appendix B gives the details. 
+
+# 5 Evaluation 
+
+Our experiments are driven by the following research ques-tions (RQs): 
+
+RQ1. How does Moira compare with prior methods? We compare accuracy and latency at 128k with dense attention, Quest, Twilight and FFD. 
+
+RQ2. Does an adaptive budget beat a fixed one? We keep the estimator and kernels of Moira and replace the coverage rule by fixed, proportional and profiled budgets at equal reads. 
+
+RQ3. Does the kernel keep its speed when page lists differ in length? We vary the spread of row lengths at a fixed mean and compare Attend with FA3, padding, bucketing and FlashInfer. 
+
+RQ4. How much faster is a whole decode step? We mea-sure TPOT in vLLM from 8k to 130k tokens and break one step into kernels. 
+
+RQ5. Does Moira raise throughput in online serving? 
+
+We serve LongBench prompts in a closed loop at increasing concurrency. 
+
+5.1 Datasets 
+
+• RULER-13 (Hsieh et al., 2024) at 128k (13 tasks × 20 documents): long-context retrieval (RQ1). • AIME 2024+2025 (60 problems × 8 samples, t=0 .6,top-p 0.95, top-k 20, at most 32,768 generated tokens): long reasoning (RQ2). • LongBench (Bai et al., 2024) (21 tasks, 4,750 samples): shorter prompts. Its documents also supply the timing prompts: batches of 8k ×32 to 130k ×4 tokens (RQ4) and two serving sets of 4k–126k tokens (RQ5). 
+
+5.2 Evaluation metrics 
+
+• Accuracy : the benchmark score; differences from dense are tested with a paired bootstrap (95%). • Token KL : KL divergence of a method’s token distri-bution from dense on teacher-forced dense answers. • Page reads : fraction of KV pages read relative to dense, counted on the GPU. Quest and Twilight count reads in tokens and FFD in 128-token blocks, so for them we compare accuracy and time only. • Latency : TPOT , the time per output token (in serving, the median over requests); Attn , the selection plus atten-tion time of one decode step; Host , the CPU planning time per step. • Throughput : output tokens per second during serving. 
+
+5.3 Baselines 
+
+Dense FA3 (vLLM’s default) and dense FlashInfer; Quest (Tang et al., 2024) with a 36,864-token budget (Quest-36k); Twilight (Lin et al., 2025) with a 36,864-token Quest pre-filter and top-p 0.85 (Twilight-36k); FFD (Liu et al., 2026) with its default δ=7 , each with its authors’ code on the same H200 (Quest through Twilight’s implementation of its rule). Moira uses γ=0 .98 unless noted, with every layer and KV head sparse. 
+
+5.4 Models and system 
+
+We use Llama-3.1-8B-Instruct (Grattafiori et al., 2024) (32 layers, 32 query heads, 8 KV heads, D=128 ) and Qwen3-4B-MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+Instruct-2507 (Yang et al., 2025a) (36 layers), and Qwen3-4B-Thinking-2507 for long reasoning. All runs use one NVIDIA H200 (141 GB) and vLLM 0.30 with the FA3 at-tention backend, bf16 weights and KV cache, 64-token pages and full CUDA graphs; all timings are taken on an otherwise idle GPU. We write 128k for RULER’s 131,072-token length (131k in Figure 4 and Table 6) and 130k for the 130,048-token timing prompts. 
+
+5.5 Experiment results 
+
+5.5.1 RQ1: How does Moira compare with prior methods? 
+
+To answer this RQ, we report RULER and token KL at 128k next to Attn, Host and TPOT in Table 1. We time the Attn of every method on the same GPU and batch shape, each at the budget of its RULER row. TPOT is measured end to end with CUDA graphs: in vLLM for Moira, FA3 c and FlashInfer c, and in FFD’s own runtime for FFD; Quest and Twilight do not run in vLLM, so we compare them by Attn and Host (protocol in Appendix E). 
+
+On Llama-3.1-8B, only Moira is both as accurate as dense and faster than dense. Every prior method gives up one of the two there. Twilight and FFD lose significant accuracy (67.94 and 64.85 vs. 71.51). Quest keeps its accu-racy, but its attention is slower than dense; with their host plans, both Quest and Twilight spend more time on atten-tion per step than dense FA3 (24.1 and 21.7 vs. 15.6 ms on Llama-3.1-8B). FFD’s attention is 1.20 × faster than dense, but its measured TPOT equals dense (18.8 vs. 19.0 ms). On Qwen3-4B, FFD keeps dense accuracy and its attention is 1.08 × faster than dense; its runtime does not support this model, so its TPOT is not measured. Moira at γ=0 .99 
+
+matches dense on both models (71.83 vs. 71.51, 83.70 vs. 83.62) and reduces TPOT by 2.2–2.5 ×; at γ=0 .98 , it is 2.7 ×
+
+faster than dense and still within the noise of dense. 
+
+Against each method. On Llama-3.1-8B, γ=0 .99 scores 3.9 points above Twilight-36k and 7.0 above FFD, both significant. FFD’s TPOT is 2.4 × that of γ=0 .99 (18.8 vs. 7.7 ms), and Twilight’s attention step with the host plan takes 3.4 × as long (21.7 vs. 6.4 ms). γ=0 .98 matches Quest-36k with only 19.6% of the pages, about 28% fewer than Quest’s budget; at similar reads, γ=0 .99 scores 2.2 points above Quest (not significant). On Qwen3-4B, every method is within the noise of dense. Token KL agrees: Twilight (on both models) and FFD (on Llama-3.1-8B) are farther from dense than Moira, while Quest is on par. 
+
+Each prior method loses for one main reason. Quest’s rule selects per query head, so FlashInfer’s paged kernel attends over 32 lists instead of 8 (8.30 vs. 4.89 ms with the CUDA-core kernel, plus a 2.16 ms host plan); it also                                                                                                 
+
+> Table 1. Accuracy and latency at 128k. RULER-13 (13 tasks ×
+> 20 documents); †: significantly below dense (paired bootstrap by document, 95%). KL: mean token KL to dense on 65 teacher-forced RULER answers (0.0003 with every page kept). Attn: selec-tion + attention of one decode step at 4 ×130k on the GPU; Host: FlashInfer’s plan() call per step, with its index arrays already built. TPOT: measured end to end in vLLM with CUDA graphs on RULER prompts (batch 4); –: the method does not run in vLLM; dense FlashInfer: 18.8 / 20.0 ms. ×: dense FA3 TPOT / TPOT. Page reads of Moira (and of the crows, same lists) at γ=0 .98 /0.99: 19.6 / 27.4% on Llama-3.1-8B, 24.2 / 32.5% on Qwen3-4B. Bold: best sparse value. accuracy latency (ms) Method RULER ↑KL ↓Attn Host TPOT ×
+> Llama-3.1-8B dense FA3 71.51 –15.59 –19.0 1.00
+> Quest-36k a69.63 0.022 21.98 2.11 ––Twilight-36k 67.94 †0.053 14.73 6.96 ––FFD δ7b64.85 †0.071 13.03 –18.8 1.01 FlashInfer c69.60 0.022 4.34 2.16 12.6 1.51 FA3 c69.60 0.022 4.86 –7.6 2.50 Moira γ=0 .98 69.60 0.022 4.73 –7.1 2.69
+> Moira γ=0 .99 71.83 0.015 6.43 –7.7 2.46
+> Qwen3-4B dense FA3 83.62 –17.53 –20.2 1.00
+> Quest-36k a82.69 0.020 24.71 2.29 ––Twilight-36k 82.26 0.056 16.26 7.40 ––FFD δ7b83.78 0.015 16.28 –––FlashInfer c83.54 0.018 5.86 2.25 13.2 1.53 FA3 c83.54 0.018 6.55 –8.6 2.36 Moira γ=0 .98 83.54 0.018 6.63 –7.6 2.68
+> Moira γ=0 .99 83.70 0.014 8.06 –9.0 2.25
+> aQuest’s rule as implemented in Twilight’s code, not the original Quest kernels: Quest bound and top-kper query head, then Flash-Infer over Quest’s own 16-token pages, one 36,864-token list per query head; Host: FlashInfer’s plan for these lists. bFused scan and attention at FFD’s RULER kept fraction (0.125 / 0.212 of the 128-token blocks), 32 / 36 layers; TPOT measured in FFD’s own runtime (Hugging Face with full CUDA graphs), which supports Llama only. cThe γ=0 .98 page lists of Moira, attended by Flash-Infer’s tensor-core paged kernel or by FA3 with each (request, KV head) as a varlen sequence: same pages, hence same accuracy. Attn: FA3’s split metadata precomputed and not timed; Host: FlashIn-fer’s plan per step. In the TPOT run, FA3 builds its split metadata in every layer, and FlashInfer, which cannot plan inside a CUDA graph, reuses one plan made for rows of full width.
+
+needs 27.4% of the pages where γ=0 .98 needs 19.6% at equal accuracy, and replacing it by the coverage rule alone makes attention 1.36 × faster. FFD scans a 2-bit copy of every key at every step, so keeping 12.5–21.2% of the blocks makes its attention only 1.08–1.20 × faster than dense, and on Llama-3.1-8B its measured TPOT equals dense; the attention path of Moira is 1.70–4.19 × faster than FA3 (Table 4). 
+
+Twilight treats GQA as 32 independent heads, so its selection chain alone takes 12.71 ms per step, plus a 6.96 ms host plan outside any CUDA graph. MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+At 128k, the speedup comes mainly from reading fewer pages. The FlashInfer c and FA3 c rows run existing kernels on exactly the page lists of Moira γ=0 .98 , which separates the effect of the rule from that of the kernel. At 128k there are only 32 rows, few enough for existing kernels to balance on their own: in isolation, FA3 is within 3% of Attend , and FlashInfer’s tensor-core kernel is 11–15% faster. End to end, FA3 c is 7–14% slower than Moira (7.6 vs. 7.1 ms on Llama-3.1-8B, 8.6 vs. 7.6 ms on Qwen3-4B), a gap that includes building FA3’s split metadata in every layer. FlashInfer cannot plan inside a CUDA graph: with a plan per layer and step, TPOT on Llama-3.1-8B is 24.7 ms, and inside the graph it must reuse one plan made for rows of full width, which brings TPOT to 12.6 ms (13.2 ms on Qwen3-4B). At this shape the speedup of Moira over dense therefore comes mainly from the rule; the kernel pays off when there are many rows of uneven length (Section 5.5.3) and when the lists change at every step. 
+
+The output distribution stays close to dense. We teacher-force the dense answers on 65 RULER documents at 128k (5 per task) and compare every token’s distribution with every layer sparse (1,664 tokens on Llama-3.1-8B, 2,437 on Qwen3-4B). Mean token KL is 0.022 at γ=0 .98 and 0.015 at γ=0 .99 on Llama-3.1-8B (Qwen3-4B: 0.018 and 0.014), compared with 0.0003 (numerical error) when every page is kept. On Llama-3.1-8B, variable tracking accounts for only 43 tokens but a third of the KL, and for most of the RULER loss at γ=0 .98 . On LongBench (all 4,750 samples), whose prompts are shorter, Llama-3.1-8B scores 49.78 dense and 49.90 at γ=0 .98 (33.7% reads); Qwen3-4B scores 47.59 and 47.31 (38.6% reads). 
+
+5.5.2 RQ2: Does an adaptive budget beat a fixed one? 
+
+To answer this RQ, we keep the estimator and kernels of Moira, change only the rule that sets each row’s page count, and compare three kinds of fixed budget: fixed K: every row keeps the K pages with the largest estimated mass, and rows shorter than K are read in full (the fixed-count mode of 
+
+> Select
+
+, Section 3.5); proportional top-k: every row keeps the same fraction of its pages, chosen so that the total reads equal those of γ=0 .98 ; profiled K: we run γ=0 .98 on AIME 2022–2023 (60 problems, two solutions each, disjoint from the test problems), record how many pages each layer, or each KV head of each layer, keeps, and fix one count per layer (36 counts, 50–204 pages) or per (layer, KV head) (288 counts, 8–318 pages), scaled so that the total reads match those of γ=0 .98 .
+
+Why AIME rather than RULER. On RULER the answer is a few tokens long and the needed information sits in a few pages; once the budget is large enough, every rule keeps them. Fixed K set to the reads of γ=0 .98 and 0.99 is within                                                  
+
+> Table 2. Adaptive vs. fixed budgets on AIME (Qwen3-4B-Thinking, 480 solutions). All sparse arms use the same estimator and kernels and differ only in the rule that sets the page count. Truncated: solutions that hit the 32,768-token limit. Closed acc.: accuracy on the solutions that finish before the limit. Accuracy also counts the 0–2 truncated solutions per arm whose answer, extracted from the truncated text, is correct. †: significantly below Moira
+> γ=0 .98 (paired bootstrap by problem, 95%). Pages Accuracy Trun-Closed Budget read (%) (%) cated acc. (%)
+> dense 100 75.2 89 92.1 Fixed budget
+> proportional top-k39.5 41.0 †231 78.3 fixed K=75 33.1 69.8 †131 95.7 fixed K=90 39.8 72.7 108 93.8 profiled K, per layer 38.7 72.5 112 94.3 profiled K, per KV head 39.7 74.6 93 92.0
+> Adaptive (coverage rule)
+> Moira γ=0 .98 39.4 75.2 94 93.5 Moira γ=0 .99 49.9 75.4 91 93.1
+
+0.35 points of the coverage rule on both models, far below the benchmark noise (about 1.3–2.7 points), and these K
+
+are known only after the coverage rule has found the right reads. On AIME the model generates up to 32,768 reasoning tokens and every step reads that reasoning back; small per-step errors accumulate over thousands of steps, so AIME exposes under-budgeted steps that RULER misses. 
+
+At equal reads, proportional top-k loses almost half of the accuracy. Proportional top-k reads as much as Moira (39.5% vs. 39.4%) but reaches only 41.0% against 75.2% (Ta-ble 2). Almost half of its solutions (231/480) hit the length limit, and those that finish are correct less often (78.3% vs. 93.5%). With one fraction for every row, heads with concen-trated attention over-read while heads with diffuse attention lack pages at many steps. 
+
+Fixed K hurts less but depends on choosing the right K.
+
+Under fixed K only rows longer than K run short of budget. At K=75 , the mean page count of γ=0 .98 , accuracy falls to 69.8%, entirely through truncation (131 vs. 94 solutions hit the limit), while finished solutions are as accurate as with Moira (95.7% vs. 93.5%): a short budget does not make the model answer wrongly; it makes the model reason longer until it reaches the length limit. K=90 , at the reads of Moira, reaches 72.7%, within noise, yet is still truncated more often (108 vs. 94). A fixed K works only when tuned per model and task; the coverage rule uses the same two settings of γ for every model and task and adapts the page count to every row and step. 
+
+A profiled budget comes close only per KV head and after a calibration run. Profiling makes the fixed budget follow MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+the variation across layers and heads, though not across steps. One count per layer reaches 72.5% and is truncated more often (112 vs. 94). One count per (layer, KV head) reaches 74.6%, within noise of the coverage rule (75.2%), with as many truncated solutions. The coverage rule stays at or above every static budget at the same reads, and it needs no profiling run: the 288 counts are fitted to this model and this task, whereas this paper uses the same two settings of γ for every model and task. 
+
+Moira matches dense on long reasoning. γ=0 .98 and 
+
+0.99 reach 75.2% and 75.4%, equal to dense (75.2%), read-ing 39.4% and 49.9% of the pages. About a fifth of the solutions hit the 32k limit under both dense and Moira, so the limit, not the attention, accounts for most of the remain-ing error. The 480 solutions also finish 1.86 × sooner (2,748 vs. 5,110 s). When AIME prompts (20.4k output tokens on average) are served in vLLM, γ=0 .98 raises output through-put by 19%, 67% and 88% at concurrency 8, 32 and 64 (one run per point). 
+
+The coverage rule stays closer to dense and does not slow decoding. On 60 LongBench requests with Llama-3.1-8B at equal reads, the coverage rule’s token KL to dense is about 0.37 times that of proportional top-k, and lower on every request; on all 4,750 LongBench samples the scores tie (49.90 and 49.88 at 33.7% reads). Against fixed K at equal reads, TPOT differs by −5.5% to +6 .4% with no consistent sign, so a per-row budget has no consistent time cost beyond run-to-run variation (Appendix D). 
+
+5.5.3 RQ3: Does the kernel keep its speed when page lists differ in length? 
+
+To answer this RQ, we keep 22% of the pages on average and vary only the coefficient of variation (CV, standard deviation over mean) of the row lengths (Figure 4); “real” uses page counts from decode steps of Moira at about 8k tokens, applied as fractions of each context. All arms run on the same lists: FA3-varlen treats each row as its own sequence, 
+
+padding extends every row to the longest one, bucket groups rows by powers of two, and FlashInfer needs a host plan() 
+
+call before each step. 
+
+The time of Moira is nearly flat in CV. At 8k ×32 and 32k ×16, Moira stays within 69.9–73.5 and 113.2–124.5 μsper layer as CV grows from 0 to 1.2, while FA3-varlen slows by 23% and 32%, padding by 2.7 × and 3.3 ×, and buckets by 1.5 × and 1.6 ×. On real page counts at 8k and 32k, FA3-varlen is 1.16 × and 1.19 × slower than Moira, padding 1.90 × and 2.45 ×, and buckets 1.34 × and 1.40 ×. At 131k ×4there are only 32 rows: on real lists FA3-varlen balances them on its own and is as fast as Moira (184.5 vs. 183.0 μs), but at CV 1 it is 18% slower (142.0 vs. 120.4 μs, Table 6),                                                                                        
+
+> Table 3. TPOT (ms) of Moira ( γ=0 .98 ) and dense FA3 on prompts cut from LongBench documents (batch ×context as listed), mean of two interleaved pairs (whose speedups differ by at most 0.13), and page reads of Moira. Bold: lower TPOT. Llama-3.1-8B Qwen3-4B Shape dense Moira ×reads dense Moira ×reads 8k ×32 12.66 9.18 1.38 0.42 12.42 8.98 1.38 0.49 16k ×32 19.24 10.83 1.78 0.37 20.59 11.68 1.76 0.43 32k ×16 16.46 8.71 1.89 0.31 17.00 8.92 1.91 0.39 64k ×819.56 7.45 2.62 0.16 20.43 8.39 2.44 0.25 130k ×4 19.32 7.32 2.64 0.15 20.26 7.53 2.69 0.21
+> Table 4. One decode step of Llama-3.1-8B by kernel (ms, Nsight Systems median of 128 steps). att, est, sel, mrg: Attend ,Estimate ,
+> Select ,Merge ; GEMM: matrix multiplications. Tracing at CUDA-graph node level lengthens the step by up to 1 ms relative to Table 3. Bold: shorter step. dense Moira γ=0 .98
+> Shape step FA3 step att est sel mrg GEMM 8k ×32 12.72 8.16 9.38 4.02 0.38 0.23 0.18 3.96 32k ×16 17.00 12.48 9.45 4.20 0.40 0.25 0.13 3.86 64k ×820.34 15.89 8.44 3.04 0.44 0.41 0.12 3.83 130k ×420.16 15.76 8.18 2.78 0.43 0.42 0.13 3.83
+
+while Moira stays flat in CV thanks to the NT floor of Eq. (4). 
+
+FlashInfer’s kernel is about as fast; its host plan is not. 
+
+FlashInfer’s kernel is 1.24 × slower than Moira at 8k, 3% faster at 32k and 6% faster at 131k. Its host plan must run before every layer of every step, outside the CUDA graph. Measured end to end here (copying the page counts to the host, building the index arrays and calling plan() ), it takes 285–690 μs per layer, 9–22 ms over 32 layers, longer than a whole decode step of Moira (7.3–10.8 ms, Table 3). The 
+
+plan() call alone, with the index arrays already built, takes 2.2 ms per step at 131k ×4 (Table 1). 
+
+Why not one shared list for all KV heads. A list shared by all KV heads of a (request, layer) would let existing paged kernels run unchanged, but it must hold the union of every head’s pages: 78–87% of the pages on real data, against 33–41% with per-head lists (Appendix C). 
+
+5.5.4 RQ4: How much faster is a whole decode step? 
+
+To answer this RQ, we prefill synthetic batches with 8k– 130k-token contexts, decode 256 tokens and measure TPOT in vLLM (Table 3; Figure 6 in the appendix). Table 4 breaks one step into kernels with Nsight Systems, traced at CUDA-graph node level. MOIRA: Mass-Oriented Indexing with Ragged Attention 0.0 0.5 1.0 
+
+CV of per-head lengths   
+
+> 050 100 150 200
+> attention μs / layer
+> real
+> FI plan 668–690 μs
+> 8k×32 (dense 248 μs)
+> 0.0 0.5 1.0
+
+CV of per-head lengths   
+
+> 0100 200 300 400 500
+> real
+> FI plan 455–470 μs
+> 32k×16 (dense 489 μs)
+> 0.0 0.5 1.0
+
+CV of per-head lengths   
+
+> 0100 200 300 400 500
+> real
+> 64k×8 (dense 495 μs)
+> 0.0 0.5 1.0
+
+CV of per-head lengths     
+
+> 0100 200 300 400
+> real
+> FI plan 285–294 μs
+> 131k×4 (dense 491 μs)
+> ours FA3 varlen (folded) FA3 padded to max FA3 pow2 buckets FlashInfer kernel (+ host plan)
+
+Figure 4. Attention time per layer as per-head lengths spread (Llama-3.1-8B geometry, 22% of the pages kept on average; the x axis is the coefficient of variation (CV) of the per-(request, KV head) lengths). “real”: per-(request, layer, KV head) page counts from decode steps of Moira on LongBench prompts of about 8k tokens, applied as fractions of each context (0.33–0.41 of the pages; short contexts need a larger fraction than RULER at 128k). FlashInfer additionally needs the host plan given in each panel, per layer and step. The 64k panel has no FlashInfer arm. 
+
+The longer the context, the larger the speedup over dense. 
+
+TPOT falls by 1.38 × at 8k ×32 and by 2.64 × (Llama-3.1-8B) and 2.69 × (Qwen3-4B) at 130k ×4: with longer contexts attention takes a larger share of the step and the kept fraction falls (for Llama-3.1-8B, from 42% at 8k to 15% at 130k). With γ=0 .99 , which matches dense on RULER, TPOT falls by 1.25–2.27 × on Llama-3.1-8B and 1.23–2.27 × on Qwen3-4B over the same shapes (Table 7 in the appendix). 
+
+Selection takes about a tenth of the step or less. The GEMMs take 3.8–4.0 ms under both, so the whole difference lies in attention. FA3 grows from 8.16 to 15.76 ms with the context, while the four kernels of Moira stay at 3.8–5.0 ms: the attention path is 1.70 × faster than FA3 at 8k ×32 and 4.19 × at 130k ×4. Estimate and Select together take only 0.61–0.85 ms per step. In mixed steps, prefill rows still run through FA3 unchanged; with continuous batching on LongBench, output throughput rises by 18% (Appendix D). 
+
+5.5.5 RQ5: Does Moira raise throughput in online serving? 
+
+To answer this RQ, we run vllm bench serve in a closed loop with LongBench prompts, prefix caching off and 1,024 output tokens per request (Table 5; Figure 5 in the appendix covers every concurrency). Every request com-pletes. 
+
+Under high load, throughput rises by about half. At concurrency 16 on set A, Moira lowers median TPOT by 40–45% and raises output throughput by 45% on Llama-3.1-8B and 51% on Qwen3-4B. With the long prompts of set B at concurrency 8, Moira halves TPOT on both models, and the 
+
+Table 5. Online serving (vllm bench serve , closed loop, 1,024 output tokens). Set A: 256 LongBench prompts of 4k–64k tokens; set B: 64 prompts of 64k–126k tokens. c: concurrency. FI: dense FlashInfer. Bold: best per row. median TPOT (ms) ↓ output tok/s ↑
+
+Model set, c FA3 FI Moira FA3 FI Moira Llama-8B A, 1 5.63 5.86 6.36 152 147 137 A, 16 28.6 34.2 17.2 511 446 743 
+
+B, 1 8.16 8.18 6.71 64.9 63.5 71.2 
+
+B, 8 65.5 63.6 31.6 99.9 101.6 142.0 
+
+Qwen3-4B A, 1 4.37 4.62 5.10 194 185 171 A, 16 25.4 32.1 13.9 563 471 851 
+
+B, 1 7.22 7.25 5.57 71.5 69.1 79.9 
+
+B, 8 65.8 63.6 33.9 101.1 103.0 150.2 
+
+mean end-to-end latency of Llama-3.1-8B falls from 81.8 to 57.6 s. Dense FlashInfer is never more than 4% faster than dense FA3, and γ=0 .99 keeps most of the gain (Figure 5). 
+
+With a single short request, Moira is slower. With one request, the GEMMs dominate the step and the four kernels of Moira add an almost constant cost. From 2k to 64k tokens, TPOT of Moira stays at 6.32–6.50 ms on Llama-3.1-8B (4.99–5.40 ms on Qwen3-4B), while dense FA3 grows from 4.98 to 6.80 ms (3.63 to 5.76 ms): Moira is slower up to 32k tokens and 1.05 × (1.07 ×) faster at 64k. Serving shows the same split: at concurrency 1, Moira is slower on set A and faster on set B. Building the page summaries during prefill adds 0.2% to the time to first token (TTFT) of a single 128k prompt (10.60 vs. 10.58 s on Llama-3.1-8B, 10.21 vs. 10.19 s on Qwen3-4B). In a closed loop TTFT does not improve: faster decoding admits new prompts sooner, MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+so more prefill work queues behind the running batch. 
+
+# 6 Discussion 
+
+This section examines in more detail how Moira spends its budget in a real run. 
+
+6.1 Where does the budget go? 
+
+In the AIME run of Moira ( γ=0 .98 , Qwen3-4B-Thinking), the mean fraction of pages kept per (layer, KV head) ranges from 3.7% to 92%. Layers 0–3 keep 56–74% of their pages, the sparsest layers about a quarter, and within one layer the KV head that reads the most keeps a median of 4.0 × as many pages as the one that reads the least (up to 16.6 ×). The estimator thus reproduces, in a real run, the variation that Figure 1a shows for the oracle sets. 
+
+6.2 Why do fixed budgets fail on long reasoning? 
+
+We group the 60 AIME problems by the median length of their eight dense solutions: 23 are shorter than 16k tokens, 22 longer than 24k, and 15 in between. On the 23 short prob-lems, every arm of Table 2 except proportional top-k solves every sample. On the 22 long problems, Moira reaches 42.0% (dense 40.3%), while every static budget scores lower: fixed K 31.8–36.4%, profiled K 34.7–38.6% and propor-tional top-k 17.6%. A few under-budgeted steps lengthen the reasoning and push it past the length limit. Problem II-5 of AIME 2024 shows this most clearly: dense solves 6 of 8 samples with a median of 31.5k tokens and Moira 7 of 8, while proportional top-k truncates all 8 samples and both profiled budgets truncate 6. 
+
+# 7 Threats to Validity 
+
+Internal validity. Prior methods run with their authors’ code and kernels on the same GPU, with the settings of Section 5.3; Quest’s rule runs as implemented in Twilight’s code. Quest and Twilight do not run inside vLLM, so we compare them by Attn and Host only. FFD’s TPOT is mea-sured in its own runtime, whose cost outside attention may differ from vLLM’s, and with prompts cut to equal length because its cache holds one length per batch. FlashInfer c
+
+runs inside the CUDA graph with one plan made for rows of full width, our wiring, since planning at every step is not possible there. The FA3 c and FlashInfer c rows use vLLM’s head-major (HND) KV-cache layout, under which Moira is 0.3 ms slower than in the default token-major (NHD) layout; Table 1 reports Moira under the same layout. With every page kept, Moira reproduces dense FA3 (token KL 0.0003; Appendix B). 
+
+Construct validity. Page reads are counted on the GPU for every (request, layer, KV head); Quest and Twilight select to-kens and FFD 128-token blocks, so against them we compare accuracy and time rather than reads. Timings are medians of repeated runs on an otherwise idle GPU with dense and sparse arms interleaved, and accuracy differences are tested with a paired bootstrap by document or by problem. 
+
+External validity. We evaluate 4B and 8B models from two families with a bf16 KV cache on one H200, under vLLM 0.30. On larger models the GEMMs take a larger share of the step, so the speedup will be smaller. Quantized KV caches, tensor parallelism and latent attention are not covered, serving is measured in a closed loop only, and Moira saves bandwidth, not capacity: the full KV cache stays resident. 
+
+# 8 Related Work 
+
+Fixed budgets. Quest (Tang et al., 2024) bounds the logits of each page with a per-channel key box and keeps a fixed token budget. CompKV (Huang et al., 2026) estimates each block’s mass from the mean and variance of its keys, the same approximation as mvar, but keeps a fixed number K
+
+of blocks and compensates for the dropped ones with the block mean. InfiniGen (Lee et al., 2024), ShadowKV (Sun et al., 2025), MagicPIG (Chen et al., 2025), RetrievalAt-tention (Liu et al., 2025) and RetroInfer (Chen et al., 2026) predict or retrieve important tokens, often with CPU offload; The Sparse Frontier (Nawrot et al., 2025) evaluates these trade-offs. Production sparse attention is trained: DeepSeek Sparse Attention (DeepSeek-AI, 2025), MiniMax Sparse At-tention (Lai et al., 2026) and Qwen3.8-Next (Qiu et al., 2026) learn an indexer and keep about 2,048 tokens per query, so their kernels never see variable lengths. Moira needs no training and makes the budget an output of the selection. 
+
+Adaptive budgets. Twilight (Lin et al., 2025) applies top-
+
+p to Quest’s candidates per query head, attends through FlashInfer with a host plan() per layer and step, and uses a uniform budget in its end-to-end evaluation. Tac-tic (Zhu et al., 2026) splits requests into FlashInfer sub-requests. SeerAttention-R (Gao et al., 2025) thresholds a learned block gate per KV head but pads to the longest se-lection, and PSA (Zhou et al., 2025) grows its budget with a host loop per layer. Double-P (Ni et al., 2026) uses hier-archical thresholds, SpotAttention (Ahmad & Yun, 2026) applies top-p to a learned selector, and Elastic Threshold Attention (Haris et al., 2026) trains its thresholds; a hybrid CPU–GPU design (Yao et al., 2026) selects per head across PCIe; vAttention (Desai et al., 2026) bounds the error statis-tically. FFD (Liu et al., 2026) is the closest systems design: its fused Triton kernels need no index lists, scan a 2-bit copy of every key (Section 5.5.1), and are captured in a CUDA graph by its own runtime. None of these methods runs in-side the CUDA graphs of a serving engine; Moira brings MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+per-KV-head budgets there at low cost. 
+
+Per-head KV eviction. Ada-KV (Feng et al., 2025), HeadKV (Fu et al., 2025), DuoAttention (Xiao et al., 2025), LServe (Yang et al., 2025b), KV-Compress (Rehg, 2024) and HARD-KV (Yang et al., 2026) set per-head budgets once after prefill, offline, or every 128 steps (HARD-KV, inside vLLM’s CUDA graphs), mostly on padded grids; H2O (Zhang et al., 2023), StreamingLLM (Xiao et al., 2024) and SnapKV (Li et al., 2024) evict tokens without looking at the current query. They change what is stored; Moira changes what is read, at every step. 
+
+Decode kernels. Flash-Decoding (Dao et al., 2023; Hong et al., 2024) and Lean Attention (Sanovar et al., 2025) split long sequences across thread blocks. FlashAttention (Dao et al., 2022; Dao, 2024; Shah et al., 2024) chooses splits on the GPU from the batch shape, and FlashInfer (Ye et al., 2025) balances ragged lists with a host plan. Our kernel derives an equal-cost partition from per-row lengths in device memory. 
+
+# 9 Conclusion and Future Work 
+
+Sparse decode pays off most when the budget follows the query and the kernel follows the budget. Moira selects pages per (request, layer, KV head, step) with a coverage rule and attends over the ragged lists with a self-planning kernel inside vLLM’s CUDA graphs. On an H200 at 128k, with 
+
+γ=0 .99 it matches dense RULER accuracy with 27–33% of the page reads and reduces TPOT by 2.2–2.5 ×; on synthetic batches of 8k–130k tokens it lowers TPOT by 1.38–2.69 × at 
+
+γ=0 .98 , raises serving throughput by 45–51% under high load, and on long reasoning it matches dense with about 40% of the reads. Several directions remain open. On a quantized KV cache (Liu et al., 2024; Hooper et al., 2024), every page shrinks while the rule reads fewer pages, so the two savings multiply. Under latent attention (DeepSeek-AI et al., 2024), the rule would select pages of the shared latent cache. Esti-mated page masses could tell an offloading system such as ShadowKV (Sun et al., 2025) which pages to keep on the GPU or prefetch. Applied to a block of queries, the rule extends to speculative decoding (Sadhukhan et al., 2025), which verifies several draft tokens at once; applied to learned scores, it would make trained sparse attention (Yuan et al., 2025) adaptive. A device-side plan for FlashInfer and a port to SGLang (Zheng et al., 2024) are engineering work. 
+
+# References 
+
+Ahmad, H. and Yun, S.-Y. SpotAttention: Plug-In Block-Sparse Routing for Pretrained Long-Context Transformers. 
+
+arXiv preprint arXiv:2606.22874 , 2026. Bai, Y., Lv, X., Zhang, J., Lyu, H., Tang, J., Huang, Z., Du, Z., Liu, X., et al. LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding. In Annual Meeting of the Association for Computational Linguistics (ACL) , 2024. arXiv:2308.14508. Chen, Y., Zhang, J., Lu, B., Zhang, Q., Zhang, C., Liu, J., Luo, J., Liu, D., et al. RetroInfer: A Vector Storage Engine for Scalable Long-Context LLM Inference. Proceedings of the VLDB Endowment , 19(5):1016–1031, 2026. doi: 10.14778/3796195.3796212. arXiv:2505.02922. Chen, Z., Sadhukhan, R., Ye, Z., Zhou, Y., Zhang, J., Nolte, N., Tian, Y., Douze, M., et al. MagicPIG: LSH Sam-pling for Efficient LLM Generation. In International Conference on Learning Representations (ICLR) , 2025. arXiv:2410.16179. Dao, T. FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning. In International Conference on Learning Representations (ICLR) , 2024. arXiv:2307.08691. Dao, T., Fu, D. Y., Ermon, S., Rudra, A., and Ré, C. FlashAt-tention: Fast and Memory-Efficient Exact Attention with IO-Awareness. In Advances in Neural Information Pro-cessing Systems (NeurIPS) , 2022. arXiv:2205.14135. Dao, T., Haziza, D., Massa, F., and Sizov, G. Flash-Decoding for Long-Context Inference. 
+
+https://crfm.stanford.edu/2023/10/ 12/flashdecoding.html , 2023. DeepSeek-AI. DeepSeek-V3.2: Pushing the Frontier of Open Large Language Models. arXiv preprint arXiv:2512.02556 , 2025. DeepSeek-AI, Liu, A., Feng, B., Wang, B., Wang, B., Liu, B., Zhao, C., Deng, C., et al. DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model. arXiv preprint arXiv:2405.04434 , 2024. Desai, A., Agrawal, K. K., Yang, S., Cuadron, A., Schroeder, L. G., Zaharia, M., Gonzalez, J. E., and Stoica, I. vAtten-tion: Verified Sparse Attention via Sampling. In Interna-tional Conference on Learning Representations (ICLR) ,2026. arXiv:2510.05688. Feng, Y., Lv, J., Cao, Y., Xie, X., and Zhou, S. K. Ada-KV: Optimizing KV Cache Eviction by Adaptive Budget Allocation for Efficient LLM Inference. In Advances in Neural Information Processing Systems (NeurIPS) , 2025. arXiv:2407.11550. MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+Fu, Y., Cai, Z., Asi, A., Xiong, W., Dong, Y., and Xiao, W. Not All Heads Matter: A Head-Level KV Cache Com-pression Method with Integrated Retrieval and Reasoning. In International Conference on Learning Representations (ICLR) , 2025. arXiv:2410.19258. Gao, Y., Guo, S., Cao, S., Xia, Y., Cheng, Y., Wang, L., Ma, L., Sun, Y., et al. SeerAttention-R: Sparse Atten-tion Adaptation for Long Reasoning. arXiv preprint arXiv:2506.08889 , 2025. Grattafiori, A., Dubey, A., Jauhri, A., Pandey, A., Kadian, A., Al-Dahle, A., Letman, A., Mathur, A., et al. The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783 , 2024. Haris, T., Li, H., and Karimzadehgan, M. Elastic Threshold Attention: Learned Contextual Sparsity for Long-Context Decoding. arXiv preprint arXiv:2609.20888 , 2026. Hong, K., Dai, G., Xu, J., Mao, Q., Li, X., Liu, J., Chen, K., Dong, Y., and Wang, Y. FlashDecoding++: Faster Large Language Model Inference with Asynchronization, Flat GEMM Optimization, and Heuristics. In Proceed-ings of Machine Learning and Systems (MLSys) , 2024. arXiv:2311.01282. Hooper, C., Kim, S., Mohammadzadeh, H., Mahoney, M. W., Shao, Y. S., Keutzer, K., and Gholami, A. KVQuant: To-wards 10 Million Context Length LLM Inference with KV Cache Quantization. In Advances in Neural Information Processing Systems (NeurIPS) , 2024. arXiv:2401.18079. Hsieh, C.-P., Sun, S., Kriman, S., Acharya, S., Rekesh, D., Jia, F., Zhang, Y., and Ginsburg, B. RULER: What’s the Real Context Size of Your Long-Context Language Models? In Conference on Language Modeling (COLM) ,2024. arXiv:2404.06654. Huang, Z., Yao, R., Liu, D., Chen, X., Li, S., Zhong, S., Cao, Z., Lai, Y., Guo, M., Zheng, W., and Fu, H. CompKV: Compensation-Aware KV Selection for Long-Context LLM Inference. arXiv preprint arXiv:2609.26300 , 2026. Kwon, W., Li, Z., Zhuang, S., Sheng, Y., Zheng, L., Yu, C. H., Gonzalez, J. E., Zhang, H., and Stoica, I. Efficient Memory Management for Large Language Model Serving with PagedAttention. In ACM Symposium on Operating Systems Principles (SOSP) , 2023. arXiv:2309.06180. Lai, X., Xu, W., Yang, Y., Chen, Q., Xu, Y., Zeng, L., et al. MiniMax Sparse Attention. arXiv preprint arXiv:2606.13392 , 2026. Lee, W., Lee, J., Seo, J., and Sim, J. InfiniGen: Efficient Generative Inference of Large Language Models with Dynamic KV Cache Management. In USENIX Symposium on Operating Systems Design and Implementation (OSDI) ,2024. arXiv:2406.19707. Li, Y., Huang, Y., Yang, B., Venkitesh, B., Locatelli, A., Ye, H., Cai, T., Lewis, P., and Chen, D. SnapKV: LLM Knows What You are Looking for Before Generation. In Advances in Neural Information Processing Systems (NeurIPS) , 2024. arXiv:2404.14469. Lin, C., Tang, J., Yang, S., Wang, H., Tang, T., Tian, B., Sto-ica, I., Han, S., and Gao, M. Twilight: Adaptive Attention Sparsity with Hierarchical Top-p Pruning. In Advances in Neural Information Processing Systems (NeurIPS) , 2025. arXiv:2502.02770. Liu, D., Chen, M., Lu, B., Jiang, H., Han, Z., Zhang, Q., Chen, Q., Zhang, C., et al. RetrievalAttention: Acceler-ating Long-Context LLM Inference via Vector Retrieval. In Advances in Neural Information Processing Systems (NeurIPS) , 2025. arXiv:2409.10516. Liu, Z., Yuan, J., Jin, H., Zhong, S., Xu, Z., Braverman, V., Chen, B., and Hu, X. KIVI: A Tuning-Free Asym-metric 2bit Quantization for KV Cache. In Interna-tional Conference on Machine Learning (ICML) , 2024. arXiv:2402.02750. Liu, Z., Ning, Z., Li, R., Liu, X., Song, Y., Zhang, M., He, Z., and Qiu, X. Faster Than Flash: Exploiting Attention Sparsity for Efficient Long-Context Decoding. In Inter-national Conference on Machine Learning (ICML) , 2026. arXiv:2609.00097. Nawrot, P., Li, R., Huang, R., Ruder, S., Marchisio, K., and Ponti, E. M. The Sparse Frontier: Sparse Atten-tion Trade-offs in Transformer LLMs. arXiv preprint arXiv:2504.17768 , 2025. Ni, W., Zhang, K., Yu, Z., Nelson, O., Lee, M., Cai, H., Porikli, F., Kim, J., Liu, Z., and Zhao, J. Double-P: Hier-archical Top-P Sparse Attention for Long-Context LLMs. 
+
+arXiv preprint arXiv:2602.05191 , 2026. Qiu, Z., Wang, Z., Li, X., Li, Y., Xu, Y., Wang, Y., et al. On the Design of Qwen3.8-Next Architecture: Evalua-tion, Efficiency, and Training Stability. arXiv preprint arXiv:2608.30320 , 2026. Rehg, I. KV-Compress: Paged KV-Cache Compression with Variable Compression Rates per Attention Head. arXiv preprint arXiv:2410.00161 , 2024. Sadhukhan, R., Chen, J., Chen, Z., Tiwari, V., Lai, R., Shi, J., Yen, I. E.-H., May, A., Chen, T., and Chen, B. Mag-icDec: Breaking the Latency-Throughput Tradeoff for Long Context Generation with Speculative Decoding. In 
+
+International Conference on Learning Representations (ICLR) , 2025. arXiv:2408.11049. MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+Sanovar, R., Bharadwaj, S., Amant, R. S., Rühle, V., and Rajmohan, S. Lean Attention: Hardware-Aware Scalable Attention Mechanism for the Decode-Phase of Transform-ers. In Proceedings of Machine Learning and Systems (MLSys) , 2025. arXiv:2405.10480. Shah, J., Bikshandi, G., Zhang, Y., Thakkar, V., Ramani, P., and Dao, T. FlashAttention-3: Fast and Accurate Atten-tion with Asynchrony and Low-precision. In Advances in Neural Information Processing Systems (NeurIPS) , 2024. arXiv:2407.08608. Sun, H., Chang, L.-W., Bao, W., Zheng, S., Zheng, N., Liu, X., Dong, H., Chi, Y., and Chen, B. ShadowKV: KV Cache in Shadows for High-Throughput Long-Context LLM Inference. In International Conference on Machine Learning (ICML) , 2025. arXiv:2410.21465. Tang, J., Zhao, Y., Zhu, K., Xiao, G., Kasikci, B., and Han, S. Quest: Query-Aware Sparsity for Efficient Long-Context LLM Inference. In International Conference on Machine Learning (ICML) , 2024. arXiv:2406.10774. Xiao, G., Tian, Y., Chen, B., Han, S., and Lewis, M. Efficient Streaming Language Models with Attention Sinks. In 
+
+International Conference on Learning Representations (ICLR) , 2024. arXiv:2309.17453. Xiao, G., Tang, J., Zuo, J., Guo, J., Yang, S., Tang, H., Fu, Y., and Han, S. DuoAttention: Efficient Long-Context LLM Inference with Retrieval and Streaming Heads. In 
+
+International Conference on Learning Representations (ICLR) , 2025. arXiv:2410.10819. Yang, A., Li, A., Yang, B., Zhang, B., Hui, B., Zheng, B., Yu, B., Gao, C., et al. Qwen3 Technical Report. arXiv preprint arXiv:2505.09388 , 2025a. Yang, S., Guo, J., Tang, H., Hu, Q., Xiao, G., Tang, J., Lin, Y., Liu, Z., Lu, Y., and Han, S. LServe: Efficient Long-sequence LLM Serving with Unified Sparse Attention. In 
+
+Proceedings of Machine Learning and Systems (MLSys) ,2025b. arXiv:2502.14866. Yang, Y., Ren, F., Zeng, B., Zhang, D., Chen, J., Chen, G., and Li, H. HARD-KV: Head-Adaptive Regulariza-tion for Decoding-time KV Compression. In Interna-tional Conference on Machine Learning (ICML) , 2026. arXiv:2606.28831. Yao, F., Niu, Z., Li, X., Xiong, Y., Fang, J., and Wang, Q. An Efficient Hybrid Sparse Attention with CPU-GPU Parallelism for Long-Context Inference. arXiv preprint arXiv:2605.07719 , 2026. Ye, Z., Chen, L., Lai, R., Lin, W., Zhang, Y., Wang, S., Chen, T., Kasikci, B., et al. FlashInfer: Efficient and Customiz-able Attention Engine for LLM Inference Serving. In 
+
+Proceedings of Machine Learning and Systems (MLSys) ,2025. arXiv:2501.01005. Yuan, J., Gao, H., Dai, D., Luo, J., Zhao, L., Zhang, Z., Xie, Z., Wei, Y. X., et al. Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention. In An-nual Meeting of the Association for Computational Lin-guistics (ACL) , 2025. arXiv:2502.11089. Zhang, Z., Sheng, Y., Zhou, T., Chen, T., Zheng, L., Cai, R., Song, Z., Tian, Y., et al. H 2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models. In Advances in Neural Information Processing Systems (NeurIPS) , 2023. arXiv:2306.14048. Zheng, L., Yin, L., Xie, Z., Sun, C., Huang, J., Yu, C. H., Cao, S., Kozyrakis, C., et al. SGLang: Efficient Execution of Structured Language Model Programs. In Advances in Neural Information Processing Systems (NeurIPS) , 2024. arXiv:2312.07104. Zhou, Q., Yin, P., Zuo, P., and Cheng, J. Progressive Sparse Attention: Algorithm and System Co-design for Efficient Attention in LLM Serving. arXiv preprint arXiv:2503.00392 , 2025. Zhu, K., Tang, T., Xu, Q., Gu, Y., Zeng, Z., Kadekodi, R., Zhao, L., Li, A., Krishnamurthy, A., and Kasikci, B. Tac-tic: Adaptive Sparse Attention with Clustering and Distri-bution Fitting for Long-Context LLMs. In International Conference on Learning Representations (ICLR) , 2026. arXiv:2502.12216. MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+# A Design Details 
+
+This appendix complements Section 3. 
+
+Estimator choice. We compare page-mass estimators by the token KL to dense when every layer decodes sparsely (Llama-3.1-8B, 60 LongBench requests). With the exact (oracle) mass, top-p at 0.95 keeps 23.9% of the pages at a KL of 0.00348. An int4 copy of the keys comes close to the oracle (24.1% kept, KL 0.00343) but reads an extra 15.6% of the keys. mvar at 
+
+γ=0 .98 keeps 37.1% at a KL of 0.00441, and at γ=0 .995 keeps 61.7% at 0.00095. Estimators that use only the key mean fail on heads that concentrate attention on a few scattered tokens: one KV head of layer 2 accounts for almost all of their KL, because with the mean alone the mass of such a page is underestimated by a factor of e5–e7, against about e3 with the variance term of Eq. (2). 
+
+Why pages are not sorted. In a prototype that preceded the final module, the coverage rule implemented with a PyTorch sort cost 66 μs per layer at a 6.6k context and erased most of the gain: the whole pipeline was 1.47 × faster than dense attention, against 3.18 × for the attention kernel alone. Fusing selection into one kernel ( Select , Section 3) raised this to 2.56 ×.
+
+Kernel configuration. Estimate runs several thread blocks per row (at least four per SM over the batch), each covering 64 pages, and writes the summary of the current page as soon as a new token fills it, so a decode step needs no separate summary kernel. For batches of at most 64 rows, Select uses 8 warps per thread block instead of 4; the batch size is fixed per CUDA graph, so this choice is fixed as well. Attend uses 4 warps and 3 pipeline stages and processes one 64-token page per loop iteration. We tried and discarded two variants: fusing Merge into Attend (the last thread block of each row merges all partials) makes every row wait for its last-arriving thread block, and programmatic dependent launch between the kernels changed TPOT by +1 .5% , −1.2% and +1 .4% at 8k, 32k and 130k, with no clear benefit. 
+
+# B Correctness Checks 
+
+This appendix expands the correctness paragraph of Section 4. We check three properties. (1) When every page is kept ( γ=1 ), Moira computes dense attention exactly. Its output differs from FA3 by at most one bf16 ulp ( 3.9 × 10 −3), that is, one bf16 rounding step at this magnitude. CUDA-graph replay matches eager execution bit for bit, and in mixed steps the prefill rows are bit-identical to FA3. (2) That difference is comparable to the difference already present in dense attention. In greedy generation of 256 tokens on 12 prompts, Moira at γ=1 and dense produce identical outputs on 4/12 prompts, while dense at two different batch sizes is identical on 5/12. Every first divergence falls on a token whose top-2 logits are only 0–0.25 apart, where rounding error alone can change the choice. (3) The kernels select the right pages. The page lists of Select match a float32 reference implementation of the rule on 64/64 test rows at γ=0 .98 . All experiments in Section 5 use the same Estimate and Attend kernels and the same coverage path of Select .MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+# C Kernel Time vs. Length Spread 
+
+Table 6 lists the data of Figure 4.                                                                                           
+
+> Table 6. Attention time per layer (μs) on the same page lists (Llama-3.1-8B geometry; data of Figure 4). CV 0: all rows of equal length; CV 1: nominal spread (measured 0.84–0.88); real: page counts from decode steps of Moira at about 8k tokens, applied as fractions of each context. FlashInfer needs its host plan at every step (plan: page counts copied to the host, index arrays built and plan() called, per layer); “–”: not measured. Bold: fastest method per row, FlashInfer counted with its plan. FA3 FlashInfer Shape Rows CV Moira varlen pad pow2 kernel plan Dense 8k ×32 256 070.1 68.3 68.5 75.7 65.5 668 248 173.5 84.2 168.4 107.5 105.0 672 real 120.5 139.2 228.5 161.7 149.0 683 32k ×16 128 0120.6 118.6 118.7 132.1 120.8 455 489 1123.2 151.3 337.3 207.3 119.4 467 real 200.9 238.3 491.5 280.5 194.2 464 64k ×864 0119.7 122.9 123.0 137.1 ––495 1120.5 153.1 325.2 208.1 ––real 198.7 231.7 495.1 278.1 ––131k ×432 0119.6 122.8 122.6 136.9 119.9 287 491 1120.4 142.0 350.3 186.8 117.6 289 real 183.0 184.5 429.3 261.9 172.6 285
+
+One page list shared by all KV heads. If all KV heads of a (request, layer) share one page list, the existing paged kernels of FA3 and FlashInfer run unchanged, but the shared list must hold the union of the pages every head needs. On real page counts the shared list keeps 78–87% of the pages, against 33–41% with one list per head, so applying the coverage rule at layer granularity saves almost nothing. On the real shared list at 131k, Attend takes 396.1 μs per layer, native FA3 424.9 μs, and FlashInfer 387.1 μs plus a 486.7 μs host plan. 
+
+FlashInfer as the attention backend of Moira. On the page lists of Moira at 128k, FlashInfer’s tensor-core page-1 kernel is faster than Attend (3.52 vs. 3.94 ms per step), but it needs a 2.16 ms host plan. A device-side plan for that kernel would combine both advantages (Section 9). 
+
+# D Additional Latency and Serving Results 
+
+This appendix complements Sections 5.5.4 and 5.5.5. 
+
+TPOT of adaptive vs. fixed budgets. We run γ=0 .98 and a fixed K with the same fraction of page reads in vLLM. The coverage rule is 3.6% slower at 8k ×32 (9.21 vs. 8.89 ms), 5.5% faster at 32k ×16 (8.50 vs. 8.99 ms) and 6.4% slower at 130k ×4 (7.63 vs. 7.17 ms; across repetitions γ=0 .98 varies over 7.20–7.64 ms). The differences have no consistent sign, so a per-row budget has no consistent time cost beyond run-to-run variation. This comparison ran an earlier version of the fixed-count mode of Select , which broke ties at the cut by page position. The fixed-K and profiled rows of Table 2 and the fixed-count runs on RULER use the final version, which changes only how those ties are resolved; both keep the same number of pages, so the timing is unaffected. 
+
+Mixed prefill and decode steps. Prefill rows of a mixed step run through unmodified FA3. On 64 LongBench requests (1.40M input tokens, 18,715 output tokens) with continuous batching on Llama-3.1-8B, output throughput rises from 265.3–265.7 to 312.4–312.8 tok/s (+18%) with γ=0 .98 .
+
+Serving details. Dense FlashInfer is no faster than dense FA3 (Llama-3.1-8B, set A, c=16 : median TPOT 34.2 vs. 28.6 ms), so the gains of Moira hold against either dense backend. On set A, throughput at concurrency 32 is lower than at 16 for every arm: 32 requests of up to 64k tokens do not fit in the KV cache (840k tokens for Llama-3.1-8B), the cache reaches 94–100% usage while requests wait, and the batch is capped by memory. Moira saves bandwidth, not capacity, and is capped in the same way. MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+Table 7. TPOT (ms) with γ=0 .99 and dense FA3, same shapes and protocol as Table 3 (mean of two interleaved pairs), and page reads of Moira. Bold: lower TPOT. Llama-3.1-8B Qwen3-4B Shape dense Moira × reads dense Moira × reads 8k ×32 12.84 10.29 1.25 0.55 12.37 10.02 1.23 0.60 16k ×32 19.57 13.10 1.49 0.49 20.76 14.00 1.48 0.54 32k ×16 16.65 9.91 1.68 0.43 17.15 10.73 1.60 0.50 64k ×8 19.70 9.12 2.16 0.24 20.66 10.22 2.02 0.34 130k ×4 19.50 8.59 2.27 0.22 20.49 9.03 2.27 0.28 020 40     
+
+> median TPOT (ms)  Llama-3.1-8B, set A (4k–64k)
+> 020 40 60
+> Llama-3.1-8B, set B (64k–126k)
+> 020 40
+> Qwen3-4B, set A (4k–64k)
+> 020 40 60
+> Qwen3-4B, set B (64k–126k)
+> 0200 400 600
+> output tok/s
+> 050 100
+> 0250 500 750
+> 050 100 150
+> 14816 32
+
+concurrency    
+
+> 020 40 60
+> mean E2E (s)
+> 1248
+
+concurrency     
+
+> 025 50 75
+> 14816 32
+
+concurrency    
+
+> 020 40 60
+> 1248
+
+concurrency    
+
+> 025 50 75
+> dense FA3 dense FlashInfer ours γ0.98 ours γ0.99
+
+Figure 5. Online serving with vllm bench serve (closed loop, prefix caching off, 1,024 output tokens, one run per point). Set A: LongBench prompts of 4k–64k tokens; set B: 64k–126k tokens. MOIRA: Mass-Oriented Indexing with Ragged Attention 8k×32 16k×32 32k×16 64k×8 130k×4 
+
+context × batch 
+
+0510 15 20 
+
+> TPOT (ms)
+
+(a) median TPOT 
+
+> 8k×32 16k×32 32k×16 64k×8 130k×4
+
+context × batch 
+
+1.0 1.5 2.0 2.5 3.0 
+
+> speed-up vs dense FA3
+
+(b) speed-up 
+
+dense, Llama ours, Llama dense, Qwen ours, Qwen 
+
+Figure 6. TPOT in vLLM (Moira at γ=0 .98 vs. dense FA3; data of Table 3). Median of 5 repetitions, two interleaved pairs per shape; the error bars span the two pairs. 
+
+# E Breakdown of the Comparison with Prior Methods 
+
+This appendix expands Section 5.5.1; Figure 7 summarizes the timings. 0 5 10 15 20 25 
+
+attention ms / decode step (32 layers)   
+
+> dense FA3 ours γ0.98 (0.196) ours, scaled (0.225) ours γ0.99 (0.274) FFD BS128, 10% kept FFD BS128, 15% kept FFD BS256, 15% kept Twilight (Quest H32) Twilight (H8 bound)
+> 15.6 4.7 5.5 6.4 12.6 13.4 12.6 14.7 + 7.0 host 10.7 + 7.0 host
+> (a) Llama-3.1-8B, 4 × 130k
+> 0.0 0.2 0.4
+
+fraction of KV kept (pages / blocks) 
+
+> 1.0 1.5 2.0 2.5 3.0 3.5
+> speed-up vs dense FA3
+> FFD kept on RULER
+> (b) 4 × 130k, attention only
+> FFD BS128 FFD BS256 ours, Llama ours, Qwen3-4B
+> 8k×32 32k×16 64k×8 130k×4 01234
+> speed-up vs dense FA3
+> 0.82 1.04 1.14 1.17 0.99 1.09 1.21 1.25 1.70 (0.42) 2.50 (0.31) 3.97 (0.16) 4.19 (0.15)
+> (c) across shapes (FFD ~15% kept)
+> ours γ0.98 (real steps) FFD BS128 FFD BS256
+
+Figure 7. Sparse decode methods vs. dense FA3, attention only (Section 5.5.1). (a) One decode step (32 layers) of Llama-3.1-8B at 4×130k. Twilight: the authors’ selection chain and FlashInfer attention on its own token sets (GPU), plus host metadata and plan (hatched). (b) Speedup against the kept fraction at the same geometry (Moira: 64-token pages; FFD: 128/256-token blocks at a preset kept fraction; shaded band: FFD’s kept fraction on RULER). Moira uses page counts from a real decode step, scaled to the reads of γ=0 .98 and 0.99 
+
+on RULER and, labelled “scaled”, to an intermediate fraction. (c) Across shapes: FFD at about 15% kept; Moira on real γ=0 .98 steps (kept fraction in parentheses). 
+
+Protocol. The Attn and Host columns of Table 1 time one decode step at 4 ×130,048 tokens on the same GPU. Each prior method runs its authors’ kernels where they exist, with the token-set size it keeps on RULER. For Moira, the page count of each (request, layer, KV head) is taken from real decode steps and scaled to the reads measured on RULER. TPOT is measured end to end with CUDA graphs on eight RULER 128k prompts per model (two batches of four prompts, 200 decode steps, median of five runs per batch). Dense, Moira, FA3 c and FlashInfer c run in vLLM; the last two replace only the attention call of Moira and read the same page lists. FA3 treats each (request, KV head) as a varlen sequence over vLLM’s head-major (HND) cache layout and builds its split metadata in every layer. FlashInfer is planned once per batch shape with every row at full width, and at every step device code writes the real index arrays into the planned buffers. FFD runs in its own runtime (Hugging Face with full CUDA graphs, Llama only), on the same prompts cut to equal length (first 256 and last tokens), because its cache holds one length per batch. Quest and Twilight have no vLLM path and are compared by Attn and MOIRA: Mass-Oriented Indexing with Ragged Attention 
+
+Host. 
+
+Quest: slow because of the kernel, page-hungry because of the rule. Quest differs from Moira in two places. The first is the kernel: Quest’s rule selects pages per query head and attends with FlashInfer’s paged kernel (CUDA-core kernel in both arms below). On our page sets at 128k, FlashInfer with one list per query head takes 8.30 ms, against 4.89 ms with one list per KV head, before a 2.16 ms host plan. The kernel of Moira removes this cost for any rule, Quest’s bound included (Section 3.5). The second is the rule. On Llama-3.1-8B, γ=0 .98 matches the accuracy of Quest-36k with only 19.6% of the pages, while Quest’s budget corresponds to about 27.4%. On our kernel these two read levels cost 4.73 and 6.43 ms per step, so the rule alone makes attention 1.36 × faster at equal accuracy. With both differences combined, Quest’s own path takes 22.0 ms, 1.4 × dense attention (Table 1). 
+
+FFD: slow because it scans every key. FFD keeps 12.5% (Llama-3.1-8B) and 21.2% (Qwen3-4B) of the 128-token blocks on RULER, yet its fused kernel is only 1.20 × and 1.08 × faster than dense, and on Llama-3.1-8B its measured TPOT equals dense (18.8 vs. 19.0 ms). The reason is that at every step it scans the 2-bit copy of all keys, so its cost barely falls with the number of kept blocks: even at 2% kept it is only 1.36 × faster, and at 8k ×32 it is slower than dense at every kept fraction (Figure 7). Across batch shapes, FFD runs at 0.82–1.25 × the speed of FA3, whereas the attention path of Moira is 
+
+1.70–4.19 × faster than FA3 (Table 4). 
+
+Twilight: slow because it selects per query head. Twilight’s selection chain takes 12.71 ms per step, because its kernels treat GQA as 32 independent heads (8.72 ms with an 8-head port). Attention adds 2.02 ms, and the host plan takes 6.96 ms outside any CUDA graph. Selection and attention alone take 14.73 ms, close to dense attention (15.59 ms); with the host plan, 21.69 ms, against 4.73 ms for Moira at γ=0 .98 .
