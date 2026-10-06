@@ -1,0 +1,1494 @@
+iS-KV: ONLINE LOW-RANK KV CACHE
+COMPRESSION VIA BLOCK-INCREMENTAL SVD
+Yiren Zhao1
+Guanghui Song1
+Tianrui Qin2
+Kejiang Ye3
+Cheng-zhong Xu4
+Xitong Gao3,5∗
+1The Hong Kong University of Science and Technology (Guangzhou)
+2Guangdong OPPO Mobile Telecommunications Corp., Ltd.
+3Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences
+4University of Macau
+5Shenzhen University of Advanced Technology
+ABSTRACT
+Long chain-of-thought reasoning substantially increases KV-cache memory dur-
+ing autoregressive decoding, as every generated token introduces new key and
+value states and causes the cache to grow linearly with decoding length. Exist-
+ing KV-cache compression methods typically control this growth through token
+eviction, but irreversible deletion can remove historical states that later reason-
+ing may need to revisit. SVD-based low-rank compression provides an alterna-
+tive by retaining all positions with a more compact representation. However, ex-
+tending it from a fixed prompt cache to online decoding is non-trivial. Through
+our investigation, we find that if the basis is updated for new tokens while old
+tokens keep their coordinates in the old basis, the stored history drifts substan-
+tially. Based on this observation, we propose iS-KV, an online low-rank KV-
+cache compression method for long-horizon reasoning. iS-KV keeps a recent
+window exact while incrementally folding older states into bounded-rank repre-
+sentations. As the low-rank basis evolves, it synchronizes historical coordinates
+with the updated basis to maintain representation consistency. On DeepSeek-
+R1-Distill-Llama-8B, iS-KV achieves 82.6% accuracy at 4.06× persistent-KV
+compression, close to the original model’s 83.6%. On Qwen3-8B, it achieves
+89.2% accuracy at 5.64× compression. Under matched memory budgets, iS-KV
+consistently outperforms token-eviction baselines.
+1
+INTRODUCTION
+Long chain-of-thought (CoT) reasoning increases the memory needed during generation. Each gen-
+erated token adds key and value states to the KV cache, so a long reasoning trace can require substan-
+tially more KV cache storage than its prompt (Guo et al., 2025; Yang et al., 2025). The challenge
+is to reduce the KV storage cost during the decoding-phase without losing information that later
+reasoning may need.
+Two observations motivate our design. First, old tokens can become important again. A token
+that receives little attention at the current step may receive strong attention thousands of tokens
+later. Once evicted, it cannot be recovered. On Qwen3-8B, for example, R-KV reduces MATH-500
+accuracy from 94.4% to 68.8% at about 5.6× compression. Second, KV states have strong low-rank
+structure, so old tokens can be compressed instead of deleted. Doing this online requires care: when
+the low-rank basis changes as new tokens arrive, the coordinates of previously compressed tokens
+must change with it. Otherwise, the stored history no longer represents the same states.
+Token-eviction methods reduce cache size by keeping selected positions and removing the rest,
+typically using attention scores, recency, or redundancy (Zhang et al., 2023; Xiao et al., 2024; Cai
+et al., 2026). These signals describe which tokens appear important under the queries seen so far, but
+they cannot predict all future queries. Figure 1(a) illustrates this issue on long reasoning traces from
+∗Corresponding author: xt.gao@siat.ac.cn.
+1
+arXiv:2610.02815v1  [cs.AI]  2 Oct 2026
+
+
+0
+8K
+16K
+24K
+32K
+0
+20
+40
+60
+(a) Old tokens matter later
+MATH-500
+AIME 2024
+AIME 2025
+0
+512
+1024
+Singular-value index
+10−4
+10−3
+10−2
+10−1
+100
+Singular value / largest
+K (pre-RoPE)
+K (post-RoPE)
+V
+64
+128
+192
+256
+Decode step
+0.0
+0.5
+1.0
+1.5
+K
+V
+Basis only
+Tokens after marking
+Low-attention tokens
+later strongly attended (%)
+(b) KV states are low-rank
+Drift of stored history
+(c) Basis-only updates drift
+Basis + history
+Figure 1: Keep old positions, compress their KV states, and update them together. (a) At
+step 1024, we mark the 75% least-attended tokens (none are removed) and plot the share that later
+receives strong attention. (b) Singular values of generated K/V states, divided by the largest. (c)
+Drift of the stored history caused by each update. Dashed: the basis is updated but old coordinates
+are kept. Solid: the basis and old coordinates are updated jointly, which equals the iS-KV update in
+exact arithmetic. Bands show observed ranges; Section A.3 gives all settings.
+DeepSeek-R1-Distill-Llama-8B and Qwen3-8B on MATH-500, AIME 2024, and AIME 2025. At
+decoding step 1024, we mark the 75% of tokens with the lowest recent attention, without removing
+them. As decoding continues, many of these tokens become important again. On AIME, about 30%
+receive strong attention again within the next 8K tokens, and this fraction grows to about 60% by
+30K tokens. At matched memory, actual eviction by R-KV loses 5.4–11.0 points on DeepSeek-R1-
+Distill-Llama-8B and 23.0–33.6 on Qwen3-8B (Table 1).
+Low-rank compression offers a different approach: keep every token position, but store each old
+state more compactly. Each position is represented by a short coefficient vector over a basis shared
+across positions. Figure 1(b) shows that generated KV states are indeed low-rank. Keys have the
+fastest singular-value decay before rotary positional embeddings (RoPE), consistent with prior work
+(Sun et al., 2025), while values decay more slowly and are harder to compress. The main difficulty
+appears during online decoding. As new states arrive, the low-rank basis must adapt. But the
+coefficients of old states were computed in the previous basis. If the basis is updated while the old
+coefficients remain unchanged, the reconstructed historical states change as well. In other words,
+the same coefficients represent different vectors under a new basis. Figure 1(c) measures this drift.
+At step 256, updating only the basis gives a drift of 1.55 for keys and 1.40 for values. Updating the
+old coefficients together with the basis reduces these values to 0.023 and 0.051. This result shows
+that adapting the basis and preserving old states must be handled together.
+We therefore propose iS-KV, an online low-rank KV-cache compression method designed for long-
+horizon reasoning. iS-KV keeps recent states at their original precision and folds older states into
+separate low-rank K and V representations. Using block incremental SVD (Brand, 2006), it updates
+both the low-rank basis and the coefficients of all previously compressed positions. Keys are com-
+pressed before RoPE, where their low-rank structure is stronger. During attention, the reconstructed
+historical states are combined with the recent exact states. Every token position thus remains avail-
+able to future queries, although older states are approximate. A fixed rank reduces the storage per
+old token, so iS-KV slows cache growth rather than making it constant in size.
+On MATH-500, iS-KV achieves 82.6% accuracy at 4.06× persistent-KV compression on DeepSeek-
+R1-Distill-Llama-8B, close to the original model’s 83.6%. On Qwen3-8B, it achieves 89.2% at
+5.64× compression, compared with 68.8% for matched-memory R-KV. It outperforms both R-KV
+and SnapKV at all six matched-memory operating points and remains within 1.0–6.6 accuracy points
+of the original model. On AIME 2024 at rank 192, iS-KV on Qwen3-8B matches the original model
+with 23 of 30 correct answers, compared with 13 for matched-memory R-KV. Memory matching
+counts low-rank factors, exact entries, and R-KV’s staging buffer at the original model’s output
+lengths. This avoids counting shorter generations as compression gains. Our contributions are:
+2
+
+
+• Online K/V compression. We develop iS-KV to retain every token position, keeping recent
+states exact while storing older states in bounded-rank form.
+• Consistent history updates. We show that a basis-only update makes the stored history
+drift, and update the basis and old coefficients jointly via block incremental SVD.
+• Reasoning accuracy at matched memory. On two 8B models, iS-KV outperforms R-KV
+and SnapKV at all six matched MATH-500 operating points. AIME, RULER, ablation, and
+latency results further show its strengths and limitations.
+2
+RELATED WORK
+Token selection and eviction.
+Token-selection methods reduce KV cache storage requirement by
+keeping a subset of cached positions. H2O retains heavy hitters and recent tokens (Zhang et al.,
+2023), while STREAMINGLLM combines attention sinks with a sliding window (Xiao et al., 2024).
+FastGen selects head-specific policies through attention profiling (Ge et al., 2024). For long prompts,
+SNAPKV selects positions using a trailing observation window (Li et al., 2024), and PyramidKV
+allocates different cache budgets across layers (Cai et al., 2024). R-KV targets long reasoning with
+redundancy-aware selection (Cai et al., 2026). These methods preserve selected states at the ex-
+pense of historical coverage. iS-KV instead keeps every position in exact or low-rank form, trading
+representation precision rather than token availability.
+Attention efficiency and cache quantization.
+Other approaches reduce different parts of the
+memory cost. FlashAttention reduces attention IO (Dao et al., 2022); PagedAttention reduces cache
+fragmentation and enables sharing (Kwon et al., 2023); GQA reduces the number of KV heads
+(Ainslie et al., 2023). Quantization reduces bits per element: KIVI uses per-channel keys and per-
+token values (Liu et al., 2023), while KVQuant combines pre-RoPE key quantization with separate
+outlier storage (Hooper et al., 2025). Our focus is instead the number of coordinates stored per his-
+torical state, without changing the pretrained attention architecture. We do not evaluate additional
+low-bit quantization or serving-system integration.
+Low-rank KV representations.
+Low-rank methods exploit redundancy across features without
+discarding token positions. Palu factorizes projection weights and caches low-dimensional inter-
+mediate states (Chang et al., 2024); Eigen Attention performs attention in reduced spaces (Saxena
+et al., 2024). SHADOWKV combines low-rank pre-RoPE keys, value offloading, and sparse retrieval
+(Sun et al., 2025). More recent work learns bases against decoder-layer output error in StiefAtten-
+tion (Benfenati et al., 2026), adapts head/block ranks in STAR-KV (Bhatnagar et al., 2026), and
+benchmarks data-dependent compressibility in KV-CoRE (Chen et al., 2026). These studies inform
+basis construction and rank choice. Our question is how to incorporate newly decoded states while
+keeping historical coordinates consistent with an evolving basis.
+Online low-rank updates.
+For newly generated states, iS-KV maintains a shared historical fac-
+torization for each K/V path and updates its basis and old coordinates together. The update uses
+Brand’s classical incremental SVD (Brand, 2002; 2006), not a new matrix-decomposition primitive.
+Its small core represents the stored history and incoming block before rank truncation (Proposi-
+tion 1). Our contribution is this coordinated cache update with exact recent states, evaluated on long
+reasoning at matched persistent-memory budgets.
+3
+iS-KV
+iS-KV compresses the growing KV cache while retaining a representation of every token position.
+Prefill initializes exact states and a low-rank history; decoding jointly updates the basis and historical
+coefficients as unprotected rows are incorporated in blocks. Figure 2 illustrates the workflow, with
+prefill and decoding specified in Algorithms 1 and 2 in Section B.
+3.1
+OBJECTIVE AND PREFILL COMPRESSION
+Consider a single Transformer layer processing a prompt of L tokens, with Hkv KV heads of di-
+mension D. Concatenating the KV heads along the feature dimension yields key and value matrices
+3
+
+
+d
+F
+window w
+Reconstruct in place & attend
+qt attends to all t positions
+exact
+updated
+restored
+low-rank (k ≪d)
+one UΣB ⊤
+Block Incremental SVD
+UΣB ⊤
+F
+project F
+P = orth(E ⊤)
+Small core, independent of n
+Σ
+0
+FB EP
+Z
+(k+b) × (k+p)
+SVDr
+G
+H ⊤
+Σ+
+Update Basis and Coordinates Together
+U+ = U
+· G
+Ib
+history rewritten, F appended
+B+ = B P · H
+new directions P added
+Decoding with iS-KV
+iS-KV update (every b tokens)
+Figure 2: Overview of iS-KV. The KV cache grows while iS-KV keeps the recent window of w
+tokens exact (teal) and folds older tokens into a compact low-rank history (blue), one UΣB⊤per
+block. Every b tokens, the pending block F (orange) is merged in by a Block Incremental SVD
+that updates basis and coordinates together and solves only a small core, independent of the history
+length n. Each position can be reconstructed for query qt attends to all t positions.
+K, V ∈RL×d, where d = HkvD and each row corresponds to one token. Following Sun et al.
+(2025), we represent keys before RoPE (pre-RoPE keys). For X ∈{K, V }, we partition the prompt
+positions {1, . . . , L} into an exact set EX and a compressed set CX. Let XCX := X[CX] ∈RnX×d
+denote the original submatrix selected for compression, where nX = |CX|. iS-KV stores X[EX]
+unchanged at its original precision and represents XCX by a low-rank approximation b
+XCX of the
+same dimensions. We retain the original position indices for reconstruction.
+Given this partition and a rank budget rX, iS-KV chooses b
+XCX to minimize the squared reconstruc-
+tion error in the Frobenius norm:
+min b
+XCX ∈RnX ×d
+∥XCX −b
+XCX∥2
+F
+st.
+rank( b
+XCX) ≤rX.
+(1)
+The truncated singular value decomposition (SVD), denoted by (UX, ΣX, BX) = SVDrX(XCX),
+retains the leading kX = min(rX, nX, d) singular components.
+Here, UX ∈RnX×kX and
+BX ∈Rd×kX contain the retained left and right singular vectors, with orthonormal columns;
+ΣX ∈RkX×kX is diagonal with the retained singular values. The cache stores UX, BX, and
+the diagonal of ΣX; each row of UXΣX contains a token’s coefficients in the shared basis BX.
+We determine which rows remain exact during prefill, whose attention uses the original keys
+and values.
+For keys, we retain a short local suffix of the prompt, including any incomplete
+chunk, and partition the remaining prefix into fixed-size contiguous chunks. For chunk c and KV
+head h, let krot
+i,h ∈RD denote the post-RoPE key at position i, and ¯krot
+c,h the mean key in that
+chunk.
+Following the outlier selection criterion of Sun et al. (2025), we score each chunk by
+sc,h = mini∈c cos(krot
+i,h, ¯krot
+c,h). We select up to m lowest-scoring chunks per KV head as outlier
+chunks; the union of their token positions across heads, together with the local suffix, defines the
+protected positions PK. Selection uses post-RoPE keys, but each protected position retains its full
+pre-RoPE key row across all KV heads.
+For values, we define the protected prompt positions PV as all prompt positions within ρ tokens of
+any position in PK, including PK itself. We initialize an exact recent window of size w with the
+last min(w, L) prompt values and denote their positions by WV . The initial exact sets are therefore
+EK = PK and EV = PV ∪WV . We factorize the remaining rows with the truncated SVD above.
+The protection sets PK, PV remain fixed during decoding, while the recent window advances with
+4
+
+
+generation. Protection may cover an entire short prompt, leaving an empty low-rank history. The
+chunk size and protection parameters are specified in Section A.
+3.2
+BLOCK-INCREMENTAL DECODING
+During decoding, new key and value rows remain exact in recent windows of size w. Unprotected
+rows leaving these windows remain exact; their positions enter FIFO queues QK for keys and QV
+for values. For X ∈{K, V }, QX denotes the corresponding queue. Regular updates consume the
+oldest b pending rows once |QX| ≥b, retaining at most rX singular components. Before regular
+value updates begin, a one-time refit is performed: once |QV | ≥rV , we append the oldest rV
+pending rows to the reconstructed prompt value history and compute a truncated SVD with rank
+budget rV . Thus, rV controls both the value rank budget and the initial refit size.
+Each regular update represents the history and new block in a common updated basis. Omitting
+the subscript X, let A = UΣB⊤∈Rn×d denote the maintained history with k ≤r components
+and rank budget r, and F ∈Rb×d the next pending block. We seek an approximation c
+M of their
+concatenation M = [A; F]:
+minc
+M∈R(n+b)×d
+∥M −c
+M∥2
+F
+st.
+rank(c
+M) ≤r.
+(2)
+The target M contains the maintained approximation A and exact block F; the original compressed
+rows are no longer stored. An empty low-rank history is initialized by a truncated SVD of F.
+Otherwise, block incremental SVD (Brand, 2006) updates the factors without reconstructing A. To
+incorporate directions outside B, we compute E = F −(FB)B⊤and construct a residual basis
+P ∈Rd×p by QR and SVD (Section A.1). We retain directions whose singular values exceed the
+numerical threshold, with p ≤min(b, d −k) and p = 0 when none are retained. Queue occupancy
+determines update timing; residual thresholding determines basis expansion. Expressing A and F
+in the augmented basis [B P] yields
+M ≈
+
+U
+0
+0
+Ib
+
+Z[B P]⊤,
+Z =
+
+Σ
+0
+FB
+FP
+
+,
+(3)
+where Ib is the b × b identity matrix. This reduces the SVD to a (k + b) × (k + p) core, independent
+of the history length n. Computing (G, Σ+, H) = SVDr(Z), with Z ≈GΣ+H⊤, gives
+U + =
+
+U
+0
+0
+Ib
+
+G,
+B+ = [B P]H.
+(4)
+The updated factors reconstruct c
+M + = U +Σ+(B+)⊤. The first n and last b rows of U +Σ+ contain
+the coefficients of A and F, respectively, in the updated basis B+.
+In exact arithmetic, with orthonormal columns in U, B and a complete orthonormal residual basis
+P, (3) is exact and the core SVD solves (2), with squared error P
+i>r σi(Z)2. Residual thresholding
+and finite precision introduce additional error. We periodically reorthogonalize the factors using QR
+and SVD, preserving their product in exact arithmetic. Numerical settings and proofs are given in
+Section A.
+3.3
+RECONSTRUCTION AND STORAGE COST
+At each decoding step, EX and CX denote the current exact and compressed position sets, with EX
+containing protected, recent, and pending positions. Let Xexact[i] denote the stored exact row at
+position i. The reconstructed cache e
+X is defined in token order by
+e
+X[i] =
+(UXΣXB⊤
+X)[j],
+i = CX[j],
+Xexact[i],
+i ∈EX.
+(5)
+Reconstruction aligns keys and values by their original token positions despite their different com-
+pressed position sets. After restoring head dimensions, we apply RoPE to keys at their original
+positions. For a rotated query qrot
+t
+associated with KV head h, the attention output is
+ot = softmax
+
+qrot
+t
+( eKrot
+h )⊤/
+√
+D
+
+eVh.
+(6)
+5
+
+
+Let nX = |CX| and eX = |EX| denote the numbers of compressed and exact rows. The factors and
+exact rows use βf and βe bytes per scalar, respectively. Excluding metadata and temporary dense
+reconstruction buffers, the per-layer persistent storage is
+MiS-KV = βf
+P
+X∈{K,V } kX(nX + d + 1) + βed P
+X∈{K,V } eX.
+(7)
+At equal rank r < d and precision, each compressed key-value pair requires 2r coefficients instead
+of 2d scalars, plus shared factors. Storage therefore grows as O(nr) with history length. Updating
+historical coefficients costs O(nr(r + b)) per block; reorthogonalization and reconstruction also
+depend on n.
+4
+EXPERIMENTS
+We evaluate reasoning accuracy, key/value compression and basis adaptation, long-input retrieval,
+and generation time and memory.
+4.1
+LONG-COT REASONING
+Models, data, and evaluation.
+Our main evaluation uses all 500 MATH-500 questions
+(Hendrycks et al., 2021) with DeepSeek-R1-Distill-Llama-8B (Guo et al., 2025) and Qwen3-8B
+(Yang et al., 2025). We report final-answer accuracy from one sampled generation per question,
+using temperature 0.6, top-p = 0.95, top-k = 50, and a total prompt-plus-generation limit of 16,384
+tokens. Prompts follow each model’s chat template and request a boxed final answer; empty or
+non-finite outputs count as incorrect. We compare with the original model and the token-eviction
+methods R-KV (Cai et al., 2026) and SnapKV (Li et al., 2024). The original model, R-KV, and iS-
+KV use paired questions, prompts, question-specific seeds, and the same answer evaluator. SnapKV
+results are retained from the existing baseline summaries; Table 1 distinguishes their inferred correct
+counts from directly counted outcomes.
+Compression settings and memory matching.
+For MATH-500, iS-KV uses ranks r
+∈
+{64, 96, 128}, a 128-token exact recent window on each path, and 64-row updates. Persistent fac-
+tors use FP16, while updates and reconstruction use FP32; further settings are given in Section A.
+We match baselines by persistent KV bytes, not by nominal rank or retained-token count. The
+accounting includes protected prompt states, exact recent states, low-rank coefficients, singular val-
+ues, bases, and baseline staging storage. All footprints are evaluated at the original model’s output
+lengths, so different stopping lengths do not change the reference used for matching. These ratios
+exclude model weights and temporary reconstruction tensors and therefore do not measure peak
+GPU-memory savings.
+MATH-500: higher accuracy at matched memory.
+Table 1 shows that iS-KV outperforms both
+eviction baselines at all six reported model–budget settings. On DeepSeek-R1-Distill-Llama-8B,
+rank 128 reaches 82.6% accuracy at 4.06× compression, compared with 83.6% for the original
+model and 78.2% for matched R-KV. At 4.81× and 5.92× compression, the gains over R-KV are 5.4
+and 5.6 percentage points, respectively. The advantage also holds on Qwen3-8B: rank 96 achieves
+89.2% at 5.64× compression, compared with 68.8% for R-KV and a reported 73.17% for SnapKV.
+Even at rank 64, Qwen3-8B retains 87.8% accuracy with 7.12× compression, versus 94.4% for the
+original model.
+Accuracy degrades gradually as the rank decreases.
+Reducing rank from 128 to 64 lowers iS-
+KV accuracy by 4.4 percentage points on DeepSeek-R1-Distill-Llama-8B and 4.2 points on Qwen3-
+8B. Over the corresponding matched budgets, R-KV loses 5.6 and 10.6 points, respectively. The
+advantage persists across ranks, but the growing gap to the original model shows that retaining
+positions alone cannot compensate for lost representation fidelity.
+Comparison with OjaKV.
+We run the released OjaKV implementation (Zhu et al., 2026) on
+DeepSeek-R1-Distill-Llama-8B and MATH-500 with the 16K total-token limit used above. Its re-
+leased checkpoint achieves 62.0% accuracy at approximately 1.30× KV compression, compared
+with the original model’s 83.6% and iS-KV’s 78.2–82.6% at 4.06–5.92× compression (Table 2).
+6
+
+
+Table 1: MATH-500 accuracy at matched persistent-KV footprints. The evaluation uses 500
+questions and a 16K total-token limit. KV ratio and compression are measured against the original
+model at its output lengths, counting R-KV’s 128-token staging buffer and SnapKV’s 128-token
+compression interval. Shading marks iS-KV; ∆is in percentage points. SnapKV correct counts
+are inferred by rounding its reported accuracy times 500, not counted from per-question outputs; its
+reported percentages are not all compatible with single-sample, 500-question accuracy increments.
+Method
+Setting
+KV ratio ↓
+Compression ↑
+Correct
+Accuracy ↑
+∆
+DeepSeek-R1-Distill-Llama-8B
+Original
+–
+100.00%
+1.000×
+418/500
+83.6
+0.0
+R-KV
+budget 748
+24.63%
+4.060×
+391/500
+78.2
+−5.4
+SNAPKV
+B = 636
+24.64%
+4.059×
+351/500
+70.1
+−13.5
+iS-KV
+r = 128
+24.63%
+4.060×
+413/500
+82.6
+−1.0
+R-KV
+budget 562
+20.78%
+4.813×
+382/500
+76.4
+−7.2
+SNAPKV
+B = 517
+20.80%
+4.807×
+337/500
+67.4
+−16.2
+iS-KV
+r = 96
+20.79%
+4.811×
+409/500
+81.8
+−1.8
+R-KV
+budget 409
+16.89%
+5.920×
+363/500
+72.6
+−11.0
+SNAPKV
+B = 396
+16.90%
+5.917×
+322/500
+64.3
+−19.3
+iS-KV
+r = 64
+16.90%
+5.917×
+391/500
+78.2
+−5.4
+Qwen3-8B
+Original
+–
+100.00%
+1.000×
+472/500
+94.4
+0.0
+R-KV
+budget 797
+21.35%
+4.683×
+357/500
+71.4
+−23.0
+SNAPKV
+B = 794
+21.36%
+4.683×
+407/500
+81.30
+−13.10
+iS-KV
+r = 128
+21.36%
+4.681×
+460/500
+92.0
+−2.4
+R-KV
+budget 638
+17.73%
+5.641×
+344/500
+68.8
+−25.6
+SNAPKV
+B = 637
+17.72%
+5.644×
+366/500
+73.17
+−21.23
+iS-KV
+r = 96
+17.72%
+5.644×
+446/500
+89.2
+−5.2
+R-KV
+budget 479
+14.06%
+7.113×
+304/500
+60.8
+−33.6
+SNAPKV
+B = 479
+14.06%
+7.113×
+325/500
+65.04
+−29.36
+iS-KV
+r = 64
+14.05%
+7.118×
+439/500
+87.8
+−6.6
+We also reduce OjaKV’s ranks to target the same compression range as iS-KV. All 118 generations
+collected across these three settings fall into repetitive loops and reach the length limit without EOS.
+We stop these runs early and report the observed failures rather than an unmeasured accuracy.
+Table 2: OjaKV on DeepSeek-R1-Distill-Llama-8B and MATH-500. The upper block uses all
+500 questions at a 16K total-token limit. OjaKV uses its released checkpoint with error-budget
+parameter 0.075. The lower block reduces its aggregate rank to target higher compression; these
+runs were stopped early. “–” means not scored, not zero accuracy.
+Method / setting
+Compression
+Acc. (%)
+Observed results
+Original model
+1.00×
+83.6
+418/500 correct
+OjaKV (released)
+≈1.30×
+62.0
+310/500 correct
+iS-KV (rank 128)
+4.06×
+82.6
+413/500 correct
+iS-KV (rank 96)
+4.81×
+81.8
+409/500 correct
+iS-KV (rank 64)
+5.92×
+78.2
+391/500 correct
+OjaKV with reduced ranks; compression values are targets
+OjaKV (rank 232)
+4.06×
+–
+30/30 loop to limit
+OjaKV (rank 192)
+4.81×
+–
+28/28 loop to limit
+OjaKV (rank 152)
+5.92×
+–
+60/60 loop to limit
+7
+
+
+1K
+2K
+3K
+0
+40
+80
+Accuracy (%)
+(a) AIME 2024
+1.5K
+2.5K
+3.5K
+(b) AIME 2025
+Matched KV budget (tokens)
+iS-KV
+R-KV
+Original
+Figure 3:
+AIME accuracy on Qwen3-8B.
+Ranks 64, 96, 128, and 192 (left to right) use
+memory budgets matched to R-KV. Dashed lines
+show the original model.
+8K
+16K
+32K
+0
+40
+80
+Time (s)
+(a) Generation time
+8K
+16K
+32K
+0
+2
+4
+Memory (GiB)
+-33.7%
+-44.2%
+-56.2%
+(b) KV memory
+Input length (tokens)
+Original
+iS-KV
+Figure 4: Generation time and KV memory.
+DeepSeek-R1-Distill-Llama-8B on an A40, rank
+128: prefill plus 1,024 decode steps.
+Labels
+show KV savings over the original model.
+AIME: the advantage persists at a longer generation budget.
+We further evaluate Qwen3-8B
+on AIME 2024 and AIME 2025 with a 32,768-token total limit. Each dataset contains 30 questions,
+with one sampled generation per question. We match persistent KV memory at the original model’s
+output lengths, including R-KV’s 128-token staging buffer; the horizontal axis in Figure 3 gives the
+corresponding R-KV retained-token budget. These runs store low-rank factors in BF16 to avoid the
+FP16 overflow observed at this length (Section A.2); both formats occupy two bytes per element.
+As Figure 3 shows, iS-KV exceeds R-KV at every tested budget on both datasets. On AIME 2024,
+increasing rank from 64 to 192 raises accuracy from 43.3% to 76.7%, while matched R-KV rises
+from 13.3% to 43.3%. At rank 192, iS-KV answers 23 of 30 questions correctly, as does the original
+model. AIME 2025 remains more difficult: the same rank achieves 56.7%, above R-KV’s 40.0% but
+below the original model’s 63.3%. With one sample per question, each answer changes accuracy by
+3.3 percentage points; an equal total does not establish statistical equivalence.
+4.2
+ABLATION STUDY
+We ablate key/value compression and basis adaptation on a fixed prefix of 80 MATH-500 questions
+with DeepSeek-R1-Distill-Llama-8B, paired prompts and seeds, and one generation per question.
+All compressed variants use rank 96 and the same exact-recent policy. For the frozen-basis variant,
+both bases are initialized from the prompt and kept fixed during decoding.
+Table 3:
+Component ablation on a fixed 80-question MATH subset.
+Checks/crosses en-
+able/disable each component; frozen bases remain at their prompt initialization. Compressed vari-
+ants share rank 96 and the exact-recent policy, with one sample per question. Compression is the
+persistent-KV compression ratio.
+Variant
+Low-rank K
+Low-rank V
+Online update
+Compression
+Correct
+Accuracy (%)
+Original
+×
+×
+×
+1.00×
+67/80
+83.8
+K-only
+✓
+×
+✓
+1.64×
+68/80
+85.0
+V-only
+×
+✓
+✓
+1.64×
+65/80
+81.2
+Frozen basis
+✓
+✓
+×
+4.68×
+51/80
+63.7
+iS-KV
+✓
+✓
+✓
+4.61×
+65/80
+81.2
+Key and value compression have different effects.
+In Table 3, K-only compression answers
+68/80 questions correctly, compared with 67/80 for the original model. V-only compression and
+joint K+V compression each answer 65/80 correctly. Value compression appears more sensitive
+on this subset, with no further aggregate loss from compressing keys. Equal totals need not imply
+identical errors, nor does the one-question gain establish an improvement over the original model.
+This comparison fixes per-path rank, not total memory.
+Online basis adaptation matters.
+Keeping the bases fixed reduces the score from 65/80 to 51/80,
+a 17.5-percentage-point drop under the same rank and recent-window settings. This supports adapt-
+8
+
+
+ing beyond the prompt-only subspace. The answer-level ablation complements Figure 1(c), which
+instead measures reconstruction drift from unsynchronized historical coordinates.
+4.3
+LONG PREFILL EVALUATION
+Setup.
+We evaluate 11 RULER tasks (Hsieh et al., 2024) at 64K context on GLM-4-9B-1M,
+Llama-3-8B-Instruct-Gradient-1048k, and Llama-3.1-8B, using ten examples per task. iS-KV and
+the original model use identical inputs; we report task-specific percentage scores and their un-
+weighted mean. At initialization, iS-KV retains selected prompt chunks and protected neighbor-
+hoods at their original precision and factorizes the remaining states, as detailed in Section A. With
+short outputs, this primarily tests prompt-history access under the two configurations in Table 4.
+Table 4: Prefill evaluation on 11 RULER tasks at 64K context. Scores are percentages, with
+ten examples per task; Avg. is the task mean. S1–S3 denote single-needle retrieval; MK, MQ, and
+MV denote multi-key, multi-query, and multi-value retrieval; VT, FWE, and QA denote variable
+tracking, frequent-word extraction, and question answering. Rank 96 uses 128 exact-recent rows
+and 16-row folds. Rank 160 uses single-row K updates with slack 8 and a 512-row exact-recent V
+window. These are different configurations, not a rank-only ablation. Comp. is compression ratio.
+Model
+Method
+S1
+S2
+S3
+MK1
+MK2
+MQ
+MV
+VT
+FWE
+QA1
+QA2
+Avg.
+Comp. ↑
+GLM-4-9B-1M
+Original
+100.0
+100.0
+100.0
+100.0
+100.0
+100.0
+98.8
+100.0
+78.2
+72.4
+36.5
+89.6
+1.00×
+iS-KV (rank 160)
+100.0
+100.0
+100.0
+100.0
+100.0
+100.0
+85.7
+100.0
+71.4
+72.4
+36.5
+87.8
+2.67×
+iS-KV (rank 96)
+100.0
+100.0
+100.0
+100.0
+95.2
+92.7
+82.0
+100.0
+71.4
+72.4
+36.5
+86.4
+3.89×
+Llama-3-8B-
+Instruct-Gradient-
+1048k
+Original
+100.0
+100.0
+100.0
+100.0
+100.0
+94.6
+93.6
+80.6
+80.4
+71.1
+39.6
+87.3
+1.00×
+iS-KV (rank 160)
+100.0
+100.0
+100.0
+100.0
+100.0
+88.1
+92.1
+80.6
+80.4
+69.0
+39.6
+86.3
+2.29×
+iS-KV (rank 96)
+100.0
+100.0
+100.0
+100.0
+100.0
+62.0
+83.8
+80.6
+85.1
+69.0
+39.6
+83.6
+2.54×
+Llama-3.1-8B
+Original
+100.0
+100.0
+100.0
+100.0
+61.3
+100.0
+100.0
+94.0
+76.6
+58.3
+51.5
+85.6
+1.00×
+iS-KV (rank 160)
+100.0
+100.0
+100.0
+80.7
+62.3
+79.7
+68.8
+94.0
+76.0
+56.2
+51.5
+79.0
+2.23×
+iS-KV (rank 96)
+100.0
+100.0
+85.7
+69.8
+62.3
+46.6
+41.6
+92.6
+87.4
+56.2
+46.7
+71.7
+2.47×
+Access to long input histories.
+Rank 160 matches the original models’ 100.0 on S1–S3. Its means
+are 87.8, 86.3, and 79.0 on GLM-4-9B-1M, Llama-3-8B-Instruct-Gradient-1048k, and Llama-3.1-
+8B, versus 89.6, 87.3, and 85.6 for the original models. Rank 96 retains 100.0 on S1–S3 for GLM-
+4-9B-1M and Llama-3-8B-Instruct-Gradient-1048k, with means of 86.4, 83.6, and 71.7 across the
+models. Multi-query and multi-value retrieval show larger differences. MATH-500 and AIME pri-
+marily compress generated states because their short prompts normally remain exact. Here, the 64K
+prompts require compression before decoding, so the results measure retrieval from combined exact
+and low-rank prompt storage.
+4.4
+EFFICIENCY
+Setup.
+We use DeepSeek-R1-Distill-Llama-8B on an NVIDIA A40 at rank 128 and batch size one.
+Both methods receive identical synthetic 8K, 16K, and 32K inputs followed by exactly 1,024 greedy
+decode steps. We time prefill plus decoding, excluding model loading, extension compilation, and
+cache inspection, and count KV memory after decoding. Each method–length pair has one fresh-
+process run, executed serially without inference warmup.
+Generation time.
+In Figure 4(a), iS-KV takes 47.45, 58.32, and 74.70 s at 8K, 16K, and 32K,
+versus 38.83, 49.04, and 68.63 s for the original model. The overhead decreases from 22.2% to
+18.9% and 8.8%, including updates and reconstruction. These single-run measurements describe
+this workload, not a statistically stable latency difference.
+Memory.
+In Figure 4(b), the original model requires 1.125, 2.125, and 4.125 GiB at 8K, 16K, and
+32K; iS-KV uses 0.746, 1.185, and 1.808 GiB. Savings increase from 33.7% to 44.2% and 56.2% as
+more history enters the low-rank representation. This includes factors and exact protected, recent,
+and pending rows, preserving all positions without making memory constant in length. It excludes
+indices, unused capacity, reconstructed caches, and workspace.
+9
+
+
+5
+CONCLUSION
+Long chain-of-thought reasoning grows the KV cache with every generated token. Eviction methods
+shrink it by deleting tokens, but a token that looks unimportant now may matter later, and deletion
+cannot be undone. iS-KV instead keeps every token position and stores old states compactly, while
+recent states stay exact. This lowers the cost of each stored token, though memory still grows with
+the length of the trace. The difficulty is doing this online: the compact representation adapts as new
+tokens arrive, and the old states are stored relative to it. If it changes while they stay fixed, those
+states may not be reconstructed well. iS-KV updates both together with block-incremental SVD, so
+every update preserves the stored history. Our takeaway is that compressing a growing cache is a
+problem of representing every token faithfully beyond just choosing which tokens to keep.
+REFERENCES
+Joshua Ainslie, James Lee-Thorp, Michiel de Jong, Yury Zemlyanskiy, Federico Lebron, and Sumit
+Sanghai. GQA: Training generalized multi-query transformer models from multi-head check-
+points. In Houda Bouamor, Juan Pino, and Kalika Bali (eds.), Proceedings of the 2023 Conference
+on Empirical Methods in Natural Language Processing, pp. 4895–4901, Singapore, December
+2023. Association for Computational Linguistics. doi: 10.18653/v1/2023.emnlp-main.298. URL
+https://aclanthology.org/2023.emnlp-main.298/.
+Luca Benfenati, Matteo Risso, Andrea Vannozzi, Ahmet Caner Y¨uz¨ug¨uler, Lukas Cavigelli, Enrico
+Macii, Daniele Jahier Pagliari, and Alessio Burrello. Don’t be so Stief! Learning KV cache
+low-rank approximation over the Stiefel manifold. arXiv preprint arXiv:2601.21686, 2026.
+Priyansh Bhatnagar, Ashkan Moradifirouzabadi, Se-Hyun Yang, SeungJae Lee, Jungwook Choi,
+and Mingu Kang. STAR-KV: Low-rank KV cache compression via soft thresholding for adaptive
+rank control. arXiv preprint arXiv:2606.08382, 2026.
+M. Brand. Incremental Singular Value Decomposition of Uncertain Data with Missing Values. In
+European Conference on Computer Vision (ECCV), volume 2350, pp. 707–720, May 2002. URL
+https://www.merl.com/publications/TR2002-24.
+M. Brand. Fast Low-Rank Modifications of the Thin Singular Value Decomposition. Linear Al-
+gebra and Its Applications, 415(1):20–30, May 2006. URL https://www.merl.com/publications/
+TR2006-059.
+Zefan Cai, Yichi Zhang, Bofei Gao, Yuliang Liu, Yucheng Li, Tianyu Liu, Keming Lu, Wayne
+Xiong, Yue Dong, Junjie Hu, et al.
+PyramidKV: Dynamic KV cache compression based on
+pyramidal information funneling. arXiv preprint arXiv:2406.02069, 2024.
+Zefan Cai, Wen Xiao, Hanshi Sun, Yikai Zhang, Ke Wan, Yucheng Li, Yeyang Zhou, Li-Wen Chang,
+Jiuxiang Gu, Zhen Dong, et al. R-KV: Redundancy-aware KV cache compression for reasoning
+models. Advances in neural information processing systems, 38:60980–61005, 2026.
+Chi-Chih Chang, Wei-Cheng Lin, Chien-Yu Lin, Chong-Yan Chen, Yu-Fang Hu, Pei-Shuo Wang,
+Ning-Chi Huang, Luis Ceze, Mohamed S Abdelfattah, and Kai-Chiang Wu. Palu: Compressing
+KV-cache with low-rank projection. arXiv preprint arXiv:2407.21118, 2024.
+Jian Chen, Zhuoran Wang, Jiayu Qin, Ming Li, Meng Wang, Changyou Chen, Yin Chen, Qizhen
+Weng, and Yirui Liu. KV-CoRE: Benchmarking data-dependent low-rank compressibility of KV-
+caches in LLMs. arXiv preprint arXiv:2602.05929, 2026.
+Tri Dao, Dan Fu, Stefano Ermon, Atri Rudra, and Christopher R´e. FlashAttention: Fast and memory-
+efficient exact attention with IO-awareness. Advances in neural information processing systems,
+35:16344–16359, 2022.
+Suyu Ge, Yunan Zhang, Liyuan Liu, Minjia Zhang, Jiawei Han, and Jianfeng Gao. Model tells
+you what to discard: Adaptive KV cache compression for LLMs. In International Conference on
+Learning Representations, volume 2024, pp. 22975–22988, 2024.
+10
+
+
+Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, Qihao Zhu, Runxin Xu, Ruoyu
+Zhang, Shirong Ma, Xiao Bi, et al. DeepSeek-R1: Incentivizing reasoning capability in LLMs
+via reinforcement learning. arXiv preprint arXiv:2501.12948, 2025.
+Dan Hendrycks, Collin Burns, Saurav Kadavath, Akul Arora, Steven Basart, Eric Tang, Dawn Song,
+and Jacob Steinhardt. Measuring mathematical problem solving with the MATH dataset. arXiv
+preprint arXiv:2103.03874, 2021.
+Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, Michael W. Mahoney, Yakun Sophia Shao,
+Kurt Keutzer, and Amir Gholami. KVQuant: Towards 10 million context length LLM inference
+with KV cache quantization, 2025. URL https://arxiv.org/abs/2401.18079.
+Cheng-Ping Hsieh, Simeng Sun, Samuel Kriman, Shantanu Acharya, Dima Rekesh, Fei Jia, Yang
+Zhang, and Boris Ginsburg. RULER: What’s the real context size of your long-context language
+models?, 2024. URL https://arxiv.org/abs/2404.06654.
+Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph E.
+Gonzalez, Hao Zhang, and Ion Stoica. Efficient memory management for large language model
+serving with PagedAttention, 2023. URL https://arxiv.org/abs/2309.06180.
+Yuhong Li, Yingbing Huang, Bowen Yang, Bharat Venkitesh, Acyr Locatelli, Hanchen Ye, Tianle
+Cai, Patrick Lewis, and Deming Chen. SnapKV: LLM knows what you are looking for before
+generation, 2024. URL https://arxiv.org/abs/2404.14469.
+Zirui Liu, Jiayi Yuan, Hongye Jin, Shaochen Zhong, Zhaozhuo Xu, Vladimir Braverman, Beidi
+Chen, and Xia Hu. KIVI : Plug-and-play 2bit KV cache quantization with streaming asymmetric
+quantization, 2023. URL https://www.researchgate.net/doi/10.13140/RG.2.2.28167.37282.
+Utkarsh Saxena, Gobinda Saha, Sakshi Choudhary, and Kaushik Roy.
+Eigen attention: Atten-
+tion in low-rank space for KV cache compression.
+In Yaser Al-Onaizan, Mohit Bansal, and
+Yun-Nung Chen (eds.), Findings of the Association for Computational Linguistics: EMNLP
+2024, pp. 15332–15344, Miami, Florida, USA, November 2024. Association for Computational
+Linguistics.
+doi: 10.18653/v1/2024.findings-emnlp.899.
+URL https://aclanthology.org/2024.
+findings-emnlp.899/.
+Hanshi Sun, Li-Wen Chang, Wenlei Bao, Size Zheng, Ningxin Zheng, Xin Liu, Harry Dong, Yuejie
+Chi, and Beidi Chen. ShadowKV: KV cache in shadows for high-throughput long-context LLM
+inference, 2025. URL https://arxiv.org/abs/2410.21465.
+Guangxuan Xiao, Yuandong Tian, Beidi Chen, Song Han, and Mike Lewis. Efficient streaming
+language models with attention sinks, 2024. URL https://arxiv.org/abs/2309.17453.
+An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang
+Gao, Chengen Huang, Chenxu Lv, Chujie Zheng, Dayiheng Liu, Fan Zhou, Fei Huang, Feng Hu,
+Hao Ge, Haoran Wei, Huan Lin, Jialong Tang, Jian Yang, Jianhong Tu, Jianwei Zhang, Jianxin
+Yang, Jiaxi Yang, Jing Zhou, Jingren Zhou, Junyang Lin, Kai Dang, Keqin Bao, Kexin Yang,
+Le Yu, Lianghao Deng, Mei Li, Mingfeng Xue, Mingze Li, Pei Zhang, Peng Wang, Qin Zhu, Rui
+Men, Ruize Gao, Shixuan Liu, Shuang Luo, Tianhao Li, Tianyi Tang, Wenbiao Yin, Xingzhang
+Ren, Xinyu Wang, Xinyu Zhang, Xuancheng Ren, Yang Fan, Yang Su, Yichang Zhang, Yinger
+Zhang, Yu Wan, Yuqiong Liu, Zekun Wang, Zeyu Cui, Zhenru Zhang, Zhipeng Zhou, and Zihan
+Qiu. Qwen3 technical report, 2025. URL https://arxiv.org/abs/2505.09388.
+Zhenyu Zhang, Ying Sheng, Tianyi Zhou, Tianlong Chen, Lianmin Zheng, Ruisi Cai, Zhao Song,
+Yuandong Tian, Christopher R´e, Clark Barrett, Zhangyang Wang, and Beidi Chen. H2O: Heavy-
+hitter oracle for efficient generative inference of large language models, 2023. URL https://arxiv.
+org/abs/2306.14048.
+Yuxuan Zhu, David H. Yang, Mohammad Mohammadi Amiri, Keerthiram Murugesan, Tejaswini
+Pedapati, and Pin-Yu Chen.
+OjaKV: Context-aware online low-rank KV cache compression.
+In Maria Liakata, Viviane P. Moreira, Jiajun Zhang, and David Jurgens (eds.), Findings of the
+Association for Computational Linguistics: ACL 2026, pp. 10161–10178, San Diego, California,
+United States, July 2026. Association for Computational Linguistics. ISBN 979-8-89176-395-1.
+doi: 10.18653/v1/2026.findings-acl.494. URL https://aclanthology.org/2026.findings-acl.494/.
+11
+
+
+A
+IMPLEMENTATION DETAILS AND REPRODUCIBILITY
+This appendix gives the settings behind the reported results. Section A.1 describes the method
+settings, Section A.2 the evaluation protocols, Section A.3 the probes behind Figure 1, Section A.4
+the properties of the block update, and Section A.5 further numerical diagnostics.
+A.1
+METHOD SETTINGS
+Main configuration.
+The key and value caches use exact recent windows of 128 rows, block size
+64, and residual tolerance τ = 10−6. Each update keeps at most the given rank budget. MATH-500
+uses ranks 64, 96, and 128 on both models, with all other settings unchanged. Reorthogonalization
+runs after every 256 rows processed by regular block updates; these rows include initialization from
+an empty history but not the first value refit. The persistent factors UX, BX and the diagonal entries
+of ΣX are stored in FP16; projection, residual QR, core SVD, reorthogonalization, and reconstruc-
+tion use FP32. Factors are cast back to the storage precision after each update. Each right basis is
+stored explicitly, protected prompt keys are stored once, and no additional ΣXB⊤
+X product is cached.
+Optional features of our code that this paper does not use are disabled: prompt sketches, persistent
+residual corrections, dynamic historical-token scoring, and integer quantization.
+Prompt protection.
+During prefill, we partition post-RoPE keys into eight-token chunks, exclud-
+ing the last four chunks and any final incomplete chunk as a local suffix. For each KV head, we score
+a chunk by the minimum cosine similarity between its token keys and their chunk mean, then select
+the 128 lowest-scoring chunks (or all available chunks for a shorter prompt). We take the union
+of their token positions across heads and the local suffix. These positions retain exact pre-RoPE
+keys and are excluded from key factorization; all other prompt keys are factorized. Values within 32
+tokens of the protected key positions remain protected throughout decoding. The latest 128 prompt
+values initialize the exact recent window; values outside both sets are factorized. The 64K RULER
+evaluation uses this same rule, so its prompt is only partly represented by low-rank factors.
+Cache layout.
+The key cache stores pre-RoPE representations. Protected prompt rows remain
+exact and are excluded from the compact low-rank coefficient matrix. In the MATH protocol, the
+chunk-selection rule normally covers the entire short prompt, which therefore remains exact. De-
+coded keys enter an exact FIFO buffer; once it contains 128+64 rows, the oldest 64 are incorporated
+into the low-rank history. The value cache retains protected prompt rows and a recent window of
+128 rows exactly. The value rank budget rV also determines the number of rows used in the initial
+value refit. Once rV unprotected value rows have left the recent window, we append them to the
+reconstructed prompt value history and recompute a truncated SVD with rank budget rV . Later
+value updates use 64-row blocks. Incomplete blocks remain uncompressed. Recent and eligible
+unprotected rows share one exact buffer, with eligibility determined by position. The separate WX
+and QX in Algorithms 1 and 2 are logical index lists for these two subsets.
+Residual basis construction.
+The update schedule is determined by the number of eligible rows,
+independently of the residual threshold. For a block F, we first compute E = F −(FB)B⊤and
+then replace it by E −(EB)B⊤to reduce residual components along the current basis caused by
+finite precision. If ∥E∥F ≤τ or k = d, the residual basis is empty. Otherwise, we compute a
+reduced QR factorization E⊤= QERE and an SVD RE = LEDEH⊤
+E . Let δ1 ≥δ2 ≥· · · denote
+the singular values on the diagonal of DE. The retained residual basis is defined by
+τeff = max(τ, ϵ max(b, d)∥F∥F ) ,
+p = min(d −k, #{i : δi > τeff}) ,
+P = QELE[:, 1 : p],
+where ϵ is machine epsilon at the computation precision and τ = 10−6 by default. The lower-right
+block of the core matrix is FP, which equals EP when the residual is exact and B⊤P = 0.
+A.2
+EVALUATION PROTOCOLS
+MATH-500.
+We evaluate DeepSeek-R1-Distill-Llama-8B and Qwen3-8B in BF16 on all 500
+questions. Prompts use each model’s chat template and request a boxed final answer. Each question
+receives one generation with temperature 0.6, top-p = 0.95, top-k = 50, maximum total length
+16,384, and a fixed question-specific seed. The original model, iS-KV, and R-KV use the same
+questions, prompts, seeds, and answer evaluator, and every reported row covers all 500 questions.
+12
+
+
+Memory accounting.
+All cache numbers are persistent analytical bytes validated against the factor
+layout in (7). Temporary reconstruction tensors and model weights are excluded. Compression
+ratios in the main table use the original model’s output lengths. The implementation has no fused
+factor-aware attention kernel, and no throughput or peak-HBM advantage is claimed.
+R-KV matching.
+R-KV uses its released Hugging Face implementation, divide length 128, and a
+128-token staging buffer. On DeepSeek-R1-Distill-Llama-8B, retained budgets 748, 562, and 409
+match iS-KV ranks 128, 96, and 64 at 4.060×, 4.813×, and 5.920× compression. Their paired
+accuracy advantages are 4.4, 5.4, and 5.6 points, with question-bootstrap 95% intervals [1.6, 7.2],
+[2.0, 8.8], and [2.2, 9.0]. On Qwen3-8B, budget 638 is matched using the original model’s mean
+total length of 4,317.452 tokens. Rank-96 iS-KV and R-KV then give 5.6442× and 5.6410× com-
+pression; their relative mismatch is 0.056%. R-KV staging rows are included in every calculation.
+OjaKV evaluation.
+Table 2 reports our evaluation of the released OjaKV implementation on
+DeepSeek-R1-Distill-Llama-8B and MATH-500. The released checkpoint, configured with error-
+budget parameter 0.075, retains approximately 77% of the original model’s persistent KV storage.
+It answers 310/500 questions correctly; three empty outputs count as incorrect. For higher com-
+pression, we change its aggregate ranks to 232, 192, and 152, targeting 4.06×, 4.81×, and 5.92×
+compression. These runs are stopped after 30, 28, and 60 generations, respectively: every collected
+output repeats until the approximately 16K-token limit, without emitting EOS. These outputs are
+not scored.
+Component ablation.
+The key/value ablation and the frozen-basis ablation use a fixed prefix of 80
+MATH-500 questions on DeepSeek-R1-Distill-Llama-8B, with the same prompts, seeds, evaluator,
+and single-generation protocol as the main MATH-500 runs. All compressed variants use rank 96,
+exact recent windows of 128 rows, block size 64, and reorthogonalization every 256 folded rows.
+The frozen-basis variant initializes both low-rank bases from the prompt, freezes them before the
+first decode fold, and keeps the same exact recent windows afterwards.
+RULER.
+The rank-96 configuration of the 64K RULER evaluation uses exact recent windows of
+128 rows but an earlier update setting: folds contain 16 rows and reorthogonalization runs every 32
+folded rows. Every task has ten examples. Table 4 also lists the different update and recent-window
+settings of the rank-160 configuration.
+Factor precision at a 32K budget.
+The persistent factors are FP16 in the MATH-500 runs. At a
+32,768-token generation budget on Qwen3-8B they overflow: entries exceed the FP16 maximum of
+65,504, become ±∞, and the logits turn into NaN. On the same question, we observed this with three
+versions of our code: the version used for the main table, the latest version, and the latest version
+with all speed optimizations turned off, at 13K, 19K, and 55K decoded tokens, respectively. FP32
+and BF16 factors both completed the same generation, so the failure comes from the representation
+rather than from one implementation. The original model and R-KV are unaffected because they
+store raw keys and values in BF16, whose largest finite value is about 3.4 × 1038, whereas iS-KV
+stores derived factors that are updated incrementally and grow with sequence length.
+We therefore store factors in BF16 for all 32K experiments. BF16 occupies the same two bytes as
+FP16, so the compression ratios are unchanged; FP32 would cut Qwen3-8B rank-128 compression
+from 6.47× to about 3.8×. BF16 gives up three mantissa bits for a much larger range. Because
+BF16 and FP16 factors do not give bitwise identical results, we report the 32K results as a sep-
+arate configuration and do not rerun MATH-500 in BF16. In the one setting run in both formats,
+DeepSeek-R1-Distill-Llama-8B at rank 128 on AIME 2024, accuracy is the same (56.7%), but BF16
+lengthens mean generations from 15,541 to 18,126 tokens and doubles the share of generations that
+reach the length limit from 13% to 27%. The lower precision therefore still changes when generation
+stops.
+A.3
+PROBE SETTINGS
+Settings of Figure 1.
+Panel (a) uses the longest trace of DeepSeek-R1-Distill-Llama-8B and
+Qwen3-8B on each of MATH-500, AIME 2024, and AIME 2025. At decode step 1024, tokens
+are ranked by their average attention over the preceding 32 steps, and the bottom 75% are marked.
+13
+
+
+No token is removed, so this panel does not measure the accuracy of eviction; Table 1 does. A
+marked token counts as strongly attended once its attention at a later step exceeds 25 times the uni-
+form value 1/n, where n is the number of visible tokens. Attention is measured at layer 15. Panel
+(b) uses four 8K-token AIME 2024 decode traces per model; singular values are divided by the
+largest, and medians are taken over layers and then over traces. In panels (a) and (b), lines show
+two-model means and bands show two-model ranges. Panel (c) uses the update-rule probe below:
+three DeepSeek traces, layers 0, 15, and 31, rank 32, and 64-row blocks. Drift is the relative error
+with respect to the represented history before each update, not the original KV cache; it differs from
+the factor drift of (8). Dashed lines update the basis and keep the old coordinates; solid lines update
+the basis and all old coordinates jointly, which in exact arithmetic equals the iS-KV update (Propo-
+sitions 1 and 2). Lines show means and bands span layer-averaged traces. All bands are observed
+ranges, not confidence intervals.
+Fidelity probes.
+Factor drift reconstructs the low-rank state and compares it with a fresh SVD of
+the same represented history at the same rank. The update-rule probe extracts query, key, and value
+features from MATH samples 138, 450, and 216 at layers 0, 15, and 31, then compares a stale-
+coordinate basis update with a synchronized Brand update using rank 32 and a 64-row block. End-
+to-end probes teacher-force the original model’s continuation through rank-96 and rank-64 caches
+and report centered vocabulary-logit error, top-1 agreement, EOS-logit shift, and teacher-token logit
+shift.
+A.4
+PROPERTIES OF THE BLOCK UPDATE
+We establish the reconstruction, truncation, and reorthogonalization properties of one block update.
+The analysis concerns the concatenation of the maintained low-rank history and the arriving block,
+as defined in Equation (2).
+Proposition 1 (Exact block incorporation before truncation). Assume exact arithmetic and A =
+UΣB⊤, with orthonormal columns in U and B. For a new block F, let P have orthonormal columns
+spanning the complete row space of E = F −(FB)B⊤. If the core Z in Equation (3) is factorized
+without truncation, the update in Equation (4) satisfies
+U +Σ+(B+)⊤=
+
+A
+F
+
+.
+Proof. Since B⊤P = 0 and E = EPP ⊤, the arriving block satisfies F = (FB)B⊤+ (FP)P ⊤.
+Hence
+
+A
+F
+
+=
+
+U
+0
+0
+Ib
+ 
+Σ
+0
+FB
+FP
+
+[B P]⊤.
+Substituting the untruncated SVD of Z yields Equation (4).
+Proposition 2 (Optimal local truncation). Under the assumptions of Proposition 1, let M = [A; F]
+and let σ1(Z) ≥· · · ≥σq(Z) be the singular values of the core. Let Mr be the reconstruction
+obtained by retaining its leading min(r, q) singular components. Then
+∥M −Mr∥F =
+ 
+q
+X
+i=r+1
+σi(Z)2
+!1/2
+=
+min
+c
+M∈R(n+b)×d
+rank(c
+M)≤r
+∥M −c
+M∥F .
+Proof. The outer factors in Equation (3) have orthonormal columns, so M and Z have the same
+nonzero singular values. The result follows from the Eckart–Young–Mirsky theorem.
+Effect of residual thresholding.
+When P retains only part of the residual row space, define
+R⊥= F −(FB)B⊤−(FP)P ⊤. Assuming exact arithmetic, orthonormal columns in U, B, P,
+and B⊤P = 0, the discarded component is orthogonal to the retained feature subspace. The update
+therefore satisfies
+∥M −c
+M +∥2
+F = ∥R⊥∥2
+F +
+X
+i>r
+σi(Z)2.
+14
+
+
+This follows by decomposing the error into its orthogonal components inside and outside
+span([B P]). The discarded core singular values therefore characterize the full error only when
+the residual basis spans the complete residual row space. Finite-precision factors introduce further
+deviations from these exact-arithmetic identities.
+Local optimality and factor drift.
+The optimality in Proposition 2 is local to the maintained
+history and the arriving block. Since the maintained history already incorporates earlier approxima-
+tions, successive updates need not recover the rank-r SVD of the original uncompressed history. For
+a nonzero reference matrix X used to evaluate reconstruction, let b
+Xinc denote the incremental ap-
+proximation and b
+Xfresh the direct truncated-SVD approximation at the same rank. Their difference
+in relative reconstruction error is
+δ = ∥b
+Xinc −X∥F
+∥X∥F
+−∥b
+Xfresh −X∥F
+∥X∥F
+.
+(8)
+This quantity, referred to as factor drift, measures excess relative reconstruction error. Logit probes
+against the original model and free-generation probes evaluate the effects of cache approximation
+on model outputs.
+Proposition 3 (Product-preserving reorthogonalization). In exact arithmetic, the periodic reorthog-
+onalization used by iS-KV leaves UΣB⊤unchanged.
+Proof. Let U = QURU and B = QBRB be thin QR factorizations, and let RUΣR⊤
+B = eU eΣ eB⊤
+be an untruncated SVD. The factors QU eU, eΣ, and QB eB have the same product UΣB⊤. In finite
+precision, the factors are orthonormal up to computation roundoff; casting them to storage precision
+introduces additional rounding error.
+Proposition 4 (Block-update cost). For block size b, width d, rank budget r, and n factorized rows,
+projection and residual computation require O(bdr) work. Residual basis construction factorizes a
+d × b matrix, and the core matrix has at most r + b rows and columns. Updating the historical coef-
+ficients costs O(nr(r + b)). Persistent factor storage is O((n + d)r). Periodic reorthogonalization
+adds work that depends on the number n of historical rows.
+A.5
+NUMERICAL DIAGNOSTICS
+Residual threshold.
+These probes test the numerical fidelity of the update, not the gap to the
+original KV cache or generation quality. With an invalid, oversized residual threshold, value drift
+reaches 0.961 (step 1,024, layer 0) and 0.906 (step 2,048, layer 15); the stable update gives 0.0001
+and 0.0109 at the same points.
+Drift over a long trajectory.
+We measure the drift of (8) on one AIME 2024 trajectory that never
+emits EOS (8,192 decoded rows, FP16 persistent factors, reorthogonalization every 256 folded
+rows). Table 5 gives the values at step 8,192. The key path stays within 0.007 excess error and
+the value path within 0.016–0.021, so the numerical cost of the incremental update is far smaller
+than truncation itself on keys, and values are the more constrained of the two.
+Table 5: Factor drift at step 8,192. Excess relative reconstruction error (8) on one AIME 2024
+trajectory, by path, rank, and layer.
+r = 96
+r = 128
+Path
+L0
+L15
+L31
+L0
+L15
+L31
+key
+0.0024
+0.0071
+0.0046
+0.0016
+0.0065
+0.0043
+value
+0.0207
+0.0176
+0.0168
+0.0194
+0.0185
+0.0160
+Reorthogonalization.
+On the same states, reorthogonalization reduces the basis orthogonality er-
+ror ∥U ⊤U −I∥F from 9.5 × 10−3 to 1.1 × 10−3 (layer 15, r=128; 8–10×), while the median
+relative change of the represented product across reorthogonalization events is 2.4 × 10−4, consis-
+tent with Proposition 3. Within 8K steps, reorthogonalization does not reduce reconstruction error;
+it keeps the bases orthogonal, which guards against error build-up in longer generations.
+15
+
+
+Per-depth spectra.
+For pre-RoPE keys, the rank r99% that keeps 99% of the spectral energy is
+not stable across depth: beyond layer 3, its coefficient of variation is 0.19 on DeepSeek-R1-Distill-
+Llama-8B and 0.26 on Qwen3-8B, where it spans 122–338. The energy kept at the ranks we use is
+stable: at r=128 the coefficient of variation across depth is ≤0.023 for both key paths and ≤0.055
+for values. This stability, not a constant r99%, is what supports a single rank setting for all layers.
+B
+ALGORITHMS
+The prefill initialization and per-step decoding procedures summarized in Section 3 are specified
+in Algorithms 1 and 2. The accompanying paragraphs walk through their steps and point to the
+definitions and equations they instantiate.
+Prefill initialization (Algorithm 1).
+Algorithm 1 realizes the construction of Section 3.1. It first
+evaluates exact causal attention over the prompt, so the prefill outputs never depend on the com-
+pressed representation. It then selects the protected key positions PK from the chunk outlier scores
+sc,h of Section 3, taking the union of the selected chunks with the local suffix and dilating them by
+ρ positions to form the protected value positions PV ; the last min(w, L) prompt positions initialize
+the exact recent windows WK and WV . For each of K and V , the exact set EX = PX ∪WX is
+stored verbatim and the remaining positions CX = I \ EX are factorized by the truncated SVD
+SVDrX of Section 3, retaining kX = min(rX, |CX|, d) components. The pending queues QX and
+update counters cX start empty, and the flag fV records that the one-time value refit of Section 3.2
+is still pending.
+Algorithm 1 iS-KV: prefill initialization at one layer
+Input: Prompt queries Q and keys K before RoPE, values V , positions I = {1, . . . , L}
+Parameters: Rank budgets rK, rV , window size w, protection settings from Section 3.1
+Output: Prefill output O; cache S with factors, exact rows, position lists, ranks, counters, and flag fV
+1 O ←CausalAttn(RoPEI(Q), RoPEI(K), V )
+▷Exact prefill attention
+2 PK ←union of outlier-chunk positions across heads and the local suffix
+▷Outlier scores, Section 3
+3 PV ←{i ∈I : ∃j ∈PK, |i −j| ≤ρ}
+4 WK ←∅; WV ←the last min(w, L) prompt positions
+▷Initialize recent windows
+5 for X ∈{K, V } do
+6
+EX ←PX ∪WX; CX ←I \ EX, ordered by position
+7
+Xexact[EX] ←X[EX]
+8
+(UX, ΣX, BX) ←SVDrX (X[CX])
+9
+kX ←min(rX, |CX|, d); QX ←∅; cX ←0
+10 fV ←true
+▷Initial value refit is pending
+Decoding step (Algorithm 2).
+Algorithm 2 maintains the cache of Section 3.2 during generation.
+For each of the key and value streams it stores the arriving row exactly, advances the recent window,
+and enqueues the unprotected positions that leave it. A fold is triggered once the queue holds a
+full block: an empty history is initialized by a truncated SVD of the block, the pending value refit
+appends the oldest rV rows to the reconstructed value history and recomputes a rank-rV truncated
+SVD, and otherwise the BLOCKUPDATE subprocedure applies the synchronized block-incremental
+update of (3) and (4). Queue occupancy sets the update timing, the tolerance τ controls the residual
+basis of Section A.1, and the factors are reorthogonalized every T folded rows, which preserves
+their product by Proposition 3. The folded positions move from the queue into the compressed set
+CX, and the exact set becomes EX = PX ∪WX ∪QX. The remaining steps reconstruct the cache
+in token order by (5) and form the attention output of (6) (Section 3.3).
+16
+
+
+Algorithm 2 iS-KV: one decoding step at one layer
+Input: Cache S, pre-RoPE query qt and key kt, value vt, position t
+Parameters: Rank budgets rK, rV , window w, block size b, tolerance τ, reorthogonalization interval T
+Output: Attention output ot and updated cache S
+1 for (X, xt) ∈{(K, kt), (V, vt)} do
+▷Update the cache state
+2
+Store xt exactly at position t and advance WX
+3
+Enqueue positions leaving WX and outside PX in QX
+4
+a ←rV if X = V and fV , otherwise b
+5
+if |QX| ≥a then
+6
+J ←the oldest a positions in QX; F ←Xexact[J]
+7
+if X = V and fV then
+8
+(UV , ΣV , BV ) ←SVDrV ([UV ΣV B⊤
+V ; F]); fV ←false
+9
+else
+10
+(UX, ΣX, BX) ←BLOCKUPDATE(UX, ΣX, BX, F; rX, τ); cX ←cX + b
+11
+if T > 0 and cX ≥T then
+12
+Reorthogonalize (UX, ΣX, BX); cX ←cX mod T
+▷Proposition 3
+13
+kX ←the number of columns of BX
+14
+Append J to CX; remove J from QX and delete the corresponding exact rows
+15
+EX ←PX ∪WX ∪QX
+▷Reconstruct the cache and evaluate attention
+16 Reconstruct e
+K, eV in token order by Equation (5)
+17 Restore head dimensions; apply RoPE to keys and qt at their original positions
+18 Compute ot by Equation (6)
+BlockUpdate: for an empty low-rank history, return SVDrX (F). Otherwise, construct P using tolerance τ,
+truncate the core SVD in Equation (3) to rank budget rX, and return the updated factors in Equation (4).
+17

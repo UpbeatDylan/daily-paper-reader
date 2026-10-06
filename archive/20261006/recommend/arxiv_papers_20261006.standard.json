@@ -1,0 +1,287 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-06T00:35:21.931589+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2610.02233v1",
+      "source": "arxiv",
+      "title": "Budgeted Cache Repair for Cross-Context KV-Cache Reuse",
+      "abstract": "Cross-context KV-cache reuse predicts a shared segment's keys and values under a new prefix instead of recomputing them, and has been reported to do so without quality loss. We find otherwise, and identify two problems. (1) A hidden cost: on MMLU and GSM8K, reuse costs substantial accuracy. (2) A decision at the wrong unit: no rule for deciding whether to reuse a cache removes that cost. What does help is choosing which parts of the cache to recompute, and the value of choosing well falls as the unit of choice grows: informed selection removes 49.5% of the cache error beyond chance at single rows (one token's keys and values), 10.6% at 64-token chunks, and nothing at the level of whole calls. Budgeted Cache Repair (BCR) acts at the unit where selection still pays. It drafts two tokens from the assembled cache, ranks cache rows by the attention those tokens pay them, and recomputes a fixed budget of rows exactly, in one of three layouts. The cost is paid rather than predicted away, and the draft that fails as a gate succeeds as a selector. BCR restores GSM8K to dense-prefill accuracy while still serving most calls from cache, and its best layout outperforms every reuse baseline's mean in the reference grid. The draft also beats a coin-flip selector at the same budget - a control prior evaluations lack.",
+      "authors": [
+        "Haeyong Kang",
+        "Chang D. Yoo"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-09-27T07:57:28+00:00",
+      "link": "https://arxiv.org/pdf/2610.02233v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "cross-context KV-cache reuse and selective recomputation",
+      "llm_evidence_cn": "跨上下文KV缓存复用与选择性重算",
+      "llm_evidence": "跨上下文KV缓存复用与选择性重算",
+      "canonical_evidence": "跨上下文KV缓存复用与选择性重算",
+      "llm_tldr_en": "Cross-context KV-cache reuse was claimed lossless but actually costs accuracy. Budgeted Cache Repair selects which cache parts to recompute at the single-token row level, removing 49.5% of cache error beyond chance versus nothing at whole-call granularity, giving fine-grained repair for cache reuse.",
+      "llm_tldr_cn": "跨上下文KV缓存复用被报道可在不损失质量的情况下预测共享段在新前缀下的键值，但论文发现并非如此：在MMLU与GSM8K上复用会带来显著准确率下降。论文提出预算化缓存修复BCR，在单token行这一仍具选择价值的粒度上决定哪些缓存部分需要重算。实验显示，单行粒度选择可消除超出随机水平的百分之四十九点五缓存误差，而在整调用粒度上则无收益，为缓存复用提供了细粒度质量控制方法。",
+      "llm_tldr": "跨上下文KV缓存复用被报道可在不损失质量的情况下预测共享段在新前缀下的键值，但论文发现并非如此：在MMLU与GSM8K上复用会带来显著准确率下降。论文提出预算化缓存修复BCR，在单token行这一仍具选择价值的粒度上决定哪些缓存部分需要重算。实验显示，单行粒度选择可消除超出随机水平的百分之四十九点五缓存误差，而在整调用粒度上则无收益，为缓存复用提供了细粒度质量控制方法。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.03198v1",
+      "source": "arxiv",
+      "title": "KV$^2$: A Self-Refining KV Cache",
+      "abstract": "The memory footprint of the key-value (KV) cache constrains the practical use of long-context models, and it dominates cost when one prefilled context must later serve many different queries. In this reusable setting, query-agnostic compression trades cost against quality: lightweight estimators are cheap but less accurate, whereas full-context reconstruction scoring is more accurate yet reprocesses the entire prompt. We introduce KV$^2$, a query-agnostic KV-cache compression method based on selective reconstruction. KV$^2$ first uses a lightweight proxy scorer to identify informative in-context tokens, then reprocesses only this subset to compute final eviction scores. On RULER, Needle-in-a-Haystack, and LongBench, KV$^2$'s margin over baselines widens as the budget tightens: on RULER 16K at a 2% KV-cache budget it improves the average score over the next-best baseline by more than 40 percentage points, and on LongBench it attains the highest average across 2%-10% budgets at lower compression-stage runtime and peak memory than full-context reconstruction. Reusable KV-cache compression thus does not require reprocessing the full context. Our code is available at https://anonymous.4open.science/r/KVsquared-0B97.",
+      "authors": [
+        "Johannes Wesch",
+        "Danni Liu",
+        "Jan Niehues"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-10-02T12:11:35+00:00",
+      "link": "https://arxiv.org/pdf/2610.03198v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "query-agnostic KV compression for reusable prefilled context",
+      "llm_evidence_cn": "可复用预填充场景的查询无关KV压缩",
+      "llm_evidence": "可复用预填充场景的查询无关KV压缩",
+      "canonical_evidence": "可复用预填充场景的查询无关KV压缩",
+      "llm_tldr_en": "KV^2 tackles KV cache memory cost in reusable prefilled contexts via query-agnostic selective reconstruction, using a cheap proxy scorer then reprocessing only top tokens for eviction scores, with gains widening as budget tightens.",
+      "llm_tldr_cn": "针对长上下文模型中KV缓存占用显存、且预填充上下文需服务多个查询时成本高昂的问题，本文提出查询无关压缩方法KV$^2$。该方法先用轻量代理打分器筛出信息量大的token，再仅对这些子集重算淘汰分数，从而兼顾低成本与高精度。在RULER、Needle-in-a-Haystack与LongBench上，预算越紧其相对基线优势越明显，说明选择性重建可在可复用场景下高效压缩缓存。",
+      "llm_tldr": "针对长上下文模型中KV缓存占用显存、且预填充上下文需服务多个查询时成本高昂的问题，本文提出查询无关压缩方法KV$^2$。该方法先用轻量代理打分器筛出信息量大的token，再仅对这些子集重算淘汰分数，从而兼顾低成本与高精度。在RULER、Needle-in-a-Haystack与LongBench上，预算越紧其相对基线优势越明显，说明选择性重建可在可复用场景下高效压缩缓存。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2610.02815v1",
+      "source": "arxiv",
+      "title": "iS-KV: Online Low-Rank KV Cache Compression via Block-Incremental SVD",
+      "abstract": "Long chain-of-thought reasoning substantially increases KV-cache memory during autoregressive decoding, as every generated token introduces new key and value states and causes the cache to grow linearly with decoding length. Existing KV-cache compression methods typically control this growth through token eviction, but irreversible deletion can remove historical states that later reasoning may need to revisit. SVD-based low-rank compression provides an alternative by retaining all positions with a more compact representation. However, extending it from a fixed prompt cache to online decoding is non-trivial. Through our investigation, we find that if the basis is updated for new tokens while old tokens keep their coordinates in the old basis, the stored history drifts substantially. Based on this observation, we propose iS-KV, an online low-rank KV-cache compression method for long-horizon reasoning. iS-KV keeps a recent window exact while incrementally folding older states into bounded-rank representations. As the low-rank basis evolves, it synchronizes historical coordinates with the updated basis to maintain representation consistency. On DeepSeek-R1-Distill-Llama-8B, iS-KV achieves 82.6% accuracy at 4.06-fold persistent-KV compression, close to the original model's 83.6%. On Qwen3-8B, it achieves 89.2% accuracy at 5.64-fold compression. Under matched memory budgets, iS-KV consistently outperforms token-eviction baselines.",
+      "authors": [
+        "Yiren Zhao",
+        "Guanghui Song",
+        "Tianrui Qin",
+        "Kejiang Ye",
+        "Cheng-zhong Xu",
+        "Xitong Gao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-02T05:03:12+00:00",
+      "link": "https://arxiv.org/pdf/2610.02815v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "online low-rank KV cache compression for long decoding",
+      "llm_evidence_cn": "面向长解码的在线低秩KV缓存压缩",
+      "llm_evidence": "面向长解码的在线低秩KV缓存压缩",
+      "canonical_evidence": "面向长解码的在线低秩KV缓存压缩",
+      "llm_tldr_en": "Long chain-of-thought decoding inflates the KV cache linearly. iS-KV compresses it online using block-incremental SVD low-rank representation, avoiding irreversible token eviction; the study shows coordinate consistency for old tokens is needed when updating the basis, enabling compact online decoding.",
+      "llm_tldr_cn": "长思维链推理使KV缓存随解码长度线性增长，而现有token驱逐方法会不可逆地删除后续推理可能需要的状态。论文提出iS-KV，通过块增量SVD在在线解码中实现低秩KV缓存压缩，从而以更紧凑的表示保留全部位置。研究发现，当为新token更新基时若旧token沿用旧坐标会破坏表示一致性，需加以协调。该工作为在线解码场景下的低秩KV缓存压缩提供了可行方案，有助于长推理的内存控制。",
+      "llm_tldr": "长思维链推理使KV缓存随解码长度线性增长，而现有token驱逐方法会不可逆地删除后续推理可能需要的状态。论文提出iS-KV，通过块增量SVD在在线解码中实现低秩KV缓存压缩，从而以更紧凑的表示保留全部位置。研究发现，当为新token更新基时若旧token沿用旧坐标会破坏表示一致性，需加以协调。该工作为在线解码场景下的低秩KV缓存压缩提供了可行方案，有助于长推理的内存控制。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.38981v1",
+      "source": "arxiv",
+      "title": "Vosti: Specifying, Implementing, and Verifying Deterministic LLM Inference",
+      "abstract": "LLM inference systems may vary batch composition, prompt chunking, prefill/decode execution, and KV-cache reuse, eviction, or recomputation. These optimizations should not affect system outputs. Production systems, including vLLM's batch-invariant mode and SGLang's deterministic mode, target this goal but lack a formal system-level specification.   We formalize deterministic LLM inference: under a fixed model and deployment configuration, requests with the same prompt and initial sampler state produce bitwise-identical logits at corresponding output positions across executions. Our tests find that these production modes produce different logits under some execution variations. To address this limitation, we present Vosti, an inference engine designed and verified against this specification. Vosti chooses kernels independently of runtime engine state and ties cached KV values to their logical token prefixes. Its proof decomposes at the engine/GPU kernel boundary: a Verus inductive proof establishes that scheduling and the paged, prefix-sharing KV-cache preserve output logits, while a Triton analyzer proves bitwise-equal selected kernel outputs across batches, query lengths, and paged KV-cache layouts. Vosti produces bitwise-identical logits across every tested execution variation and achieves performance comparable to vLLM's batch-invariant mode on decode-heavy workloads, while providing a stronger, formally verified determinism guarantee.",
+      "authors": [
+        "Jianxing Qin",
+        "Alexander Du",
+        "Danfeng Zhang",
+        "Matthew Lentz",
+        "Danyang Zhuo"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.PL"
+      ],
+      "published": "2026-09-30T04:58:09+00:00",
+      "link": "https://arxiv.org/pdf/2609.38981v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "formalizing deterministic LLM inference with KV-cache reuse, eviction and recomputation",
+      "llm_evidence_cn": "面向含KV缓存复用、驱逐与重计算的确定性LLM推理规约",
+      "llm_evidence": "面向含KV缓存复用、驱逐与重计算的确定性LLM推理规约",
+      "canonical_evidence": "面向含KV缓存复用、驱逐与重计算的确定性LLM推理规约",
+      "llm_tldr_en": "LLM inference varies batch, chunking and KV-cache reuse, which should not change outputs; Vosti formalizes deterministic inference and shows vLLM and SGLang deterministic modes can still produce differing logits.",
+      "llm_tldr_cn": "LLM推理系统会改变批组合、提示分块、预填充与解码执行，以及KV缓存的复用、驱逐或重计算，这些优化本不应影响输出，但现有生产系统缺乏系统级形式化规约。本文形式化确定性LLM推理：在固定模型与部署配置下，相同提示和初始采样状态的请求应在各次执行中于对应输出位置产生逐位一致的logits。测试发现vLLM与SGLang的确定性模式在某些执行变化下仍产生不同logits，为此作者提出Vosti推理引擎设计以修复该局限。",
+      "llm_tldr": "LLM推理系统会改变批组合、提示分块、预填充与解码执行，以及KV缓存的复用、驱逐或重计算，这些优化本不应影响输出，但现有生产系统缺乏系统级形式化规约。本文形式化确定性LLM推理：在固定模型与部署配置下，相同提示和初始采样状态的请求应在各次执行中于对应输出位置产生逐位一致的logits。测试发现vLLM与SGLang的确定性模式在某些执行变化下仍产生不同logits，为此作者提出Vosti推理引擎设计以修复该局限。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.02953v1",
+      "source": "arxiv",
+      "title": "SlimKV: Joint Token-Feature KV Cache Compression with Reconstruction-Free Beacon Attention",
+      "abstract": "Long-context LLM serving is increasingly bottlenecked by KV-cache memory, especially in resource-constrained scenarios. Among existing KV-cache compression strategies, token-wise methods reduce cached states but risk information loss through eviction or condensation, while feature-wise methods reduce per-token KV dimensions but can require full-dimensional reconstruction to apply positional embedding, limiting decoding speedups. We introduce SlimKV, a question-agnostic joint token-feature KV-cache compression method. SlimKV uses low-rank-aware training to compress long contexts into beacon memory states with latent KV representations, together with layer-adaptive rank allocation. We further uncover a positional asymmetry: removing key-side RoPE affects beacon and raw tokens differently, with much smaller degradation for beacon tokens. Exploiting this asymmetry, SlimKV trains beacon KV projections under a K-RoPE-free constraint and enables latent-space attention during decoding, mitigating reconstruction latency. On LongBench, SlimKV outperforms baselines at 16x/32x compression and remains leading at 4x/8x, where it retains over 96% of the uncompressed model's score. Needle-in-a-Haystack confirms robustness across evidence positions, and efficiency evaluation shows up to 7.34x attention speedup and 3.38x end-to-end decoding speedup over the uncompressed model at 128K length.",
+      "authors": [
+        "Zihan Teng",
+        "Jiayu Zhao",
+        "Wentao Ren",
+        "Minhao Fan",
+        "Tianrui Ma",
+        "Song Chen",
+        "Weichen Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-02T07:45:42+00:00",
+      "link": "https://arxiv.org/pdf/2610.02953v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "joint token-feature KV cache compression for long-context serving",
+      "llm_evidence_cn": "面向长上下文服务的令牌-特征联合KV缓存压缩",
+      "llm_evidence": "面向长上下文服务的令牌-特征联合KV缓存压缩",
+      "canonical_evidence": "面向长上下文服务的令牌-特征联合KV缓存压缩",
+      "llm_tldr_en": "SlimKV is a question-agnostic joint token-feature KV cache compression method using low-rank-aware training and reconstruction-free beacon attention to speed up long-context decoding.",
+      "llm_tldr_cn": "长上下文LLM服务日益受KV缓存内存制约，令牌级压缩易因驱逐或凝聚丢失信息，特征级压缩则常需全维重建以施加位置编码，限制解码加速。本文提出SlimKV，一种问题无关的令牌-特征联合KV缓存压缩方法，通过低秩感知训练将长上下文压缩为带潜在KV表示的灯塔记忆状态，并进行层自适应秩分配。该方法还揭示了移除键的位置不对称性，避免重建开销，为长上下文解码带来更优的速度与内存折衷。",
+      "llm_tldr": "长上下文LLM服务日益受KV缓存内存制约，令牌级压缩易因驱逐或凝聚丢失信息，特征级压缩则常需全维重建以施加位置编码，限制解码加速。本文提出SlimKV，一种问题无关的令牌-特征联合KV缓存压缩方法，通过低秩感知训练将长上下文压缩为带潜在KV表示的灯塔记忆状态，并进行层自适应秩分配。该方法还揭示了移除键的位置不对称性，避免重建开销，为长上下文解码带来更优的速度与内存折衷。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.03027v1",
+      "source": "arxiv",
+      "title": "Tailoring the Quantization Space for 1-Bit KV Cache Compression",
+      "abstract": "The key-value (KV) cache becomes a major memory bottleneck in long-context LLM inference, placing substantial pressure on memory capacity and bandwidth. To mitigate this bottleneck, vector quantization (VQ) has emerged as a promising approach for aggressive KV cache compression. However, existing VQ methods degrade substantially in the 1-bit regime. At such extreme compression, each codebook must represent a larger group of channels with a limited set of centroids, making effective use of its capacity increasingly challenging. To address this, we introduce $\\textbf{TaSQ}$, which tailors the VQ target space by combining query-guided channel weighting, cross-head normalization, and covariance-aware channel grouping to better reflect the error sensitivity and statistical structure of cached activations. Since these transforms are RoPE-compatible and can be easily merged into projection weights and codebooks, TaSQ preserves the conventional VQ lookup structure and adds negligible serving overhead. Across general, long-chain-of-thought reasoning, and long-context retrieval benchmarks, TaSQ consistently outperforms existing low-bit KV cache VQ baselines while preserving reasoning stability. On a single RTX 6000 Ada GPU, its SGLang implementation supports up to $14\\times$ larger batch sizes and achieves $1.87\\times$ higher peak throughput compared to the BF16 baseline.",
+      "authors": [
+        "Minsoo Cheong",
+        "Donghyun Son",
+        "Sungjoo Yoo"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-10-02T09:04:25+00:00",
+      "link": "https://arxiv.org/pdf/2610.03027v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "1-bit KV cache compression for long-context inference memory bottleneck",
+      "llm_evidence_cn": "缓解长上下文推理内存瓶颈的1比特KV缓存压缩",
+      "llm_evidence": "缓解长上下文推理内存瓶颈的1比特KV缓存压缩",
+      "canonical_evidence": "缓解长上下文推理内存瓶颈的1比特KV缓存压缩",
+      "llm_tldr_en": "TaSQ tailors the vector-quantization target space with query-guided channel weighting, cross-head normalization and covariance-aware grouping to improve 1-bit KV cache compression.",
+      "llm_tldr_cn": "长上下文LLM推理中KV缓存成为主要内存瓶颈，向量量化是激进压缩的有力手段，但现有方法在1比特极低比特区间显著退化：每个码本需以有限质心表示更多通道，容量利用愈发困难。本文提出TaSQ，通过查询引导的通道加权、跨头归一化与协方差感知的通道分组来定制量化目标空间。该方法更好地反映误差敏感度，改善极端压缩下的KV缓存质量，为长上下文推理节省内存与带宽。",
+      "llm_tldr": "长上下文LLM推理中KV缓存成为主要内存瓶颈，向量量化是激进压缩的有力手段，但现有方法在1比特极低比特区间显著退化：每个码本需以有限质心表示更多通道，容量利用愈发困难。本文提出TaSQ，通过查询引导的通道加权、跨头归一化与协方差感知的通道分组来定制量化目标空间。该方法更好地反映误差敏感度，改善极端压缩下的KV缓存质量，为长上下文推理节省内存与带宽。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.03135v1",
+      "source": "arxiv",
+      "title": "Page-EntroKV: Hardware-Aligned, Entropy-Weighted KV-Cache Eviction under Grouped-Query Attention",
+      "abstract": "Serving long-context autoregressive language models is constrained by the key-value (KV) cache. Most dynamic eviction methods score token importance per query head and choose tokens independently. This fits poorly with grouped-query attention (GQA), where several query heads share one physical KV buffer: divergent per-head selections force the serving engine to retain the union of their choices - inflating the cache by up to the group ratio r - while arithmetic mean pooling dilutes the specialized retrieval heads that carry factual recall. We introduce Page-EntroKV, a formal framework for KV-cache eviction operating at the granularity GQA serving actually allocates. Heads within each physical group are pooled by weights derived from sink-isolated collision (Renyi-2) entropy - one inner product per head, computed once at prefill with no calibration - so sink heads cannot masquerade as retrieval heads. Pooled scores are projected onto PagedAttention page frames, and eviction executes at the hardware tuple (layer, group, page). We formalize the union overhead ratio (UOR) and intra-group disagreement, prove an exact identity linking them for two-head groups alongside two-sided bounds at every group ratio, prove strict budget preservation and a finite-context needle-retention bound that arithmetic mean pooling provably violates, and give exact per-layer page accounting. On a pilot architecture (Qwen2.5-1.5B-Instruct, r=6), head-independent replay over 2,240 group measurements yields union overhead up to 4.75x at a 2% budget, while Page-EntroKV holds UOR exactly 1.000; sink isolation removes a 13x sink masquerade; needle recall is 100% versus 0% for mean pooling at a 20% budget; retained cardinality is exact for every page size; and QA and code tasks remain solvable at 20% retention.",
+      "authors": [
+        "Inbasekaran S"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-02T11:01:39+00:00",
+      "link": "https://arxiv.org/pdf/2610.03135v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV-cache eviction framework for long-context autoregressive serving",
+      "llm_evidence_cn": "面向长上下文自回归服务的KV缓存驱逐框架",
+      "llm_evidence": "面向长上下文自回归服务的KV缓存驱逐框架",
+      "canonical_evidence": "面向长上下文自回归服务的KV缓存驱逐框架",
+      "llm_tldr_en": "Page-EntroKV is a hardware-aligned KV-cache eviction framework for grouped-query attention that pools heads within physical groups by entropy-derived weights, avoiding cache inflation and recall loss.",
+      "llm_tldr_cn": "长上下文自回归模型服务受KV缓存制约，现有动态驱逐方法按查询头独立打分，与分组查询注意力（GQA）中多头共享物理缓存的结构不匹配，导致缓存膨胀并稀释关键检索头。本文提出Page-EntroKV，在GQA实际分配的粒度上进行缓存驱逐，按熵推导的权重对组内头进行池化。该框架缓解了按头选择带来的并集膨胀与均值池化的信息损失，提升长上下文服务的内存效率与检索保真度。",
+      "llm_tldr": "长上下文自回归模型服务受KV缓存制约，现有动态驱逐方法按查询头独立打分，与分组查询注意力（GQA）中多头共享物理缓存的结构不匹配，导致缓存膨胀并稀释关键检索头。本文提出Page-EntroKV，在GQA实际分配的粒度上进行缓存驱逐，按熵推导的权重对组内头进行池化。该框架缓解了按头选择带来的并集膨胀与均值池化的信息损失，提升长上下文服务的内存效率与检索保真度。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
