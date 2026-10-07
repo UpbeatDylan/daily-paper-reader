@@ -6,59 +6,39 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-10-06
-- 运行时间：2026-10-06 23:48:25 UTC
+- 最新运行日期：2026-10-07
+- 运行时间：2026-10-07 23:20:39 UTC
 - 运行状态：成功
-- 本次总论文数：13
-- 精读区：2
-- 速读区：11
+- 本次总论文数：6
+- 精读区：0
+- 速读区：6
 
 ### 今日简报（AI）
-今日13篇日报聚焦KV Cache：2篇精读（均8.0）领
-- 详情：[/202610/06/README](/202610/06/README)
+今日速读6篇，聚焦KV Cache压缩与淘汰新方法，含AttSVD与蒙特卡洛估计两篇7分工作。最值得看的是注意力引导的SVD低秩压缩思路，以及用蒙特卡洛估计做KV淘汰的轻量方案。普通读者可优先了解这两条KV Cache优化路线的异同。
+- 详情：[/202610/07/README](/202610/07/README)
 
 ### 精读区论文标签
-1. [KV$^2$: A Self-Refining KV Cache](/202610/06/2610.03198v1-kv2-a-self-refining-kv-cache)  
-   标签：评分：8.0/10、query:pic
-   evidence：面向可复用预填充上下文的KV缓存压缩
-2. [Request Order Matters: Cache-History Sensitivity in Selective KV-Cache Reuse for Rolling Agents](/202610/06/2610.05833v1-request-order-matters-cache-history-sensitivity-in-selective-kv-cache-reuse-for-rolling-agents)  
-   标签：评分：8.0/10、query:pic
-   evidence：面向滚动智能体的非前缀KV缓存复用与选择性重算
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [CORE: COverage CAlibration and Evicted-Mass REdistribution for KV Cache](/202610/06/2610.02235v1-core-coverage-calibration-and-evicted-mass-redistribution-for-kv-cache)  
+1. [AttSVD:Prompt-Adaptive Low-Rank KV Cache Compression via Attention-Guided SVD](/202610/07/2610.06927v1-attsvdprompt-adaptive-low-rank-kv-cache-compression-via-attention-guided-svd)  
    标签：评分：7.0/10、query:pic
-   evidence：面向长上下文解码的KV缓存压缩
-2. [AvoKV-E: Payload-Aware KV Cache Eviction for Long Reasoning](/202610/06/2610.03007v1-avokv-e-payload-aware-kv-cache-eviction-for-long-reasoning)  
+   evidence：提示自适应低秩KV缓存压缩
+2. [Monte Carlo Estimation for KV Cache Eviction](/202610/07/2610.07643v1-monte-carlo-estimation-for-kv-cache-eviction)  
    标签：评分：7.0/10、query:pic
-   evidence：面向长推理的免训练KV缓存淘汰
-3. [Tailoring the Quantization Space for 1-Bit KV Cache Compression](/202610/06/2610.03027v1-tailoring-the-quantization-space-for-1-bit-kv-cache-compression)  
-   标签：评分：7.0/10、query:pic
-   evidence：面向长上下文推理的1比特KV缓存压缩
-4. [Page-EntroKV: Hardware-Aligned, Entropy-Weighted KV-Cache Eviction under Grouped-Query Attention](/202610/06/2610.03135v1-page-entrokv-hardware-aligned-entropy-weighted-kv-cache-eviction-under-grouped-query-attention)  
-   标签：评分：7.0/10、query:pic
-   evidence：分组查询注意力下的KV缓存淘汰
-5. [MOIRA: Mass-Oriented Indexing with Ragged Attention for Long-Context Decoding](/202610/06/2610.04313v1-moira-mass-oriented-indexing-with-ragged-attention-for-long-context-decoding)  
-   标签：评分：7.0/10、query:pic
-   evidence：稀疏KV缓存解码加速长上下文
-6. [SharpDraft: Accelerating Long-Context Speculative Decoding with Cardinality-Aware Query Scaling](/202610/06/2610.05106v1-sharpdraft-accelerating-long-context-speculative-decoding-with-cardinality-aware-query-scaling)  
-   标签：评分：7.0/10、query:pic
-   evidence：通过查询缩放加速长上下文解码
-7. [DeferKV: Rethinking Eviction Timing for One-Shot KV Cache Compression](/202610/06/2610.06286v1-deferkv-rethinking-eviction-timing-for-one-shot-kv-cache-compression)  
-   标签：评分：7.0/10、query:pic
-   evidence：一次性KV缓存压缩与驱逐时机
-8. [iS-KV: Online Low-Rank KV Cache Compression via Block-Incremental SVD](/202610/06/2610.02815v1-is-kv-online-low-rank-kv-cache-compression-via-block-incremental-svd)  
+   evidence：基于蒙特卡洛估计的未来感知KV缓存逐出
+3. [CARET: Training-Free Test-Time Scaling for Repository-Level Code Completion](/202610/07/2610.04837v1-caret-training-free-test-time-scaling-for-repository-level-code-completion)  
    标签：评分：6.0/10、query:pic
-   evidence：面向长推理解码的在线低秩KV缓存压缩
-9. [SlimKV: Joint Token-Feature KV Cache Compression with Reconstruction-Free Beacon Attention](/202610/06/2610.02953v1-slimkv-joint-token-feature-kv-cache-compression-with-reconstruction-free-beacon-attention)  
+   evidence：在缓存的提示前缀上采样候选，长上下文只编码一次
+4. [The Optimization Landscape of Learning Compacted Context Models](/202610/07/2610.05885v1-the-optimization-landscape-of-learning-compacted-context-models)  
    标签：评分：6.0/10、query:pic
-   evidence：面向长上下文LLM服务的token-特征联合KV缓存压缩
-10. [Behavior-Preserving KV Cache Compression](/202610/06/2610.06479v1-behavior-preserving-kv-cache-compression)  
+   evidence：以优化方式压缩KV缓存以支持长上下文
+5. [Mask-Guided KV Cache Eviction in Block Diffusion Language Models](/202610/07/2610.06996v1-mask-guided-kv-cache-eviction-in-block-diffusion-language-models)  
    标签：评分：6.0/10、query:pic
-   evidence：面向长上下文推理的行为保持型KV缓存压缩
-11. [OVAL: Output-Aware Local Page Bases for KV Cache Retrieval](/202610/06/2610.06686v1-oval-output-aware-local-page-bases-for-kv-cache-retrieval)  
+   evidence：块扩散语言模型中掩码引导的KV缓存逐出与选择
+6. [ReFold: Training-Free Reversible Inter-Turn Context Folding for Long-Horizon Agents](/202610/07/2610.07863v1-refold-training-free-reversible-inter-turn-context-folding-for-long-horizon-agents)  
    标签：评分：6.0/10、query:pic
-   evidence：面向长上下文KV缓存检索的输出感知页编码
+   evidence：免训练上下文折叠，避免使前缀缓存失效
 
 
 <div class="dpr-home-promo-card">

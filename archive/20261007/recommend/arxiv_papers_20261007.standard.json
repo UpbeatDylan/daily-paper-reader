@@ -1,0 +1,258 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-07T23:17:34.442291+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 6,
+    "quick_skim_target": 11,
+    "quick_selected": 6
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2610.06927v1",
+      "source": "arxiv",
+      "title": "AttSVD:Prompt-Adaptive Low-Rank KV Cache Compression via Attention-Guided SVD",
+      "abstract": "The key-value (KV) cache of autoregressive transformers grows linearly with context length and dominates memory at long context. Most training-free remedies evict low-importance tokens, an irreversible choice along the sequence axis. We instead keep every token and store it more cheaply along the \"feature\" axis. We therefore propose AttSVD, a new \"interpretable\" low-rank compression whose basis is derived from each prompt's own attention geometry: an online, per-prompt truncated SVD that keeps only the directions attention actually reads, cutting persistent per-head KV memory in proportion to the retained rank. We propose two decode-time caching strategies, accumulating and streaming, for short and long generation regimes. Furthermore, we propose two refinements that make compression adaptive. A per-matrix energy rule sizes the logit space and the attention mass independently. An attention-aware basis truncates only in the spaces attention actually reads, preserving both the attention logits and the attention output. The same factors also provide free, per-head interpretability insights into the effective rank and the geometry attention consumes. Across multiple models, on both an agentic benchmark and the full LongBench suite AttSVD stays on par with the dense cache while using up to 50% of the KV-cache memory.",
+      "authors": [
+        "Sara Abdali",
+        "Jongwoo Ko",
+        "Pashmina Cameron"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-03T00:33:53+00:00",
+      "link": "https://arxiv.org/pdf/2610.06927v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "prompt-adaptive low-rank KV cache compression",
+      "llm_evidence_cn": "提示自适应低秩KV缓存压缩",
+      "llm_evidence": "提示自适应低秩KV缓存压缩",
+      "canonical_evidence": "提示自适应低秩KV缓存压缩",
+      "llm_tldr_en": "AttSVD compresses KV cache along the feature axis via prompt-adaptive online truncated SVD guided by each prompt's attention geometry, with accumulating and streaming decode strategies.",
+      "llm_tldr_cn": "自回归Transformer的KV缓存随上下文线性增长并主导长上下文显存，现有免训练方法多按序列轴不可逆地丢弃低重要性token。本文提出AttSVD，转而沿特征轴压缩，利用每个提示自身的注意力几何做在线截断SVD，仅保留注意力真正读取的方向，并按保留秩成比例降低每头KV内存。作者还提出累积与流式两种解码缓存策略，兼顾短与长生成场景，为可解释的KV缓存低秩压缩提供了新路径。",
+      "llm_tldr": "自回归Transformer的KV缓存随上下文线性增长并主导长上下文显存，现有免训练方法多按序列轴不可逆地丢弃低重要性token。本文提出AttSVD，转而沿特征轴压缩，利用每个提示自身的注意力几何做在线截断SVD，仅保留注意力真正读取的方向，并按保留秩成比例降低每头KV内存。作者还提出累积与流式两种解码缓存策略，兼顾短与长生成场景，为可解释的KV缓存低秩压缩提供了新路径。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "What are the latest methods for KV cache reuse in LLM inference?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.04837v1",
+      "source": "arxiv",
+      "title": "CARET: Training-Free Test-Time Scaling for Repository-Level Code Completion",
+      "abstract": "Retrieval-augmented generation (RAG) dominates repository-level code completion: it retrieves cross-file context (R), then decodes one greedy completion (G). Existing work mainly focuses on retrieval and stops there. We argue both stages can be improved together, with generation in particular gaining from test-time scaling. We present CARET, a training-free method. For R, CARET routes among retrieval contexts using the agreement among its own samples, cascading to an alternative context when the samples scatter. For G, it samples candidates over a cached prompt prefix, so the long retrieved context is encoded once rather than once per sample. It then selects the final completion by reverse-context likelihood: a correct completion makes the code after the cursor more probable, so the same model grades its own candidates by reading ahead. Across CrossCodeEval, RepoEval-Line, and RepoEval-API with six code models (1.1B to 7B, four families), CARET improves exact match in all 18 combinations by 10.8 points on average over greedy decoding and 5.3 over self-consistency@10. Token-level compute stays near 1.45 times one generation (measured wall-clock 1.3-2.9 times, growing with generator size). Improving retrieval and generation together yields more accurate code than improving retrieval alone, at a budget that stays close to a single pass.",
+      "authors": [
+        "Jiajie Wang",
+        "Yutong Zhao",
+        "Kebin Peng",
+        "Sen He",
+        "Qing Guo",
+        "Tianlin Li"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE"
+      ],
+      "published": "2026-10-04T00:45:13+00:00",
+      "link": "https://arxiv.org/pdf/2610.04837v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "samples candidates over a cached prompt prefix so long context is encoded once",
+      "llm_evidence_cn": "在缓存的提示前缀上采样候选，长上下文只编码一次",
+      "llm_evidence": "在缓存的提示前缀上采样候选，长上下文只编码一次",
+      "canonical_evidence": "在缓存的提示前缀上采样候选，长上下文只编码一次",
+      "llm_tldr_en": "CARET is a training-free method for repository-level code completion that routes retrieval contexts by sample agreement and samples candidates over a cached prompt prefix, encoding long context once and selecting via reverse-context likelihood.",
+      "llm_tldr_cn": "仓库级代码补全通常先检索跨文件上下文再贪心解码一次，检索与生成阶段未协同优化。CARET提出免训练方法，在检索端依据样本一致性路由上下文，在生成端于缓存的提示前缀上采样多个候选，使长检索上下文只编码一次。随后用反向上下文似然选择最终补全。该工作通过缓存前缀复用降低重复编码开销并提升补全质量。",
+      "llm_tldr": "仓库级代码补全通常先检索跨文件上下文再贪心解码一次，检索与生成阶段未协同优化。CARET提出免训练方法，在检索端依据样本一致性路由上下文，在生成端于缓存的提示前缀上采样多个候选，使长检索上下文只编码一次。随后用反向上下文似然选择最终补全。该工作通过缓存前缀复用降低重复编码开销并提升补全质量。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prefix caching techniques for LLM inference",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.07643v1",
+      "source": "arxiv",
+      "title": "Monte Carlo Estimation for KV Cache Eviction",
+      "abstract": "Most KV-cache eviction methods ask, in effect, which memory appeared important while reading the prompt? We instead ask, which memory will matter while answering? Since decoding queries are unavailable at eviction time, prior future-aware methods rely on pseudo-responses or synthetic future-query estimates. We cast fixed-budget future-aware eviction as distributional estimation over plausible model-conditional query trajectories and introduce LORE-KV (Lookahead Output-perturbation with Reliability-weighted Ensembles for Key-Value caches), a training-free method that samples short autoregressive continuations from the frozen target model and uses their response-side query states to estimate prompt-token utility. Tokens are scored by projected leave-one-out attention-output deletion cost and aggregated across sampled futures with optional trajectory weighting. The temporary continuations are discarded before final decoding, requiring no auxiliary model or training. Ablations isolate the mechanism: at B=128, a single response-side continuation recovers about 89% of the gain over the prompt-window control, while additional futures provide smaller improvements. At B=128, LORE-KV raises the LongBench average on Qwen2.5-14B from 45.49 to 48.24 (+2.75) and the 16K RULER average on Mistral-7B from 45.20 to 51.05 (+5.85). Gains diminish at larger cache budgets and coexist with task-level regressions. LORE-KV incurs 1.46-2.77x AnDPro's per-sample wall-clock time as a one-time compression overhead across six dense and hybrid-attention backbones.",
+      "authors": [
+        "Ahsan Bilal",
+        "Muhammad Ahmed Mohsin",
+        "Muhammad Umer",
+        "Wajih Hassan Raza",
+        "Atta Ul Asad",
+        "Young D. Kwon",
+        "Michal Valko",
+        "Dean F. Hougen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-10-06T02:36:50+00:00",
+      "link": "https://arxiv.org/pdf/2610.07643v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "future-aware KV cache eviction via Monte Carlo estimation",
+      "llm_evidence_cn": "基于蒙特卡洛估计的未来感知KV缓存逐出",
+      "llm_evidence": "基于蒙特卡洛估计的未来感知KV缓存逐出",
+      "canonical_evidence": "基于蒙特卡洛估计的未来感知KV缓存逐出",
+      "llm_tldr_en": "LORE-KV reframes fixed-budget KV cache eviction as distributional estimation over plausible future query trajectories, sampling short continuations from the frozen model to score prompt-token utility without training.",
+      "llm_tldr_cn": "多数KV缓存逐出方法只问读取提示时哪些记忆看似重要，而非回答时哪些记忆真正重要。由于逐出时解码查询不可得，本文把固定预算的未来感知逐出建模为对可能查询轨迹的分布估计，提出免训练方法LORE-KV，从冻结目标模型采样短自回归续写，用响应侧查询状态估计提示token效用。该工作为长上下文推理的KV缓存逐出提供了面向未来查询的估计框架。",
+      "llm_tldr": "多数KV缓存逐出方法只问读取提示时哪些记忆看似重要，而非回答时哪些记忆真正重要。由于逐出时解码查询不可得，本文把固定预算的未来感知逐出建模为对可能查询轨迹的分布估计，提出免训练方法LORE-KV，从冻结目标模型采样短自回归续写，用响应侧查询状态估计提示token效用。该工作为长上下文推理的KV缓存逐出提供了面向未来查询的估计框架。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.05885v1",
+      "source": "arxiv",
+      "title": "The Optimization Landscape of Learning Compacted Context Models",
+      "abstract": "Many works approach continual learning through the lens of infinite context windows. As an agent puts more observation into context (concretely the KV cache), compacting said context is akin to direct memory manipulation, without affecting the base model's weights. Many works pose KV compaction as an optimization problem: learn a smaller set of KV vectors that matches the behavior of the full KV cache. While this preserves base model behavior, optimizing through a frozen base model results in a highly nontrivial optimization problem with a brittle and flat loss landscape. In this paper, we characterize what makes these optimization problems difficult and demonstrate that a heavily simplified Perceiver-based architecture not only matches performance of a full Perceiver transformer in continuous context compaction, but outperforms baselines on compaction utility. Results are presented on MCQ tasks across Finance, Legal, Gutenberg, and Code.",
+      "authors": [
+        "Thomas Villeneuve",
+        "Alex Sandomirsky",
+        "Charles O'Neill",
+        "Max Kirkby",
+        "Michael Psenka"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-05T07:00:44+00:00",
+      "link": "https://arxiv.org/pdf/2610.05885v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache compaction as optimization for long context",
+      "llm_evidence_cn": "以优化方式压缩KV缓存以支持长上下文",
+      "llm_evidence": "以优化方式压缩KV缓存以支持长上下文",
+      "canonical_evidence": "以优化方式压缩KV缓存以支持长上下文",
+      "llm_tldr_en": "This work studies how to compact the KV cache by learning a smaller set of KV vectors that mimic the full cache. It characterizes why optimizing through a frozen model is hard and shows a simplified Perceiver matches full-cache behavior, aiding long-context inference efficiency.",
+      "llm_tldr_cn": "长上下文智能体不断把观察写入KV缓存，直接压缩上下文成为提升推理效率的关键。本文将KV压缩建模为优化问题，学习一组更小的KV向量以匹配完整KV缓存的行为，同时保持基座模型不变。作者刻画了该优化问题损失景观脆弱平坦的难点，并证明一个大幅简化的Perceiver架构即可匹配完整KV缓存的性能。该工作为上下文压缩与KV缓存优化提供了理论刻画和高效架构方向。",
+      "llm_tldr": "长上下文智能体不断把观察写入KV缓存，直接压缩上下文成为提升推理效率的关键。本文将KV压缩建模为优化问题，学习一组更小的KV向量以匹配完整KV缓存的行为，同时保持基座模型不变。作者刻画了该优化问题损失景观脆弱平坦的难点，并证明一个大幅简化的Perceiver架构即可匹配完整KV缓存的性能。该工作为上下文压缩与KV缓存优化提供了理论刻画和高效架构方向。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.06996v1",
+      "source": "arxiv",
+      "title": "Mask-Guided KV Cache Eviction in Block Diffusion Language Models",
+      "abstract": "Block diffusion language models keep a large key-value (KV) cache throughout generation and attend to it at every denoising step, limiting both memory capacity and generation speed. Reducing these costs requires deciding which past tokens to use for denoising the current block (selection) and which to keep in memory for future blocks (eviction). We propose MaskAhead, a training-free method that solves both tasks with a single mask-query-based ranking mechanism. Current-block masks guide selection, while probes of upcoming masked blocks guide eviction. Both rank KV entries by their estimated contribution to the attention output. Our quantized variant, Q-MaskAhead, computes selection and attention directly from low-bit KV, largely preserving the selected entries. Experiments on Fast-dLLM-v2, DreamReasoner, and LLaDA2.0-mini cover long-generation reasoning, long-prompt question answering, and needle-in-a-haystack retrieval. On long-prompt QA, MaskAhead reduces KV memory by $9.5\\times$ on average with a 1.2-point mean F1 loss relative to dense inference. Q-MaskAhead increases the reduction to $20.1\\times$ with a 2.3-point mean F1 loss. In a batch-32 systems profile, MaskAhead achieves $1.23\\times$ end-to-end and $1.68\\times$ decode-stage speedups over dense inference.",
+      "authors": [
+        "Gleb Molodtsov",
+        "Ekaterina Alimaskina",
+        "Evgeny Uskov",
+        "Artur Zagitov",
+        "Aleksandr Beznosikov"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-10-04T07:52:31+00:00",
+      "link": "https://arxiv.org/pdf/2610.06996v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "mask-guided KV cache eviction and selection in block diffusion language models",
+      "llm_evidence_cn": "块扩散语言模型中掩码引导的KV缓存逐出与选择",
+      "llm_evidence": "块扩散语言模型中掩码引导的KV缓存逐出与选择",
+      "canonical_evidence": "块扩散语言模型中掩码引导的KV缓存逐出与选择",
+      "llm_tldr_en": "MaskAhead is a training-free method that uses a single mask-query-based ranking to jointly solve KV cache selection and eviction in block diffusion language models, with a quantized variant computing from low-bit KV.",
+      "llm_tldr_cn": "块扩散语言模型在整个生成过程中保留庞大KV缓存并在每个去噪步对其做注意力，限制内存容量与生成速度。降低开销需同时决定当前块去噪用哪些过去token（选择）以及未来块保留哪些（逐出）。本文提出免训练方法MaskAhead，用单一掩码-查询排序机制同时解决两任务：当前块掩码指导选择，未来掩码块探测指导逐出。其量化变体Q-MaskAhead直接从低位KV计算，较好保留被选条目。",
+      "llm_tldr": "块扩散语言模型在整个生成过程中保留庞大KV缓存并在每个去噪步对其做注意力，限制内存容量与生成速度。降低开销需同时决定当前块去噪用哪些过去token（选择）以及未来块保留哪些（逐出）。本文提出免训练方法MaskAhead，用单一掩码-查询排序机制同时解决两任务：当前块掩码指导选择，未来掩码块探测指导逐出。其量化变体Q-MaskAhead直接从低位KV计算，较好保留被选条目。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.07863v1",
+      "source": "arxiv",
+      "title": "ReFold: Training-Free Reversible Inter-Turn Context Folding for Long-Horizon Agents",
+      "abstract": "Long-horizon LLM agents act on an append-only interaction history that is re-sent to the model at every step, so the context and its cost grow with steps until the sessions exceed the context window. Existing methods manage the context through context requirement prediction, relying on additional model calls, heuristic rules, or trained policies. However, these predictive approaches introduce runtime overhead, invalidate prefix caches, and permanently discard content with no guarantee of recovery. To overcome these limitations, we introduce ReFold: a training-free rendering layer that preserves the underlying interaction history while compressing only the model's rendered context. It removes two kinds of inter-turn redundancy without an auxiliary predictor: content an earlier turn already displayed, replaced by a stub, and turns the agent itself reports finished, folded into a one-line note. Both operators use chunked rendering, rewriting the cached prefix once every few steps rather than at every step. Every removal is strictly reversible, a wrong removal costs one restore from the history rather than permanent content loss. Because it operates at the rendering layer, ReFold is plug-and-play across standard ReAct-style harnesses. Evaluations across five long-horizon benchmarks and two frontier LLMs demonstrate that ReFold reduces token consumption by up to 2.5x and halves the KV-cache memory per session without degrading task success rates. Under capped context budgets, it avoids up to 92% of forced compactions. Under concurrent serving workloads, it reduces request queuing delays by up to 100%, accelerating inference by up to 1.7x, while cutting inference costs by up to 3.4x.",
+      "authors": [
+        "Yupeng Su",
+        "Jiayi Tian",
+        "Zheng Zhang",
+        "Souvik Kundu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-10-06T07:09:54+00:00",
+      "link": "https://arxiv.org/pdf/2610.07863v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "training-free context folding that avoids invalidating prefix caches for long-horizon agents",
+      "llm_evidence_cn": "免训练上下文折叠，避免使前缀缓存失效",
+      "llm_evidence": "免训练上下文折叠，避免使前缀缓存失效",
+      "canonical_evidence": "免训练上下文折叠，避免使前缀缓存失效",
+      "llm_tldr_en": "ReFold is a training-free rendering layer that compresses only the model-rendered context of long-horizon agents, removing inter-turn redundancy while preserving the history and avoiding prefix-cache invalidation.",
+      "llm_tldr_cn": "长程LLM智能体每步都会重发追加式交互历史，导致上下文与成本随步数增长并超出窗口。现有上下文管理依赖预测，带来运行时开销、使前缀缓存失效并不可逆丢弃内容。ReFold提出免训练渲染层，保留底层历史而仅压缩模型渲染的上下文，去除跨轮冗余。它避免了额外模型调用并保护前缀缓存，为长程智能体上下文管理提供可逆方案。",
+      "llm_tldr": "长程LLM智能体每步都会重发追加式交互历史，导致上下文与成本随步数增长并超出窗口。现有上下文管理依赖预测，带来运行时开销、使前缀缓存失效并不可逆丢弃内容。ReFold提出免训练渲染层，保留底层历史而仅压缩模型渲染的上下文，去除跨轮冗余。它避免了额外模型调用并保护前缀缓存，为长程智能体上下文管理提供可逆方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "context caching for long context LLM inference",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

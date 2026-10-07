@@ -1,0 +1,420 @@
+Title: CARET: Training-Free Test-Time Scaling for Repository-Level Code Completion
+
+URL Source: https://arxiv.org/pdf/2610.04837v1
+
+Published Time: Tue, 06 Oct 2026 01:14:55 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# CARET : Training-Free Test-Time Scaling for Repository-Level Code Completion 
+
+Jiajie Wang 
+
+The University of Arizona 
+
+jiajiewang@arizona.edu 
+
+Yutong Zhao 
+
+California State University, Long Beach 
+
+yutong.zhao@csulb.edu 
+
+Kebin Peng 
+
+East Carolina University 
+
+pengk24@ecu.edu 
+
+Sen He 
+
+The University of Arizona 
+
+senhe@arizona.edu 
+
+Qing Guo 
+
+Nankai University 
+
+qing.guo@nankai.edu.cn 
+
+Tianlin Li 
+
+Nanyang Technological University, Singapore 
+
+tianlin001@e.ntu.edu.sg 
+
+Abstract —Retrieval-augmented generation (RAG) dominates repository-level code completion: it retrieves cross-file context (R), then decodes one greedy completion (G). Existing work mainly focuses on retrieval and stops there. We argue both stages can be improved together, with generation in particular gaining from test-time scaling. We present C ARET , a training-free method. For R, C ARET routes among retrieval contexts using the agreement among its own samples, cascading to an alternative context when the samples scatter. For G, it samples candidates over a cached prompt prefix, so the long retrieved context is encoded once rather than once per sample. It then selects the final completion by reverse-context likelihood: a correct completion makes the code after the cursor more probable, so the same model grades its own candidates by reading ahead. Across CrossCodeEval, RepoEval-Line, and RepoEval-API with six code models (1.1B to 7B, four families), C ARET improves exact match in all 18 combinations by 10.8 points on average over greedy decoding and 5.3 over self-consistency@10. Token-level compute stays near 1.45 times one generation (measured wall-clock 1.3– 2.9 times, growing with generator size). Improving retrieval and generation together yields more accurate code than improving retrieval alone, at a budget that stays close to a single pass. 
+
+Index Terms —code completion, retrieval-augmented genera-tion, test-time scaling, large language models 
+
+I. I NTRODUCTION 
+
+Repository-level code completion asks a language model to complete code in a file using knowledge of the whole repos-itory; we study its most frequent granularity, the next line or API call at the cursor. The correct answer often depends on identifiers, signatures, and call patterns defined elsewhere in the project [1–3]. A model that sees only the current file misses these cross-file dependencies. Missing context, rather than limited model capacity, is the dominant failure mode [1]. The central problem is therefore supplying the right evidence from the repository before the model decodes. Current approaches to repository-level code completion mainly concentrate on what to retrieve. Retrieval-augmented generation (RAG) assembles cross-file evidence into the prompt through iterative lexical retrieval [2], dataflow analy-sis [4], code graphs [5], learned retrievers [6], and multi-source fusion [7, 8], then decode once with greedy search. However, 
+
+whole-pipeline optimization from retrieval to generation remains underexplored , especially the generation stage. This motivation is further supported by our motivating study in Section II-E. To address this, we propose C ARET , which improves both stages of the pipeline under one inference budget. Figure 1 sketches the pass. For retrieval and routing (R) , C ARET 
+
+reads the agreement among its own samples (the fraction matching the modal candidate) and re-samples from an al-ternative retrieval context only when agreement is low. For 
+
+generation (G) , it scales test-time compute by sampling over a cached prompt prefix, which encodes the long retrieved context once rather than once per sample, and reranks the distinct candidates by their reverse-context likelihood blended with vote frequency, skipping scoring when agreement is already high. The same small model performs every step, with no second model, training, or labels. The central problem is to raise accuracy while keeping the cost increase within a reasonable range. Sampling many candidates and scoring them is the standard way to raise accu-racy [9, 10], but each extra sample re-encodes the prompt and verifier-based selection adds a scoring pass per candidate [11– 13]; on the long repository prompts here, naive sampling multiplies an already heavy cost, and reported multi-pass methods reach up to 1.9 times one generation (Section II). CARET ’s cached prefix and skip-and-deduplicate rules hold this increase to a small factor, and Section II shows that test-time selection already helps without any retrieval, at little extra cost. Thorough evaluation shows that C ARET improves all 18 model–benchmark combinations over greedy decoding and over self-consistency@10 [9], by +10 .8 and +5 .3 EM on aver-age, the best accuracy among the reproduced baselines under a common prompting and budget protocol. Our strongest gener-ator, DeepSeek-Coder-6.7B, reaches 47.74 EM on RepoEval-API and 43.88 on RepoEval-Line with C ARET , above every retrieval baseline by +7 .6 and +9 .4 EM. We claim that a small, training-free test-time budget spent across both stages of the pipeline (retrieval with routing, and generation with sampling and selection) yields more accurate code than im-proving retrieval alone, and does so for every generator we arXiv:2610.04837v1 [cs.SE] 4 Oct 2026 Fig. 1. The C ARET pass. Retrieval and routing (R) pick a context using sample agreement; generation (G) samples candidates over a cached prefix; a final selection step reranks distinct candidates by reverse-context likelihood and vote frequency. 
+
+tried. We claim the following contributions.  
+
+> •
+
+We developed C ARET , a training-free method that opti-mizes the whole retrieval-augmented completion pipeline, both retrieval and generation, without incurring signifi-cant extra cost.  
+
+> •
+
+For retrieval, we develop agreement-gated cascade rout-ing across retrieval contexts (R), which reuses sample agreement to commit to one context or fall through to an alternative, recovering complementarity that a fixed choice forfeits.  
+
+> •
+
+For generation, we develop cache-aware sampling (G) that encodes the long context once, and the reverse-context verification (RCV) selector that turns the code after the cursor into a verifier, with skip-and-deduplicate rules that bound cost.  
+
+> •
+
+Thorough evaluation on three benchmarks (CrossCodeE-val, RepoEval-Line, RepoEval-API) and six LLMs (1.1B to 7B, four families), where C ARET reaches the best budget-conscious accuracy in all 18 combinations among the reproduced baselines under a common protocol, with a full replication package released upon acceptance. The rest of this paper is organized as follows. Section II covers background, related work, and the motivating study, showing why retrieval-only optimization is insufficient and why test-time selection can improve repository-level code completion. Section III presents the design of C ARET , in-cluding agreement-gated retrieval routing, cache-aware candi-date generation, reverse-context verification, and the skip-and-deduplicate cost controls. Section IV describes the experimen-tal setup, including benchmarks, models, baselines, metrics, and implementation details. Section V reports the evaluation results across CrossCodeEval, RepoEval-Line, and RepoEval-API, and analyzes the accuracy, cost, and ablation results of C ARET . Section VI discusses threats to validity and the broader implications of the results. Section VII concludes the paper and outlines future work. II. B ACKGROUND AND RELATED WORK 
+
+A. Repository-Level Code Completion 
+
+Repository-level completion is defined by where the evidence comes from (other files of the repository), not by how much is completed. We study its line and API-invocation granu-larity [1, 2]: the completion an IDE offers inline at every pause, where the request rate is highest and the latency budget tightest [14], and where a single reference line is a reasonable proxy for correctness because a statement admits far fewer equivalent forms than a function body. Function-level completion is a different regime, with longer outputs, weaker agreement, and execution-based metrics; we return to it in §VI. A task instance is a tuple (Xl, X r , R, y ). The left context Xl
+
+precedes the completion point in the current file, the right context Xr follows it, R is the set of remaining repository files, and y is the reference completion. A generator M, a pretrained code language model [15–17], produces a candidate 
+
+ˆy. Correct completions often hinge on identifiers, signatures, and usage patterns defined in other files, so prompting with the current file alone performs poorly [1, 3]. The standard remedy is retrieval augmentation: a retriever maps (Xl, R) to a token-budgeted base context C, and the completion is decoded as 
+
+ˆy ∼ M (· | C ⊕ Xl), where ⊕ denotes prompt concatenation. Three public benchmarks instantiate this task, each instance shipping all four tuple components. CrossCodeEval (Python) contains 2,124 line-completion tasks constructed so the target needs cross-file information [1]. RepoEval-Line contains 1,600 line-completion tasks, and RepoEval-API 687 API-invocation tasks over 8 repositories [2, 18]. The primary metric is exact match (EM) of the first non-comment generated line against the reference; edit similarity (ES) [19] is secondary. One property of the setting recurs below. The right context 
+
+Xr is available at completion time: mid-file completion is the common case in these benchmarks and in fill-in-the-middle training [20], and every instance ships Xr . Under the causal prompting we adopt for all six generators, Xr never enters the prompt: an available but unused signal. 
+
+B. Retrieval-Augmented Generation 
+
+Repository-level retrieval-augmented generation (RAG) im-proves what goes into the base context C. RepoCoder retrieves iteratively, feeding a draft completion back into the next retrieval round [2]. DraCo follows dataflow to pull in the definitions a completion will use [4], and GraphCoder retrieves over a code context graph [5]. RLCoder trains a retriever with reinforcement learning [6], while RLPG and CoCoMIC learn prompt-proposal or import structure [21, 22]. Fusion methods such as RepoFuse and CodeRAG merge several sources into one prompt [7, 8]. The cost profile is uniform across this line: each method spends its entire budget before decoding, assembles one C, commits to it for every task, and decodes once. Even RepoCoder’s iterations only refine retrieval, and fusion still merges its sources into a single prompt. A second line decides whether to retrieve at all. Repoformer trains a gate that skips retrieval when the model is already con-fident [18], and Self-RAG, FLARE, SKR, and Adaptive-RAG learn similar policies for when or how much to retrieve [23– 26]. These trained gates decide retrieval timing. We instead decide which retrieved context to trust, training-free and post hoc: the decision uses the samples a context produces, not a learned predictor of the context. 
+
+C. Test-Time Scaling 
+
+Test-time scaling (TTS) spends budget after the prompt is fixed: sample N candidates, then select one. Self-consistency draws several samples and selects by majority voting [9]; we refer to this baseline as self-consistency@10. Repeated sampling scales coverage with N [10, 27]. For code, can-didates are selected through generated tests, execution-based clustering, or minimum-Bayes-risk decoding [28–30], through trained verifiers [11, 12], or through Coder-Reviewer reverse reranking that scores a candidate by how well it regenerates the prompt [13]. These selectors are domain-general and blind to the retrieval context. They are also expensive: sampling costs about N times one generation, and a reranker adds a further pass per candidate. We are aware of no instantiation for repository-level completion that exploits the retrieval context during selection. TTS selection does not, however, depend on retrieval to work. We tested this on zero-shot prompts with no retrieved context: the prompt holds only the in-file left context, and the selector grades candidates against the in-file right context 
+
+Xr . Sampling plus selection beats both greedy decoding and majority voting. On RepoEval-Line EM rises from 27.62 (greedy) to 32.25 (selection), on RepoEval-API from 25.33 to 27.66, against an oracle@10 of 40.31 and 34.35. The API case isolates the gain: majority voting there (24.60) falls below 
+
+greedy, yet the reverse-context verification (RCV) selector (Section III) lifts the same pool above greedy. The improve-ment comes from the selector rather than from sampling luck or vote count. What C ARET adds to this line is not sampling or reranking as such but three specific rules and their combination: agree-ment among a model’s own samples is used as a routing signal across retrieval contexts rather than only as a selection signal; the code after the cursor, which every completion instance ships but causal prompting ignores, is turned into a training-free verifier by scoring the reverse likelihood with the same small model; and a fast path plus distinct-only scoring keep the whole pipeline near one generation’s token budget. Self-consistency [9] selects but does not route; best-of-N with a trained verifier [11] and forward-likelihood reranking rank candidates by how plausible they are, not by whether the file still reads coherently after them; coding agents can look up definitions and revise, but at a per-request latency far from the interactive budget of inline completion. The trade-off is concrete: accuracy rises with modest extra cost as candidates are sampled and selected, while spending more does not always help. RepoCoder’s iterative retrieval sits near 2× the budget without a matching gain, and exhaustive scoring of every sample adds little over scoring distinct candidates only. The open question is whether RAG and TTS can be combined so that the accuracy gains of TTS survive at near single-pass cost. 
+
+D. Cost Model 
+
+To compare methods that spend different budgets, we report 
+
+relative cost : the total LLM forward compute per task (prompt encoding, decoding, and scoring tokens) divided by that of one greedy retrieval-augmented generation, written as a multiplier. Retrieval is excluded; every retrieval-augmented method pays it once per task, independent of N .The intuition is simple. The expensive part of a retrieval-augmented generation is encoding the long retrieved prompt. Prefix caching encodes it once and reuses it, so the N short continuations we sample add only a little on top of one greedy generation rather than N times its cost. Scoring is cheaper still: each reverse-context scoring pass is a single forward pass over a truncated context, a small fraction of one generation. A sample-then-select method therefore decomposes into a cheap sampling term and an even cheaper scoring term. Relative cost is the average number of base contexts sampled per task times 
+
+csamp , the cost of one N -sample batch from a context, plus the average number of distinct candidates scored times crcv , the cost of one reverse-context scoring pass. Both unit costs are small in practice. Drawing a full N -sample batch costs only about 1.1 times one greedy generation, because the long retrieved prefix is encoded once and the N
+
+short continuations ( ≤64 tokens each) decode from the cached KV: csamp ≈ 1.1 rather than N ×. One reverse-context scoring pass, a single teacher-forced forward pass over a truncated context, costs only about 0.054 of a generation: crcv ≈ 0.054 .Section III instantiates this accounting for C ARET , and Sec-tion V reports measured token-level and wall-clock multipliers. The model assumes the shared prefix is cached across the N
+
+samples; without caching, each sample re-encodes the prompt and the realized cost is higher (Section VI). This accounting also sets the bar the method must clear. Across the self-consistency and reranking baselines above, reported test-time overhead reaches up to 1.9× one generation: drawing many samples and scoring every one is what makes TTS expensive. Keeping the gain while staying near single-pass cost is the design target of C ARET .
+
+E. Motivating Study 
+
+We studied how repeated sampling and candidate selection behave on repository-level completion with DeepSeek-Coder-1.3B [16] on the three benchmarks (Section II-A), under the setup of Section IV. For each benchmark we built two base contexts from different retrieval families: the stronger family on that benchmark, A, and the other, B. From each we drew 
+
+N samples (temperature 0.8, top-p 0.95 [31]) plus one greedy completion. A pool solves a task if some candidate exactly matches the reference. Fig. 2 reports three observations on retrieval (R), generation (G), and selection. 
+
+Observation 1 (R): No single context retrieval strategy always wins. The two families solve substantially disjoint task sets. Partitioning tasks by which pool solves them (Fig. 2(a)), 0 20 40 60 80 100 % solvable in 10 samples CCEval RE-Line RE-API                         
+
+> 25 10 16 19 37 33 52 47 48
+> (a) Contexts disagree (R)
+> only ctx Aonly ctx Bboth neither
+> CCEval RE-Line RE-API 050 EM (%)
+> +15 +18 +16
+> (b) Samples hold answers (G)
+> greedy oracle@10
+> 0.2 0.4 0.6 0.8 sample agreement a
+> 050 EM (%)
+> τθ
+> (c) Agreement is calibrated (G)
+> CrossCodeEval RepoEval-Line RepoEval-API Fig. 2. Motivating study with DeepSeek-Coder-1.3B on the three benchmarks, ordered by retrieval (R), generation (G), and selection. (a) Contexts disagree: share of tasks solved within 10 samples under only the stronger context A, only the weaker context B, both, or neither; the two families cover disjoint task sets, and a per-task oracle over them gains up to +6 .0EM. (b) Samples hold the answer: an oracle over 10 samples beats greedy decoding by up to
+> +18 .4EM, with one or two base contexts. (c) Agreement is calibrated: EM of the modal candidate by pool agreement a; dashed lines mark the routing gate
+> τand the skip gate θ.
+
+the stronger context A uniquely solves a sizable share, yet the aggregate-weaker context B still uniquely solves tasks 
+
+A misses. Which family is stronger flips across benchmarks, so no fixed choice transfers. An oracle picking the better context per task gains up to +6 .0 EM over the best fixed context. Fusion methods that merge several retrievers into one prompt [7, 8] dilute this per-task complementarity, which instead calls for a router that chooses a context per task. 
+
+Observation 2 (G): The generation phase has headroom for optimization. An oracle over 10 samples beats greedy decoding by up to +18 .4 EM (Fig. 2(b)); drawing from both contexts’ pools widens the gap further. On RepoEval-Line this headroom is several times the entire benefit of retrieval augmentation over in-file prompting. Though well documented for reasoning and program synthesis [9, 10, 15, 29], it is left unused by repository-level pipelines that decode once. Sampling after retrieval exposes the answer; the open problem is picking it without an oracle. 
+
+Observation 3 (G): Majority voting is a weak strategy, a new selector is required. Let the agreement a of a pool be the fraction of its N samples equal to the modal candidate after normalization. Agreement predicts correctness sharply (Fig. 2(c)): when a ≥ 0.9 the modal candidate is correct on 72–89% of tasks, but when a ≤ 0.2 on only 2–8%. One free statistic thus diagnoses both a failing context (very low a) and a settled task (very high a). Calibration does not make the modal candidate a good answer, though. Vote frequency alone recovers little of the headroom and even falls below greedy on CrossCodeEval, because several distinct yet plausible candidates split the vote and the most common form is often wrong [9, 13, 28]. Selection needs evidence stronger than the count: the still-unused right context is a free verifier, since a correct completion should make the following code more probable. Together, these three observations motivate CARET ’s pipeline (Section III): a router that picks a context per task, sampling that surfaces the answer, and a selector that reads the right context to choose it. III. M ETHODOLOGY 
+
+A. Overview 
+
+CARET runs one training-free pass over the two stages of the pipeline, laid out left to right in Fig. 3, with small code models only and no training or labels: the generator samples the candidates, and a fixed 1.3B scorer (the generator itself in our primary setting) verifies them. In retrieval and routing (R) , given the repository and the cursor, C ARET assembles two base contexts from complementary families and treats one as primary; it samples N candidates from the primary, reads their agreement, and consults the alternative only when agreement is low, routing to whichever pool the samples agree on more (Fig. 3(a), Section III-B). In generation (G) , each consulted context is sampled in one cache-aware batch, the long prefix encoded once, the short continuations decoded from the cached state, and on the routed pool C ARET emits the modal candidate when agreement is high enough, otherwise scoring the distinct candidates by having the same model read the code after the cursor and blending that reverse-context score with vote frequency (Fig. 3(b), Section III-C). The dashed paths in Fig. 3 are cost-saving shortcuts: consult the alternative only on disagreement, skip scoring at high agreement, and score only distinct candidates over truncated contexts. All hyperparameters are global across benchmarks and models (Section VI); the only per-benchmark choice is which context is primary. Cost follows the model of Sec-tion II-D. Take one CrossCodeEval task as an example: its modal sample is get_by_id(1) but the correct line is 
+
+get_by_id(order1.id) . The primary pool agrees at 
+
+a=0 .6: above τ , so routing keeps the primary context, but below θ, so C ARET does not trust the vote and scores the distinct candidates. Reading the code after the cursor, which references order1.id , the reverse-context likelihood ranks 
+
+get_by_id(order1.id) above the more frequent literal-id guess, and the vote blend returns the correct line. One pass through both stages turns a wrong majority into a right answer. 
+
+B. Retrieval with Agreement-Gated Cascade Routing 
+
+Two base retrieval strategies. A base context is the cross-file evidence a retrieval strategy assembles for the prompt (Sec-tion II). C ARET uses one structural and one lexical context, kept separate so the router can choose between them per task. The fused context starts from dataflow-guided retrieval following DraCo [4]: an import-aware def–use analysis links entities in the unfinished file to their cross-file definitions and usages, serialized into the prompt as dataflow slices. Two Fig. 3. Overview of C ARET , in two stages. (a) Retrieval and routing (R) : assemble two base contexts and route to whichever pool the samples agree on more, consulting the alternative only when the primary’s agreement a < τ . (b) Generation (G) comprises sampling and selection: cache-aware sampling encodes the long prefix once and decodes the short continuations, and the RCV selector picks the final line—emit the modal candidate if agreement reaches 
+
+> θ, otherwise score the distinct candidates by their reverse-context likelihood over truncated contexts and return the vote-blended argmax. Dashed paths are cost-saving shortcuts; the same small model samples and scores.
+
+lightweight signals layer on this base. Identifier-definition re-trieval runs an exact-match search ( grep ) over the repository for definitions and usages of cursor-adjacent identifiers the dataflow analysis leaves unresolved, including those in the right context when available. Call-site frequency hints annotate retrieved definitions with how often each API is invoked across the repository, surfacing representative call patterns. The recipe is base-agnostic: for API-invocation tasks a variant layers the same signals over a BM25 base, yielding a single fused-lexical context, distinct from the Concat baseline that concatenates the two families (Section IV). The lexical context is BM25 [2] sliding-window retrieval in the style of RepoCoder’s retrieval-and-generation baseline: repository files are split into overlapping fixed-size windows, the code before the cursor is the query, and the top windows go into the prompt. As Observation 1 found, the structural and lexical families solve largely disjoint task sets: each solves cases the other misses, and a per-task oracle over the two gains up to +6 .0 EM over either alone. Merging them into one prompt [7, 8] averages away the very per-task signal routing exploits, so C ARET keeps them separate and chooses between them per task. 
+
+Agreement-gated cascade routing. CARET draws N samples from the primary base context and canonicalizes each to its first non-comment line. Over the resulting distinct candidates 
+
+D = {c1, . . . , c m}, the vote frequency vi of candidate ci
+
+is its share of the N samples, and the pool’s agreement is the modal share a = max i vi ∈ [1 /N, 1] . When primary agreement is low, more samples from the same context rarely help: at a ≤ 0.2 the modal candidate is almost never correct (Observation 3), typically because the needed symbol or usage is absent from the prompt. C ARET therefore spends the next unit of budget on a different context. If the primary pool’s agreement a1 ≥ τ , the cascade commits to the primary. Otherwise it draws N samples from the alternative base context and routes to whichever pool agrees more. The comparison is symmetric rather than a blind fallback: the primary still wins if the alternative scatters more. The gate τ keeps the alternative cheap, since the cascade falls through on a small fraction of tasks, so the expected number of sampled contexts per task stays close to one (Section II-D). The cascade is asymmetric, so the primary context is CARET ’s single per-benchmark choice. The choice is auto-matic: the order maximizing EM on a held-out 10% de-velopment split recovers the optimal order in every seed– benchmark combination we tried. The threshold τ doubles as insurance against a mischosen primary: a higher τ consults the alternative more often and recovers most of the lost accuracy (Section VI). Unlike adaptive-retrieval methods that 
+
+train a when-to-retrieve policy [18, 23, 26], cascade routing is training-free: it reads a posterior signal of the generator to decide which context to trust. The cascade extends to an ordered list of K contexts by advancing while agreement stays below τ ; we discuss K in Section VI. 
+
+C. Generation with RCV Selector 
+
+Cache-aware sampling. Sampling is the step Observation 2 calls for: the pools already hold the answer far more often than greedy recovers, so the budget improves accuracy only if those samples are collected cheaply. Drawing N candidates is how CARET spends test-time compute (Section II); the difficulty is spending it without paying N × the cost of one generation. CARET samples each consulted context in one batch under causal prompting on C ⊕ Xl with nucleus sampling [31] and a short token cap (settings in Section IV). The long retrieved prefix is encoded once and shared; the N short continuations decode from the cached state, so a full batch costs a small constant over one greedy generation rather than 
+
+N × (Section II-D). These same N samples yield both the routing signal above and the candidate pool below. 
+
+Reverse-context verification (RCV) selector. Observation 3 shapes selection: agreement is a calibrated confidence signal, but vote frequency alone is a weak selector when distinct plausible candidates split the vote. C ARET ’s RCV selector reads the code after the cursor to break the ties, in three steps. 
+
+Fast path. If the routed pool’s agreement satisfies a ≥ θ,CARET emits the modal candidate without scoring. High-agreement modal candidates are overwhelmingly correct (Ob-servation 3), so verification compute is better spent on harder tasks. 
+
+Reverse-context likelihood. For the remaining tasks, vote frequency is too coarse: the pool holds several distinct yet plausible candidates with near-tied votes. C ARET breaks the ties by reading ahead. Each distinct candidate ci is scored by the likelihood the same model assigns to the code after the cursor, conditioned on the candidate being the completion: 
+
+ri = log PM
+
+  ˜Xr ˜Xl ⊕ ci
+
+, (1) where ˜Xl and ˜Xr are truncated views of the in-file left and right contexts. The conditioning direction is the point. Sam-pling already optimizes the forward likelihood PM(ci | Xl);the reverse direction asks whether the file still reads coherently 
+
+after the candidate. Calling the wrong API or binding the wrong identifier, as above, makes the downstream code using those names measurably less probable. This reverse-context likelihood is one teacher-forced forward pass per candidate, with no decoding; a short right-context window suffices, and the scorer’s left context can be dropped with little loss (Sec-tion V-C). Each call costs a small fraction of one generation (Section II-D). 
+
+Distinct-only scoring. A candidate’s final score depends only on the pair (ri, v i), so scoring each distinct candidate once is exactly equivalent to scoring all N samples. This loss-less deduplication cuts scoring calls well below N ; with the fast path, it keeps the expected number of scored candidates per task small (Section II-D). 
+
+Blending with votes. The selector returns 
+
+ˆy = arg max 
+
+> ci∈D
+
+h
+
+0.75 ri + 0 .25 vi
+
+i
+
+, (2) where ri and vi denote min–max normalization of the reverse-context likelihood and vote frequency over D. Vote frequency acts as a consensus prior, guarding against the likelihood occasionally favoring a fluent but rarely-sampled candidate. The blend outperforms either signal alone (Section V-C); like all other knobs, the weights are global (Section VI). IV. E XPERIMENTAL SETUP 
+
+A. Research Questions 
+
+We ask whether improving both stages of the pipeline, retrieval and routing (R) and generation (G) covering sampling and selection, raises accuracy at near single-pass cost. We answer three questions in Section V, each with the metric named below. 
+
+RQ1: Does C ARET outperform state-of-the-art single-pass and test-time-scaling baselines, and does the gain transfer across the six generators? We answer it by exact match (EM), with edit similarity secondary (Section IV-C). 
+
+RQ2: How does the cost of C ARET compare to state-of-the-art methods? We answer it by relative, time, and resource cost (Section IV-C). 
+
+RQ3: How much do agreement-gated routing, cache-aware sampling, and the reverse-context verification (RCV) selec-tor contribute? We answer it by ablating each component on the reference generator. 
+
+B. Benchmarks 
+
+We evaluated CARET on the three benchmarks of Sec-tion II-A: CrossCodeEval (Python; 2,124 line completions) [1], RepoEval-Line (1,600 line completions), and RepoEval-API (687 API-invocation completions over 8 repositories) [2]. We used the official CrossCodeEval data and scripts, and Repoformer’s released splits of RepoEval [18]. 
+
+C. Metrics 
+
+Our primary metric is exact match (EM, %): the fraction of tasks whose first non-comment generated line exactly matches the ground-truth line [19]; edit similarity (ES, character-level Levenshtein [19]) is secondary. We confirm the significance of EM gains with per-benchmark McNemar tests on paired per-task EM against self-consistency@10 and paired-bootstrap 95% confidence intervals of ∆EM (10,000 resamples) [32]. For cost (RQ2) we report relative cost (total LLM forward compute per task in multiples of one greedy generation, Section II-D), time cost (wall-clock), and resource cost (peak GPU memory). 
+
+D. Baselines 
+
+We compared against seven single-pass configurations (zero-shot in-file, five retrieval-augmented methods, and one of our own) and one test-time-scaling method: (1) Zero-shot in-file: greedy completion from in-file context alone; (2) BM25: single-round sparse chunk retrieval (RepoCoder’s RG-1 [2]), also our lexical context; (3) RepoCoder: iterative retrieval– generation, published two-iteration setting [2]; (4) DraCo: dataflow-guided cross-file retrieval [4], underlying the dataflow component of our fused context; (5) GraphCoder: retrieval over code context graphs [5]; (6) CodeRAG: multi-path re-trieval fusion [8]; (7) Concatenated contexts (Concat): both context families in one prompt, i.e., the fused context plus the lexical context’s BM25 windows. This natural “use both contexts at once” alternative to routing is the greedy reference point for our headline gains. (8) Self-consistency@10: major-ity vote over N =10 samples from the concatenated-context configuration [9], the strongest test-time-scaling baseline at our sampling budget. For fair comparisons, we reproduced all baselines under identical conditions and the same input prompt-token budget, with identical decoding limits and post-processing. Numbers can therefore differ from the original papers (e.g., our Re-poCoder reproduction differs from RLCoder’s [6]); all com-parisons here are internal and mutually consistent (Section VI). GraphCoder’s released pipeline and graph database target its own RepoEval-Updated variant, built from different reposito-ries and task constructions. We reproduced its code-context-graph retrieval on CrossCodeEval, where it trails stronger baselines by over 16 EM, but did not port its graph database to our RepoEval splits, so GraphCoder appears only on Cross-CodeEval. 
+
+E. Environment Hardware. All experiments ran on one machine: dual Intel Xeon Silver 4509Y CPUs (32 logical cores), 503 GB system RAM, and a single NVIDIA H100 NVL GPU with 96 GB memory (driver 590.48). Models ran under HuggingFace Transformers in bfloat16 with prefix caching. Time cost (wall-clock) and resource cost (peak GPU memory) in Section V-B are measured on this machine; relative-cost multipliers are computed from per-task counts of consulted base contexts and scored distinct candidates under the cost model of Sec-tion II-D. 
+
+LLMs. We used six opensource LLMs from four families (1.1B–7B): DeepSeek-Coder-1.3B-base (primary) and DeepSeek-Coder-6.7B-base [16], SantaCoder-1.1B [33], StarCoder2-3B [34], StarCoder-7B [35], and CodeLlama-7B [36]. All are prompted left-to-right without fill-in-the-middle [20], so all methods consume identical prompts. SantaCoder-1.1B and StarCoder-7B, with 2048- and 8192-token context windows, are decoded at batch 1 with prompts truncated to their position limit. 
+
+Hyperparameters. One global configuration serves all benchmarks and all six models, with no per-benchmark or per-model tuning. Sampling draws ten candidates ( N =10 )per consulted base context at temperature 0.8 and nucleus 
+
+p=0 .95 [31], capped at 64 new tokens, keeping the first non-comment line; greedy baselines share the prompts and the length limit. A single routing threshold, a single selection-skip threshold, and fixed blend weights complete the recipe. The only per-benchmark decision is which member of each context pair the cascade consults first: CrossCodeEval starts from the fused context, RepoEval-Line from the lexical context, RepoEval-API from the fused-lexical context, with the other family as the alternative (the pure DraCo dataflow context for RepoEval-API). We picked this one bit on a held-out 10% development split of at least 30 tasks; across three random seeds per benchmark, all nine selections matched the full-benchmark optimum, so the split informs only this one bit. We report full task sets for comparability. The hyperparam-eter values appear in Section VI, and the routing sensitivity analysis in Section V-C. 
+
+Selector. The RCV selector always uses DeepSeek-Coder-1.3B, even for larger generators, so C ARET stays training-free and keeps the selection cost at a reasonable level. Full infer-ence configurations, prompt budgets, and retrieval parameters are in the artifact. V. E VALUATION 
+
+Improving both stages, retrieval and routing (R) and generation (G, which spans sampling and selection), raises repository-level completion accuracy at a small, bounded inference budget, and the gain holds across generators. C ARET pairs agreement-gated cascade routing on the retrieval side and cache-aware sampling on the generation side with the reverse-context verification (RCV) selector. We answer the three research questions of Section IV-A in turn: accuracy and gen-eralization (Section V-A), cost (Section V-B), and component attribution (Section V-C). Unless noted, the reference genera-tor is DeepSeek-Coder-1.3B [16] and the metric is exact match (EM; Section IV-C). The same DeepSeek-Coder-1.3B selector serves every generator without retraining. All baselines are self-reproduced under identical prompting, context budgets, and evaluation (Section IV). 
+
+A. RQ1: Does CARET outperform state-of-the-art single-pass and test-time-scaling baselines, and does the gain transfer across the six generators? 
+
+CARET is the best non-oracle method in every column of Table I: it improves all 18 model–benchmark combinations over greedy decoding and self-consistency@10 [9]. On all six generators it tops every retrieval baseline (BM25, RepoCoder, CodeRAG, DraCo, and GraphCoder) in every benchmark. The six generators span four model families and 1.1B–7B parameters [16, 33–36], yet every run uses the same global hyperparameters ( N =10 , τ =0 .2, θ=0 .8, fixed blend weights) and one fixed DeepSeek-Coder-1.3B selector. Averaged over the six models, the gain over greedy is +4.6 EM on Cross-CodeEval, +13.7 on RepoEval-Line, and +14.0 on RepoEval-API: +10.8 EM across all 18 cells. Over self-consistency@10 the mean gain is +5.3 EM overall, +1.9/+7.1/+6.7 per bench-mark. One small selector handles generators five times its size without retuning, because verifying a candidate against the right context is easier than generating it, so no per-generator verifier or training is needed. The 1.3B selector with sampling and selection can outrun a much larger generator’s single pass. On RepoEval-Line and RepoEval-API the 1.3B reaches 41.75 and 43.52 EM, above DeepSeek-Coder-6.7B’s best single-pass baseline (34.44 and 40.17) and above the 6.7B self-consistency@10 vote: a 1.3B generator at roughly 1.5 × compute beats a model five times larger run once. 
+
+Reference-model standing. The DeepSeek-Coder-1.3B col-umn of Table I places C ARET among retrieval baselines on the reference model. Zero-shot completion collapses on Cross-CodeEval (6.12 EM): cross-file context, rather than model TABLE I 
+
+RQ1 : CROSS -MODEL EXACT MATCH (EM, %) OF CARET AGAINST RETRIEVAL AND TEST -TIME -SCALING BASELINES ON ALL SIX GENERATORS . C ONCAT , CONCATENATED -CONTEXT GREEDY (BOTH CONTEXT FAMILIES IN ONE PROMPT ); SC@10, SELF -CONSISTENCY @10. PER MODEL COLUMN , THE BEST , SECOND , AND THIRD NON -ORACLE SCORES ARE SHADED . O RACLE @10 IS THE BEST -OF -TEN UPPER BOUND .
+
+CrossCodeEval 
+
+Method DS-1.3B DS-6.7B SC-7B CL-7B SC2-3B Santa 
+
+Oracle@10 44.73 50.75 47.41 46.00 45.48 30.89 
+
+Zero-shot 6.12 9.46 6.97 7.30 6.64 3.81 BM25 14.55 17.98 15.49 15.30 15.58 9.32 RepoCoder 17.47 21.52 18.69 19.16 19.44 12.81 CodeRAG 31.64 39.17 32.20 34.37 32.11 14.17 DraCo 30.56 38.23 30.32 33.57 30.65 12.95 GraphCoder 14.17 18.50 15.44 15.68 15.91 10.50 Concat 33.47 34.09 30.32 29.90 28.01 17.28 SC@10 31.97 38.09 33.85 33.47 31.36 20.20 Ours 33.99 39.55 35.36 35.26 33.85 22.55 
+
+RepoEval-Line 
+
+Method DS-1.3B DS-6.7B SC-7B CL-7B SC2-3B Santa 
+
+Oracle@10 47.00 51.69 48.06 47.12 45.81 40.19 
+
+Zero-shot 28.00 31.25 28.56 23.69 25.25 24.38 BM25 32.25 33.12 31.94 31.62 28.00 27.38 RepoCoder 34.56 34.44 33.88 33.62 30.31 28.81 CodeRAG 31.37 33.94 31.00 31.13 29.19 25.62 DraCo 29.94 34.44 30.38 29.12 27.56 25.50 Concat 34.31 27.00 27.00 24.00 24.94 24.25 SC@10 36.06 35.12 34.69 32.94 32.12 30.00 Ours 41.75 43.88 41.44 40.50 39.88 36.06 
+
+RepoEval-API 
+
+Method DS-1.3B DS-6.7B SC-7B CL-7B SC2-3B Santa 
+
+Oracle@10 49.34 52.11 50.95 46.87 45.41 37.12 
+
+Zero-shot 25.33 27.95 25.04 21.11 20.67 19.94 BM25 35.37 40.17 33.04 33.04 30.86 23.58 RepoCoder 32.61 33.33 32.02 31.73 28.24 24.02 CodeRAG 34.35 40.03 29.99 31.15 29.84 22.42 DraCo 25.47 29.84 25.76 23.44 22.42 19.94 Concat 36.54 31.00 27.66 25.76 24.45 21.11 SC@10 37.99 40.32 38.86 33.48 33.62 26.20 Ours 43.52 47.74 44.69 42.36 39.59 32.90 
+
+capacity, is the bottleneck [1]. No prior retrieval strategy wins everywhere: CodeRAG [8] leads CrossCodeEval among baselines (31.64) yet trails plain BM25 on RepoEval-Line (31.37 vs. 32.25), and DraCo [4] (30.56) barely clears zero-shot on RepoEval-API (25.47 vs. 25.33). C ARET tops every retrieval baseline on all three benchmarks (33.99 / 41.75 / 43.52 EM) and strictly dominates RepoCoder’s iterative two-pass pipeline [2] on each. ES follows the same ordering (76.08 on CrossCodeEval, 71.13 on RepoEval-Line, 74.09 on RepoEval-API). CARET also beats the budget-matched test-time-scaling baseline. Self-consistency@10 votes over ten samples but improves greedy only modestly on RepoEval-Line (+1.75) and RepoEval-API (+1.45), and degrades CrossCodeEval (31.97 vs. 33.47): votes alone fail where candidate pools hold many 
+
+TABLE II 
+
+RQ2 : PER -METHOD INFERENCE COST ON EACH GENERATOR (MEANS OVER THE THREE BENCHMARKS ; 40 PROMPTS /BENCHMARK , ONE H100). SINGLE -PASS METHODS AND REPO CODER DECODE ONE COMPLETION AT A TIME , SO THEIR PEAK GPU MEMORY MATCHES GREEDY DECODING ;SC@10 AND CARET HOLD THE SAME TEN -SAMPLE BATCH ; THE SHORTER 
+
+RCV SCORING PASS DOES NOT INCREASE PEAK MEMORY , SO PEAK GPU  
+
+> MEMORY IS IDENTICAL TO
+
+SC@10.                                                         
+
+> Method DS-1.3B DS-6.7B SC-7B CL-7B SC2-3B Santa
+> Execution time (normalized to one greedy generation) Single-pass RAG 1.00 1.00 1.00 1.00 1.00 1.00 RepoCoder ∼2.0∼2.0∼2.0∼2.0∼2.0∼2.0
+> SC@10 1.29 2.22 2.04 2.27 1.76 1.21 Ours 1.45 2.49 2.30 2.54 1.97 1.38
+> Peak GPU memory (GB) Single-pass RAG 3.7 16.1 15.3 16.1 6.5 2.5 RepoCoder 3.7 16.1 15.3 16.1 6.5 2.5 SC@10 12.8 39.1 20.3 39.1 10.6 4.6 Ours 12.8 39.1 20.3 39.1 10.6 4.6
+
+distinct-but-plausible lines. C ARET beats it by +2.0 / +5.7 / +5.5 EM, on the same ten-sample budget plus selector scoring. 
+
+Significance and the CrossCodeEval boundary. The shared ten-sample budget admits paired tests [32] against the primary-context self-consistency baseline, the majority vote over the ten primary-context samples (31.54/34.31/36.97 EM on CrossCodeEval/RepoEval-Line/RepoEval-API). McNemar gives p = 1 .1 × 10 −4 on CrossCodeEval (113 tasks solved only by C ARET vs. 61), p = 2 .9 × 10 −23 on RepoEval-Line (130 vs. 11), and p = 1 .0 × 10 −8 on RepoEval-API (52 vs. 7). Paired-bootstrap 95% CIs of ∆EM (10,000 resamples) are [+1 .27 , +3 .67] , [+6 .06 , +8 .88] , and [+4 .51 , +8 .73] , all excluding zero, and all three p-values survive Bonferroni correction at α=0 .05 /3.The CrossCodeEval gain on the reference model is the smallest in Table I’s DeepSeek-Coder-1.3B column, but it is a property of that one generator rather than the benchmark: DeepSeek-Coder-1.3B has an unusually strong CrossCodeEval greedy baseline. Across the other five generators the Cross-CodeEval gain over greedy averages +5.4 EM, range +5.0 to +5.8 (Table I). The benchmark is not resistant to test-time scaling; the reference model is simply close to its single-pass ceiling there. Other test-time-scaling work reports best-of-N or pass@ k
+
+as an upper bound that a real selector cannot reach [10, 27]. Following that convention, Oracle@10 is the top row of each block in Table I. The oracle reaches 44.73 / 47.00 / 49.34 EM on the reference model, well above C ARET , so selection is far from saturated. Section V-C dissects which component captures how much of this headroom. 
+
+B. RQ2: How does the cost of CARET compare to state-of-the-art methods? 
+
+CARET spends a small, bounded budget that the cost model of Section II-D predicts. The token-level compute multiplier is 
+
+∼1.45 × one greedy generation on every generator: the cascade touches only 1.09–1.12 base contexts per task, so sampling costs ≈1.2×; the high-agreement skip fires on 24.1–34.6% of tasks; and distinct-only scoring prices the rest at 0.054 ×per candidate. Disabling all three savings rules raises this to 
+
+∼1.9× for at most +0 .73 EM (Section V-C), so the gated pipeline is near-lossless and stays below RepoCoder’s iterative 
+
+∼2×.
+
+Cost in context (Table II). Every single-pass retrieval baseline (zero-shot, BM25, CodeRAG, DraCo, GraphCoder, Concat) decodes once, so all share the 1× generation-time row; they differ in what is retrieved. Retrieval is not free but it is small: on RepoEval-API (40 tasks, single CPU thread) a BM25 window query takes 0.10 s, DraCo’s dataflow retrieval over the prebuilt graph 0.12 s, and our call-site and grep signals 0.30 s, so the fused-lexical context C ARET starts from costs 0.51 s per task and the alternative context, built on the 11% of tasks that fall through, adds 0.01 s on average (index and graph construction are per-repository and offline: 0.1–0.6 s and min-utes, respectively). End to end, one C ARET completion takes 2.2 s on DeepSeek-Coder-1.3B and 4.5 s on the 7B generators, against 1.2–1.5 s for a BM25 single pass ( 1.9–3.1×); retrieval is 12–42% of C ARET ’s time, most of it on the smallest models. RepoCoder’s two-pass loop roughly doubles that. C ARET costs essentially what SC@10 does (the budget-matched test-time-scaling baseline), since both draw the same ten samples and distinct-only RCV scoring adds only 0.1–0.3× compute on top, yet C ARET is +5 .3 EM more accurate. Its compute (∼1.45 ×) stays below RepoCoder’s iterative ∼2×. Peak GPU memory is identical to SC@10’s: the ten-sample sampling batch dominates memory, and the shorter RCV scoring pass does not raise the peak. Wall-clock, by contrast, tracks model size rather than the compute multiplier: batched sampling is nearly free on the memory-bound small generators ( 1.33 –
+
+1.56 × on DeepSeek-Coder-1.3B and SantaCoder) but costs 
+
+1.9–2.9× on the compute-bound 7B ones, where the ten samples no longer hide behind memory latency. 
+
+Resource cost (Table II) grows with the KV cache of the ten-sample batch: multi-query-attention models keep it small (StarCoder-7B 15 .3→20 .3 GB, SantaCoder 2.5→4.6 GB), while the multi-head models grow more (DeepSeek-Coder-6.7B and CodeLlama-7B 16 .1→39 .1 GB). The extra memory is transient, freed after each task, and fits one accelerator, but it is not free in a serving setting: at a fixed memory budget the ten-sample batch cuts the number of concurrent requests a multi-head 7B model can hold by about 2.4× (39 GB vs. 16 GB) and a multi-query model by about 1.3×; a server can trade this for latency by sampling in two rounds of five, which halves the peak at ≈10% more time. 
+
+Compute substitutes for parameters. DeepSeek-Coder-1.3B with C ARET reaches 41.75 EM on RepoEval-Line and 43.52 on RepoEval-API, ahead of the 5×-larger DeepSeek-Coder-6.7B’s best single-pass baseline (34.44/40.17) and of 6.7B self-consistency@10 (35.12/40.32), at a fraction of its memory. The trade is workload-dependent: on CrossCodeEval the larger model keeps its lead (39.17 vs. 33.99). A fixed inference budget spent on sampling, routing, and selection can return more EM than the same budget spent on larger weights.                                                                  
+
+> TABLE III
+> RQ3 ,ROUTING (R) (D EEP SEEK -C ODER -1.3B, EM %): CONTEXT -CHOICE STRATEGIES UNDER A MATCHED MAJORITY @10 SELECTOR . P ER BENCHMARK THE primary CONTEXT IS THE DEV -SELECTED FAMILY —STRUCTURAL (FUSED )ON CROSS CODE EVAL ,LEXICAL (BM25)
+> ON REPO EVAL -L INE ,FUSED -LEXICAL ON REPO EVAL -API— AND THE
+> alternative IS THE OTHER FAMILY ; “O URS ”ROUTES BETWEEN THEM BY AGREEMENT .BOLD :BEST PER COLUMN .Context strategy CrossCodeEval RepoEval-Line RepoEval-API Primary context only 31.54 34.31 36.97
+> Alternative context only 14.17 31.94 25.91 Ours 31.83 37.06 36.97
+> TABLE IV
+> RQ3 ,SAMPLING (G) (D EEP SEEK -C ODER -1.3B, EM %): EXACT MATCH AND RELATIVE COMPUTE VS .THE SAMPLE BUDGET NON THE PRIMARY CONTEXT ,CASCADE ROUTING DISABLED (S ECTION II-D); THE FULL
+> CARET PIPELINE APPEARS IN TABLE I. N=10 IS OUR DEPLOYED BUDGET .Sample budget CrossCodeEval RepoEval-Line RepoEval-API Rel. cost
+> N=5 30.56 36.12 38.72 1.21 ×
+> N=10 (Ours) 32.36 38.10 40.32 1.45 ×
+> N=15 32.50 39.60 42.07 1.61 ×
+
+C. RQ3: How much do agreement-gated routing, cache-aware sampling, and the reverse-context verification (RCV) selector contribute? 
+
+We ablate routing, sampling, and selection in turn on the reference generator (Tables III–V), each isolated under amatched protocol. 
+
+Routing (R). Table III holds selection at a majority vote and varies the context choice. The two base contexts solve different tasks, so agreement-gated routing beats either fixed context on RepoEval-Line (37.06 vs. 34.31 and 31.94). Under the full C ARET selector the marginal effect is smaller: disabling routing ( τ =0 ) while keeping sampling, the fast path, and RCV costs −0.19 /−0.25 /0.00 EM on the reference generator, and across the five other generators +0 .9 to +1 .6 EM on RepoEval-Line but −0.6 to +0 .4 on the other two benchmarks (Table VI). The two ablations differ because RCV already repairs part of what a wrong context does to the pool: with majority voting the pool’s errors go through, with RCV the alternative context matters only when its candidates are both different and verifiable. The primary order is chosen on a 10% development split; excluding that split (three seeds) moves CARET ’s EM by −0.8 to +1 .7 and its margin over SC@10 by at most ±0.8, and the margin stays positive in all 45 model– benchmark–seed cases (minimum +1 .3). Routing is a cheap safeguard: with a swapped primary, CrossCodeEval collapses to 19.87 EM at τ =0 .2 but τ =1 recovers 32.25, and the 10% dev split picked the primary correctly in 9/9 benchmark–seed combinations, so the cheap default is safe (Fig. 4(a)). 
+
+Sampling (G). Table IV varies the sample budget against its relative compute. A best-of-N oracle would reach 44.94/49.75/53.71 EM, far above any single decode, the head-room selection targets. We fix N =10 , the budget our self-consistency baseline also uses: CrossCodeEval has saturated there ( +1 .80 EM from N =5 to 10 , then only +0 .14 to 15 ), and while RepoEval keeps gaining to N =15 (+1 .5/+1 .8 EM), 0.0 0.5 1.0           
+
+> routing threshold τ
+> 35.0 37.5 40.0 42.5
+> EM (%)
+> (a) EM and cost vs. τ
+> CrossCodeEval RepoEval-Line RepoEval-API
+> 32 64 128 full
+> selector right-context (tokens)
+> 35 40 45
+> EM (%)
+> (b) Scorer context truncation
+> 510 15
+> sample budget N
+> 35 40 45 50
+> EM (%)
+> (c) Selection vs. N(RepoEval-Line)
+> oracle best-of-N
+> CARET majority vote
+> 1.50 1.75 2.00 2.25
+> cost ( ×)
+
+Fig. 4. Sensitivity of C ARET (DeepSeek-Coder-1.3B). (a) EM and relative cost vs. routing threshold τ (default τ =0 .2, dashed). (b) EM vs. the selector’s right-context budget; 128 tokens is near-lossless and truncation helps RepoEval-Line. (c) Selection vs. sample budget N on RepoEval-Line: vote saturates while C ARET tracks the best-of-N oracle. TABLE V 
+
+RQ3 , SELECTION (G) (D EEP SEEK -C ODER -1.3B, EM %): SELECTORS ON A FIXED CANDIDATE POOL . BOLD : BEST PER COLUMN .Selector CrossCodeEval RepoEval-Line RepoEval-API Majority vote 31.97 36.06 37.99 Reverse-context likelihood 31.54 36.94 42.65 Ours 32.82 38.12 43.67 
+
+TABLE VI 
+
+RQ3 , ROUTING UNDER THE full CARET SELECTOR (EM %): 
+
+> AGREEMENT
+
+-GATED ROUTING ON VS . OFF (PRIMARY CONTEXT ONLY ), 
+
+> EVERYTHING ELSE UNCHANGED
+
+.CrossCodeEval RepoEval-Line RepoEval-API Generator off on off on off on DS-6.7B 39.83 39.83 42.81 43.94 47.74 47.60 SC-7B 35.40 35.55 40.31 41.19 44.69 44.54 CL-7B 35.59 35.64 39.06 40.62 42.50 42.50 SC2-3B 33.85 34.04 38.31 39.56 39.74 39.16 Santa 22.46 22.83 35.44 36.06 32.75 33.04 
+
+that step costs +0 .16 × compute and 50% more peak memory, which we judge not worth it. Removing sampling entirely reduces C ARET to the concatenated-contexts greedy baseline: 
+
+−7.44 EM on RepoEval-Line and −6.98 on RepoEval-API. 
+
+Selection (G). Table V fixes the candidate pool and varies the selector. Reverse-context likelihood beats majority voting on every benchmark, and blending the two is best (43.67 vs. 37.99 EM on RepoEval-API). Majority voting alone is barely above greedy on RepoEval and below it on CrossCodeEval: calibrated agreement localizes the hard tasks, but only reading the right context picks the answer. At N =10 the selec-tor captures 16%/50%/49% of the vote-to-oracle headroom, overriding a wrong modal candidate on 105/112/48 tasks (Fig. 4(c)). Its right context is essential but short: 128 tokens is near-lossless and even helps RepoEval-Line, while the scorer’s left context can be dropped entirely, so each scoring call is one cached forward pass at 0.054 × a generation (Fig. 4(b)). 
+
+Cost savings are near-lossless. Disabling all three savings rules raises cost to ∼1.9× for at most +0 .73 /+0 .69 EM on RepoEval-API/Line, while CrossCodeEval drops 0.94 , since its high-agreement skip fires on 34.6% of tasks and protects confident majorities. Exhaustive scoring adds no accuracy the gated ∼1.45 × pipeline does not already reach. VI. T HREATS TO VALIDITY AND DISCUSSION 
+
+The evaluation makes broad claims from one implementation and a single primary metric, so we set out its limits before drawing conclusions. We organize them as construct, internal, and external validity, then discuss the reasoning behind the global recipe. Two properties bound most of the risk: every method runs under the same prompts, budget, and decoding, and C ARET exposes no tuned knob beyond a single per-benchmark context choice, so the gains are hard to attribute to a selective harness or to hyperparameter fitting. 
+
+A. Threats to Validity 
+
+Construct validity. Exact match and edit similarity [19] measure surface agreement with a single reference rather than functional correctness; line and API-invocation granularity mitigates this, since a statement admits a narrow canonical form unlike function bodies [1, 2], and all methods share the same first-line normalization. The residual risk that EM gains may not map to practical benefit [14] is shared by every compared method. The relative-cost multiplier is itself a construct: it counts forward tokens and assumes prefix caching across the N samples; without caching, overhead is higher. The ∼1.45 × token multiplier is model-independent, but the realized wall-clock is not (Section V-B): it falls below the multiplier on memory-bound small generators and rises above it ( 1.9–2.9×) on compute-bound 7B ones, so we report both and release per-task counts to re-derive cost under any accounting. 
+
+Internal validity. Reproduced numbers differ from published ones (our RepoCoder differs from RLCoder’s [6] through different data processing and prompts), so we compare only within our pipeline, with identical prompt budget, decoding, and scoring for every method. C ARET ’s global hyperparam-eters are fixed once for every model and benchmark; only the primary base context is per-benchmark, chosen on a 10% development split that picked the correct primary in nine of nine seed–benchmark combinations, and raising τ recovers most of a mischoice (Section V-C). Benchmark repositories may overlap pretraining data, but all methods decode from the same frozen models, so memorization could inflate absolute scores, not deltas. We report one sampling run; task-set sizes (2,124/1,600/687) and paired tests [32] mitigate a lucky run: against the primary-context self-consistency baseline, McNe-mar rejects equal accuracy and 95% paired-bootstrap EM-gain intervals exclude zero on all three benchmarks (Section V-A). 
+
+External validity. Our main study covers Python. A sanity check on CrossCodeEval’s Java split [1] (2,139 line tasks, BM25 context, same hyperparameters) supports transfer of selection: sampling plus selection lifts the 1.3B reference from 16.27 EM (greedy) and 16.74 (self-consistency@10) to 19.17. Two qualifications hold: the scorer needed a 1,000-character left-context tail on Java, whereas Python tolerates dropping it entirely (Section V-C); and the fused context’s dataflow component is Python-specific, so routing was not exercised and other languages need their own dataflow extractors. Gran-ularity is a second limit: we studied line and API-invocation completion, while function bodies change both candidate diversity and metric validity. Generators span 1.1B–7B base models from four families; larger or instruction-tuned models may sample differently, though gains in all 18 combinations suggest the mechanisms are not model-specific. The selector assumes code after the completion point, the common case in these benchmarks, in fill-in-the-middle training [20], and in prior work [18]. It degrades gracefully as that context shrinks: a 32-token window costs 1.02 EM on RepoEval-API and 1.37 on CrossCodeEval and helps RepoEval-Line (Fig. 4). With no right context, selection falls back to vote frequency on the routed pool (33.99 →31.83 / 41.75 →34.94 / 43.52 →37.26 EM): above greedy on RepoEval-Line and API, below on CrossCodeEval, and below full C ARET everywhere, confirming that the right context drives the selection gains. 
+
+B. Discussion 
+
+Global hyperparameters. CARET fixes one recipe and reuses it across every model and benchmark: routing threshold 
+
+τ =0 .2, skip gate θ=0 .8, blend weights 0.75/0.25, sample budget N =10 . The four values were set once on the ref-erence generator (DeepSeek-Coder-1.3B) and frozen before any other model was run, so the other five generators and the closed models are held out with respect to them. The surface is flat: sweeping θ ∈ { 0.6, . . . , 1.0} and the RCV weight w ∈ { 0.5, . . . , 1.0} offline on the stored candidate pools of the five non-reference generators, the default lies within 0.08 EM of the best cell averaged over 15 model– benchmark pairs and at most 0.87 EM below the per-pair optimum; θ mainly moves cost (scored share 0.24–0.29 ×), not accuracy. The only per-benchmark choice is which context is primary, a binary decision made on a 10% development split that picked the same order in all nine seed–benchmark cases; the development tasks are part of the reported test sets, and excluding them changes no comparison (§V-C). For a new repository without labelled completions the default is the fused structural context, which was primary on two of three benchmarks, and the cascade recovers most of the loss of a wrong choice (Fig. 4(a)). 
+
+Completion granularity. CARET is built for line and API-invocation completion, and its mechanisms do not transfer un-changed to function bodies. On RepoEval-Function (455 tasks, DeepSeek-Coder-1.3B, ten samples at the same temperature), 96% of candidate pools contain no repeated candidate (9.85 distinct of 10), so agreement carries no signal for routing or for the fast path, and the sampled pool itself is worse than greedy decoding: the best of ten samples reaches 29.5 edit similarity against 48.4 for one greedy pass, and reverse-context selection over that pool (45.6) does not recover the gap. Function-level test-time scaling needs a different canonicalization (semantic rather than string agreement), a lower sampling temperature, and execution-based selection; we leave it to future work and restrict our claims to the line and API level. 
+
+Number of base contexts and the sample budget. The cascade routes between K=2 base contexts, the sweet spot: a third adds only +0 .1 EM for +0 .2× compute, so the marginal context does not pay for itself. The sample budget 
+
+N trades accuracy for cost steeply at first and then flattens. An N ∈ { 5, 10 , 15 } study shows accuracy saturating around 
+
+N =10 (CrossCodeEval gains +1 .80 EM from N =5 to 10 but only +0 .14 to N =15 ; Fig. 4(c)), so we draw ten samples: enough to surface the answer and calibrate agreement, few enough to keep the budget near one greedy generation. VII. C ONCLUSION AND FUTURE WORK 
+
+We presented C ARET , a training-free framework that improves both stages of retrieval-augmented completion: retrieval and routing (R), and generation (G). It allocates a small inference budget across them: retrieval feeds two base contexts, sam-pling draws candidates that agreement routes between them, and reverse-context likelihood selects the final line. Routing and selection read two signals the completion setting provides for free: agreement among the model’s own samples and the file’s right context. Under one global recipe, C ARET improves all 18 model–benchmark combinations across six generators (1.1B–7B) and three benchmarks by +10 .8 EM on average over greedy decoding and +5 .3 over self-consistency@10, at ∼1.45 × the token-level compute of one generation, with measured wall-clock from 1.3× on small generators to 2.9×
+
+on 7B models. Future work includes other languages, function-level granularity, and learned routing signals. Agreement and reverse-context likelihood are language-agnostic, and only the dataflow context needs per-language tooling. DATA AVAILABILITY 
+
+A replication package (the C ARET implementation, all prompt builders, the evaluation harness, and the raw predictions and per-task scores for all six models and three benchmarks) is available at https://figshare.com/s/7ef6473e17cec30bcae2, sufficient to regenerate every table and figure. Upon accep-tance, we will release a public, permanently archived version (code, data, and predictions) under an open-source license. REFERENCES 
+
+[1] Y. Ding, Z. Wang, W. U. Ahmad, H. Ding, M. Tan, N. Jain, M. K. Ramanathan, R. Nallapati, P. Bhatia, D. Roth, and B. Xiang, “CrossCodeEval: A diverse and multilingual benchmark for cross-file code completion,” in Proceedings of Advances in Neural Information Pro-cessing Systems (NeurIPS), Datasets and Benchmarks Track , 2023. [2] F. Zhang, B. Chen, Y. Zhang, J. Keung, J. Liu, D. Zan, Y. Mao, J.-G. Lou, and W. Chen, “RepoCoder: Repository-level code completion through iterative re-trieval and generation,” in Proceedings of the Conference on Empirical Methods in Natural Language Processing (EMNLP) , 2023, pp. 2471–2484. [3] T. Liu, C. Xu, and J. McAuley, “RepoBench: Benchmark-ing repository-level code auto-completion systems,” in 
+
+Proceedings of the International Conference on Learning Representations (ICLR) , 2024. [4] W. Cheng, Y. Wu, and W. Hu, “Dataflow-guided retrieval augmentation for repository-level code completion,” in 
+
+Proceedings of the 62nd Annual Meeting of the Associ-ation for Computational Linguistics (ACL) , 2024. [5] W. Liu, A. Yu, D. Zan, B. Shen, W. Zhang, H. Zhao, Z. Jin, and Q. Wang, “GraphCoder: Enhanc-ing repository-level code completion via coarse-to-fine retrieval based on code context graph,” in Proceedings of the 39th IEEE/ACM International Conference on Au-tomated Software Engineering (ASE) , 2024. [6] Y. Wang, Y. Wang, D. Guo, J. Chen, R. Zhang, Y. Ma, and Z. Zheng, “RLCoder: Reinforcement learning for repository-level code completion,” in Proceedings of the 47th IEEE/ACM International Conference on Software Engineering (ICSE) , 2025. [7] M. Liang, X. Xie, G. Zhang, X. Zheng, P. Di, W. Jiang, H. Chen, C. Wang, and G. Fan, “RepoFuse: Repository-level code completion with fused dual context,” 2024. [8] S. Zhang, Y. Ding, S. Lian, S. Song, and H. Li, “CodeRAG: Finding relevant and necessary knowledge for retrieval-augmented repository-level code comple-tion,” in Proceedings of the Conference on Empirical Methods in Natural Language Processing (EMNLP) ,2025. [9] X. Wang, J. Wei, D. Schuurmans, Q. V. Le, E. H. Chi, S. Narang, A. Chowdhery, and D. Zhou, “Self-consistency improves chain of thought reasoning in language models,” in Proceedings of the International Conference on Learning Representations (ICLR) , 2023. [10] B. Brown, J. Juravsky, R. Ehrlich, R. Clark, Q. V. Le, C. R´ e, and A. Mirhoseini, “Large language monkeys: Scaling inference compute with repeated sampling,” 2024. [11] K. Cobbe, V. Kosaraju, M. Bavarian, M. Chen, H. Jun, L. Kaiser, M. Plappert, J. Tworek, J. Hilton, R. Nakano, C. Hesse, and J. Schulman, “Training verifiers to solve math word problems,” 2021. [12] A. Ni, S. Iyer, D. Radev, V. Stoyanov, W.-t. Yih, S. I. Wang, and X. V. Lin, “LEVER: Learning to verify language-to-code generation with execution,” in Pro-ceedings of the International Conference on Machine Learning (ICML) , 2023. [13] T. Zhang, T. Yu, T. B. Hashimoto, M. Lewis, W.-t. Yih, D. Fried, and S. I. Wang, “Coder reviewer reranking for code generation,” in Proceedings of the International Conference on Machine Learning (ICML) , 2023. [14] S. Peng, E. Kalliamvakou, P. Cihon, and M. Demirer, “The impact of AI on developer productivity: Evidence from GitHub Copilot,” 2023. [15] M. Chen et al. , “Evaluating large language models trained on code,” 2021. [16] D. Guo, Q. Zhu, D. Yang, Z. Xie, K. Dong, W. Zhang, G. Chen, X. Bi, Y. Wu, Y. K. Li, F. Luo, Y. Xiong, and W. Liang, “DeepSeek-Coder: When the large language model meets programming—the rise of code intelli-gence,” 2024. [17] E. Nijkamp, B. Pang, H. Hayashi, L. Tu, H. Wang, Y. Zhou, S. Savarese, and C. Xiong, “CodeGen: An open large language model for code with multi-turn program synthesis,” in Proceedings of the International Conference on Learning Representations (ICLR) , 2023. [18] D. Wu, W. U. Ahmad, D. Zhang, M. K. Ramanathan, and X. Ma, “Repoformer: Selective retrieval for repository-level code completion,” in Proceedings of the Interna-tional Conference on Machine Learning (ICML) , 2024. [19] S. Lu et al. , “CodeXGLUE: A machine learning bench-mark dataset for code understanding and generation,” in Proceedings of the Neural Information Processing Systems (NeurIPS) Track on Datasets and Benchmarks ,2021. [20] M. Bavarian, H. Jun, N. Tezak, J. Schulman, C. McLeavey, J. Tworek, and M. Chen, “Efficient training of language models to fill in the middle,” 2022. [21] D. Shrivastava, H. Larochelle, and D. Tarlow, “Repository-level prompt generation for large language models of code,” in Proceedings of the International Conference on Machine Learning (ICML) , 2023. [22] Y. Ding, Z. Wang, W. U. Ahmad, M. K. Ramanathan, R. Nallapati, P. Bhatia, D. Roth, and B. Xiang, “Co-CoMIC: Code completion by jointly modeling in-file and cross-file context,” in Proceedings of the Joint In-ternational Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING) ,2024. [23] A. Asai, Z. Wu, Y. Wang, A. Sil, and H. Hajishirzi, “Self-RAG: Learning to retrieve, generate, and critique through self-reflection,” in Proceedings of the International Con-ference on Learning Representations (ICLR) , 2024. [24] Z. Jiang, F. F. Xu, L. Gao, Z. Sun, Q. Liu, J. Dwivedi-Yu, Y. Yang, J. Callan, and G. Neubig, “Active retrieval augmented generation,” in Proceedings of the Conference on Empirical Methods in Natural Language Processing (EMNLP) , 2023, pp. 7969–7992. [25] Y. Wang, P. Li, M. Sun, and Y. Liu, “Self-knowledge guided retrieval augmentation for large language mod-els,” in Findings of the Association for Computational Linguistics: EMNLP 2023 , 2023, pp. 10 303–10 315. [26] S. Jeong, J. Baek, S. Cho, S. J. Hwang, and J. C. Park, “Adaptive-RAG: Learning to adapt retrieval-augmented large language models through question complexity,” in 
+
+Proceedings of the Conference of the North American Chapter of the Association for Computational Linguis-tics: Human Language Technologies (NAACL) , 2024, pp. 7036–7050. [27] C. Snell, J. Lee, K. Xu, and A. Kumar, “Scaling LLM test-time compute optimally can be more effective than scaling parameters for reasoning,” in Proceedings of the International Conference on Learning Representations (ICLR) , 2025. [28] B. Chen, F. Zhang, A. Nguyen, D. Zan, Z. Lin, J.-G. Lou, and W. Chen, “CodeT: Code generation with generated tests,” in Proceedings of the International Conference on Learning Representations (ICLR) , 2023. [29] Y. Li et al. , “Competition-level code generation with AlphaCode,” Science , vol. 378, no. 6624, pp. 1092–1097, 2022. [30] F. Shi, D. Fried, M. Ghazvininejad, L. Zettlemoyer, and S. I. Wang, “Natural language to code translation with execution,” in Proceedings of the Conference on Empiri-cal Methods in Natural Language Processing (EMNLP) ,2022. [31] A. Holtzman, J. Buys, L. Du, M. Forbes, and Y. Choi, “The curious case of neural text degeneration,” in Pro-ceedings of the International Conference on Learning Representations (ICLR) , 2020. [32] A. Arcuri and L. Briand, “A practical guide for using sta-tistical tests to assess randomized algorithms in software engineering,” in Proceedings of the 33rd International Conference on Software Engineering (ICSE) , 2011, pp. 1–10. [33] L. B. Allal et al. , “SantaCoder: Don’t reach for the stars!” 2023. [34] A. Lozhkov et al. , “StarCoder 2 and The Stack v2: The next generation,” 2024. [35] R. Li et al. , “StarCoder: may the source be with you!” 
+
+Transactions on Machine Learning Research , 2023. [36] B. Rozi` ere et al. , “Code Llama: Open foundation models for code,” 2023.
