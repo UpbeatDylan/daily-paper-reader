@@ -1,0 +1,337 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-09T00:10:24.306634+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 8,
+    "quick_skim_target": 11,
+    "quick_selected": 8
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2610.00418v1",
+      "source": "arxiv",
+      "title": "CommunityKV: Efficient Long-Context Decoding via Graph Partitioning",
+      "abstract": "Scaling Transformers to long contexts is constrained by the quadratic cost of self-attention and the linear growth of key-value cache memory transfer. Sparse attention mitigates this by retrieving only relevant tokens, but current approaches either require large-scale training or, within the training-free regime, rely on semantically coarse heuristics or expensive clustering that is difficult to update efficiently during decoding. We introduce CommunityKV, a framework that formulates sparse attention as a community detection problem. CommunityKV constructs a token graph from the $QK^T$ scores already computed during standard prefill, and partitions the graph into communities to enable retrieval of semantically coherent token groups. A local update rule assigns newly generated tokens to communities in constant time, enabling sparse retrieval throughout streaming decoding without global re-partitioning. We evaluate CommunityKV on Qwen3 and Llama-3.1 models across three long-context benchmarks. With one graph per query head, CommunityKV delivers up to $1.25\\times$ the end-to-end generation throughput of dense attention, while query-group graph aggregation yields up to $1.71\\times$ with comparable accuracy.",
+      "authors": [
+        "Joe McKenna",
+        "Anastasios Alexandridis",
+        "Nathan Susanj",
+        "Jing Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-30T14:36:50+00:00",
+      "link": "https://arxiv.org/pdf/2610.00418v1",
+      "tags": [
+        "keyword:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "efficient long-context decoding by reducing KV cache memory transfer",
+      "llm_evidence_cn": "通过降低KV缓存传输实现高效长上下文解码",
+      "llm_evidence": "通过降低KV缓存传输实现高效长上下文解码",
+      "canonical_evidence": "通过降低KV缓存传输实现高效长上下文解码",
+      "llm_tldr_en": "Long-context decoding is limited by quadratic attention and linear KV cache transfer. CommunityKV frames sparse attention as community detection: it builds a token graph from prefill QK^T scores and partitions it into semantically coherent communities for retrieval, with an efficient local update rule for training-free long-context decoding.",
+      "llm_tldr_cn": "长上下文场景下自注意力二次开销与KV缓存显存传输的线性增长严重制约Transformer扩展，现有稀疏注意力要么需大规模训练，要么依赖粗糙启发式或难以及时更新的聚类。CommunityKV将稀疏注意力形式化为社区发现问题，利用标准预填充阶段已算出的QK^T分数构建token图并划分成语义连贯的社区，从而在解码时检索相关token组。该免训练框架支持高效的局部更新，为长上下文解码加速提供了新思路。",
+      "llm_tldr": "长上下文场景下自注意力二次开销与KV缓存显存传输的线性增长严重制约Transformer扩展，现有稀疏注意力要么需大规模训练，要么依赖粗糙启发式或难以及时更新的聚类。CommunityKV将稀疏注意力形式化为社区发现问题，利用标准预填充阶段已算出的QK^T分数构建token图并划分成语义连贯的社区，从而在解码时检索相关token组。该免训练框架支持高效的局部更新，为长上下文解码加速提供了新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.38832v1",
+      "source": "arxiv",
+      "title": "Scaling Parameter and Context in Attention: Native Sparse Attention from Mixture-of-Head",
+      "abstract": "Scaling attention parameters can improve language model quality, but retaining full token histories makes additional heads costly at long contexts. Furthermore, since attention retrieves and combines contextual information, parameter scaling should also support longer contexts. We therefore ask whether attention parameter scaling can directly enable efficient and effective context scaling. We introduce NAMOH, an architecture-native sparse attention mechanism that activates $K$ of $H$ heads per token. Each head retains only its assigned tokens and performs causal attention within this subsequence. Head selection thus jointly determines active parameters and available context without scanning the full history. Under balanced assignments, increasing $H$ at fixed $K$ shortens head histories and reduces per-token key-value (KV) access without increasing total KV storage. We further support head-relative rotary position embeddings to shorten positional spans within routed subsequences, aiming to mitigate position-induced attention noise. Experiments show that NAMOH can outperform fully activated models with the same total parameters, while enabling more efficient long-context inference than smaller dense models with matched active parameter counts. It remains compatible with GQA and existing sparse attention mechanisms. We hope this work offers a new path for scaling attention, with parameter scaling directly enabling context scaling.",
+      "authors": [
+        "Zizhuo Fu",
+        "Runsheng Wang",
+        "Meng Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-30T02:53:17+00:00",
+      "link": "https://arxiv.org/pdf/2609.38832v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Native sparse attention mechanism for efficient context scaling at long contexts",
+      "llm_evidence_cn": "面向长上下文高效扩展的架构原生稀疏注意力机制",
+      "llm_evidence": "面向长上下文高效扩展的架构原生稀疏注意力机制",
+      "canonical_evidence": "面向长上下文高效扩展的架构原生稀疏注意力机制",
+      "llm_tldr_en": "NAMOH introduces architecture-native sparse attention that activates only K of H heads per token, letting each head attend to its assigned subsequence so head selection jointly controls active parameters and usable context without scanning full history.",
+      "llm_tldr_cn": "扩大注意力参数可提升语言模型质量，但在长上下文下保留完整token历史会让额外注意力头开销高昂。本文提出NAMOH，一种架构原生的稀疏注意力机制，每个token只激活H个头中的K个，每个头仅在其分配的子序列内做因果注意力，从而在无需扫描完整历史的情况下同时决定激活参数与可用上下文。该设计旨在让注意力参数扩展直接支持高效且有效的上下文扩展，为长上下文推理加速提供了架构层面的新思路。",
+      "llm_tldr": "扩大注意力参数可提升语言模型质量，但在长上下文下保留完整token历史会让额外注意力头开销高昂。本文提出NAMOH，一种架构原生的稀疏注意力机制，每个token只激活H个头中的K个，每个头仅在其分配的子序列内做因果注意力，从而在无需扫描完整历史的情况下同时决定激活参数与可用上下文。该设计旨在让注意力参数扩展直接支持高效且有效的上下文扩展，为长上下文推理加速提供了架构层面的新思路。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.09013v1",
+      "source": "arxiv",
+      "title": "Enabling Dynamic Computation in Looped LMs",
+      "abstract": "Looped LMs are parameter efficient and promise dynamic computation (saving memory and FLOPs on easy tokens). However, state-of-the-art open Looped LMs trained with this dynamic computation capability (Ouro models) do not realize it in practice as each loop iteration (depth) requires its own level of KV-cache, necessitating all loop computations. Moreover, Ouro's early-exit prior is enforced on each token equally, which results in static lower-depth like processing of all tokens regardless of difficulty. In this work, we propose a simple \"best-available\" KV caching strategy that works out-of-the-box, creating a new frontier in the performance vs depth space. Our approach enables up to 30% reduction in FLOPs and KV memory while retaining full-depth performance, showing the true flexibility of Looped LMs. Furthermore, training looped LMs with awareness about this KV caching strategy improves performance and efficiency. Finally, we apply a small but effective fix to the early-exit prior enforcement objective that makes tokens exit at truly heterogeneous depths based on effort. Our findings are validated on Ouro models as well as smaller looped LMs pre-trained from scratch.",
+      "authors": [
+        "Aayush Mishra",
+        "Arnau Padrés Masdemont",
+        "Victor Conchello Vendrell",
+        "Jordi Ros Giralt",
+        "Arash Behboodi",
+        "Fabio Valerio Massoli"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-06T19:09:25+00:00",
+      "link": "https://arxiv.org/pdf/2610.09013v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "best-available KV caching strategy cuts FLOPs and KV memory in LLM inference",
+      "llm_evidence_cn": "最优可用KV缓存策略减少FLOPs与KV显存",
+      "llm_evidence": "最优可用KV缓存策略减少FLOPs与KV显存",
+      "canonical_evidence": "最优可用KV缓存策略减少FLOPs与KV显存",
+      "llm_tldr_en": "Looped LMs cannot exploit dynamic computation because each loop depth needs its own KV cache. The authors propose a best-available KV caching strategy that reuses caches across depths, cutting up to 30 percent FLOPs and KV memory while keeping full-depth quality.",
+      "llm_tldr_cn": "循环语言模型虽支持动态计算，但每个循环深度都需独立KV缓存，导致无法真正节省计算。本文提出一种即插即用的最优可用KV缓存策略，使不同深度间可复用缓存。实验表明该方法在保持全深度性能的同时最多减少30%的FLOPs与KV显存，为性能与深度的权衡开辟了新前沿。",
+      "llm_tldr": "循环语言模型虽支持动态计算，但每个循环深度都需独立KV缓存，导致无法真正节省计算。本文提出一种即插即用的最优可用KV缓存策略，使不同深度间可复用缓存。实验表明该方法在保持全深度性能的同时最多减少30%的FLOPs与KV显存，为性能与深度的权衡开辟了新前沿。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2609.39661v1",
+      "source": "arxiv",
+      "title": "The Evolution of Attention in Large Language Models: Mechanisms, Trade-offs, and Emerging Trends",
+      "abstract": "Self-attention gives LLMs fine-grained, query-dependent access to context, but dense token interactions incur quadratic prefill cost and a key--value cache growing with context length. Research thus spans explicit-memory compression, sparse access, recurrent state construction, structured state dynamics, and heterogeneous mechanism composition. This survey analyzes these developments as model-internal contextual memory. We introduce a five-dimensional lens---Memory Representation, Memory Update, Access, Readout, and Integration---describing what is represented, how it changes, what is query-eligible, how it is read, and how readouts form outputs. This lens compares overlapping research lines without imposing one computational model.   We reconstruct mechanism-level developments and architectural adoption using 59 release-level records from 14 major model lineages and 11 high-performing open-weight endpoints. First, explicit-memory and recurrent-state methods retain distinct interfaces but increasingly control overlapping memory functions. Second, heterogeneous architectures increasingly coordinate across network depth: layer-wise composition distributes complementary memory processing across representational stages, while cross-layer reuse carries selected memory and routing artifacts forward. Depth thus becomes a dimension along which contextual memory is constructed and managed. Third, these developments motivate a stateful multidimensional memory-routing hypothesis: persistent memory is organized across temporal scope, network depth, substrate type, and representation granularity, while coordinated Sparse Write and Sparse Read determine what is maintained and what contributes to each query. Overall, efficient sequence architecture design increasingly concerns the organization, lifecycle, and selective use of contextual memory rather than an isolated Attention operator.",
+      "authors": [
+        "Zhentao Tan",
+        "Jingyi Shen",
+        "Yanbo Li",
+        "Yao Liu",
+        "Yue Wu",
+        "Jieping Ye"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-09-30T13:03:01+00:00",
+      "link": "https://arxiv.org/pdf/2609.39661v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Survey of attention mechanisms covering KV cache growth and memory compression for long context",
+      "llm_evidence_cn": "综述注意力机制，涵盖KV缓存增长与长上下文内存压缩",
+      "llm_evidence": "综述注意力机制，涵盖KV缓存增长与长上下文内存压缩",
+      "canonical_evidence": "综述注意力机制，涵盖KV缓存增长与长上下文内存压缩",
+      "llm_tldr_en": "This survey frames attention developments as model-internal contextual memory, using a five-dimensional lens of representation, update, access, readout, and integration to compare memory compression, sparse access, and recurrent state approaches for long-context efficiency.",
+      "llm_tldr_cn": "自注意力让大模型能按查询细粒度访问上下文，但密集token交互带来二次预填充开销，且KV缓存随上下文长度增长。本文综述显式记忆压缩、稀疏访问、循环状态构建、结构化状态动态与异构机制组合等研究方向，将其统一视为模型内部上下文记忆。作者提出记忆表示、更新、访问、读出与整合五个维度的分析视角，用于比较各条研究路线而不强加单一计算框架，为长上下文推理加速的机制选择提供了系统梳理。",
+      "llm_tldr": "自注意力让大模型能按查询细粒度访问上下文，但密集token交互带来二次预填充开销，且KV缓存随上下文长度增长。本文综述显式记忆压缩、稀疏访问、循环状态构建、结构化状态动态与异构机制组合等研究方向，将其统一视为模型内部上下文记忆。作者提出记忆表示、更新、访问、读出与整合五个维度的分析视角，用于比较各条研究路线而不强加单一计算框架，为长上下文推理加速的机制选择提供了系统梳理。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.09051v1",
+      "source": "arxiv",
+      "title": "A Self-Pruning Transformer: Extreme KV-Cache Compression with Universal Attention",
+      "abstract": "The large KV-cache size of modern LLMs creates a barrier to efficient deployment. Recent work has explored replacing attention layers' RoPE positional embeddings with alternative decay-based mechanisms, which can then be used to prune KV-cache during inference. However, these decay functions have limited expressivity, and in practice devolve into sliding-window-like eviction patterns. In this work, we propose a unifying framework for complementary and novel decay mechanisms, capturing complex key statistics and interactions while preserving expressive RoPE embeddings and Softmax attention. The resulting Universal Attention is a highly expressive and end-to-end trainable architecture, whose composite decay mechanism acts as a natural, $\\textit{adaptive}$ pruning criterion, removing tokens that contribute least to attention computation. Experimentally, Universal Attention achieves state-of-the-art $10\\times$ compression on natural language and synthetic task data, while $\\textit{improving}$ downstream performance compared to both state-of-the-art baselines and unpruned oracles. It further demonstrates superior long-context generalization with unprecedented $25\\times$ compression at length 16k.",
+      "authors": [
+        "Davis Wertheimer",
+        "Haochen Shen",
+        "Ahan Gupta",
+        "Derrick Liu",
+        "Yu Chin Fabian Lim",
+        "Mudhakar Srivatsa",
+        "Raghu K. Ganti",
+        "Minjia Zhang",
+        "Naigang Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-06T20:00:04+00:00",
+      "link": "https://arxiv.org/pdf/2610.09051v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "decay-based positional mechanism enabling KV cache pruning",
+      "llm_evidence_cn": "基于衰减的位置机制实现KV缓存剪枝",
+      "llm_evidence": "基于衰减的位置机制实现KV缓存剪枝",
+      "canonical_evidence": "基于衰减的位置机制实现KV缓存剪枝",
+      "llm_tldr_en": "Large KV caches hinder deployment; replacing RoPE with decay mechanisms to prune caches often lacks expressivity and degenerates into sliding windows. This work unifies complementary decay mechanisms into Universal Attention, an end-to-end trainable architecture preserving expressive RoPE and softmax attention whose composite decay naturally prunes the KV cache.",
+      "llm_tldr_cn": "现代大模型的KV缓存规模庞大，成为高效部署的障碍；已有工作尝试用衰减机制替换注意力层的RoPE位置嵌入以便推理时剪枝缓存，但这类衰减函数表达力有限，实践中退化为滑动窗口式淘汰。本文提出统一框架整合互补且新颖的衰减机制，在保留表达性RoPE与Softmax注意力的同时构建可端到端训练的Universal Attention，其复合衰减机制可自然剪枝KV缓存。该工作为位置相关的KV缓存压缩提供了更强表达力的注意力架构。",
+      "llm_tldr": "现代大模型的KV缓存规模庞大，成为高效部署的障碍；已有工作尝试用衰减机制替换注意力层的RoPE位置嵌入以便推理时剪枝缓存，但这类衰减函数表达力有限，实践中退化为滑动窗口式淘汰。本文提出统一框架整合互补且新颖的衰减机制，在保留表达性RoPE与Softmax注意力的同时构建可端到端训练的Universal Attention，其复合衰减机制可自然剪枝KV缓存。该工作为位置相关的KV缓存压缩提供了更强表达力的注意力架构。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "position independent caching for LLM inference acceleration",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.07782v1",
+      "source": "arxiv",
+      "title": "Persistent Memory in Multi-Agent LLM Inference: What It Costs, What It Buys, and When You Can Tell",
+      "abstract": "Decomposing long-context inference across cooperating agents bounds the active KV cache per call rather than total evidence, which matters when KV-cache memory binds. Many such systems add a persistent tier storing and recalling reasoning traces, usually validated by an ablation reporting an accuracy gain. We measure both on one three-tier agent architecture. Decomposition delivers: peak KV working set of 14.3 MiB per query against 35.5 and 35.3 MiB for single-pass and retrieval-augmented baselines. The persistent tier does not: across eight controlled dataset pairs at n=100 per arm it costs +0.368 MiB [+0.167, +0.590] of peak cache and produces no detectable accuracy change (+0.015, 95% CI [-0.011, +0.046]). We argue the null is structural: single-question benchmarks supply each item with its own evidence and score it independently, and correctness requires resetting stored traces between conditions, so recall has nothing informative to retrieve. Reaching it took four measurement corrections -- three inflating the apparent benefit, the fourth making an effect that size look resolvable -- none visible in the results table. We give the conditions an agent-memory ablation must satisfy and detection procedures that need no knowledge of the specific defect.",
+      "authors": [
+        "Hochan Son",
+        "Kyungdoe Han",
+        "Jaehan Koh",
+        "Xiaowu Dai",
+        "Wenlu Xu",
+        "Guang Cheng"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-10-06T05:17:44+00:00",
+      "link": "https://arxiv.org/pdf/2610.07782v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "KV cache working set in decomposed long-context inference",
+      "llm_evidence_cn": "分解式长上下文推理中的KV缓存工作集",
+      "llm_evidence": "分解式长上下文推理中的KV缓存工作集",
+      "canonical_evidence": "分解式长上下文推理中的KV缓存工作集",
+      "llm_tldr_en": "This paper measures a three-tier multi-agent LLM architecture, finding that decomposition bounds the active KV cache per call while a persistent reasoning-trace tier adds memory cost without detectable accuracy gains.",
+      "llm_tldr_cn": "将长上下文推理分解到多个协作智能体可限制每次调用的活跃KV缓存，这在KV缓存内存成为瓶颈时尤为重要。本文在同一三层智能体架构上量化了分解与持久记忆层的成本与收益，结果显示分解使每次查询峰值KV工作集降至14.3MiB，而单遍与检索增强基线分别为35.5与35.3MiB。持久记忆层反而增加0.368MiB峰值缓存且未带来可检测的精度提升。该工作提醒研究者审慎评估持久层收益，对长上下文推理系统的缓存开销分析具有实证价值。",
+      "llm_tldr": "将长上下文推理分解到多个协作智能体可限制每次调用的活跃KV缓存，这在KV缓存内存成为瓶颈时尤为重要。本文在同一三层智能体架构上量化了分解与持久记忆层的成本与收益，结果显示分解使每次查询峰值KV工作集降至14.3MiB，而单遍与检索增强基线分别为35.5与35.3MiB。持久记忆层反而增加0.368MiB峰值缓存且未带来可检测的精度提升。该工作提醒研究者审慎评估持久层收益，对长上下文推理系统的缓存开销分析具有实证价值。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "long context inference acceleration methods",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.08378v1",
+      "source": "arxiv",
+      "title": "Lachesis: Lifetime-Aware KV Cache Placement for Agent Serving across HBM and High-Bandwidth Flash",
+      "abstract": "Large language model (LLM) serving is increasingly dominated by agentic workloads, in which agents and their sub-agents accumulate context as KV cache across many requests, consuming substantial memory. High-bandwidth flash (HBF) is a promising solution, providing an order of magnitude greater capacity at HBM-class read bandwidth, but its finite write endurance is the key limiting factor. Our key insight is that KV cache should be placed across HBM and HBF by its lifetime. Placing shorter-lived data in HBM lets HBM absorb more of an agent run's writes and sends less of them to HBF. As the lifetime of KV cache in agentic serving is dictated by the harness, the program that orchestrates the agents, we analyze its behavior and identify three axes along which lifetime diverges, temporal, structural, and inter-worker. Guided by these observations, we present Lachesis, a lifetime-aware KV cache placement layer between the agent harness and the serving engine. At write time, it places each segment in HBM or HBF according to its lifetime, and frees its blocks once the segment is no longer read. In trace-driven simulation, Lachesis extends HBF lifetime by 1.19-3.13x over HBM-first placement, reaching 3.3-12.2 device-years. Even under continuous 24x7 operation at the full load a tight SLO admits, HBF outlasts its five-year warranty on the multi-agent trace.",
+      "authors": [
+        "Jaehoon Yang",
+        "Jeongmin Lee",
+        "Haneul Park",
+        "Seung Yul Lee",
+        "Nam Sung Kim",
+        "Jae W. Lee"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.DC"
+      ],
+      "published": "2026-10-06T14:02:19+00:00",
+      "link": "https://arxiv.org/pdf/2610.08378v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "lifetime-aware KV cache placement for reuse in agent serving",
+      "llm_evidence_cn": "面向智能体服务的KV缓存生命周期感知放置与复用",
+      "llm_evidence": "面向智能体服务的KV缓存生命周期感知放置与复用",
+      "canonical_evidence": "面向智能体服务的KV缓存生命周期感知放置与复用",
+      "llm_tldr_en": "Agentic serving accumulates KV cache across many requests, but high-bandwidth flash has limited write endurance. Lachesis places KV cache across HBM and HBF by lifetime, keeping short-lived data in HBM so fewer writes reach HBF, easing the endurance bottleneck.",
+      "llm_tldr_cn": "智能体服务中agent与子agent跨多次请求累积KV缓存，占用大量显存，而高带宽闪存写入寿命有限成为关键限制。本文提出Lachesis，依据KV缓存生命周期在HBM与HBF之间进行放置，将短生命周期数据留在HBM以减少写入HBF。方法缓解了闪存寿命瓶颈，为智能体场景下KV缓存的容量扩展与复用提供了新方案。",
+      "llm_tldr": "智能体服务中agent与子agent跨多次请求累积KV缓存，占用大量显存，而高带宽闪存写入寿命有限成为关键限制。本文提出Lachesis，依据KV缓存生命周期在HBM与HBF之间进行放置，将短生命周期数据留在HBM以减少写入HBF。方法缓解了闪存寿命瓶颈，为智能体场景下KV缓存的容量扩展与复用提供了新方案。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "KV cache reuse in large language model inference",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.10058v1",
+      "source": "arxiv",
+      "title": "Cache the Encoder Within:Compact, Reusable Memory across LLM Queries",
+      "abstract": "Repeated queries over shared documents incur redundant encoding, while caching model states introduces persistent storage costs. Building on CoMem's intermediate-state interface, EncBank treats a pretrained LLM's lower layers as a reusable document encoder and compactly stores their outputs for an adapted upper-layer reader. A self-distilled suffix adapter is shared across storage precisions within each backbone, without quantization-specific retraining. Across five benchmark suites on three Qwen backbones spanning different sizes and full-attention and hybrid architectures, 4-bit storage keeps each reported benchmark aggregate within one score point of native-precision EncBank. In a fixed Qwen3-8B workload, it retains 28.1% of the native-precision persistent GPU store. Separate native-precision controls yield a 1.40x selected-pack prefill speedup over same-evidence, same-adapter text replay, at a 3.12-point RULER accuracy cost. A native-precision Qwen3.8-27B configuration also passes 70 of 89 Terminal-Bench 2.1 tasks. EncBank thus combines reusable computation with compact memory, while task fidelity and end-to-end benefits remain dependent on the workload, preparation costs, and reuse frequency.",
+      "authors": [
+        "Hanzuo Liu",
+        "Chunyu Liu",
+        "Chaofan Lin",
+        "Alex Lamb",
+        "Mingyu Gao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-10-07T13:28:25+00:00",
+      "link": "https://arxiv.org/pdf/2610.10058v1",
+      "tags": [
+        "keyword:PIC",
+        "query:PIC"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reusable compact memory cached across repeated LLM queries",
+      "llm_evidence_cn": "跨重复LLM查询缓存可复用紧凑记忆",
+      "llm_evidence": "跨重复LLM查询缓存可复用紧凑记忆",
+      "canonical_evidence": "跨重复LLM查询缓存可复用紧凑记忆",
+      "llm_tldr_en": "Repeated queries over shared documents incur redundant encoding while caching model states is costly. EncBank treats an LLM lower layers as a reusable document encoder, storing compact outputs for an upper reader with a self-distilled suffix adapter shared across precisions.",
+      "llm_tldr_cn": "对共享文档的重复查询会产生冗余编码，而缓存模型状态又带来持久存储开销。本文提出EncBank，把预训练LLM的低层视为可复用文档编码器，紧凑存储其输出供适配的上层阅读器使用，并以自蒸馏后缀适配器跨精度共享。在多个Qwen骨干与基准上，4比特存储性能接近原生精度，显著降低持久存储开销。",
+      "llm_tldr": "对共享文档的重复查询会产生冗余编码，而缓存模型状态又带来持久存储开销。本文提出EncBank，把预训练LLM的低层视为可复用文档编码器，紧凑存储其输出供适配的上层阅读器使用，并以自蒸馏后缀适配器跨精度共享。在多个Qwen骨干与基准上，4比特存储性能接近原生精度，显著降低持久存储开销。",
+      "llm_tags": [
+        "query:pic"
+      ],
+      "matched_query_tag": "query:pic",
+      "matched_query_text": "prompt caching for reducing inference latency",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -6,39 +6,45 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-10-07
-- 运行时间：2026-10-07 23:20:39 UTC
+- 最新运行日期：2026-10-09
+- 运行时间：2026-10-09 00:17:30 UTC
 - 运行状态：成功
-- 本次总论文数：6
+- 本次总论文数：8
 - 精读区：0
-- 速读区：6
+- 速读区：8
 
 ### 今日简报（AI）
-今日速读6篇，聚焦KV Cache压缩与淘汰新方法，含AttSVD与蒙特卡洛估计两篇7分工作。最值得看的是注意力引导的SVD低秩压缩思路，以及用蒙特卡洛估计做KV淘汰的轻量方案。普通读者可优先了解这两条KV Cache优化路线的异同。
-- 详情：[/202610/07/README](/202610/07/README)
+2026-10-09 日报速读 8 篇，重点集中在长上下文与 KV-Cache 优化。最值得看的是《CommunityKV》用图分区加速长上下文解码，以及《A Self-Pruning Transformer》实现极端 KV-Cache 压缩。普通读者可优先了解 KV-Cache 压缩与动态计算这两条省显存、提速度的实用路线。
+- 详情：[/202610/09/README](/202610/09/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [AttSVD:Prompt-Adaptive Low-Rank KV Cache Compression via Attention-Guided SVD](/202610/07/2610.06927v1-attsvdprompt-adaptive-low-rank-kv-cache-compression-via-attention-guided-svd)  
+1. [CommunityKV: Efficient Long-Context Decoding via Graph Partitioning](/202610/09/2610.00418v1-communitykv-efficient-long-context-decoding-via-graph-partitioning)  
    标签：评分：7.0/10、query:pic
-   evidence：提示自适应低秩KV缓存压缩
-2. [Monte Carlo Estimation for KV Cache Eviction](/202610/07/2610.07643v1-monte-carlo-estimation-for-kv-cache-eviction)  
+   evidence：通过降低KV缓存传输实现高效长上下文解码
+2. [Enabling Dynamic Computation in Looped LMs](/202610/09/2610.09013v1-enabling-dynamic-computation-in-looped-lms)  
    标签：评分：7.0/10、query:pic
-   evidence：基于蒙特卡洛估计的未来感知KV缓存逐出
-3. [CARET: Training-Free Test-Time Scaling for Repository-Level Code Completion](/202610/07/2610.04837v1-caret-training-free-test-time-scaling-for-repository-level-code-completion)  
+   evidence：最优可用KV缓存策略减少FLOPs与KV显存
+3. [A Self-Pruning Transformer: Extreme KV-Cache Compression with Universal Attention](/202610/09/2610.09051v1-a-self-pruning-transformer-extreme-kv-cache-compression-with-universal-attention)  
+   标签：评分：7.0/10、query:pic
+   evidence：基于衰减的位置机制实现KV缓存剪枝
+4. [Scaling Parameter and Context in Attention: Native Sparse Attention from Mixture-of-Head](/202610/09/2609.38832v1-scaling-parameter-and-context-in-attention-native-sparse-attention-from-mixture-of-head)  
    标签：评分：6.0/10、query:pic
-   evidence：在缓存的提示前缀上采样候选，长上下文只编码一次
-4. [The Optimization Landscape of Learning Compacted Context Models](/202610/07/2610.05885v1-the-optimization-landscape-of-learning-compacted-context-models)  
+   evidence：面向长上下文高效扩展的架构原生稀疏注意力机制
+5. [The Evolution of Attention in Large Language Models: Mechanisms, Trade-offs, and Emerging Trends](/202610/09/2609.39661v1-the-evolution-of-attention-in-large-language-models-mechanisms-trade-offs-and-emerging-trends)  
    标签：评分：6.0/10、query:pic
-   evidence：以优化方式压缩KV缓存以支持长上下文
-5. [Mask-Guided KV Cache Eviction in Block Diffusion Language Models](/202610/07/2610.06996v1-mask-guided-kv-cache-eviction-in-block-diffusion-language-models)  
+   evidence：综述注意力机制，涵盖KV缓存增长与长上下文内存压缩
+6. [Persistent Memory in Multi-Agent LLM Inference: What It Costs, What It Buys, and When You Can Tell](/202610/09/2610.07782v1-persistent-memory-in-multi-agent-llm-inference-what-it-costs-what-it-buys-and-when-you-can-tell)  
    标签：评分：6.0/10、query:pic
-   evidence：块扩散语言模型中掩码引导的KV缓存逐出与选择
-6. [ReFold: Training-Free Reversible Inter-Turn Context Folding for Long-Horizon Agents](/202610/07/2610.07863v1-refold-training-free-reversible-inter-turn-context-folding-for-long-horizon-agents)  
+   evidence：分解式长上下文推理中的KV缓存工作集
+7. [Lachesis: Lifetime-Aware KV Cache Placement for Agent Serving across HBM and High-Bandwidth Flash](/202610/09/2610.08378v1-lachesis-lifetime-aware-kv-cache-placement-for-agent-serving-across-hbm-and-high-bandwidth-flash)  
    标签：评分：6.0/10、query:pic
-   evidence：免训练上下文折叠，避免使前缀缓存失效
+   evidence：面向智能体服务的KV缓存生命周期感知放置与复用
+8. [Cache the Encoder Within:Compact, Reusable Memory across LLM Queries](/202610/09/2610.10058v1-cache-the-encoder-withincompact-reusable-memory-across-llm-queries)  
+   标签：评分：6.0/10、query:pic
+   evidence：跨重复LLM查询缓存可复用紧凑记忆
 
 
 <div class="dpr-home-promo-card">
